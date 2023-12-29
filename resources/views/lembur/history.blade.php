@@ -1,0 +1,88 @@
+<x-app-layout>
+	<x-main-div>
+		<p class="text-center text-lg sm:text-2xl font-bold py-10 uppercase">Riwayat Lembur</p>
+		<div class="">
+		<div class="overflow-x-auto  mx-2">
+			<table class="table table-xs bg-slate-50 table-zebra w-full mb-5">
+				<thead>
+					<tr>
+						<th class=" bg-slate-300 rounded-tl-2xl">#</th>
+						<th class="bg-slate-300">Lama Lembur</th>
+						<th class="bg-slate-300 rounded-tr-2xl">Tanggal Lembur</th>
+					</tr>
+				</thead>
+				<tbody>
+					@php
+						$no = 1;
+					@endphp
+					@forelse ($lembur as $i)
+                    @if (Auth::user()->id == $i->user_id)
+                        <tr>
+                            <td class="py-1 ">{{ $no++ }}</td>
+                            @if ($i->jam_selesai == null)
+                                <td class="py-1">Belum Selesai Lembur</td>
+                            @else
+                            @php
+                                $jam_masuk = $i->jam_mulai;
+                                $jam_keluar = $i->jam_selesai;
+                                $masuk = strtotime($jam_masuk);
+                                $keluar = strtotime($jam_keluar);
+
+                                list($jam1, $menit1) = explode(':',$i->jam_mulai);
+								list($jam2, $menit2) = explode(':',$i->jam_selesai);
+								
+								$totalMulai = $jam1+ ($menit1 / 60);
+								$totalPulang = $jam2+ ($menit2 / 60);
+								$total = $totalPulang - $totalMulai;
+								$jam = floor($total);
+								$menit = floor(($total - $jam) * 60);
+								
+								if($jam <= 0){
+								    if($menit <= 0){
+								        $totalString = "0 Jam";
+								    }else{
+								        $totalString = sprintf('%02d menit', $menit);
+								    }
+								}else if($jam <= 0 && $menit <= 0){
+								    $totalString = "0 Jam";
+								}else {
+								    $totalString = sprintf('%02d jam %02d menit', $jam, $menit);
+								}
+								
+
+							@endphp
+                                @if($jam <= 0 && $menit <= 0)
+                                <td class="py-1 text-red-500">{{ $totalString }}</td>
+                                @else
+								<td class="py-1">{{ $totalString }}</td>
+								@endif
+                            @endif
+							@php
+    							$tanggal = $i->created_at;
+    							// $tgl = date_format($tanggal,'D-m-Y');
+    							$tgl = Carbon\Carbon::createFromDate($tanggal)->isoFormat('dddd, D/MMMM/YYYY');
+							@endphp
+							<td>{{ $tgl }}</td>
+                        </tr>
+                    @elseif(Auth::user()->id == $i->user_id)
+					<tr>
+						<td colspan="4" class="text-center py-1">Kosong</td>
+					</tr>
+                    @endif
+					@empty
+						<tr>
+							<td colspan="4" class="text-center py-1">Kosong</td>
+						</tr>
+					@endforelse
+				</tbody>
+			</table>
+		</div>
+			<div id="pag-1" class=" mb-5 mx-10">
+				{{ $lembur->links() }}
+			</div>
+	</div>
+		<div class="flex justify-center sm:justify-end py-5 mx-5 sm:pb-10">
+			<a href="{{ route('dashboard.index') }}" class="btn btn-error mx-2 sm:mx-10">Kembali</a>
+		</div>
+	</x-main-div>
+</x-app-layout>

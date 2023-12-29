@@ -1,0 +1,151 @@
+<x-app-layout>
+	<x-main-div>
+		<div>
+			<p class="text-center text-lg sm:text-2xl font-bold py-10 uppercase">Index Laporan</p>
+		</div>
+        <span class="flex justify-between items-center">
+    		@if (Auth::user()->role_id == 2)
+    			<div class="ml-5">
+    				<form action="{{ route('export.laporans') }}" method="get" class="w-full">
+    					<div class="flex items-center justify-start gap-2">
+    						<div class="flex justify-between items-center gap-2 mr-2">
+    							<div class="flex flex-col mb-5">
+    								<label for="client_id">Pilih Mitra</label>
+    								<select name="client_id" id="client_id" class="select select-bordered  ">
+    									<option selected disabled>~Pilih Mitra~</option>
+    									@forelse ($mitra as $i)
+    										<option value="{{ $i->id }}">{{ $i->client->name }}</option>
+    									@empty
+    										<option>~Kosong~</option>
+    									@endforelse
+    								</select>
+    							</div>
+    							<span class="flex gap-2 items-center">
+        							<div class="mr-2">
+        								<input type="date" name="str1" id="str1" placeholder="Tanggal Mulai"
+        									class="text-md block px-3 py-2 rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
+        							</div>
+        							<div class="ml-2">
+        								<input type="date" name="end1" id="end1"
+        									class="text-md block px-3 py-2 rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
+        							</div>
+    							</span>
+    						</div>
+    						<div class="flex">
+    							<button type="submit" class="btn btn-warning sm:btn-sm btn-xs">Print PDF</button>
+    						</div>
+    					</div>
+    				</form>
+    			</div>
+    		@endif
+    
+    		<div class="flex justify-end items-center">
+    			<div class="input flex w-fit mx-10 items-center justify-end mb-5 input-bordered">
+    				<i class="ri-search-2-line"></i>
+    				<input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..." required>
+    			</div>
+    		</div>
+        </span>
+
+		<div class="overflow-x-auto mx-5">
+			<table class="table table-zebra table-xs sm:table-md bg-slate-50 w-full" id="searchTable">
+				<thead>
+					<tr>
+						<th class="bg-slate-300 rounded-tl-2xl">#</th>
+						<th class="bg-slate-300 text-center" colspan="3">Foto Progres</th>
+
+						@if (Auth::user()->role_id == 2 ||
+								Auth::user()->divisi->jabatan->code_jabatan == 'LEADER' ||
+								Auth::user()->divisi->jabatan->code_jabatan == 'MITRA')
+							<th class="bg-slate-300 ">Nama</th>
+						@endif
+
+						<th class="bg-slate-300 ">Mitra</th>
+						<th class="bg-slate-300 ">Ruangan</th>
+
+						@if (Auth::user()->role_id == 2)
+							<th class="bg-slate-300 ">Keterangan</th>
+							<th class="bg-slate-300 rounded-tr-2xl">Action</th>
+						@else
+							<th class="bg-slate-300 rounded-tr-2xl">Keterangan</th>
+						@endif
+					</tr>
+				</thead>
+				<tbody>
+					@php $no = 1; @endphp
+					@forelse ($laporan as $i)
+						<tr>
+							<td>{{ $no++ }}</td>
+							@if ($i->image1 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image1)))
+								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image1) }}" alt=""
+										srcset="{{ asset('storage/images/' . $i->image1) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+								</td>
+							@else
+								<td><x-no-img /></td>
+							@endif
+							@if ($i->image2 != 'no-image.jpg' && $i->image2 != null && file_exists(public_path('storage/images/' . $i->image2)))
+								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image2) }}" alt=""
+										srcset="{{ asset('storage/images/' . $i->image2) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+								</td>
+							@else
+								<td><x-no-img /></td>
+							@endif
+							@if ($i->image3 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image3)))
+								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image3) }}" alt=""
+										srcset="{{ asset('storage/images/' . $i->image3) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+								</td>
+							@else
+								<td><x-no-img /></td>
+							@endif
+							
+							<!--@if ($i->image2 == null)-->
+							<!--	<td><x-no-img /></td>-->
+							<!--@else-->
+							<!--	<td class="scale-75"><img src="{{ asset('storage/images/' . $i->image2) }}" alt=""-->
+							<!--			srcset="{{ asset('storage/images/' . $i->image2) }}" width="100px" class="lazy lazy-image" loading="lazy">-->
+							<!--	</td>-->
+							<!--@endif-->
+							
+							<!--<td class="scale-75"><img src="{{ asset('storage/images/' . $i->image3) }}" alt=""-->
+							<!--		srcset="{{ asset('storage/images/' . $i->image3) }}" width="100px" class="lazy lazy-image" loading="lazy">-->
+							<!--</td>-->
+
+							@if (Auth::user()->role_id == 2 ||
+									Auth::user()->divisi->jabatan->code_jabatan == 'LEADER' ||
+									Auth::user()->divisi->jabatan->code_jabatan == 'MITRA')
+								<td>{{ $i->user->nama_lengkap }}</td>
+							@endif
+
+							<td>{{ $i->client->name }}</td>
+							<td>{{ $i->ruangan->nama_ruangan }}</td>
+							<td>{{ $i->keterangan }}</td>
+
+							@if (Auth::user()->role_id == 2)
+								<td>
+									<form action="{{ url('laporans/' . $i->id) }}" method="POST">
+										@csrf
+										@method('DELETE')
+										<x-btn-submit></x-btn-submit>
+									</form>
+								</td>
+							@else
+							@endif
+						</tr>
+					@empty
+						<tr>
+							<td colspan="8" class="text-center">Laporan Saat Ini Kosong</td>
+						</tr>
+					@endforelse
+				</tbody>
+			</table>
+		</div>
+		<div>
+			<div class="flex justify-center sm:justify-end my-3 gap-2 mr-0 sm:mr-9">
+				<a href="{{ route('laporan.create') }}"
+					class="btn btn-warning hover:bg-yellow-600 border-none transition-all ease-in-out .2s">+ Laporan</a>
+				<a href="{{ route('dashboard.index') }}"
+					class="btn btn-error border-none hover:bg-red-500 transition-all ease-in-out .2s">Kembali</a>
+			</div>
+		</div>
+	</x-main-div>
+</x-app-layout>

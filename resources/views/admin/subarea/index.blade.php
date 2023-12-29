@@ -1,0 +1,51 @@
+<x-app-layout>
+    <x-main-div>
+        <div>
+			<p class="text-center text-2xl font-bold py-10 uppercase">Index Sub Area</p>
+        </div>
+        <div>
+            <x-search/>
+        </div>
+        <div class="flex justify-between mx-10 mb-5">
+            <a href="{{ route('admin.index') }}"
+					class="btn btn-error border-none hover:bg-red-500 transition-all ease-in-out .2s">Back</a>
+            <a href="{{ route('subarea.create') }}"
+					class="btn btn-warning hover:bg-yellow-600 border-none transition-all ease-in-out .2s">+ Sub Area</a>
+        </div>
+        <div class="overflow-x-auto mx-10 mb-5">
+            <table class="table table-zebra w-full bg-slate-50" id="searchTable">
+                <thead>
+                    <tr>
+                        <th class="bg-slate-300 rounded-tl-2xl">#</th>
+                        <th class="bg-slate-300 ">Nama Sub Area</th>
+                        <th class="bg-slate-300 rounded-tr-2xl">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $no = 1;
+                    @endphp
+                    @forelse ($sub as $i)
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $i->name }}</td>
+                            
+                            <td>
+                                <form action="{{ url('subarea/' . $i->id) }}" method="POST" class="h-9">
+									@csrf
+									@method('DELETE')
+									<x-btn-edit>{{ url('subarea/' . $i->id . '/edit') }}</x-btn-edit>
+									<x-btn-submit></x-btn-submit>
+								</form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center">~ Kosong ~</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </x-main-div>
+</x-app-layout>

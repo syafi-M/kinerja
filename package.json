@@ -1,0 +1,15 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "npm": "npm install --scripts-prepend-node-path='/home/sacpocom/nodevenv/absensi-sac.sac-po.com/10/bin/node'",
+"get-vite" : "npm install -g vite"
+    },
+    "dependencies": {
+        "firebase": "^10.3.1",
+        "jquery": "^3.7.0",
+        "remixicon": "^3.3.0"
+    }
+}

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="csrf-token" content="{{ csrf_token() }}">
+		<title>{{ env('APP_NAME', 'KINERJA SAC-PONOROGO') }}</title>
+		<link rel="shortcut icon" href="{{ URL::asset('favicon.ico') }}" type="image/x-icon">
+
+		<link rel="preload" href="https://fonts.bunny.net">
+		<link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+			integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+	    <script src="{{ URL::asset('src/js/jquery-min.js') }}"></script>
+		<!-- Scripts -->
+		@vite(['resources/css/app.css', 'resources/js/app.js'])
+
+		{{-- Leaflet --}}
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+			integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+			integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+		<link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
+		<style>
+			#map {
+				height: 180px;
+			}
+		</style>
+
+	</head>
+
+<body class="font-sans antialiased  bg-slate-400">
+	<div class="min-h-screen pb-[12.5rem]">
+		@include('../layouts/navbar')
+		<div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
+			<main>
+				<div class="px-5 py-5">
+			     {{-- @if ($errors->any())
+                    <div class="text-red-500 bg-slate-200 rounded-md">
+                        <p>{{ $errors->shift_id }}</p>
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li> - {{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif --}}
+					<form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" id="form-absen">
+						@method('POST')
+						@csrf
+						@if(Auth::user()->kerjasama_id != 1)
+    						<div class="flex flex-col sm:flex-row sm:m-0 items-center  justify-center">
+    							<div id="my_camera" class="bg-slate-200 scale-90 px-10 rounded"></div>
+    							<div id="results" class=" sm:mt-0 rounded mb-3"></div>
+    							
+        						@if($errors->any() && $errors->image)
+    							    <p class=" font-bold bg-white text-start p-1 rounded-lg" style="color: red">Foto Tidak Boleh Kosong</p>
+    							@endif
+    						</div>
+    						
+    
+    						<div class="flex justify-center">
+    							<button type=button onclick="take_snapshot()" class="p-2 my-2 px-3 mb-5 text-white bg-blue-400 rounded-full"><i
+    									class="ri-camera-fill"></i></button>
+    						</div>
+    						
+						@endif
+						<div class="p-1 rounded my-3 ">
+						    <label class="required text-white">Map :</label>
+						    <span id="labelMap" class="text-white text-center flex flex-col justify-center">
+						        <p>Pastikan map sudah muncul !!</p>
+						        <p id="resolver">coba refresh browser beberapa kali jika map belum muncul</p>
+						    </span>
+							<div id="map" class="rounded"></div>
+							<span id="tutor" class="text-white hidden text-center flex flex-col justify-center text-sm capitalize" style="font-style: italic;">Pastikan tanda biru berada dilingkaran</span>
+						</div>
+						<div class="flex flex-col gap-2">
+							<div class="flex flex-col justify-between">
+								<label for"name" class="text-white">Nama: </label>
+								<input type="text" id="user_id" name="user_id" value="{{ Auth::user()->id }}" hidden>
+								<input type="text" id="name" name="{{ Auth::user()->name }}" value="{{ Auth::user()->name }}" disabled class="input input-bordered">
+							</div>
+							<div class="flex flex-col  justify-between">
+								<label for="kerjasama" class="text-white">Bermitra Dengan: </label>
+								<input type="text" name="kerjasama_id" id="kerjasama_id" hidden value="{{ Auth::user()->kerjasama_id }}">
+								<input type="text" id="kerjasama" name="{{ Auth::user()->kerjasama->client->name }}" value="{{ Auth::user()->kerjasama->client->name }}" disabled
+									class="input input-bordered">
+							</div>
+							<div class="flex flex-col  justify-between">
+								<label class="required text-white" for="shift_id">Shift: </label>
+								<select name="shift_id" id="shift_id" required style="{{$errors->any() && $errors->shift_id ? 'border: 2px solid red;' : ''}}" class="select select-bordered font-thin">
+    							    @if($errors->any() && $errors->shift_id)
+								        <option selected disabled class="p-1 my-1 font-bold" style="color: red">Shift Tidak Boleh Kosong</option>
+    								@endif
+									<option disabled {{ $errors->any() && $errors->shift_id ? '' : 'selected' }}>-- Pilih Shift --</option>
+									
+									@forelse ($shift as $i)
+										@if (Auth::user()->kerjasama->client_id == $i->client_id && Auth::user()->divisi->jabatan_id == $i->jabatan_id)
+										@php
+										    $endA = Carbon\Carbon::parse($i->jam_end)->subHour(1)->format('H:i');
+										@endphp
+											<option value="{{ $i->id }}" data-shift="{{ $i->jam_start }}">{{ $i->jam_start }} - {{ $endA }} | {{ $i->jabatan->name_jabatan }} |
+												{{ $i->shift_name }}
+												</option>
+										@else
+										@endif
+									@empty
+										<option>~ Tidak ad Shift ! ~</option>
+									@endforelse
+								</select>
+								
+								@if(Auth::user()->kerjasama->client_id == 1)
+								    <span id="absen-kantor" data-absen-kantor="{{ Auth::user()->kerjasama->client_id }}" hidden></span>
+								@endif
+							</div>
+
+							<div>
+								<div>
+									<label class="required text-white">Perlengkapan: </label>
+								</div>
+								<div class="p-2 bg-white rounded-lg " style="{{$errors->any() && $errors->shift_id ? 'border: 2px solid red;' : ''}}">
+							    	@if($errors->any() && $errors->perlengkapan)
+    								    <p  class="p-1 my-1 font-bold" style="color: red">Perlengkapan Tidak Boleh Kosong</p>
+    								@endif
+									<div class="grid grid-cols-1">
+										@forelse ($dev as $arr)
+											@if (Auth::user()->devisi_id == $arr->id)
+												@foreach ($arr->perlengkapan as $i)
+													<div>
+														<input type="checkbox" name="perlengkapan[]" id="perlengkapan {{ $i->id}}" value="{{ $i->name }}"
+															class="checkbox checkbox-sm m-2">
+														<label for="perlengkapan {{ $i->id}}">{{ $i->name }}</label>
+													</div>
+												@endforeach
+											@else
+											@endif
+										@empty
+											<p>~ Kosong ~</p>
+										@endforelse
+									</div>
+								</div>
+							
+							</div>
+							<div>
+								<label class="text-white" for="deskripsi">Deskripsi (opsional) : </label>
+								<textarea name="deskripsi" id="deskripsi" value="" placeholder="deskripsi..."
+								 class="w-full textarea textarea-bordered"></textarea>
+							</div>
+							<div class="flex flex-col">
+                                @php
+                                    $today = Carbon\Carbon::now()->format('Y-m-d');
+                                    $hasJadwal = false;
+                                @endphp
+                            
+                                @forelse ($jadwal as $jad)
+                                    @php
+                                        $tanggalJDW = Carbon\Carbon::createFromFormat('Y-m-d', $jad->tanggal)->isoFormat('dddd, D MMMM YYYY');
+                                        $jadiTGL = Carbon\Carbon::createFromFormat('Y-m-d', $jad->tanggal)->format('Y-m-d');
+                                    @endphp
+
+                                    @if (!$hasJadwal)
+                                        @if (Carbon\Carbon::now()->format('Y-m-d') == $jadiTGL)
+                                            <label>Jadwal Hari ini: </label>
+                                            @if ($jad->status == 'OFF')
+                                                <span style="height: auto;" class="input input-bordered" disabled>
+                                                    Tanggal:    {{ $tanggalJDW }}, <br/>
+                                                    Shift:      {{ $jad->shift->shift_name }}, <br/> 
+                                                    Area:       <span class="text-red-500">{{ $jad->area->nama_area }}</span>
+                                                </span>
+                                                @php
+                                                    $hasJadwal = true;
+                                                @endphp
+                                            @else
+                                                <span style="height: auto;" class="input input-bordered" disabled>
+                                                    Tanggal:    {{ $tanggalJDW }}, <br/>
+                                                    Shift:      {{ $jad->shift->shift_name }}, <br/> 
+                                                    Area:       {{ $jad->area->nama_area }}
+                                                </span>
+                                                @php
+                                                    $hasJadwal = true;
+                                                @endphp
+                                            @endif
+                                        @endif
+                                    @endif
+                            
+                                @empty
+                                @endforelse
+                            
+                                @if (!$hasJadwal)
+                                <label hidden>Jadwal Hari ini: </label>
+                                <span class="input input-bordered flex items-center justify-center hidden">
+                                    <span class=" text-center" disabled>Belum Ada Jadwal</span>
+                                </span>
+                                @endif
+                            </div>
+                            @if(Auth::user()->kerjasama_id != 1)
+							    <input type="text" id="image" name="image" class="image-tag" hidden>
+                            @endif
+							<input type="text" id="keterangan" name="keterangan" value="masuk" hidden>
+						</div>
+						<input type="text" class="hidden" name="absensi_type_masuk" value="1">
+						@php
+							$key = Auth::user()->id;
+						@endphp
+						<div class="flex flex-col justify-center sm:justify-end gap-3 mt-2 mr-2">
+							<span id="labelWaktuStart" class="text-center text-[10px] capitalize font-semibold hidden py-2 px-4 rounded-md bg-slate-50"></span>
+							<span class="flex justify-center gap-3">
+								@forelse ($absensi as $abs)
+									{{-- sudah --}}
+									@if ($abs->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d'))
+										<button
+											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
+											disabled>Sudah Absen</button>
+										{{-- belum --}}
+									@else
+										<button class="p-2 my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
+											id="btnAbsen">Absen</button>
+									@endif
+								@break
+
+								@empty
+									<button class="p-2 my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
+										id="btnAbsen">Absen</button>
+								@endforelse
+								<a href="{{ route('dashboard.index') }}"
+									class="p-2 my-2 px-4 text-white bg-red-500 hover:bg-red-600 rounded transition-all ease-linear .2s">
+									Kembali
+								</a>
+							</span>
+						</div>
+						<input class="hidden" id="thisId" value="{{ Auth::user()->id }}">
+						@php
+							$mytime = Carbon\Carbon::now()->format('H:m:s');
+							$mytime2 = '10:00:00';
+							$uID = Auth::user()->divisi->jabatan->code_jabatan;
+						@endphp
+						<input class="hidden" id="thisTime" value="{{ $mytime }}">
+						<input class="hidden" id="thisTime2" value="{{ $mytime2 }}">
+						<input class="hidden" id="isi" name="absensi_type_pulang">
+						<input id="lat" name="lat_user" value="" class="hidden" />
+						<input id="long" name="long_user" value="" class="hidden" />
+						<span class="hidden" id="dataUser" data-userId="{{ $uID }}"></span>
+					</form>
+				</div>
+			</main>
+		</div>
+	</div>
+	<div class="flex justify-center">
+		<div class="fixed bottom-0 z-[999]">
+			<x-menu-mobile />
+		</div>
+	</div>
+	@if(Auth::user()->kerjasama_id != 1)
+    	<!-- Configure a few settings and attach camera -->
+    	<script language="JavaScript">
+    		Webcam.set({
+    			width: 320,
+    			height: 240,
+    			image_format: 'jpeg',
+    			jpeg_quality: 80
+    		});
+    		Webcam.attach('#my_camera');
+    
+    		function take_snapshot() {
+    			Webcam.snap(function(data_uri) {
+    				$(".image-tag").val(data_uri);
+    				document.getElementById('results').innerHTML =
+    					'<img id="imgprev" src="' + data_uri + '"/>';
+    			});
+    			// Webcam.reset();
+    		}
+    	</script>
+	@endif
+
+	<script>
+		var lat = document.getElementById('lat')
+		var long = document.getElementById('long')
+        var labelMap = $('#labelMap')
+        var tutor = $('#tutor')
+        
+    		if (navigator.geolocation) {
+    			
+    			navigator.geolocation.watchPosition(function(position){
+    				showPosition(position);
+    				labelMap.addClass('hidden');
+    				tutor.removeClass('hidden');
+    			});
+                    
+    		} else {
+    			alert('Geo Location Not Supported By This Browser !!');
+    			labelMap.removeClass('hidden');
+    			
+    		}
+
+		function showPosition(position) {
+			lat.value = position.coords.latitude;
+			long.value = position.coords.longitude;
+
+			var lati = "{{ $harLok->latitude }}"
+			var longi = "{{ $harLok->longtitude }}"
+			var radi = "{{ $harLok->radius }}"
+			var client = "{{ $harLok->client->name }}"
+
+			var latitude = position.coords.latitude; // Ganti dengan latitude Anda
+			var longitude = position.coords.longitude; // Ganti dengan longitude Anda
+
+
+			var map = L.map('map').setView([latitude, longitude], 13); // ini adalah zoom level
+
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '© OpenStreetMap contributors'
+			}).addTo(map);
+
+			var marker = L.marker([latitude, longitude]).addTo(map);
+			var circle = L.circle([lati, longi], {
+					color: 'crimson',
+					fillColor: '#f09',
+					fillOpacity: 0.5,
+					radius: radi
+				}).addTo(map).bindPopup("Lokasi absen: " + client)
+				.openPopup();
+    		window.onload = function () {
+                showPosition(position);
+            };
+		}
+	</script>
+	<script>
+		$(document).ready(function() {
+		    
+		    var dataUserId = $("#dataUser").attr('data-userId');
+		    
+		    var debounceTimer;
+		    var keterangan = $('#keterangan');
+			function calculatedJamStart() {
+				// get jam
+				var currentDate = new Date();
+				var jamSaiki = currentDate.getHours();
+				var menitSaiki = currentDate.getMinutes();
+				var detikSaiki = currentDate.getSeconds();
+
+				// fungsi
+				var selectedOption = $('#shift_id').find(":selected");
+				var shiftStart = selectedOption.data('shift');
+				
+				
+				
+				if (typeof shiftStart !== 'undefined' && shiftStart !== '') {
+					var startTimeParts = shiftStart.split(':');
+					var startHours = parseInt(startTimeParts[0]);
+					var startMinutes = parseInt(startTimeParts[1]);
+
+					var startDiffMinutes = startHours * 60 + startMinutes;
+					var nowDiffMinutes = jamSaiki * 60 + menitSaiki;
+
+					var jadi = startDiffMinutes - nowDiffMinutes;
+
+					var kesimH = Math.floor(jadi / 60 - 1);
+					var kesimM = Math.abs(jadi % 60);
+					var kesimS = Math.abs(60 - detikSaiki);
+					
+					if (kesimM < 0) {
+        				kesimH--;
+        				kesimM += 60;
+        			}
+        			
+                // kantor
+                var absenKantor = $('#absen-kantor').data('absen-kantor');
+				// console.log(absenKantor);
+				
+				// 	keterangan
+				if(absenKantor == 1)
+				{
+				    if(jadi < -31) {
+				        keterangan.val('telat');
+				        // console.log('telat', keterangan.val('telat'))
+				    }
+				    else {
+				        keterangan.val('masuk');
+				        // console.log('masuk', keterangan.val('masuk'))
+				    }
+				} else 
+				{
+				    if(jadi < 0) {
+				        keterangan.val('telat');
+				        // console.log('telat', keterangan.val('telat'))
+				    }
+				    else {
+				        keterangan.val('masuk');
+				        // console.log('masuk', keterangan.val('masuk'))
+				    }
+				}
+				
+				    
+				    if(dataUserId == 'MCS' || dataUserId == 'SPV'){
+    						$('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+    						$('#btnAbsen').prop('disabled', false);
+    						$('#labelWaktuStart').addClass('hidden');
+				    }else{
+				        if (jadi <= 90) {
+    						$('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+    						$('#btnAbsen').prop('disabled', false);
+    						$('#labelWaktuStart').addClass('hidden');
+    					} else {
+    						$('#btnAbsen').addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+    						$('#labelWaktuStart').removeClass('hidden');
+    						$('#btnAbsen').prop('disabled', true);
+    						if (kesimH == 0) {
+    							$('#labelWaktuStart').html(`tunggu ${kesimM} menit ${kesimS} detik lagi untuk absen`);
+    						} else if (kesimM == 0 && kesimH == 0) {
+    							$('#labelWaktuStart').html(`tunggu ${kesimS} detik lagi untuk absen`);
+    						} else
+    							$('#labelWaktuStart').html(
+    								`tunggu ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi untuk absen`);
+    					}
+				    }
+
+				} else {
+				}
+				clearTimeout(debounceTimer);
+				debounceTimer = setTimeout(calculatedJamStart, 1000)
+			}
+
+			$('#shift_id').change(function() {
+				calculatedJamStart();
+			});
+			
+    		$('#btnAbsen').click(function(){
+    		    $(this).prop('disabled', true);
+    		    $(this).text('Tunggu...');
+    		    $(this).css('background-color: rgb(96 165 250 / 0.5);');
+    		    $('#form-absen').submit();
+    		})
+		})
+	</script>
+</body>
+
+</html>
