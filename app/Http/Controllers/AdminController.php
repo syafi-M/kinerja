@@ -98,6 +98,7 @@ class AdminController extends Controller
     {
         $appCheck = [
             'approve_status' => $request->approve_status,
+            'note' => $request->note
         ];
         // dd($appCheck);
         CheckPoint::findOrFail($id)->update($appCheck);
@@ -109,6 +110,7 @@ class AdminController extends Controller
     {
         $appCheck = [
             'approve_status' => $request->approve_status,
+            'note' => $request->note
         ];
         // dd($appCheck);
         CheckPoint::findOrFail($id)->update($appCheck);

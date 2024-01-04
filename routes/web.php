@@ -107,9 +107,11 @@ Route::middleware('direksi')->group(function () {
 Route::middleware('mitra')->group(function () {
     Route::resource('/mitra-rating', RatingController::class);
     Route::get('/mitra-laporan', [LeaderController::class, 'indexLaporan'])->name('mitra_laporan');
+    Route::get('/mitra-laporan/{id}', [LeaderController::class, 'showLaporan'])->name('mitra_laporan.show');
     Route::get('/mitra-lembur', [MainController::class, 'indexLembur'])->name('mitra_lembur');
     Route::get('/mitra-absensi-izin', [IzinController::class, 'indexLead'])->name('mitra_izin');
     Route::get('/mitra-absensi', [LeaderController::class, 'indexAbsen'])->name('mitra_absensi');
+    Route::get('/mitra-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('mitra-lihatMap');
     Route::get('/mitra-jadwal', [JadwalUserController::class, 'index'])->name('mitra_jadwal');
     Route::get('/mitra-user', [LeaderController::class, 'indexUser'])->name('mitra_user');
 });

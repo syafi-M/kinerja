@@ -18,9 +18,15 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(Divisi::class);
+            $table->foreignIdFor(PekerjaanCp::class);
             $table->foreignIdFor(Kerjasama::class);
             $table->string('name');
             $table->string('type_check');
+            $table->string('img');
+            $table->string('deskripsi');
+            $table->string('approve_status');
+            $table->string('latitude_longitude');
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

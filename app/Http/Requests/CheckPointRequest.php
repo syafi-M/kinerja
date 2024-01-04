@@ -29,7 +29,8 @@ class CheckPointRequest extends FormRequest
             'img' => 'required|image|mimes:png,jpg,svg,gif,jpeg',
             'deskripsi' => 'required',
             'latitude' => 'required',
-            'longtitude' => 'required'
+            'longtitude' => 'required',
+            'note' => 'nullable'
         ];
     }
 }

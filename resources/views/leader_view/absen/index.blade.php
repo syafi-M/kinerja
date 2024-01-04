@@ -35,14 +35,19 @@
                 <div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-10">
                     <table id="searchTable" class="table table-xs table-zebra sm:table-md text-xs bg-slate-50 font-semibold sm:text-md ">
                         <thead>
-							<tr >
+							<tr class="text-center">
 								<th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">#</th>
-								<th class="p-1 py-2 bg-slate-300">Foto</th>
-                                <th class="p-1 py-2 bg-slate-300">Name</th>
+								<th class="p-1 py-2 bg-slate-300" style="padding-left: 2rem; padding-right: 2rem;">Foto</th>
+                                <th class="p-1 py-2 bg-slate-300">Nama</th>
 								<th class="p-1 py-2 bg-slate-300">Shift</th>
-								<th class="p-1 py-2 px-4 bg-slate-300">Tanggal</th>
+								<th class="p-1 py-2 bg-slate-300" style="padding-left: 1.5rem; padding-right: 1.5rem;">Tanggal</th>
 								<th class="p-1 py-2 bg-slate-300 px-10">Masuk - pulang</th>
-								<th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Keterangan</th>
+								@if(Auth::user()->devisi_id == 8)
+								    <th class="p-1 py-2 bg-slate-300">Keterangan</th>
+								    <th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Lokasi Absen</th>
+								@else
+								    <th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Keterangan</th>
+								@endif
 							</tr>
 						</thead>
                         <tbody>
@@ -57,7 +62,7 @@
 										<x-no-img />
 									</td>
 								@elseif(Storage::disk('public')->exists('images/' . $i->image))
-									<td><img class="lazy lazy-image" loading="lazy" src="{{ asset('storage/images/' . $i->image) }}" data-src="{{ asset('storage/images/' . $i->image) }}" alt="" srcset="" width="120px"></td>
+									<td><img  class="lazy lazy-image" loading="lazy" src="{{ asset('storage/images/' . $i->image) }}" data-src="{{ asset('storage/images/' . $i->image) }}" alt="" srcset="" width="120px"></td>
 								@else
 								    <td>
 										<x-no-img />
@@ -65,10 +70,19 @@
 								@endif
                                 <td class="p-1  break-words whitespace-pre-wrap">{{ $i->user->nama_lengkap }}</td>
                                 <td class="p-1 ">{{ $i->shift->shift_name }}</td>
-                                <td class="p-1 ">{{ $i->tanggal_absen }}</td>
+                                <td class="p-1 text-center"><p>{{ $i->tanggal_absen }}</p></td>
                                 <td class="p-1 ">
                                     <span class="flex flex-col justify-center text-center">
-                                        <span>{{ $i->absensi_type_masuk }}</span>
+                                        @php
+                                            $khus = Carbon\Carbon::createFromFormat('H:i:s', $i->created_at->format('H:i:s'));
+                                            $khusKurang = $khus->copy()->subMinutes(31)->subSeconds(59);
+                                        @endphp
+                                        
+                                        @if($i->user->kerjasama_id == 1 && $i->absensi_type_masuk >= '07:30:00')
+                                            <span>{{ $khusKurang->format('H:i:s') }}</span>
+                                        @else
+                                            <span>{{ $i->absensi_type_masuk }}</span>
+                                        @endif
                                         <span> - </span>
                                         @if($i->absensi_type_pulang == null)
                                             <span class="text-red-500 font-semibold capitalize">kosong</span>
@@ -79,6 +93,20 @@
                                         @endif
                                     </span>
                                 </td>
+                                @if(Auth::user()->devisi_id == 8)
+                                    <td>
+                                        @if ($i->keterangan == 'masuk')
+                                        <span class=" badge badge-success gap-2 overflow-hidden">{{ $i->keterangan }}</span> 
+                                        @elseif($i->keterangan == 'telat')
+                                        <span class="badge badge-error gap-2 overflow-hidden">{{ $i->keterangan }}</span>
+                                        @else
+                                        <span class="badge badge-warning gap-2 overflow-hidden">{{ $i->keterangan }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="overflow-hidden">
+                                        <a href="{{ route('mitra-lihatMap', $i->id) }}" class="btn btn-sm btn-info text-xs overflow-hidden">Lihat Koordinat</a>
+                                    </td>
+                                @else
                                 <td>
                                     @if ($i->keterangan == 'masuk')
                                     <span class=" badge badge-success gap-2 overflow-hidden">{{ $i->keterangan }}</span> 
@@ -88,6 +116,7 @@
                                     <span class="badge badge-warning gap-2 overflow-hidden">{{ $i->keterangan }}</span>
                                     @endif
                                 </td>
+                                @endif
                             </tr>
                             @empty
                                 <tr class="text-center">

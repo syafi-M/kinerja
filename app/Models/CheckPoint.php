@@ -18,7 +18,8 @@ class CheckPoint extends Model
         'deskripsi',
         'approve_status',
         'latitude',
-        'longtitude'
+        'longtitude',
+        'note'
     ];
 
     public function User()

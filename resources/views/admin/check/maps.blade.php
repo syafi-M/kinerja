@@ -39,12 +39,61 @@
         <div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
             <main>
                 <div class="px-5 py-5">
-                    <p class="p-2 rounded-full bg-white text-center mx-10 my-5 font-semibold">Lokasi Pembuatan CP {{ $cex->pekerjaancp->name }}</p>
-                    @if($cex->latitude && $cex->longtitude)
-                        <div id="map" class="rounded-lg"></div>
-                    @else
-                        <div class="rounded-lg bg-white flex items-center justify-center font-semibold" style="height: 240px;"><span>~ Tidak Ada Koordinat ~</span></div>
-                    @endif
+                    <div class="p-2 rounded-lg bg-white text-center">
+                        <p class=" mx-10 my-5 font-semibold">Lokasi Pembuatan CP {{ $cex->pekerjaancp ? $cex->pekerjaancp->name : "" }}</p>
+                        @if($cex->latitude && $cex->longtitude)
+                            <div id="map" class="rounded-lg" style="height: 140px;"></div>
+                        @else
+                            <div class="rounded-lg bg-white flex items-center justify-center font-semibold" style="height: 240px;"><span>~ Tidak Ada Koordinat ~</span></div>
+                        @endif
+                        <span class="flex flex-col sm:hidden">
+                            
+                            <p class=" mx-10 my-5 font-semibold">Bukti</p>
+                            <div class="flex justify-center items-center">
+                                @if ($cex->img == 'no-image.jpg')
+                                    <x-no-img />
+                                @elseif(Storage::disk('public')->exists('images/' . $cex->img))
+                                    <img class="lazy lazy-image" loading="lazy" src="" alt="" srcset="{{ asset('storage/images/' . $cex->img) }}" width="90px">
+                                @else
+                                    <x-no-img />
+                                @endif
+                            </div>
+                            <p class=" mx-10 my-5 font-semibold text-xs">{{ $cex->deskripsi }}</p>
+                            <div>
+                                <span class="badge badge-info px-2 text-xs text-white overflow-hidden">{{ $cex->type_check }}</span>
+                            </div>
+                            <div class="flex justify-center items-center">
+                                @if($cex->approve_status == "proccess")
+                                    <span class="badge bg-amber-500 px-2 text-xs text-white overflow-hidden">{{ $cex->approve_status }}</span> 
+                                @elseif($cex->approve_status == "accept")
+                                    <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $cex->approve_status }}</span> 
+                                @else
+                                    <span class="badge bg-red-500 px-2 text-xs text-white overflow-hidden">{{ $cex->approve_status }}</span> 
+                                @endif
+                            </div>
+                            
+                            <div class="mt-5">
+                                @if ($cex->approve_status == 'proccess')
+                                    <div class="flex justify-center gap-1 items-center text-center">
+                                        <div>
+                                            <button class="btn btn-success btn-xs rounded-btn flex items-center" onclick="approveRequest('{{ route('direksi.approveCP', $cex->id) }}', 'accept')">
+                                                <i class="ri-check-double-line"></i>
+                                                <p>accept</p>
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-error btn-xs rounded-btn flex items-center" onclick="approveRequest('{{ route('direksi.approveCP', $cex->id) }}', 'denied')">
+                                                <i class="ri-close-line"></i>
+                                                <p>denied</p>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- Your hidden form code --}}
+                                @endif
+                            </div>
+                        </span>
+                    </div>
                     <div class="flex justify-center gap-2 sm:justify-end mx-10 my-5">
                         @if(Auth::user()->role_id == 2)
                             <a href="{{ route('admin.cp.show', $cex->user_id) }}" class="btn btn-error">Kembali</a>
@@ -62,6 +111,29 @@
 
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        function approveRequest(route, status) {
+            $.ajax({
+                url: route,
+                type: 'POST',
+                data: {
+                    '_token': $('meta[name="csrf-token"]').attr('content'),
+                    '_method': 'PATCH',
+                    'approve_status': status
+                },
+                success: function (response) {
+                    // Handle success, e.g., update UI
+                    console.log(response);
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    // Handle error, e.g., show error message
+                    console.error(error);
+                }
+            });
+        }
+    </script>
     <script>
         var lat = document.getElementById("data").getAttribute('data-latitude');
         var long = document.getElementById("data").getAttribute('data-longtitude');
@@ -74,7 +146,7 @@
 
         function showPosition(position) {
 
-            var map = L.map('map').setView([lat, long], 17); // 10 adalah zoom level
+            var map = L.map('map').setView([lat, long], 16); // 10 adalah zoom level
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'

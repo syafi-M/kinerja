@@ -494,6 +494,8 @@ class AbsensiController extends Controller
             //This diferent but same action to update data   
             }elseif($absensi && Auth::user()->kerjasama_id != 1){
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
         
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
@@ -689,10 +691,11 @@ class AbsensiController extends Controller
         
         $countTe = count($telat);        
         $contAb = count($absenTiga);
+        $mon = Carbon::now()->month;
 
         $client = new HTTP();
         // Specify the API endpoint you want to fetch data from
-        $apiEndpoint = 'https://api-harilibur.vercel.app/api?month=12';
+        $apiEndpoint = 'https://api-harilibur.vercel.app/api?month='. $mon;
         // Make an HTTP GET request to the API
         $response = $client->get($apiEndpoint);
         // Decode the JSON response
@@ -787,5 +790,9 @@ class AbsensiController extends Controller
          $meters = $earthRadius * $c;
  
          return compact('meters');
+    }
+    public function showLocation($id){
+        $absen = Absensi::findOrFail($id);
+        return view('leader_view.absen.maps', compact('absen'));
     }
 }

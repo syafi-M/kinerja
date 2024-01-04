@@ -54,6 +54,12 @@ class MainController extends Controller
         $laporan = Laporan::where('client_id', $kerjasama)->paginate(30);
         return view('leader_view/laporan/index', compact('laporan'));
     }
+    public function showLaporan($id)
+    {
+        $kerjasama = Auth::user()->kerjasama->client_id;
+        $laporan = Laporan::findOrfail($id);
+        return view('leader_view/laporan/show', compact('laporan'));
+    }
 
     public function indexUser(Request $request)
     {

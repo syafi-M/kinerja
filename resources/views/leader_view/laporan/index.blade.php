@@ -12,7 +12,12 @@
 							<tr >
 								<th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">#</th>
                                 <th class="p-1 py-2 bg-slate-300 text-center" colspan="3">Foto Progres</th>
-								<th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Keterangan</th>
+                                @if(Auth::user()->divisi->jabatan->code_jabatan == 'MITRA')
+								    <th class="p-1 py-2 bg-slate-300">Keterangan</th>
+								    <th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Action</th>
+                                @else
+								    <th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Keterangan</th>
+                                @endif
 							</tr>
 						</thead>
                         <tbody>
@@ -24,43 +29,51 @@
                                 <td class="p-1">{{ $n++ }}</td>
                                 @if ($i->image1 == 'no-image.jpg')
                                 <td>
-                                    <x-no-img />
+                                    <x-no-img style="width: 90px;"/>
                                 </td>
                                 @elseif (Storage::disk('public')->exists('images/' . $i->image1))
                                     <td><img src="{{ asset('storage/images/' . $i->image1) }}" alt="{{ asset('storage/images/' . $i->image1) }}" srcset="{{ asset('storage/images/' . $i->image1) }}" width="90px" class="rounded"></td>
                                 @else
                                  <td>
-                                    <x-no-img />
+                                    <x-no-img style="width: 90px;" />
                                  </td>
                                 @endif
                                 
                                 
                                 @if ($i->image2 == 'no-image.jpg')
                                 <td>
-                                    <x-no-img />
+                                    <x-no-img style="width: 90px;" />
                                 </td>
                                 @elseif (Storage::disk('public')->exists('images/' . $i->image2))
                                     <td><img src="{{ asset('storage/images/' . $i->image2) }}" alt="{{ asset('storage/images/' . $i->image2) }}" srcset="{{ asset('storage/images/' . $i->image2) }}" width="90px" class="rounded"></td>
                                 @else
                                     <td>
-                                        <x-no-img />
+                                        <x-no-img style="width: 90px;" />
                                     </td>
                                 @endif
                                 
                                 
                                 @if ($i->image3 == 'no-image.jpg')
                                 <td>
-                                    <x-no-img />
+                                    <x-no-img style="width: 90px;" />
                                 </td>
                                 @elseif (Storage::disk('public')->exists('images/' . $i->image3))
                                     <td><img src="{{ asset('storage/images/' . $i->image3) }}" alt="{{ asset('storage/images/' . $i->image3) }}" srcset="{{ asset('storage/images/' . $i->image3) }}" width="90px" class="rounded"></td>
                                 @else
                                     <td>
-                                        <x-no-img />
+                                        <x-no-img style="width: 90px;" />
                                     </td>
                                 @endif
-                                
-                                <td>{{ $i->keterangan }} <br>~{{ $i->user->nama_lengkap }}</td>
+                                @if(Auth::user()->devisi_id == 8)
+                                    <td>{{ $i->keterangan }} <br>~{{ $i->user->nama_lengkap }}</td>
+                                    <td>
+                                        <div class="overflow-hidden ">
+                                            <a href="{{ route('mitra_laporan.show', $i->id) }}" class="text-sky-400 hover:text-sky-500 text-xl transition-all ease-linear .2s"><i class="ri-eye-fill"></i></a>
+                                        </div>
+                                    </td>
+                                @else
+                                    <td>{{ $i->keterangan }} <br>~{{ $i->user->nama_lengkap }}</td>
+                                @endif
                             </tr>
                             @empty
                                 <tr>

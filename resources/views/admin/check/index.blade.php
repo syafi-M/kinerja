@@ -62,13 +62,13 @@
                 </span>
             </div>
             <div class="flex justify-center gap-2 sm:justify-between mx-10">
-                <a href="{{ route('dashboard.index') }}" class="btn btn-error">Back</a>
+                <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
             </div>
                 <div class="flex justify-center overflow-x-auto sm:mx-10 mx-3 my-5">
-                    <table class="table table-fixed w-full overflow-x-auto table-xs bg-slate-50 table-zebra sm:table-md text-sm sm:text-md " id="searchTable">
+                    <table class="table table-fixed overflow-x-auto table-xs bg-slate-50 table-zebra sm:table-md text-sm sm:text-md " id="searchTable">
                         <thead>
 							<tr>
-								<th class="bg-slate-300 rounded-tl-2xl">#</th>
+								<th class="bg-slate-300 rounded-tl-2xl" style="width: 10px;">#</th>
 								<th class="bg-slate-300">Nama Lengkap</th>
 								<th class="bg-slate-300">Check Point</th>
 								@if(Auth::user()->role_id == 2)

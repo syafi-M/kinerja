@@ -16,14 +16,14 @@
 				<div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
 					<table class="table w-full table-xs bg-slate-50 table-zebra sm:table-md text-sm sm:text-md scale-90 md:scale-90">
 						<thead>
-							<tr>
+							<tr class="text-center">
 								<th class="bg-slate-300 rounded-tl-2xl">#</th>
 								<th class="bg-slate-300 px-7">Shift</th>
 								<th class="bg-slate-300 px-7">Tanggal</th>
 								<th class="bg-slate-300">Absen Masuk</th>
 								<th class="bg-slate-300">Absen Siang(dzuhur)</th>
 								<th class="bg-slate-300 px-5">Absen Keluar</th>
-								<th class="bg-slate-300 rounded-tr-2xl">Status</th>
+								<th class="bg-slate-300 rounded-tr-2xl" >Status</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -68,12 +68,50 @@
 									    {!!$arr->absensi_type_pulang == null ? '<span class="text-red-500 underline font-bold">Belum Absen Pulang</span>' : $arr->absensi_type_pulang  !!}
 									</td>
 									{{-- End Handle Absensi Type Pulang --}}
+									
+									@php
+									    $jAbs = Carbon\Carbon::createFromFormat('H:i:s', $arr->created_at->format('H:i:s'));
+                                        $jJad = Carbon\Carbon::createFromFormat('H:i', $arr->shift->jam_start)->format('H:i:s');
+                                    
+                                        // Convert $jJad to Carbon instance to perform the diff operation
+                                        $jJad = Carbon\Carbon::createFromFormat('H:i:s', $jJad);
+                                        if(Auth::user()->kerjasama_id == 1){
+                                            $jJad->addMinutes(31);
+                                            $jJad->addSeconds(59);
+                                        }
+                                    
+                                        // Check if both $jAbs and $jJad are Carbon instances before using diff()
+                                        if ($jAbs instanceof Carbon\Carbon && $jJad instanceof Carbon\Carbon) {
+                                            $jDiff = $jAbs->diff($jJad);
+                                            
+                                            $hours = $jDiff->h == 0 ? '' : ($jDiff->h < 10 ? $jDiff->h : (string)$jDiff->h) . ':';
+                                            $minutes = $jDiff->i == 0 ? '' : ($jDiff->i < 10 ? $jDiff->i : (string)$jDiff->i) . ':';
+                                            $seconds = $jDiff->s == 0 ? '' : ($jDiff->s < 10 ? $jDiff->s : (string)$jDiff->s) . '';
+                                            
+                                            $diffHasil = trim("$hours$minutes$seconds");
+                                            
+                                            if($jDiff->h != 0){
+                                            
+								                $diffHasil = $diffHasil." Jam";
+                                            }
+								            else if($jDiff->i != 0){
+								            
+								                $diffHasil = $diffHasil. " Menit";
+								            }
+								            else if($jDiff->s != 0){
+								                $diffHasil = $diffHasil." Detik";
+								            }
+                                        } else {
+                                            $diffHasil = '0';
+                                        }
+									@endphp
 
 									{{-- Handle Keterangan --}}
-									<td>
+									<td class="flex flex-col justify-center items-center" style="width: 160px;">
 									   {!! $arr->keterangan == 'masuk' ? '<div class="badge badge-success gap-2 overflow-hidden">' . $arr->keterangan . '</div>' 
 									   : ($arr->keterangan == 'izin' ? '<div class="badge badge-warning gap-2 overflow-hidden">' . $arr->keterangan . '</div>' 
-									   : '<div class="badge badge-error gap-2 overflow-hidden">' . $arr->keterangan . '</div>') !!}
+									   : '<div class="badge badge-error gap-2 overflow-hidden">' . '<p>' . $arr->keterangan . '</p>' . '<p>' . $diffHasil . '</p>' . '</div>') !!}
+									   
 									</td>
 								</tr>
 									{{-- EndHandle Keterangan --}}

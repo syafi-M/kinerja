@@ -348,7 +348,7 @@
 				
 				
 				
-				if (typeof shiftStart !== 'undefined' && shiftStart !== '') {
+				if (typeof shiftStart != 'undefined' && shiftStart != '') {
 					var startTimeParts = shiftStart.split(':');
 					var startHours = parseInt(startTimeParts[0]);
 					var startMinutes = parseInt(startTimeParts[1]);
@@ -369,30 +369,25 @@
         			
                 // kantor
                 var absenKantor = $('#absen-kantor').data('absen-kantor');
-				// console.log(absenKantor);
+				// console.log(startTimeParts, absenKantor);
+				
 				
 				// 	keterangan
-				if(absenKantor == 1)
-				{
-				    if(jadi < -31) {
-				        keterangan.val('telat');
-				        // console.log('telat', keterangan.val('telat'))
-				    }
-				    else {
-				        keterangan.val('masuk');
-				        // console.log('masuk', keterangan.val('masuk'))
-				    }
-				} else 
-				{
-				    if(jadi < 0) {
-				        keterangan.val('telat');
-				        // console.log('telat', keterangan.val('telat'))
-				    }
-				    else {
-				        keterangan.val('masuk');
-				        // console.log('masuk', keterangan.val('masuk'))
-				    }
-				}
+				if (absenKantor == 1) {
+                    if (jadi < -32) {
+                        // console.log('telat');
+                        $('#keterangan').val('telat');
+                    } else {
+                        // console.log('masuk');
+                        $('#keterangan').val('masuk');
+                    }
+                } else {
+                    if (jadi < 0) {
+                        $('#keterangan').val('telat');
+                    } else {
+                        $('#keterangan').val('masuk');
+                    }
+                }
 				
 				    
 				    if(dataUserId == 'MCS' || dataUserId == 'SPV'){
@@ -425,6 +420,7 @@
 			}
 
 			$('#shift_id').change(function() {
+			 //   console.log("shift id changed");
 				calculatedJamStart();
 			});
 			

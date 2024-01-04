@@ -1089,47 +1089,7 @@
 		    $('.modalNews').addClass('hidden');
 		})
 	</script>
-	<script>
-	    $(document).ready(function () {
-            // Set an interval to check the time every minute
-            setInterval(function () {
-                checkTime();
-            }, 60000); // 60000 milliseconds = 1 minute
-        });
-
-        function checkTime() {
-            var currentTime = new Date();
-            var hours = currentTime.getHours();
-            var minutes = currentTime.getMinutes();
-
-            // Check if the current time is 8:00
-            if (hours == 11 && minutes == 30) {
-               Push.create("Notification!", {
-                body: "Saatnya Absen Siang/Dzuhur",
-                icon: "/icon.png",
-                timeout: 4000,
-                vibrate: [200, 100],
-                onClick: function () {
-                  window.focus();
-                  this.close();
-                },
-              });
-            }else if(hours == 12 && minutes == 30)
-            {
-                Push.create("Notification!", {
-                body: "Saatnya Absen Siang/Dzuhur",
-                icon: "/icon.png",
-                timeout: 4000,
-                vibrate: [200, 100],
-                onClick: function () {
-                  window.focus();
-                  this.close();
-                },
-              });
-            }
-        }
-
-	</script>
+	
 </body>
 
 </html>
