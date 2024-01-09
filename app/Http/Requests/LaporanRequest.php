@@ -24,10 +24,10 @@ class LaporanRequest extends FormRequest
         return [
             'user_id' => 'required',
             'client_id' => 'required',
-            'image1' => 'required|mimes:png,jpg,jpeg|max:3072',
+            'image1' => 'nullable|mimes:png,jpg,jpeg|max:3072',
             'image2' => 'nullable|mimes:png,jpg,jpeg|max:3072',
-            'image3' => 'required|mimes:png,jpg,jpeg|max:3072',
-            'keterangan' => 'required'
+            'image3' => 'nullable|mimes:png,jpg,jpeg|max:3072',
+            'keterangan' => 'nullable'
         ];
     }
 }

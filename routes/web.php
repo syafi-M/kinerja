@@ -30,6 +30,7 @@ use App\Http\Controllers\SubareaController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\FinalisasiController;
+use App\Http\Controllers\QrCodeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,6 +60,8 @@ Route::get('tes-news-dw/{id}', [NewsController::class, 'NewsDownload'])->name('n
 
 // Only AUTH
 Route::middleware(['auth', 'apdt'])->group(function () {
+    Route::view('/scan', 'admin.qrcode.scan');
+    Route::get('/laporan/scan/{ruanganId}/{kerjasamaId}', [LaporanController::class, 'getcode'])->name('lapcode');
     Route::put('/data/{id}/updatePulang', [AbsensiController::class, 'updatePulang'])->name('data.update');
     Route::put('/data/{id}/updateSiang', [AbsensiController::class, 'updateSiang'])->name('data.update.siang');
     Route::post('/data/{id}/updateAbsenPulang', [AbsensiController::class, 'updateAbsenPulang'])->name('data-telat.update');
@@ -169,6 +172,9 @@ Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
 
 // ADIMIN
 Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
+    Route::resource('/admin/qrcode', QrCodeController::class);
+    Route::POST('/admin/qrcode/export', [QrCodeController::class, 'exportPDF'])->name('qrcode.export');    
+    
     Route::get('/admin/data-absen', [AdminController::class, 'absen'])->name('admin.absen');
     Route::get('/admin/export', [AdminController::class, 'export'])->name('admin.export');
     Route::get('/admin/exportV2', [AdminController::class, 'exportWith'])->name('admin.exportV2');
@@ -214,6 +220,8 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('admin-jadwal-new', [JadwalUserController::class, 'processDate'])->name('store.processDate.admin');
     Route::get('admin-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('jadwal_export.admin');
     Route::get('admin-cp-export', [CheckPointController::class, 'exportWith'])->name('cp_export.admin');
+    
+    Route::post('admin-ruangan-import', [RuanganController::class, 'import'])->name('ruangan.import');
     
     Route::get('/data-izin', [IzinController::class, 'indexAdmin'])->name('data-izin.admin');
     Route::patch('/absensi-izin/admin-accept/{id}', [IzinController::class, 'updateSuccess'])->name('admin_acc');

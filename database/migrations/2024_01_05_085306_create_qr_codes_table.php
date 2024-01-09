@@ -1,11 +1,10 @@
 <?php
 
-use App\Models\Client;
-use App\Models\Ruangan;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Kerjasama;
+use App\Models\Ruangan;
 
 return new class extends Migration
 {
@@ -14,15 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('laporans', function (Blueprint $table) {
+        Schema::create('qr_codes', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class);
-            $table->foreignIdFor(Client::class);
+            $table->text('qr_code');
             $table->foreignIdFor(Ruangan::class);
-            $table->string('image1')->nullable();
-            $table->string('image2')->nullable();
-            $table->string('image3')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->foreignIdFor(Kerjasama::class);
             $table->timestamps();
         });
     }
@@ -32,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('laporans');
+        Schema::dropIfExists('qr_codes');
     }
 };

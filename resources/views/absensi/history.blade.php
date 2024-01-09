@@ -70,51 +70,46 @@
 									{{-- End Handle Absensi Type Pulang --}}
 									
 									@php
-									    $jAbs = Carbon\Carbon::createFromFormat('H:i:s', $arr->created_at->format('H:i:s'));
-                                        $jJad = Carbon\Carbon::createFromFormat('H:i', $arr->shift->jam_start)->format('H:i:s');
-                                    
-                                        // Convert $jJad to Carbon instance to perform the diff operation
-                                        $jJad = Carbon\Carbon::createFromFormat('H:i:s', $jJad);
+									    $jam_abs = $arr->created_at->format('H:i:s');
+									    $jam_abslen = strlen($jam_abs);
+									    
+									    $jam_str = $arr->shift->jam_start;
+									    $jam_strlen = strlen($jam_str);
+									    
+									    $jAbs = Carbon\Carbon::createFromFormat($jam_abslen == 5 ? 'H:i' : 'H:i:s', $jam_abs);
+									    $jJad = Carbon\Carbon::createFromFormat($jam_strlen == 5 ? 'H:i' : 'H:i:s', $jam_str);
+									    
                                         if(Auth::user()->kerjasama_id == 1){
-                                            $jJad->addMinutes(31);
-                                            $jJad->addSeconds(59);
+                                            $jam_strlen == 5 ? $jJad->addMinutes(31): $jJad->addMinutes(31)->addSeconds(59);
                                         }
+                                        $jDiff = $jAbs->diff($jJad);
                                     
-                                        // Check if both $jAbs and $jJad are Carbon instances before using diff()
-                                        if ($jAbs instanceof Carbon\Carbon && $jJad instanceof Carbon\Carbon) {
-                                            $jDiff = $jAbs->diff($jJad);
-                                            
-                                            $hours = $jDiff->h == 0 ? '' : ($jDiff->h < 10 ? $jDiff->h : (string)$jDiff->h) . ':';
-                                            $minutes = $jDiff->i == 0 ? '' : ($jDiff->i < 10 ? $jDiff->i : (string)$jDiff->i) . ':';
-                                            $seconds = $jDiff->s == 0 ? '' : ($jDiff->s < 10 ? $jDiff->s : (string)$jDiff->s) . '';
-                                            
-                                            $diffHasil = trim("$hours$minutes$seconds");
-                                            
-                                            if($jDiff->h != 0){
-                                            
-								                $diffHasil = $diffHasil." Jam";
-                                            }
-								            else if($jDiff->i != 0){
-								            
-								                $diffHasil = $diffHasil. " Menit";
-								            }
-								            else if($jDiff->s != 0){
-								                $diffHasil = $diffHasil." Detik";
-								            }
-                                        } else {
-                                            $diffHasil = '0';
+                                        $diffHasil = '';
+                                        if ($jDiff->h > 0) {
+                                            $diffHasil .= $jDiff->format('%h Jam ');
                                         }
+                                        if ($jDiff->i > 0) {
+                                            $diffHasil .= $jDiff->format('%i Menit ');
+                                        }
+                                        if ($jDiff->s > 0 && $jDiff->h == 0 && $jDiff->i == 0) {
+                                            $diffHasil .= $jDiff->format('%s Detik');
+                                        }
+                                        
+                                        // Trim and display the result
+                                        $diffHasil = trim($diffHasil);
+                                       
 									@endphp
+									<span data-jad="{{ $jam_str }} {{ $jam_strlen }} {{ $jJad }}" data-abs="{{ $jam_abs }} {{ $jam_abslen }} {{ $jAbs }}" data-diff="{{ $diffHasil }}" id="test" class="hidden test"></span>
 
 									{{-- Handle Keterangan --}}
-									<td class="flex flex-col justify-center items-center" style="width: 160px;">
+									<td class="flex flex-col justify-center items-center" style="width: 180px;">
 									   {!! $arr->keterangan == 'masuk' ? '<div class="badge badge-success gap-2 overflow-hidden">' . $arr->keterangan . '</div>' 
 									   : ($arr->keterangan == 'izin' ? '<div class="badge badge-warning gap-2 overflow-hidden">' . $arr->keterangan . '</div>' 
-									   : '<div class="badge badge-error gap-2 overflow-hidden">' . '<p>' . $arr->keterangan . '</p>' . '<p>' . $diffHasil . '</p>' . '</div>') !!}
+									   : '<div class="badge badge-error gap-1 overflow-hidden">' . '<p>' . $arr->keterangan . '</p>' . '<p style="">' . $diffHasil . '</p>' . '</div>') !!}
 									   
 									</td>
 								</tr>
-									{{-- EndHandle Keterangan --}}
+									{{-- EndHandle Keterangan  . '<p>' . $diffHasil . '</p>' --}}
 							@endif
 							{{-- EndHandle Point Samping --}}
 						@endforeach
@@ -206,6 +201,11 @@
                 $('#closeButton').click(function() {
                     $('#modalShow').toggle(); // Show/hide content
                 });
+                // $('#test').data('jad');
+               // Assuming you have multiple elements with the ID 'test'
+                // $('[id^=test]').each(function() {
+                //     console.log("jadwal: ", $(this).data('jad'), "absen: ", $(this).data('abs'), "diff: ", $(this).data('diff'));
+                // });
             });
 		</script>
 </x-main-div>

@@ -15924,3 +15924,1973 @@
   2024-01-04 09:30:03 Running ['artisan' app:absen-update] .... 335,820ms DONE
   ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
 
+
+  2024-01-04 09:45:03 Running ['artisan' app:absen-update] .... 326,081ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 10:00:03 Running ['artisan' app:absen-update] .... 324,884ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 10:15:03 Running ['artisan' app:absen-update] .... 333,679ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 10:30:04 Running ['artisan' app:absen-update] .... 329,248ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 10:45:04 Running ['artisan' app:absen-update] .... 321,584ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 11:00:04 Running ['artisan' app:absen-update] .... 335,202ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 11:15:04 Running ['artisan' app:absen-update] .... 346,025ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 11:30:04 Running ['artisan' app:absen-update] .... 330,082ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 11:45:03 Running ['artisan' app:absen-update] .... 328,856ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 12:00:05 Running ['artisan' app:absen-update] .... 329,166ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 12:15:03 Running ['artisan' app:absen-update] .... 333,491ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 12:30:03 Running ['artisan' app:absen-update] .... 323,601ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 12:45:03 Running ['artisan' app:absen-update] .... 334,200ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 13:00:03 Running ['artisan' app:absen-update] .... 398,217ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 13:15:03 Running ['artisan' app:absen-update] .... 321,078ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 13:30:03 Running ['artisan' app:absen-update] .... 353,975ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 13:45:03 Running ['artisan' app:absen-update] .... 382,609ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 14:00:06 Running ['artisan' app:absen-update] .... 420,398ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 14:15:04 Running ['artisan' app:absen-update] .... 361,810ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 14:30:03 Running ['artisan' app:absen-update] .... 325,144ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 14:45:02 Running ['artisan' app:absen-update] .... 341,457ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 15:00:03 Running ['artisan' app:absen-update] .... 347,910ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 15:15:03 Running ['artisan' app:absen-update] .... 345,218ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 15:30:04 Running ['artisan' app:absen-update] .... 340,598ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 15:45:03 Running ['artisan' app:absen-update] .... 340,181ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 16:00:04 Running ['artisan' app:absen-update] .... 342,076ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 16:15:04 Running ['artisan' app:absen-update] .... 341,775ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 16:30:04 Running ['artisan' app:absen-update] .... 338,305ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 16:45:03 Running ['artisan' app:absen-update] .... 337,504ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 17:00:04 Running ['artisan' app:absen-update] .... 346,017ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 17:15:03 Running ['artisan' app:absen-update] .... 342,097ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 17:30:03 Running ['artisan' app:absen-update] .... 327,911ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 17:45:03 Running ['artisan' app:absen-update] .... 341,887ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 18:00:04 Running ['artisan' app:absen-update] .... 339,302ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 18:15:03 Running ['artisan' app:absen-update] .... 343,718ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 18:30:04 Running ['artisan' app:absen-update] .... 340,398ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 18:45:03 Running ['artisan' app:absen-update] .... 343,671ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 19:00:03 Running ['artisan' app:absen-update] .... 341,801ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 19:15:04 Running ['artisan' app:absen-update] .... 333,596ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 19:30:03 Running ['artisan' app:absen-update] .... 330,957ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 19:45:03 Running ['artisan' app:absen-update] .... 341,960ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 20:00:03 Running ['artisan' app:absen-update] .... 344,848ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 20:15:03 Running ['artisan' app:absen-update] .... 337,774ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 20:30:04 Running ['artisan' app:absen-update] .... 334,904ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 20:45:03 Running ['artisan' app:absen-update] .... 336,875ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 21:00:05 Running ['artisan' app:absen-update] .... 391,171ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 21:15:03 Running ['artisan' app:absen-update] .... 344,599ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 21:30:03 Running ['artisan' app:absen-update] .... 342,492ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 21:45:03 Running ['artisan' app:absen-update] .... 360,534ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 22:00:03 Running ['artisan' app:absen-update] .... 401,195ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 22:15:03 Running ['artisan' app:absen-update] .... 358,720ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 22:30:03 Running ['artisan' app:absen-update] .... 337,674ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 22:45:03 Running ['artisan' app:absen-update] .... 342,510ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 23:00:04 Running ['artisan' app:absen-update] .... 331,814ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 23:15:03 Running ['artisan' app:absen-update] .... 351,794ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 23:30:03 Running ['artisan' app:absen-update] .... 334,786ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-04 23:45:03 Running ['artisan' app:absen-update] .... 342,366ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 00:00:04 Running ['artisan' app:absen-update] .... 338,364ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 00:15:03 Running ['artisan' app:absen-update] .... 348,385ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 00:30:03 Running ['artisan' app:absen-update] .... 332,817ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 00:45:03 Running ['artisan' app:absen-update] .... 334,417ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 01:00:04 Running ['artisan' app:absen-update] .... 338,491ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 01:15:03 Running ['artisan' app:absen-update] .... 338,165ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 01:30:04 Running ['artisan' app:absen-update] .... 357,330ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 01:45:03 Running ['artisan' app:absen-update] .... 333,199ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 02:00:04 Running ['artisan' app:absen-update] .... 343,597ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 02:15:03 Running ['artisan' app:absen-update] .... 348,834ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 02:30:04 Running ['artisan' app:absen-update] .... 341,598ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 02:45:03 Running ['artisan' app:absen-update] .... 359,091ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 03:00:04 Running ['artisan' app:absen-update] .... 355,372ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 03:15:03 Running ['artisan' app:absen-update] .... 358,015ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 03:30:03 Running ['artisan' app:absen-update] .... 345,325ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 03:45:02 Running ['artisan' app:absen-update] .... 351,109ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 04:00:04 Running ['artisan' app:absen-update] .... 346,025ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 04:15:03 Running ['artisan' app:absen-update] .... 354,207ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 04:30:03 Running ['artisan' app:absen-update] .... 348,513ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 04:45:02 Running ['artisan' app:absen-update] .... 368,064ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 05:00:04 Running ['artisan' app:absen-update] .... 355,081ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 05:15:03 Running ['artisan' app:absen-update] .... 348,117ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 05:30:04 Running ['artisan' app:absen-update] .... 367,910ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 05:45:03 Running ['artisan' app:absen-update] .... 382,612ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 06:00:04 Running ['artisan' app:absen-update] .... 366,210ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 06:15:03 Running ['artisan' app:absen-update] .... 358,195ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 06:30:03 Running ['artisan' app:absen-update] .... 343,318ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 06:45:03 Running ['artisan' app:absen-update] .... 355,094ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 07:00:04 Running ['artisan' app:absen-update] .... 358,696ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 07:15:03 Running ['artisan' app:absen-update] .... 331,802ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 07:30:03 Running ['artisan' app:absen-update] .... 332,482ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 07:45:04 Running ['artisan' app:absen-update] .... 342,981ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 08:00:05 Running ['artisan' app:absen-update] .... 326,273ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 08:15:03 Running ['artisan' app:absen-update] .... 332,981ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 08:30:03 Running ['artisan' app:absen-update] .... 329,885ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 08:45:03 Running ['artisan' app:absen-update] .... 333,117ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 09:00:04 Running ['artisan' app:absen-update] .... 333,530ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 09:15:04 Running ['artisan' app:absen-update] .... 328,976ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 09:30:04 Running ['artisan' app:absen-update] .... 334,741ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 09:45:04 Running ['artisan' app:absen-update] .... 326,801ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 10:00:04 Running ['artisan' app:absen-update] .... 318,773ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 10:15:03 Running ['artisan' app:absen-update] .... 333,202ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 10:30:04 Running ['artisan' app:absen-update] .... 332,494ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 10:45:04 Running ['artisan' app:absen-update] .... 339,133ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 11:00:04 Running ['artisan' app:absen-update] .... 332,349ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 11:15:04 Running ['artisan' app:absen-update] .... 329,371ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 11:30:04 Running ['artisan' app:absen-update] .... 336,787ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 11:45:03 Running ['artisan' app:absen-update] .... 345,972ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 12:00:04 Running ['artisan' app:absen-update] .... 338,364ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 12:15:03 Running ['artisan' app:absen-update] .... 348,210ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 12:30:04 Running ['artisan' app:absen-update] .... 340,114ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 12:45:03 Running ['artisan' app:absen-update] .... 336,492ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 13:00:04 Running ['artisan' app:absen-update] .... 416,652ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 13:15:03 Running ['artisan' app:absen-update] .... 349,589ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 13:30:04 Running ['artisan' app:absen-update] .... 349,179ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 13:45:03 Running ['artisan' app:absen-update] .... 353,918ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 14:00:04 Running ['artisan' app:absen-update] .... 393,022ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 14:15:03 Running ['artisan' app:absen-update] .... 392,999ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 14:30:04 Running ['artisan' app:absen-update] .... 321,507ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 14:45:03 Running ['artisan' app:absen-update] .... 335,388ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 15:00:03 Running ['artisan' app:absen-update] .... 336,027ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 15:15:03 Running ['artisan' app:absen-update] .... 319,886ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 15:30:03 Running ['artisan' app:absen-update] .... 342,557ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 15:45:03 Running ['artisan' app:absen-update] .... 354,697ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 16:00:04 Running ['artisan' app:absen-update] .... 343,818ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 16:15:03 Running ['artisan' app:absen-update] .... 334,882ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 16:30:04 Running ['artisan' app:absen-update] .... 329,495ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 16:45:02 Running ['artisan' app:absen-update] .... 341,661ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 17:00:04 Running ['artisan' app:absen-update] .... 347,862ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 17:15:03 Running ['artisan' app:absen-update] .... 346,604ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 17:30:04 Running ['artisan' app:absen-update] .... 334,412ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 17:45:04 Running ['artisan' app:absen-update] .... 340,529ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 18:00:04 Running ['artisan' app:absen-update] .... 340,358ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 18:15:03 Running ['artisan' app:absen-update] .... 339,499ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 18:30:04 Running ['artisan' app:absen-update] .... 359,612ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 18:45:03 Running ['artisan' app:absen-update] .... 348,933ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 19:00:03 Running ['artisan' app:absen-update] .... 341,727ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 19:15:03 Running ['artisan' app:absen-update] .... 340,896ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 19:30:03 Running ['artisan' app:absen-update] .... 334,812ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 19:45:02 Running ['artisan' app:absen-update] .... 350,852ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 20:00:04 Running ['artisan' app:absen-update] .... 333,701ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 20:15:03 Running ['artisan' app:absen-update] .... 334,414ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 20:30:03 Running ['artisan' app:absen-update] .... 332,135ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 20:45:03 Running ['artisan' app:absen-update] .... 326,204ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 21:00:04 Running ['artisan' app:absen-update] .... 388,917ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 21:15:03 Running ['artisan' app:absen-update] .... 353,515ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 21:30:04 Running ['artisan' app:absen-update] .... 347,088ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 21:45:03 Running ['artisan' app:absen-update] .... 366,971ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 22:00:04 Running ['artisan' app:absen-update] .... 404,107ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 22:15:03 Running ['artisan' app:absen-update] .... 339,125ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 22:30:03 Running ['artisan' app:absen-update] .... 345,467ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 22:45:03 Running ['artisan' app:absen-update] .... 344,906ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 23:00:03 Running ['artisan' app:absen-update] .... 334,308ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 23:15:03 Running ['artisan' app:absen-update] .... 345,188ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 23:30:03 Running ['artisan' app:absen-update] .... 344,214ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-05 23:45:02 Running ['artisan' app:absen-update] .... 352,492ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 00:00:04 Running ['artisan' app:absen-update] .... 352,181ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 00:15:03 Running ['artisan' app:absen-update] .... 360,299ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 00:30:02 Running ['artisan' app:absen-update] .... 344,598ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 00:45:03 Running ['artisan' app:absen-update] .... 361,619ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 01:00:04 Running ['artisan' app:absen-update] .... 350,188ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 01:15:03 Running ['artisan' app:absen-update] .... 356,262ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 01:30:03 Running ['artisan' app:absen-update] .... 347,266ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 01:45:03 Running ['artisan' app:absen-update] .... 357,919ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 02:00:04 Running ['artisan' app:absen-update] .... 358,016ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 02:15:03 Running ['artisan' app:absen-update] .... 366,468ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 02:30:03 Running ['artisan' app:absen-update] .... 360,790ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 02:45:03 Running ['artisan' app:absen-update] .... 361,465ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 03:00:03 Running ['artisan' app:absen-update] .... 342,268ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 03:15:02 Running ['artisan' app:absen-update] .... 351,520ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 03:30:03 Running ['artisan' app:absen-update] .... 355,897ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 03:45:03 Running ['artisan' app:absen-update] .... 366,495ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 04:00:04 Running ['artisan' app:absen-update] .... 352,419ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 04:15:02 Running ['artisan' app:absen-update] .... 366,973ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 04:30:03 Running ['artisan' app:absen-update] .... 352,358ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 04:45:03 Running ['artisan' app:absen-update] .... 366,195ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 05:00:03 Running ['artisan' app:absen-update] .... 358,102ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 05:15:03 Running ['artisan' app:absen-update] .... 368,009ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 05:30:03 Running ['artisan' app:absen-update] .... 375,295ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 05:45:03 Running ['artisan' app:absen-update] .... 380,426ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 06:00:04 Running ['artisan' app:absen-update] .... 368,759ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 06:15:04 Running ['artisan' app:absen-update] .... 361,309ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 06:30:03 Running ['artisan' app:absen-update] .... 349,606ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 06:45:03 Running ['artisan' app:absen-update] .... 366,195ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 07:00:04 Running ['artisan' app:absen-update] .... 373,785ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 07:15:03 Running ['artisan' app:absen-update] .... 353,026ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 07:30:03 Running ['artisan' app:absen-update] .... 350,692ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 07:45:03 Running ['artisan' app:absen-update] .... 341,782ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 08:00:03 Running ['artisan' app:absen-update] .... 337,511ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 08:15:03 Running ['artisan' app:absen-update] .... 339,389ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 08:30:03 Running ['artisan' app:absen-update] .... 333,181ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 08:45:03 Running ['artisan' app:absen-update] .... 371,882ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 09:00:04 Running ['artisan' app:absen-update] .... 353,795ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 09:15:03 Running ['artisan' app:absen-update] .... 348,591ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 09:30:03 Running ['artisan' app:absen-update] .... 340,815ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 09:45:03 Running ['artisan' app:absen-update] .... 343,896ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 10:00:03 Running ['artisan' app:absen-update] .... 338,802ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 10:15:04 Running ['artisan' app:absen-update] .... 340,125ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 10:30:04 Running ['artisan' app:absen-update] .... 346,818ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 10:45:03 Running ['artisan' app:absen-update] .... 335,914ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 11:00:04 Running ['artisan' app:absen-update] .... 340,665ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 11:15:03 Running ['artisan' app:absen-update] .... 342,878ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 11:30:04 Running ['artisan' app:absen-update] .... 344,001ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 11:45:03 Running ['artisan' app:absen-update] .... 351,208ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 12:00:04 Running ['artisan' app:absen-update] .... 342,890ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 12:15:03 Running ['artisan' app:absen-update] .... 342,909ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 12:30:04 Running ['artisan' app:absen-update] .... 361,487ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 12:45:03 Running ['artisan' app:absen-update] .... 347,603ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 13:00:04 Running ['artisan' app:absen-update] .... 383,082ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 13:15:02 Running ['artisan' app:absen-update] .... 348,125ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 13:30:03 Running ['artisan' app:absen-update] .... 357,410ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 13:45:04 Running ['artisan' app:absen-update] .... 401,429ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 14:00:04 Running ['artisan' app:absen-update] .... 475,832ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 14:15:03 Running ['artisan' app:absen-update] .... 348,230ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 14:30:04 Running ['artisan' app:absen-update] .... 345,773ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 14:45:03 Running ['artisan' app:absen-update] .... 323,530ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 15:00:04 Running ['artisan' app:absen-update] .... 331,079ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 15:15:03 Running ['artisan' app:absen-update] .... 335,861ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 15:30:03 Running ['artisan' app:absen-update] .... 337,861ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 15:45:03 Running ['artisan' app:absen-update] .... 326,547ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 16:00:05 Running ['artisan' app:absen-update] .... 336,502ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 16:15:04 Running ['artisan' app:absen-update] .... 349,138ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 16:30:04 Running ['artisan' app:absen-update] .... 341,223ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 16:45:04 Running ['artisan' app:absen-update] .... 350,198ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 17:00:04 Running ['artisan' app:absen-update] .... 348,699ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 17:15:03 Running ['artisan' app:absen-update] .... 354,692ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 17:30:04 Running ['artisan' app:absen-update] .... 353,057ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 17:45:03 Running ['artisan' app:absen-update] .... 342,913ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 18:00:05 Running ['artisan' app:absen-update] .... 342,919ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 18:15:03 Running ['artisan' app:absen-update] .... 347,969ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 18:30:03 Running ['artisan' app:absen-update] .... 347,731ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 18:45:03 Running ['artisan' app:absen-update] .... 351,760ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 19:00:04 Running ['artisan' app:absen-update] .... 370,690ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 19:15:03 Running ['artisan' app:absen-update] .... 340,487ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 19:30:04 Running ['artisan' app:absen-update] .... 341,203ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 19:45:03 Running ['artisan' app:absen-update] .... 368,219ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 20:00:04 Running ['artisan' app:absen-update] .... 364,669ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 20:15:03 Running ['artisan' app:absen-update] .... 340,696ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 20:30:03 Running ['artisan' app:absen-update] .... 337,197ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 20:45:03 Running ['artisan' app:absen-update] .... 333,092ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 21:00:04 Running ['artisan' app:absen-update] .... 390,470ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 21:15:03 Running ['artisan' app:absen-update] .... 358,305ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 21:30:03 Running ['artisan' app:absen-update] .... 351,614ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 21:45:02 Running ['artisan' app:absen-update] .... 351,801ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 22:00:03 Running ['artisan' app:absen-update] .... 375,774ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 22:15:02 Running ['artisan' app:absen-update] .... 351,159ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 22:30:03 Running ['artisan' app:absen-update] .... 346,715ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 22:45:03 Running ['artisan' app:absen-update] .... 350,572ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 23:00:03 Running ['artisan' app:absen-update] .... 354,880ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 23:15:03 Running ['artisan' app:absen-update] .... 355,573ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 23:30:03 Running ['artisan' app:absen-update] .... 363,893ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-06 23:45:03 Running ['artisan' app:absen-update] .... 353,539ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 00:00:04 Running ['artisan' app:absen-update] .... 342,689ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 00:15:03 Running ['artisan' app:absen-update] .... 363,308ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 00:30:03 Running ['artisan' app:absen-update] .... 358,097ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 00:45:03 Running ['artisan' app:absen-update] .... 364,357ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 01:00:03 Running ['artisan' app:absen-update] .... 357,384ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 01:15:03 Running ['artisan' app:absen-update] .... 357,791ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 01:30:03 Running ['artisan' app:absen-update] .... 355,963ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 01:45:03 Running ['artisan' app:absen-update] .... 376,802ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 02:00:03 Running ['artisan' app:absen-update] .... 349,506ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 02:15:03 Running ['artisan' app:absen-update] .... 354,297ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 02:30:03 Running ['artisan' app:absen-update] .... 346,182ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 02:45:03 Running ['artisan' app:absen-update] .... 350,276ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 03:00:03 Running ['artisan' app:absen-update] .... 354,872ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 03:15:02 Running ['artisan' app:absen-update] .... 362,403ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 03:30:03 Running ['artisan' app:absen-update] .... 345,730ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 03:45:03 Running ['artisan' app:absen-update] .... 351,200ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 04:00:04 Running ['artisan' app:absen-update] .... 348,031ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 04:15:03 Running ['artisan' app:absen-update] .... 361,522ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 04:30:03 Running ['artisan' app:absen-update] .... 341,415ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 04:45:04 Running ['artisan' app:absen-update] .... 369,385ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 05:00:04 Running ['artisan' app:absen-update] .... 371,920ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 05:15:03 Running ['artisan' app:absen-update] .... 354,408ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 05:30:03 Running ['artisan' app:absen-update] .... 355,219ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 05:45:02 Running ['artisan' app:absen-update] .... 384,107ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 06:00:04 Running ['artisan' app:absen-update] .... 379,497ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 06:15:03 Running ['artisan' app:absen-update] .... 369,822ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 06:30:03 Running ['artisan' app:absen-update] .... 339,393ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 06:45:03 Running ['artisan' app:absen-update] .... 362,698ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 07:00:03 Running ['artisan' app:absen-update] .... 348,887ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 07:15:03 Running ['artisan' app:absen-update] .... 352,381ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 07:30:03 Running ['artisan' app:absen-update] .... 352,813ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 07:45:03 Running ['artisan' app:absen-update] .... 347,117ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 08:00:03 Running ['artisan' app:absen-update] .... 343,888ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 08:15:03 Running ['artisan' app:absen-update] .... 353,788ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 08:30:04 Running ['artisan' app:absen-update] .... 350,393ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 08:45:03 Running ['artisan' app:absen-update] .... 344,029ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 09:00:04 Running ['artisan' app:absen-update] .... 342,872ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 09:15:03 Running ['artisan' app:absen-update] .... 340,680ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 09:30:03 Running ['artisan' app:absen-update] .... 331,289ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 09:45:02 Running ['artisan' app:absen-update] .... 334,110ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 10:00:04 Running ['artisan' app:absen-update] .... 335,637ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 10:15:03 Running ['artisan' app:absen-update] .... 345,501ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 10:30:03 Running ['artisan' app:absen-update] .... 337,826ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 10:45:03 Running ['artisan' app:absen-update] .... 335,509ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 11:00:03 Running ['artisan' app:absen-update] .... 329,672ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 11:15:03 Running ['artisan' app:absen-update] .... 335,805ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 11:30:03 Running ['artisan' app:absen-update] .... 328,116ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 11:45:03 Running ['artisan' app:absen-update] .... 354,491ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 12:00:04 Running ['artisan' app:absen-update] .... 330,801ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 12:15:03 Running ['artisan' app:absen-update] .... 333,996ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 12:30:04 Running ['artisan' app:absen-update] .... 336,022ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 12:45:04 Running ['artisan' app:absen-update] .... 343,090ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 13:00:03 Running ['artisan' app:absen-update] .... 389,779ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 13:15:03 Running ['artisan' app:absen-update] .... 351,000ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 13:30:04 Running ['artisan' app:absen-update] .... 348,498ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 13:45:04 Running ['artisan' app:absen-update] .... 361,513ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 14:00:04 Running ['artisan' app:absen-update] .... 434,742ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 14:15:03 Running ['artisan' app:absen-update] .... 343,902ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 14:30:04 Running ['artisan' app:absen-update] .... 321,489ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 14:45:03 Running ['artisan' app:absen-update] .... 335,880ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 15:00:03 Running ['artisan' app:absen-update] .... 339,398ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 15:15:04 Running ['artisan' app:absen-update] .... 326,733ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 15:30:03 Running ['artisan' app:absen-update] .... 336,709ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 15:45:03 Running ['artisan' app:absen-update] .... 336,084ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 16:00:04 Running ['artisan' app:absen-update] .... 340,814ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 16:15:03 Running ['artisan' app:absen-update] .... 334,517ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 16:30:03 Running ['artisan' app:absen-update] .... 332,884ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 16:45:02 Running ['artisan' app:absen-update] .... 352,111ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 17:00:03 Running ['artisan' app:absen-update] .... 334,729ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 17:15:03 Running ['artisan' app:absen-update] .... 358,775ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 17:30:03 Running ['artisan' app:absen-update] .... 367,823ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 17:45:03 Running ['artisan' app:absen-update] .... 351,066ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 18:00:03 Running ['artisan' app:absen-update] .... 341,221ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 18:15:03 Running ['artisan' app:absen-update] .... 345,301ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 18:30:04 Running ['artisan' app:absen-update] .... 334,474ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 18:45:02 Running ['artisan' app:absen-update] .... 359,172ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 19:00:03 Running ['artisan' app:absen-update] .... 347,967ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 19:15:03 Running ['artisan' app:absen-update] .... 342,771ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 19:30:03 Running ['artisan' app:absen-update] .... 339,689ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 19:45:03 Running ['artisan' app:absen-update] .... 352,493ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 20:00:03 Running ['artisan' app:absen-update] .... 342,898ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 20:15:03 Running ['artisan' app:absen-update] .... 346,388ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 20:30:04 Running ['artisan' app:absen-update] .... 339,796ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 20:45:03 Running ['artisan' app:absen-update] .... 351,726ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 21:00:04 Running ['artisan' app:absen-update] .... 397,332ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 21:15:04 Running ['artisan' app:absen-update] .... 355,654ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 21:30:03 Running ['artisan' app:absen-update] .... 344,699ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 21:45:04 Running ['artisan' app:absen-update] .... 352,196ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 22:00:04 Running ['artisan' app:absen-update] .... 385,186ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 22:15:03 Running ['artisan' app:absen-update] .... 349,404ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 22:30:03 Running ['artisan' app:absen-update] .... 342,305ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 22:45:03 Running ['artisan' app:absen-update] .... 353,055ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 23:00:03 Running ['artisan' app:absen-update] .... 342,371ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 23:15:03 Running ['artisan' app:absen-update] .... 357,986ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 23:30:03 Running ['artisan' app:absen-update] .... 351,094ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-07 23:45:02 Running ['artisan' app:absen-update] .... 359,024ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 00:00:04 Running ['artisan' app:absen-update] .... 343,987ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 00:15:03 Running ['artisan' app:absen-update] .... 342,501ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 00:30:03 Running ['artisan' app:absen-update] .... 360,393ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 00:45:03 Running ['artisan' app:absen-update] .... 350,310ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 01:00:04 Running ['artisan' app:absen-update] .... 348,395ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 01:15:03 Running ['artisan' app:absen-update] .... 357,397ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 01:30:03 Running ['artisan' app:absen-update] .... 344,371ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 01:45:03 Running ['artisan' app:absen-update] .... 349,415ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 02:00:03 Running ['artisan' app:absen-update] .... 359,886ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 02:15:03 Running ['artisan' app:absen-update] .... 360,895ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 02:30:03 Running ['artisan' app:absen-update] .... 350,660ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 02:45:03 Running ['artisan' app:absen-update] .... 365,175ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 03:00:03 Running ['artisan' app:absen-update] .... 348,976ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 03:15:03 Running ['artisan' app:absen-update] .... 358,788ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 03:30:03 Running ['artisan' app:absen-update] .... 364,261ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 03:45:03 Running ['artisan' app:absen-update] .... 347,894ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 04:00:03 Running ['artisan' app:absen-update] .... 356,956ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 04:15:03 Running ['artisan' app:absen-update] .... 369,107ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 04:30:03 Running ['artisan' app:absen-update] .... 358,307ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 04:45:03 Running ['artisan' app:absen-update] .... 358,898ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 05:00:04 Running ['artisan' app:absen-update] .... 354,587ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 05:15:04 Running ['artisan' app:absen-update] .... 361,696ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 05:30:03 Running ['artisan' app:absen-update] .... 377,176ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 05:45:03 Running ['artisan' app:absen-update] .... 391,477ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 06:00:04 Running ['artisan' app:absen-update] .... 392,022ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 06:15:02 Running ['artisan' app:absen-update] .... 383,319ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 06:30:03 Running ['artisan' app:absen-update] .... 363,361ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 06:45:03 Running ['artisan' app:absen-update] .... 391,180ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 07:00:04 Running ['artisan' app:absen-update] .... 390,571ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 07:15:03 Running ['artisan' app:absen-update] .... 358,920ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 07:30:04 Running ['artisan' app:absen-update] .... 339,186ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 07:45:03 Running ['artisan' app:absen-update] .... 351,296ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 08:00:04 Running ['artisan' app:absen-update] .... 343,795ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 08:15:03 Running ['artisan' app:absen-update] .... 350,278ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 08:30:04 Running ['artisan' app:absen-update] .... 352,292ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 08:45:03 Running ['artisan' app:absen-update] .... 341,902ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 09:00:04 Running ['artisan' app:absen-update] .... 339,392ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 09:15:03 Running ['artisan' app:absen-update] .... 352,093ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 09:30:03 Running ['artisan' app:absen-update] .... 343,472ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 09:45:03 Running ['artisan' app:absen-update] .... 342,032ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 10:00:04 Running ['artisan' app:absen-update] .... 332,977ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 10:15:03 Running ['artisan' app:absen-update] .... 339,092ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 10:30:04 Running ['artisan' app:absen-update] .... 331,295ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 10:45:04 Running ['artisan' app:absen-update] .... 331,606ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 11:00:03 Running ['artisan' app:absen-update] .... 341,476ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 11:15:03 Running ['artisan' app:absen-update] .... 335,075ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 11:30:05 Running ['artisan' app:absen-update] .... 347,714ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 11:45:03 Running ['artisan' app:absen-update] .... 336,106ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 12:00:04 Running ['artisan' app:absen-update] .... 354,512ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 12:15:03 Running ['artisan' app:absen-update] .... 342,230ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 12:30:03 Running ['artisan' app:absen-update] .... 353,391ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 12:45:02 Running ['artisan' app:absen-update] .... 353,731ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 13:00:04 Running ['artisan' app:absen-update] .... 153,169ms FAIL
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 13:15:04 Running ['artisan' app:absen-update] .... 343,390ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 13:30:03 Running ['artisan' app:absen-update] .... 327,469ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 13:45:03 Running ['artisan' app:absen-update] .... 395,190ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 14:00:06 Running ['artisan' app:absen-update] .... 441,201ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 14:15:04 Running ['artisan' app:absen-update] .... 345,742ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 14:30:03 Running ['artisan' app:absen-update] .... 334,811ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 14:45:03 Running ['artisan' app:absen-update] .... 334,512ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 15:00:04 Running ['artisan' app:absen-update] .... 337,109ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 15:15:03 Running ['artisan' app:absen-update] .... 333,393ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 15:30:03 Running ['artisan' app:absen-update] .... 333,169ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 15:45:03 Running ['artisan' app:absen-update] .... 338,108ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 16:00:04 Running ['artisan' app:absen-update] .... 361,498ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 16:15:04 Running ['artisan' app:absen-update] .... 341,999ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 16:30:04 Running ['artisan' app:absen-update] .... 355,526ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 16:45:03 Running ['artisan' app:absen-update] .... 337,908ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 17:00:03 Running ['artisan' app:absen-update] .... 351,080ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 17:15:03 Running ['artisan' app:absen-update] .... 352,804ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 17:30:04 Running ['artisan' app:absen-update] .... 345,902ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 17:45:03 Running ['artisan' app:absen-update] .... 344,485ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 18:00:04 Running ['artisan' app:absen-update] .... 344,812ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 18:15:03 Running ['artisan' app:absen-update] .... 353,781ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 18:30:03 Running ['artisan' app:absen-update] .... 351,351ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 18:45:03 Running ['artisan' app:absen-update] .... 346,404ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 19:00:04 Running ['artisan' app:absen-update] .... 330,374ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 19:15:02 Running ['artisan' app:absen-update] .... 351,292ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 19:30:04 Running ['artisan' app:absen-update] .... 346,087ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 19:45:03 Running ['artisan' app:absen-update] .... 348,918ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 20:00:03 Running ['artisan' app:absen-update] .... 353,390ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 20:15:04 Running ['artisan' app:absen-update] .... 353,219ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 20:30:04 Running ['artisan' app:absen-update] .... 345,155ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 20:45:03 Running ['artisan' app:absen-update] .... 346,204ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 21:00:04 Running ['artisan' app:absen-update] .... 398,305ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 21:15:03 Running ['artisan' app:absen-update] .... 362,467ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 21:30:03 Running ['artisan' app:absen-update] .... 345,792ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 21:45:03 Running ['artisan' app:absen-update] .... 359,391ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 22:00:04 Running ['artisan' app:absen-update] .... 383,066ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 22:15:03 Running ['artisan' app:absen-update] .... 358,184ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 22:30:03 Running ['artisan' app:absen-update] .... 340,544ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 22:45:03 Running ['artisan' app:absen-update] .... 370,909ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 23:00:04 Running ['artisan' app:absen-update] .... 338,232ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 23:15:03 Running ['artisan' app:absen-update] .... 350,000ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 23:30:03 Running ['artisan' app:absen-update] .... 366,079ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-08 23:45:03 Running ['artisan' app:absen-update] .... 360,397ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 00:00:04 Running ['artisan' app:absen-update] .... 345,906ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 00:15:03 Running ['artisan' app:absen-update] .... 346,131ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 00:30:03 Running ['artisan' app:absen-update] .... 344,194ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 00:45:03 Running ['artisan' app:absen-update] .... 344,394ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 01:00:04 Running ['artisan' app:absen-update] .... 351,302ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 01:15:03 Running ['artisan' app:absen-update] .... 340,792ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 01:30:03 Running ['artisan' app:absen-update] .... 340,919ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 01:45:03 Running ['artisan' app:absen-update] .... 354,780ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 02:00:03 Running ['artisan' app:absen-update] .... 348,312ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 02:15:03 Running ['artisan' app:absen-update] .... 352,211ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 02:30:04 Running ['artisan' app:absen-update] .... 344,875ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 02:45:03 Running ['artisan' app:absen-update] .... 350,579ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 03:00:03 Running ['artisan' app:absen-update] .... 348,306ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 03:15:03 Running ['artisan' app:absen-update] .... 349,288ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 03:30:03 Running ['artisan' app:absen-update] .... 350,170ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 03:45:03 Running ['artisan' app:absen-update] .... 359,894ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 04:00:04 Running ['artisan' app:absen-update] .... 362,487ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 04:15:03 Running ['artisan' app:absen-update] .... 361,462ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 04:30:03 Running ['artisan' app:absen-update] .... 335,392ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 04:45:03 Running ['artisan' app:absen-update] .... 374,736ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 05:00:04 Running ['artisan' app:absen-update] .... 348,911ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 05:15:03 Running ['artisan' app:absen-update] .... 358,916ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 05:30:03 Running ['artisan' app:absen-update] .... 373,210ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 05:45:03 Running ['artisan' app:absen-update] .... 403,006ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 06:00:03 Running ['artisan' app:absen-update] .... 414,222ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 06:15:03 Running ['artisan' app:absen-update] .... 377,232ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 06:30:03 Running ['artisan' app:absen-update] .... 365,691ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 06:45:02 Running ['artisan' app:absen-update] .... 368,200ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 07:00:03 Running ['artisan' app:absen-update] .... 369,666ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 07:15:03 Running ['artisan' app:absen-update] .... 367,608ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 07:30:03 Running ['artisan' app:absen-update] .... 365,999ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 07:45:03 Running ['artisan' app:absen-update] .... 354,265ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 08:00:04 Running ['artisan' app:absen-update] .... 350,877ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 08:15:03 Running ['artisan' app:absen-update] .... 347,369ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 08:30:03 Running ['artisan' app:absen-update] .... 339,167ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 08:45:03 Running ['artisan' app:absen-update] .... 358,257ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 09:00:03 Running ['artisan' app:absen-update] .... 350,294ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 09:15:04 Running ['artisan' app:absen-update] .... 350,492ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 09:30:04 Running ['artisan' app:absen-update] .... 353,785ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 09:45:03 Running ['artisan' app:absen-update] .... 347,586ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 10:00:04 Running ['artisan' app:absen-update] .... 356,462ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 10:15:03 Running ['artisan' app:absen-update] .... 356,615ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 10:30:04 Running ['artisan' app:absen-update] 
+  2024-01-09 10:45:03 Running ['artisan' app:absen-update] 
+  2024-01-09 11:00:03 Running ['artisan' app:absen-update] .... 339,410ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 11:15:04 Running ['artisan' app:absen-update] .... 343,916ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 11:30:04 Running ['artisan' app:absen-update] .... 354,165ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 11:45:03 Running ['artisan' app:absen-update] .... 338,883ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 12:00:03 Running ['artisan' app:absen-update] .... 341,621ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 12:15:03 Running ['artisan' app:absen-update] .... 356,986ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 12:30:03 Running ['artisan' app:absen-update] .... 356,864ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 12:45:03 Running ['artisan' app:absen-update] .... 361,593ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+
+
+  2024-01-09 13:00:03 Running ['artisan' app:absen-update] .... 378,192ms DONE
+  ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
+

@@ -24,11 +24,12 @@
                         <thead>
                             <tr>
                                 <th class="bg-slate-300 rounded-tl-2xl">#</th>
-								<th class="bg-slate-300 px-7">Tanggal</th>
-								<th class="bg-slate-300 ">Check Point</th>
+								<th class="bg-slate-300  px-10">Bukti</th>
 								<th class="bg-slate-300 px-10">Pekerjaan</th>
 								<th class="bg-slate-300 px-10">Deskripsi</th>
-								<th class="bg-slate-300  px-10">Bukti</th>
+								<th class="bg-slate-300 ">Check Point</th>
+								<th class="bg-slate-300 px-7">Tanggal</th>
+								<th class="bg-slate-300 px-7">Status</th>
 								<th class="bg-slate-300 rounded-tr-2xl px-10">Action</th>
                             </tr>
                         </thead>
@@ -39,10 +40,6 @@
                             @forelse ($cek as $c)
                                 <tr>
                                     <td>{{ $no++ }}</td>
-                                    <td>{{ $c->created_at->format('Y-m-d') }}</td>
-                                    <td class="capitalize">{{ $c->type_check }}</td>
-                                        <td class="capitalize">{{ $c->pekerjaancp ? $c->pekerjaancp->name : "~ KOSONG ~" }}</td>
-                                    <td>{{ $c->deskripsi }}</td>
                                     @if ($c->img == 'no-image.jpg')
                                         <td>
                                             <x-no-img />
@@ -52,6 +49,27 @@
                                                 width="70px">
                                         </td>
                                     @endif
+                                    <td class="capitalize">{{ $c->pekerjaancp ? $c->pekerjaancp->name : "~ KOSONG ~" }}</td>
+                                    <td>{{ $c->deskripsi }}</td>
+                                    <td class="capitalize">{{ $c->type_check }}</td>
+                                    <td>{{ $c->created_at->format('Y-m-d') }}</td>
+                                    <td>
+                                        @if($c->approve_status == "accept")
+                                            <div class="flex flex-col justify-center items-center">
+                                                <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $c->approve_status }}</span> 
+                                                <p>Note: {{ $c->note }}</p>
+                                            </div>
+                                        @elseif($c->approve_status == "proccess")
+                                            <div class="flex flex-col justify-center items-center">
+                                                <span class="badge bg-amber-500 px-2 text-xs text-white overflow-hidden">{{ $c->approve_status }}</span> 
+                                            </div>
+                                        @else
+                                            <div class="flex flex-col justify-center items-center">
+                                                <span class="badge bg-red-500 px-2 text-xs text-white overflow-hidden">{{ $c->approve_status }}</span>
+                                                <p>Note: {{ $c->note }}</p>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="space-y-2">
                                         <x-btn-edit>{{ route('checkpoint-user.edit', $c->id) }}</x-btn-edit>
                                         <form action="{{ route('checkpoint-user.destroy', $c->id) }}" method="POST"> 

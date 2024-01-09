@@ -9,6 +9,14 @@
 				<input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..." required>
 			</div>
 		</div>
+		<div>
+    		<form action="{{ route('ruangan.import') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
+    		    @csrf
+    		    <label for="iCP" class="btn btn-success overflow-hidden" ><i class="ri-file-excel-2-line text-lg"></i><span id="importLabel" class="overflow-hidden">Import Ruangan</span></label>
+    		    <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
+    		    <button class="btn btn-primary hidden" type="submit" id="btnImport">Import</button>
+    		</form>
+		</div>
 
 		<div class="overflow-x-auto mx-10">
 			<table class="table table-zebra w-full bg-slate-50" id="searchTable">
@@ -63,5 +71,21 @@
 			</div>
 
 		</div>
-
+    <script>
+        $(document).ready(function () {
+            $('#iCP').on('change', function () {
+                var fileInput = $(this);
+                var importLabel = $('#importLabel');
+                var submitButton = $('#btnImport');
+    
+                if (fileInput.val()) {
+                    importLabel.text('Klik import');
+                    submitButton.removeClass('hidden');
+                } else {
+                    importLabel.text('Import Pekerjaan');
+                    submitButton.addClass('hidden');
+                }
+            });
+        });
+    </script>
 </x-app-layout>

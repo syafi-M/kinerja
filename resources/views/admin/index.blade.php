@@ -302,6 +302,8 @@
 					</div>
 				</div>
 				{{-- End Menu --}}
+				
+			
 				{{-- Menu news --}}
 				<div style="width: 17rem;">
 					<div class="flex justify-center px-2 menuNews">
@@ -334,6 +336,7 @@
 					</div>
 				</div>
 				{{-- End Menu --}}
+				
 				{{-- Menu area final --}}
 				 <div style="width: 17rem;">
 					<div class="flex justify-center px-2 menuChecklist">
@@ -349,6 +352,14 @@
 						</div>
 					</div>
 				</div> 
+				{{-- End Menu --}}
+				
+				{{-- Menu QR CODE --}}
+				<div style="width: 17rem;">
+					<div class="flex justify-center px-2 menuQR">
+						<a id="btnQR" class="btn btn-warning w-full mt-5 flex" href="{{ route('qrcode.index')}}"><i class="ri-qr-code-line text-lg"></i> DATA QR CODE</a>
+					</div>
+				</div>
 				{{-- End Menu --}}
 			</div>
 		</div>

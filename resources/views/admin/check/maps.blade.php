@@ -72,22 +72,31 @@
                                 @endif
                             </div>
                             
-                            <div class="mt-5">
+                            <div class="mt-5 flex flex-col gap-2 items-center justify-center mb-5">
                                 @if ($cex->approve_status == 'proccess')
-                                    <div class="flex justify-center gap-1 items-center text-center">
-                                        <div>
-                                            <button class="btn btn-success btn-xs rounded-btn flex items-center" onclick="approveRequest('{{ route('direksi.approveCP', $cex->id) }}', 'accept')">
+                                    <div class="flex flex-col gap-2 justify-center items-center mt-2">
+                                        <div class="flex flex-col w-full">
+                            		        <label class="font-semibold text-sm">Note</label>
+                            		        <textarea id="notes" value="" name="note" class="textarea textarea-bordered" placeholder="notes..."></textarea>
+                            		    </div>
+                                    </div>
+                                    
+                                    <div class="flex justify-center gap-1 items-center text-center overflow-hidden"  style="width: 14rem;">
+                                        <div class="overflow-hidden">
+                                            <button class="btn btn-success btn-xs rounded-btn flex items-center overflow-hidden" onclick="approveRequest('{{ route('direksi.approveCP', $cex->id) }}', 'accept')">
                                                 <i class="ri-check-double-line"></i>
-                                                <p>accept</p>
+                                                <p class="overflow-hidden">accept</p>
                                             </button>
                                         </div>
-                                        <div>
-                                            <button class="btn btn-error btn-xs rounded-btn flex items-center" onclick="approveRequest('{{ route('direksi.approveCP', $cex->id) }}', 'denied')">
+                                        <div class="overflow-hidden">
+                                            <button class="btn btn-error btn-xs rounded-btn flex items-center overflow-hidden" onclick="approveRequest('{{ route('direksi.approveCP', $cex->id) }}', 'denied')">
                                                 <i class="ri-close-line"></i>
-                                                <p>denied</p>
+                                                <p class="overflow-hidden">denied</p>
                                             </button>
                                         </div>
                                     </div>
+                                    
+                                    
                                 @else
                                     {{-- Your hidden form code --}}
                                 @endif
@@ -113,14 +122,25 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
+        $(document).ready(function() {
+            $('button[id^="note"]').on('click', function(event) {
+                event.preventDefault();
+                var id = $(this).attr('id').substring(4);
+                $('#notes' + id).toggle();
+                $('#note' + id).toggle();
+            });
+        });
         function approveRequest(route, status) {
+            var id = $('button[id^="note"]').attr('id').substring(4);
+            var inputValue = $('#notes').val();
             $.ajax({
                 url: route,
                 type: 'POST',
                 data: {
                     '_token': $('meta[name="csrf-token"]').attr('content'),
                     '_method': 'PATCH',
-                    'approve_status': status
+                    'approve_status': status,
+                    'note': inputValue,
                 },
                 success: function (response) {
                     // Handle success, e.g., update UI

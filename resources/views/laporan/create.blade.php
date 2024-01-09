@@ -19,18 +19,16 @@
 
 					<div class="mt-4">
 						<x-input-label for="ruangan" :value="__('Ruangan')" />
-						<select name="ruangan_id" id="ruangan_id" class="select select-bordered w-full mt-1">
-							<option selected disabled>~ Pilih Ruangan ~</option>
-							@foreach ($ruangan as $i)
-								<option name="ruangan_id" value="{{ $i->id }}" class="py-2">{{ $i->nama_ruangan }}</option>
-							@endforeach
-						</select>
+						<x-text-input id="ruangan_id" class=" mt-1 w-full hidden" type="text" name="ruangan_id"
+							value="{{ $ruangan->id }}" />
+						<x-text-input readonly class="block mt-1 w-full text-sm sm:text-base input input-bordered" disabled type="text"
+						value="{{ $ruangan->nama_ruangan }}" />
 						<x-input-error :messages="$errors->get('ruangan_id')" class="mt-2" />
 					</div>
 
 					{{-- belum --}}
 					<div class="my-5 p-1">
-						<x-input-label for="sebelum" :value="__('Sebelum')" />
+						<x-input-label for="sebelum" :value="__('Foto')" />
 						<div class="preview hidden w-full">
 							<span class="flex justify-center items-center">
 								<label for="img" class="p-1">
@@ -54,7 +52,7 @@
 
 					{{-- proses --}}
 					<div class="my-5 p-1">
-						<x-input-label for="proses" :value="__('Proses (opsional)')" />
+						<x-input-label for="proses" :value="__('Foto')" />
 						<div class="preview2 hidden w-full">
 							<span class="flex justify-center items-center">
 								<label for="img2" class="p-1">
@@ -77,7 +75,7 @@
 
 					{{-- sudah --}}
 					<div class="p-1">
-						<x-input-label for="sesudah" :value="__('Sesudah')" />
+						<x-input-label for="sesudah" :value="__('Foto')" />
 						<div class="preview3 hidden w-full">
 							<span class="flex justify-center items-center">
 								<label for="img3" class="p-1">
@@ -85,7 +83,7 @@
 										src="" alt="" srcset="" height="120px" width="120px">
 									
 								</label>
-							</span>
+							</span> 
 						</div>
 						<label for="img3"
 							class="w-full iImage3 flex flex-col items-center justify-center rounded-md bg-slate-300/70 ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s">

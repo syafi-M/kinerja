@@ -22,6 +22,12 @@ class LaporanController extends Controller
         $this->str = $request->input('str1');
         $this->ended = $request->input('end1');
     }
+    
+    public function getcode($ruanganId, $kerjasamaId)
+    {
+        // echo $ruanganId, $kerjasamaId;
+        return $this->create($ruanganId, $kerjasamaId);
+    }
 
     public function index()
     {
@@ -44,12 +50,10 @@ class LaporanController extends Controller
         }
 
     }
-    public function create()
+    public function create($ruanganId, $kerjasamaId)
     {
-        $user = Auth::user()->kerjasama_id;
-        $ruangan = Ruangan::where('kerjasama_id', $user)->get();
-        $laporan = Laporan::all();
-        return view('laporan.create', ['laporan' => $laporan, 'ruangan' => $ruangan]);
+        $ruangan = Ruangan::where('kerjasama_id', $kerjasamaId)->where('id', $ruanganId)->first();
+        return view('laporan.create', ['ruangan' => $ruangan]);
     }
 
     public function store(LaporanRequest $request)

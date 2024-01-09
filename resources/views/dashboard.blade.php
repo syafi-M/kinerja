@@ -320,7 +320,7 @@
 								<button class="uppercase font-bold text-sm">Laporan</button>
 							</div>
 							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="tambahLaporan">
-								<a href="{{ route('laporan.create') }}" class="btn btn-info w-full">Tambah Laporan</a>
+								<a href="{{ url('scan') }}" class="btn btn-info w-full" >Under Testing ( Tambah Laporan )</a>
 							</div>
 							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="cekLaporan">
 								<a href="{{ route('laporan.index') }}" class="btn btn-info w-full">Riwayat Laporan</a>
