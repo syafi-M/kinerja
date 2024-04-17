@@ -26,6 +26,7 @@
                     <th class="bg-slate-300">Shift</th>
                     <th class="bg-slate-300">Mitra</th>
                     <th class="bg-slate-300 ">alasan izin</th>
+                    <th class="bg-slate-300 ">Tanggal</th>
                     <th class="bg-slate-300">status</th>
                     <th class="bg-slate-300 rounded-tr-xl text-center">action</th>
                 </tr>
@@ -42,8 +43,9 @@
                     <td>{{ $no++ }}</td>
                     <td>{{ $i->user->nama_lengkap }}</td>
                     <td>{{ $i->shift->shift_name }}</td>
-                    <td>{{ $i->kerjasama->client->name }}</td>
+                    <td style="color: {{ $i->kerjasama ? 'inherit' : 'red' }}">{{ $i->kerjasama ? $i->kerjasama->client->name : "KOSONG"}}</td>
                     <td class="text-start line-clamp-2">{{ $i->alasan_izin }}</td>
+                    <td class="text-start line-clamp-2">{{ $i->created_at->format('Y-m-d') }}</td>
                     <td>
                         @if ($i->approve_status == 'process')
                             <span class="badge bg-amber-500 px-2 text-xs overflow-hidden font-semibold">{{ $i->approve_status }}</span>    

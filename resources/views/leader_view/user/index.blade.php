@@ -3,8 +3,19 @@
         <div class="py-10 sm:mx-10">
             <p class="text-center text-lg sm:text-2xl uppercase font-bold ">List Karyawan, {{ Auth::user()->kerjasama->client->name }}</p>
             <div class="flex flex-col items-center mx-2 my-2 sm:justify-center justify-start">
-                <div class=" flex items-center justify-center sm:justify-end w-full mt-5">
-                    <x-search />
+                <div class="flex items-center justify-center sm:justify-between gap-2 w-full mt-5">
+                    <div class="w-full">
+                        @if(Auth::user()->divisi->code_jabatan == "CO-CS")
+                		    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>
+                	    @elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
+                		    <a href="{{ route('danruView') }}" class="btn btn-error">Kembali</a>
+                	    @else
+                		    <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
+                	    @endif
+                    </div>
+                    <div class="mt-5 w-full">
+                        <x-search />
+                    </div>
                 </div>
                 <form action="{{ route('lead_user') }}" method="GET" class="flex flex-col justify-center gap-2 bg-slate-100 rounded px-5 py-3 mb-5 hidden">
                     <div>
@@ -54,7 +65,7 @@
         								@endif
                                         <td class="p-1 ">{{ $i->name }}</td>
                                         <td class="p-1  break-words whitespace-pre-wrap">{{ $i->nama_lengkap }}</td>
-                                        <td class="p-1  break-words whitespace-pre-wrap">{{ $i->divisi->jabatan->code_jabatan }}</td>
+                                        <td class="p-1  break-words whitespace-pre-wrap" style="width: 90px">{{ $i->divisi->jabatan->code_jabatan }}</td>
                                         <td class="p-1 break-words whitespace-pre-line">{{ $i->email}}</td>
                                         @if ($i->kerjasama == null)
         									<td>kosong</td>
@@ -78,15 +89,7 @@
                     <div id="pag-1" class="mt-5 mb-5">
                         {{ $user->links() }}
                     </div>
-                    <div class="flex justify-center sm:justify-end w-full">
-                        @if(Auth::user()->divisi->code_jabatan == "CO-CS")
-                		    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>
-                	    @elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
-                		    <a href="{{ route('danruView') }}" class="btn btn-error">Kembali</a>
-                	    @else
-                		    <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
-                	    @endif
-                    </div>
+                    
             </div>
         </div>
     </x-main-div>

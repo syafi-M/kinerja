@@ -22,6 +22,7 @@ class AdminMiddleware
             Auth::logout();
 
         }
+            
             return $next($request);
     }
 }

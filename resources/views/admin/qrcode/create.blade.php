@@ -18,12 +18,18 @@
                         <x-input-error :messages="$errors->get('kerjasama_id')" class="mt-2" />
                     </div>
                     
+                    @forelse($qr as $i)
+                        <span class="qr-item" data-id="{{ $i->id }}" data-kerjasama="{{ $i->kerjasama_id }}" data-ruangan="{{ $i->ruangan_id }}"></span>
+                    @empty
+                        <span></span>
+                    @endforelse
+                    
                     <div class="flex flex-col gap-2">
                         <x-input-label for="pekerjaan_id" :value="__('Pilih Ruangan')" class="text-white"/>
                         <select name="ruangan_id" id="ruangan_id" class="select-bordered select">
                             <option selected disabled value="0">~ Select Ruangan~</option>
                             @forelse ($ruangan as $i)
-                             <option name="ruangan_id" data-kerjasama_id="{{ $i->kerjasama_id }}" value="{{ $i->id }}">{{ $i->nama_ruangan }}</option>
+                             <option name="ruangan_id" data-kerjasama_id="{{ $i->kerjasama_id }}" data-ruang="{{ $i->id}}" value="{{ $i->id }}">{{ $i->nama_ruangan }}</option>
                             @empty
                                 <option>~ Ruangan Kosong~</option>
                             @endforelse
@@ -42,20 +48,43 @@
     
     <script>
         $(document).ready(function () {
-               $('#kerjasama_id').change(function () {
+            $('#kerjasama_id').change(function () {
                 const selectedKerjasama = $(this).val();
-                
+                var qr = {!! json_encode($qr) !!};
+                let anyOptionVisible = false;
+        
                 $('#ruangan_id option').each(function () {
-                    const ruanganKerjasamaId = $(this).data('kerjasama_id') || ""; // Handle undefined case
-                    if (ruanganKerjasamaId == selectedKerjasama || ruanganKerjasamaId == "") {
-                        $(this).show();
+                    $(this).show(); // Show all options initially
+                    
+                    if ($(this).data('kerjasama_id') == selectedKerjasama) {
+                        const ruanganId = parseInt($(this).data('ruang'));
+        
+                        // Check if the ruangan_id matches any of the options, then hide it
+                        qr.forEach(function (item) {
+                            if (ruanganId === parseInt(item.ruangan_id)) {
+                                $(this).hide();
+                                $('#ruangan_id').val('0');
+                                // console.log(ruanganId, parseInt(item.ruangan_id));
+                            }
+                        }.bind(this));
+                        
+                        if ($(this).is(':visible')) {
+                            anyOptionVisible = true; // Set the flag to true if any option is visible
+                        }
+                        
                     } else {
-                        $(this).hide();
+                        $(this).hide(); // Hide if the kerjasama_id doesn't match
                     }
                 });
-    
+                
+                if (!anyOptionVisible) {
+                    $('#ruangan_id').val('0');
+                    $('#ruangan_id option[value="0"]').show();
+                }
+        
                 $('#ruangan_id').val('0');
             });
         });
+
     </script>
 </x-app-layout>

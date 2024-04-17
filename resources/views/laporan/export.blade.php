@@ -25,7 +25,7 @@
             border: 1px solid black;
         }
         tr:nth-child(even) {
-            background-color: #cbd5e1;
+            /*background-color: #cbd5e1;*/
         }
         .page-break {
             page-break-before: always;
@@ -89,14 +89,15 @@
                     <tr>
                         <th rowspan="2">No.</th>
                         <th rowspan="2">Nama</th>
-                        <th colspan="3">Foto Progress Pekerjaan</th>
+                        <th colspan="5">Foto Progress Pekerjaan</th>
                         <th rowspan="2">Ruangan</th>
-                        <th rowspan="2">Keterangan</th>
+                        <th rowspan="2">Pekerjaan</th>
+                        <th rowspan="2">Nilai</th>
+                        <th rowspan="2">Tanggal</th>
                     </tr>
                     <tr>
-                        <th>Before</th>
-                        <th>Progress</th>
-                        <th>After</th>
+                        <th colspan="5">Progres Pengerjaan</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -105,37 +106,58 @@
                     @endphp
                     @forelse ($expPDF as $arr)
                     
-                        @if($arr->user->kerjasama_id == $mitra)
                             <tr>
-                                <td>{{ $no++ }}</td>
-                                <td style="text-align: center;">{{ $arr->user->nama_lengkap }}</td>
-                                <td class="image-cell">
-                                    <img src="{{ asset('storage/images/' . $arr->image1) }}" alt="Before Image" width="120px">
-                                </td>
-                                @if ($arr->image2)
-                                    <td class="image-cell">
-                                        <img src="{{ asset('storage/images/' . $arr->image2) }}" alt="Progress Image" width="120px">
+                                <td style=" font-size: 12px; text-align: center;">{{ $no++ }}.</td>
+                                <td style="text-align: center; font-size: 12px;">{{ $arr->user->nama_lengkap }}</td>
+                                    <td style="text-align: center;">
+                                        @if($arr->image1)
+                                            <img src="{{ asset('storage/images/' . $arr->image1) }}" style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto;" alt="Before Image" width="80px">
+                                        @else
+                                            <div style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto; width: 80px;"></div>
+                                        @endif
                                     </td>
-                                @else
-                                    <td class="image-cell">
-                                        <x-no-img />
+                                    <td style="text-align: center;">
+                                        @if ($arr->image2)
+                                            <img src="{{ asset('storage/images/' . $arr->image2) }}" style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto;" alt="Progress Image" width="80px">
+                                        @else
+                                            <div style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto; width: 80px;"></div>
+                                        @endif
                                     </td>
-                                @endif
-                                <td class="image-cell">
-                                    <img src="{{ asset('storage/images/' . $arr->image3) }}" alt="After Image" width="120px">
+                                    <td style="text-align: center;">
+                                        @if($arr->image3)
+                                            <img src="{{ asset('storage/images/' . $arr->image3) }}" style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto;" alt="After Image" width="80px">
+                                        @else
+                                            <div style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto; width: 80px;"></div>
+                                        @endif
+                                    </td>
+                                    <td style="text-align: center;">
+                                        @if($arr->image4)
+                                            <img src="{{ asset('storage/images/' . $arr->image4) }}" style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto;" alt="4 Image" width="80px">
+                                        @else
+                                            <div style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto; width: 80px;"></div>
+                                        @endif
+                                    </td>
+                                    <td style="text-align: center;">
+                                        @if($arr->image5)
+                                            <img src="{{ asset('storage/images/' . $arr->image5) }}" style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto;" alt="5 Image" width="80px">
+                                        @else
+                                            <div style="display: block; padding-left: 4px; padding-right: 4px; margin: 0 auto; width: 80px;"></div>
+                                        @endif
+                                    </td>
+                                <td style="text-align: center;font-size: 12px;">{{ $arr->ruangan?->nama_ruangan }}</td>
+                                <td style="font-size: 10px; text-align: center;">
+                                    @php
+                                        $array = json_decode($arr->pekerjaan);
+                                        $formattedString = $array != null ? implode(', ', $array) : "";
+                                    @endphp
+                                    {{$formattedString}}
                                 </td>
-                                <td style="text-align: center;">{{ $arr->ruangan->nama_ruangan }}</td>
-                                <td style="padding-left: 5px; border-right: 1px solid black;">{{ $arr->keterangan }}</td>
+                                <td style="font-size: 12px; text-align: center; width: 20px;">{{ $arr->nilai }}</td>
+                                <td style="border-right: 1px solid black; font-size: 12px; width: 90px; text-align: center;">{{ $arr->created_at->format('Y-m-d') }}</td>
                             </tr>
-                        @elseif($arr->user->kerjasama_id != $mitra)
-                        <tr>
-                            <td colspan="8" style="text-align: center">KOSONG</td>
-                        </tr>
-                        @break
-                        @endif
                     @empty
                         <tr>
-                            <td colspan="8" style="text-align: center">KOSONG</td>
+                            <td colspan="8" style="text-align: center">Data Belum Ada</td>
                         </tr>
                     @endforelse
                 </tbody>

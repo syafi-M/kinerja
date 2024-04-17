@@ -11,8 +11,8 @@
 	<link rel="preconnect" href="https://fonts.bunny.net">
 	<link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 	<script src="{{ URL::asset('src/js/jquery-min.js') }}"></script>
-	<script src="{{ URL::asset('src/js/push.min.js') }}"></script>
 	<script src="{{ URL::asset('src/js/serviceWorker.min.js') }}"></script>
+
 	<!-- Scripts -->
 	@vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -31,11 +31,16 @@
 	    @media (min-width: 640px) {
           #akuImage {
             max-width: 300px;
+            aspect-ratio: 1/1;
           }
         }
 	    
         .divImage {
             scroll-snap-type: x var(--tw-scroll-snap-strictness);
+        }
+        
+       .clicked {
+            transform: scale(0.95);
         }
         
 	</style>
@@ -47,13 +52,22 @@
 		@include('../layouts/navbar')
 		<div class="justify-start flex items-center">
 			@forelse ($absen as $arr)
-				@if (Auth::user()->id == $arr->user_id &&
-						$arr->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d') &&
-						$arr->absensi_type_pulang == null)
-					<div class="text-center rounded-tr-lg rounded-bl-lg mb-5 w-fit text-md sm:text-xl font-semibold py-2 px-4 shadow-md ml-5 inset-0" style="color: #DEDEDE; background-color: #8F0000">
-						<p>Kamu Belum Absen Pulang !!</p>
-					</div>
-				@endif
+			    @php
+			        $strShift = strtolower($arr->shift?->shift_name);
+			        $tanggal_absen = $arr->tanggal_absen;
+			    @endphp
+			    
+			    @if ((Auth::user()->id == $arr->user_id && $arr->absensi_type_pulang == null && stripos($strShift, "malam") !== false && Carbon\Carbon::parse($tanggal_absen)->subDay()->isYesterday()) || $arr->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d'))
+                    <div class="text-center rounded-tr-lg rounded-bl-lg mb-5 w-fit text-md sm:text-xl font-semibold py-2 px-4 shadow-md ml-5 inset-0" style="color: #DEDEDE; background-color: #8F0000">
+                        <p>Kamu Belum Absen Pulang !!</p>
+                    </div>
+                @else 
+                    @if (Auth::user()->id == $arr->user_id && $arr->absensi_type_pulang == null && $arr->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d'))
+                        <div class="text-center rounded-tr-lg rounded-bl-lg mb-5 w-fit text-md sm:text-xl font-semibold py-2 px-4 shadow-md ml-5 inset-0" style="color: #DEDEDE; background-color: #8F0000">
+                            <p>Kamu Belum Absen Pulang !!</p>
+                        </div>
+                    @endif
+                @endif
 			@empty
 			@endforelse
 
@@ -108,7 +122,7 @@
 		
 		<div class="flex justify-center items-center">
     		@if($sholat)
-    		    @if($sholat->subuh == "0" && Carbon\Carbon::now()->format('H:i') >= "03:30" && Carbon\Carbon::now()->format('H:i') <= '04:00')
+    		    @if($sholat->subuh === "0" && Carbon\Carbon::now()->format('H:i') >= "03:30" && Carbon\Carbon::now()->format('H:i') <= '04:00')
     			    <div
     					class="text-center rounded-tr-lg rounded-bl-lg mb-5 sm:w-fit text-md sm:text-xl font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0">
     					<p>Sedang memasuki waktu Subuh</p>
@@ -126,7 +140,7 @@
     						</div>
     					</form>
     				</div>
-    		    @elseif($sholat->dzuhur == "0" && Carbon\Carbon::now()->format('H:i') >= "11:20" && Carbon\Carbon::now()->format('H:i') <= '14:00')
+    		    @elseif($sholat->dzuhur === "0" && Carbon\Carbon::now()->format('H:i') >= "11:20" && Carbon\Carbon::now()->format('H:i') <= "14:00")
     		        <div
     					class="text-center rounded-tr-lg rounded-bl-lg mb-5 sm:w-fit text-md sm:text-xl font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0">
     					<p>Sedang memasuki waktu Dzuhur</p>
@@ -134,8 +148,8 @@
     						class="flex justify-center items-center  ">
     						@csrf
     						@method('PUT')
-    						<input type="text" id="lat" name="lat_user" value="" class="hidden"/>
-    						<input type="text" id="long" name="long_user" value="" class="hidden"/>
+    						<input type="text" id="lat" name="lat_user" value="" class="hidden lat"/>
+    						<input type="text" id="long" name="long_user" value="" class="hidden long"/>
     						<div class="flex justify-center flex-col ">
     							<div class="flex justify-center items-center">
     								<button type="submit"
@@ -146,7 +160,7 @@
     						</div>
     					</form>
     				</div>
-    		    @elseif($sholat->asar == "0" && Carbon\Carbon::now()->format('H:i') >= "15:00" && Carbon\Carbon::now()->format('H:i') <= '17:00')
+    		    @elseif($sholat->asar === "0" && Carbon\Carbon::now()->format('H:i') >= "15:00" && Carbon\Carbon::now()->format('H:i') <= '17:00')
     		        <div
     					class="text-center rounded-tr-lg rounded-bl-lg mb-5 sm:w-fit text-md sm:text-xl font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0">
     					<p>Sedang memasuki waktu Asar</p>
@@ -164,7 +178,7 @@
     						</div>
     					</form>
     				</div>
-    		    @elseif($sholat->magrib == "0" && Carbon\Carbon::now()->format('H:i') >= "17:20" && Carbon\Carbon::now()->format('H:i') <= '18:30')
+    		    @elseif($sholat->magrib === "0" && Carbon\Carbon::now()->format('H:i') >= "17:20" && Carbon\Carbon::now()->format('H:i') <= '18:30')
     		     <div
     					class="text-center rounded-tr-lg rounded-bl-lg mb-5 sm:w-fit text-md sm:text-xl font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0">
     					<p>Sedang memasuki waktu Magrib</p>
@@ -182,7 +196,7 @@
     						</div>
     					</form>
     				</div>
-    		    @elseif($sholat->isya == "0" && Carbon\Carbon::now()->format('H:i') >= "18:30" && Carbon\Carbon::now()->format('H:i') <= '21:00')
+    		    @elseif($sholat->isya === "0" && Carbon\Carbon::now()->format('H:i') >= "18:30" && Carbon\Carbon::now()->format('H:i') <= '21:00')
     		        <div
     					class="text-center rounded-tr-lg rounded-bl-lg mb-5 sm:w-fit text-md sm:text-xl font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0">
     					<p>Sedang memasuki waktu Isya</p>
@@ -244,18 +258,32 @@
 								</div>
 								{{-- menu menu dashboard absensi --}}
 								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngabsen">
-									@if (count($cekAbsen) == 1)
-										<a href="{{ route('absensi.edit', $cekAbsen[0]->id) }}" class="btn btn-info w-full" id="aAbsen">Ubah Kehadiran</a>
-										
+									@if(Auth::user()->kerjasama_id == 1)
+								        @if(Carbon\Carbon::now()->format('N') == 6 || Carbon\Carbon::now()->format('N') == 7)
+									        <a href="#" class="btn btn-info w-full" id="aAbsen">Tidak Ada Jadwal</a>
+								        @else
+									        <a href="{{ route('absensi.index') }}" class="btn btn-info w-full" id="aAbsen">Kehadiran</a>
+								        @endif
 									@else
-										<a href="{{ route('absensi.index') }}" class="btn btn-info w-full" id="aAbsen">Kehadiran</a>
-										
-									@endif
+									    <a href="{{ route('absensi.index') }}" class="btn btn-info w-full" id="aAbsen">Kehadiran</a>
+								    @endif
 								</div>
-								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngeLembur">
-									<a href="#" class="btn btn-info disabled w-full" disabled>Lembur ( MAINTENANCE )</a>
-									{{-- 	<a href="{{ route('lembur.index') }}" class="btn btn-info w-full">Lembur ( MAINTENANCE )</a>--}}
-								</div>
+								
+								
+								@if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS")
+    								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngabsenK">
+    								    <a href="{{ route('absensi-karyawan-co-cs.index') }}" class="btn btn-info w-full" id="aAbsen">Kehadiran karyawan</a>
+    								</div>
+								@elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
+    								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngabsenK">
+    								    <a href="{{ route('absensi-karyawan-co-scr.index') }}" class="btn btn-info w-full" id="aAbsen">Kehadiran karyawan</a>
+    								</div>
+								@endif
+								
+								{{--<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngeLembur">--}}
+								{{--	<a href="#" class="btn btn-info disabled w-full" disabled>Lembur ( MAINTENANCE )</a>--}}
+								{{--		<a href="{{ route('lembur.index') }}" class="btn btn-info w-full">Lembur ( MAINTENANCE )</a>--}}
+								{{--</div>--}}
 								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngIzin">
 									<a href="{{ route('izin.create') }}" class="btn btn-info w-full">Izin</a>
 								</div>
@@ -278,6 +306,17 @@
     									Kinerja harian
     								</button>
     							</div>
+    							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="isiIndex">
+    								<a href="{{ route('checkpoint-user.index') }}" class="btn btn-info w-full">Data Check Point</a>
+    							</div>
+    							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="tambahCP">
+    								<!--<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full" {{ \Carbon\Carbon::now()->isWeekend() ? '' : 'disabled' }}>Tambah Planning (sabtu - minggu )</a>-->
+    								<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full">Tambah Planning (sabtu - minggu )</a>
+    							</div>
+    							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="kirimCP">
+    								<!--<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full" {{ \Carbon\Carbon::now()->isWeekend() ? 'disabled' : '' }}>Kirim Bukti (senin - jum'at)</a>-->
+    								<a href="{{ route('editBukti-checkpoint-user', $cex ? $cex->id : '' ) }}" class="btn btn-info w-full {{ !$cex ? 'btn-disabled' : '' }}">Kirim Bukti (senin - jum'at)</a>
+    							</div>
     						@else
     						    <div 
     								class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s" disabled>
@@ -287,12 +326,6 @@
     								</button>
     							</div>
 						    @endif
-							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="isiIndex">
-								<a href="{{ route('checkpoint-user.index') }}" class="btn btn-info w-full">Data Check Point</a>
-							</div>
-							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="tambahCP">
-								<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full">Tambah Check Point</a>
-							</div>
 						</div>
 						<div class="flex flex-col items-center gap-2 justify-center pt-2 px-2 overflow-hidden">
 							<div id="btnRating"
@@ -320,21 +353,14 @@
 								<button class="uppercase font-bold text-sm">Laporan</button>
 							</div>
 							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="tambahLaporan">
-								<a href="{{ url('scan') }}" class="btn btn-info w-full" >Under Testing ( Tambah Laporan )</a>
+								<a href="{{ Auth::user()->divisi->jabatan->code_jabatan != 'OCS' || Auth::user()->divisi->jabatan->code_jabatan != "SCR" ? url('scan') : "#" }}" class="btn btn-info w-full" >Tambah Laporan</a>
 							</div>
 							<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="cekLaporan">
 								<a href="{{ route('laporan.index') }}" class="btn btn-info w-full">Riwayat Laporan</a>
 							</div>
 							
 						</div>
-						{{-- absensi --}}
-								<div id="btnAbsi"
-									class="mx-10 mt-5 flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
-									<i class="ri-todo-line text-xl"></i>
-									<a href="https://baca-alquran.sac-po.com" class="uppercase font-bold text-sm">
-										Baca Alqur'an
-									</a>
-								</div>
+						
 						@if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS")
     						<div class="w-full space-y-4 mt-5 sm:px-16 overflow-hidden flex items-center">
     								<a href="{{ route('leaderView') }}" class="btn btn-info w-full"><i
@@ -348,6 +374,7 @@
 						@endif
 					@else
 						@if (Auth::user()->divisi->jabatan->code_jabatan == 'MITRA')
+						        
 							{{-- menu menu mitra --}}
 							<div class="w-full space-y-4  sm:px-16 overflow-hidden flex items-center"id="Luser">
 								<a href="{{ route('mitra_user') }}" class="btn btn-info w-full"><i
@@ -422,6 +449,20 @@
 										class="ri-sparkling-line text-xl"></i>Rating</a>
 							</div>
 						@elseif(Auth::user()->divisi->jabatan->code_jabatan == 'DIREKSI')
+						        <div id="btnAbsensi"
+									class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
+									<i class="ri-todo-line text-xl"></i>
+									<button class="uppercase font-bold text-sm">
+										Attendance( Kehadiran )
+									</button>
+								</div>
+								{{-- menu menu dashboard absensi --}}
+								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngabsen">
+									<a href="{{ route('absensi.index') }}" class="btn w-full text-white" id="aAbsen" style="background-color: #D27817; border-width: 0px;">Kehadiran</a>
+								</div>
+								<div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="isiAbsen">
+									<a href="historyAbsensi" class="btn w-full text-white" style="background-color: #D27817; border-width: 0px;">Riwayat Kehadiran</a>
+								</div>
 						    {{-- menu menu direksi --}}
 							<div class="w-full space-y-4  sm:px-16 overflow-hidden flex items-center"id="Luser">
 								<a href="{{ route('direksi_user') }}" class="btn btn-info w-full"><i
@@ -464,31 +505,37 @@
 							</div>
 						@endif
 						@endif
+						{{-- quran --}}
+							<div id="btnAbsi"
+								class="mx-10 mt-5 flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
+								<i class="ri-todo-line text-xl"></i>
+								<a href="https://baca-alquran.sac-po.com" class="uppercase font-bold text-sm">
+									Baca Alqur'an
+								</a>
+							</div>
 						
 						
 
 						{{-- handle Pulang --}}
 						<div class="flex flex-col justify-center items-center sm:justify-end">
-							@foreach ($absen as $arr)
+							@foreach ($absenP as $arr)
 								@if (Auth::user()->id == $arr->user_id && $arr->absensi_type_pulang == null)
 									@php
 										$now = now();
-										$shiftEnd = \Carbon\Carbon::parse($arr->shift->jam_end);
+										$shiftEnd = \Carbon\Carbon::parse($arr->shift?->jam_end);
 										$timeDifference = $now->diffInMinutes($shiftEnd, false);
 									@endphp
 
 									<span class="hidden">
 										<span id="userId" data-user-id="{{ $arr->user_id }}" data-auth-user="{{ Auth::user()->id }}"></span>
-										<span id="endTime" endTimer="{{ $arr->shift->jam_end }}"></span>
-										@foreach ($shift as $shif)
-											@if ($shif->client_id == Auth::user()->kerjasama->client_id && $arr->shift->jam_start == $shif->jam_start) 
-												<span id="startTime" startTimer="{{ $shif->jam_start }}"></span>
-											@endif
-										@endforeach
+										<span id="endTime" endTimer="{{ $arr->shift?->jam_end }}"></span>
+										 
+												<span id="startTime" startTimer="{{ $arr->shift?->jam_start }}"></span>
+											
 									</span>
 								
 									<div>
-										<button id="modalPulangBtn"
+										<button id="modalPulangBtn" data-absen="{{ $arr }}"
 											class="bg-yellow-600 hidden justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 text-xl rounded-md transition all ease-out duration-100 mt-5 mr-0 sm:mr-2 uppercase items-center"><i
 												class="ri-run-line font-sans text-3xl"></i><span class="font-bold">Pulang</span>
 										</button>
@@ -508,17 +555,19 @@
 													<div class="flex flex-col gap-2">
 														<p class="text-center text-lg font-semibold">Apakah Anda Yakin Ingin Pulang Sekarang?</p>
 														<span id="labelWaktu"></span>
-														<span class="flex justify-center">
-															<span id="jam2" class="badge badge-info underline font-semibold text-slate-800 text-sm"></span>
-														</span>
+														@if(Auth::user()->name != "DIREKSI")
+    														<span class="flex justify-center">
+    															<span id="jam2" class="badge badge-info underline font-semibold text-slate-800 text-sm"></span>
+    														</span>
+														@endif
 													</div>
 													<div class="flex justify-center items-center">
 														<button type="submit"
 															class="bg-yellow-600 flex justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 text-xl rounded-md transition all ease-out duration-100 mt-5 mr-0 sm:mr-2 uppercase items-center"><i
 																class="ri-run-line font-sans text-3xl"></i><span class="font-bold">Pulang Sekarang</span>
 														</button>
-														<input id="lat" name="lat_user" value="" class="hidden" />
-														<input id="long" name="long_user" value="" class="hidden" />
+														<input id="lat" name="lat_user" value="" class="hidden lat" />
+														<input id="long" name="long_user" value="" class="hidden long" />
 														<div id="map" class="hidden"></div>
 													</div>
 												</div>
@@ -556,7 +605,8 @@
                                     <div
                                     	style="z-index: 9000;" class="fixed w-full flex justify-center items-center inset-0 bg-slate-500/10 backdrop-blur-sm transition-all duration-300 ease-in-out h-screen">
                                         <div class="flex justify-center items-center">
-                                        	<div class="bg-slate-200 inset-0 w-fit p-3 mx-10 my-10 rounded-md shadow">
+                                        	<div style="z-index: 9001;" class="bg-slate-200 inset-0 w-fit p-3 mx-10 my-10 rounded-md shadow relative">
+                                        	    <img src="{{ URL::asset('/logo/ketupat-2.png') }}" width="20%" style="z-index: 9000; position: absolute; top: 0px; left: 0px; transform: rotate(15deg);" />
                                         		<div class="flex justify-end mb-3">
                                         			<button class="btn btn-error scale-90 closeNews">&times;</button>
                                         		</div>
@@ -565,7 +615,7 @@
                                 					    $no = 1; 
                                 					@endphp
                                             		@forelse($hitungNews as $new)
-                                            		    <a id="slide{{ $no++ }}" class="carousel-item relative w-full"  href="{{ route('newsDownload', $new->id) }}">
+                                            		    <a id="slide{{ $no++ }}" class="carousel-item relative w-fit"  href="{{ route('newsDownload', $new->id) }}">
                                             		        <img class="akuImage" id="akuImage" src="{{asset('storage/images/'.$new->image)}}" data-src="{{asset('storage/images/'.$new->image)}}" alt="data-berita-image"/>
                                             		        
                                         		        </a>
@@ -608,8 +658,10 @@
 	<script>
 	document.addEventListener("DOMContentLoaded", function() {
 	    
-		var lat = document.getElementById('lat')
-		var long = document.getElementById('long')
+	   // console.log({!! json_encode(Auth::user()) !!});
+	    
+		var lat = $('.lat')
+		var long = $('.long')
         var labelMap = $('#labelMap')
         var tutor = $('#tutor')
         
@@ -626,10 +678,14 @@
     			labelMap.removeClass('hidden');
     			
     		}
+    		
 
 		function showPosition(position) {
 			lat.value = position.coords.latitude;
 			long.value = position.coords.longitude;
+			
+			$('.lat').val(lat.value);
+			$('.long').val(long.value);
 
 			var lati = "{{ $harLok->latitude }}"
 			var longi = "{{ $harLok->longtitude }}"
@@ -657,12 +713,13 @@
     		window.onload = function () {
                 showPosition(position);
             };
-            // console.log(lat.value, long.value, lati, longi, radi);
+            // console.log(lat.value, long.value, $('.lat').val(lat.value));
 		}
 	});
 	</script>
 	<script>
 	    $(document).ready(function() {
+	        
             var waktuIzin = $("#waktuIzin").data('waktu');
             if(waktuIzin){
     	        function adalahJamIzin(){
@@ -840,10 +897,18 @@
 			var iPulang = $('.iPulang');
 			var iAbsensi = $('.iAbsensi');
 
-			btnAbsensi.click(function() {
+			btnAbsensi.click(function(e) {
+			    
+			    $(this).addClass('clicked');
+
+                // Optionally, you can remove the 'clicked' class after a delay
+                setTimeout(function() {
+                    btnAbsensi.removeClass('clicked');
+                }, 100);
 				btnRating.toggle();
 				$('#isiAbsen').toggle();
 				$('#ngabsen').toggle();
+				$('#ngabsenK').toggle();
 				$('#ngeLembur').toggle();
 				$('#isiLembur').toggle();
 				$('#ngIzin').toggle();
@@ -851,16 +916,34 @@
 			});
 
 			btnRating.click(function() {
+			     $(this).addClass('clicked');
+
+                // Optionally, you can remove the 'clicked' class after a delay
+                setTimeout(function() {
+                    btnRating.removeClass('clicked');
+                }, 100);
 				$('#cekMe').toggle();
 				$('#cekRate').toggle();
 			});
 
 			$('#btnLaporan').click(function() {
+			     $(this).addClass('clicked');
+
+                // Optionally, you can remove the 'clicked' class after a delay
+                setTimeout(function() {
+                    $('#btnLaporan').removeClass('clicked');
+                }, 100);
 				$('#cekLaporan').toggle();
 				$('#tambahLaporan').toggle();
 			});
 
 			btnMitra.click(function() {
+			     $(this).addClass('clicked');
+
+                // Optionally, you can remove the 'clicked' class after a delay
+                setTimeout(function() {
+                    btnMitra.removeClass('clicked');
+                }, 100);
 				$('#Labsensi').toggle();
 				$('#Llaporan').toggle();
 				$('#Llembur').toggle();
@@ -871,8 +954,15 @@
 			
 
 			btnCP.click(function() {
+			     $(this).addClass('clicked');
+
+                // Optionally, you can remove the 'clicked' class after a delay
+                setTimeout(function() {
+                    btnCP.removeClass('clicked');
+                }, 100);
 				$('#isiIndex').toggle();
 				$('#tambahCP').toggle();
+				$('#kirimCP').toggle();
 			})
 
 			$('#btnShow').click(function() {
@@ -982,12 +1072,16 @@
 	</script>
 	<script>
 		var startTime = $('#startTime').attr('startTimer');
+		var njay = {!! json_encode(Auth::user()) !!};
 		window.onload = function() {
 			jam();
-			if(startTime){
+			startTime;
+			if(startTime || njay.name == "DIREKSI" ){
 			    jam2();
 			}
 		}
+		
+// 		jam2();
 
 		function jam() {
 			var e = document.getElementById('jam'),
@@ -1023,13 +1117,18 @@
 			var endTime = $('#endTime').attr('endTimer');
 			var btnPulang = $('#modalPulangBtn');
 			var labelWaktu = $('#labelWaktu');
-
-            var startTimeParts = startTime.split(':');
-			var startHours = parseInt(startTimeParts[0]);
-			var startMinutes = parseInt(startTimeParts[1]);
+			var dir = {!! json_encode(Auth::user()) !!};
 			
-			var startDiffMinutes = startHours * 60 + startMinutes;
-			var nowDiffMinutes = h2 * 60 + m2;
+// 			console.log(endTime);
+
+            if(dir.name != "DIREKSI"){
+                var startTimeParts = startTime.split(':');
+    			var startHours = parseInt(startTimeParts[0]);
+    			var startMinutes = parseInt(startTimeParts[1]);
+    			
+    			var startDiffMinutes = startHours * 60 + startMinutes;
+    			var nowDiffMinutes = h2 * 60 + m2;
+            }
 
 
 			var endTimeParts = endTime.split(':');
@@ -1050,22 +1149,33 @@
 			timeDiffStr += Math.abs(timeDiffHours) + ' jam ' + set(timeDiffMinutes) + ' menit ' + set(timeDiffSeconds) +
 				' detik';
 
-			$('#jam2').text(timeDiffStr);
+            if(dir.name != "DIREKSI"){
+			    $('#jam2').text(timeDiffStr);
+            }
 
 			if (jadiMenit <= 0) {
-				$('#jam2').text('~ Shift Anda Telah Selesai ~');
-				labelWaktu.text('');
+			    if(dir.name != "DIREKSI"){
+    				$('#jam2').text('~ Shift Anda Telah Selesai ~');
+    				labelWaktu.text('');
+			    }
 			} else {
-				$('#jam2').text(timeDiffStr);
-				labelWaktu.text('Shift Anda Masih');
-				labelWaktu.addClass('text-center');
+			    if(dir.name != "DIREKSI"){
+    				$('#jam2').text(timeDiffStr);
+    				labelWaktu.text('Shift Anda Masih');
+    				labelWaktu.addClass('text-center');
+			    }
 			}
+			
+			var scr = {!! json_encode(Auth::user()) !!};
+			var usName = {!! json_encode(Auth::user()->name) !!};
+// 			console.log(scr);
 
-			if (jadiMenit <= 120) {
+			if (jadiMenit <= 120 || usName == "DIREKSI") {
 				btnPulang.addClass('flex').removeClass('hidden');
-			} else {
+			}else {
 				btnPulang.addClass('hidden').removeClass('flex');
 			}
+// 			console.log(btnPulang.data('absen'), scr);
 			
 				$('#modalSiangBtn').click(function(){
 				    $('.modalSiang').removeClass('hidden')
@@ -1079,15 +1189,19 @@
     					.addClass('hidden')
     					.removeClass('flex justify-center items-center');
     			    });
-		}
+		};
 
 		function set(e2) {
 			return e2 < 10 ? '0' + e2 : e2;
-		}
+		};
 		
-		$(document).on('click', '.closeNews', function() {
-		    $('.modalNews').addClass('hidden');
-		})
+		$(document).ready(function() {
+    		$(document).on('click', '.closeNews', function() {
+    		    $('.modalNews').addClass('hidden');
+    		});
+		});
+		
+		
 	</script>
 	
 </body>

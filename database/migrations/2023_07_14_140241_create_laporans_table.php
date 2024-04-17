@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('image2')->nullable();
             $table->string('image3')->nullable();
             $table->string('keterangan')->nullable();
+            $table->string('pekerjaan')->nullable();
+            $table->string('nilai')->nullable();
             $table->timestamps();
         });
     }

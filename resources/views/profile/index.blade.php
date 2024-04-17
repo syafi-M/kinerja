@@ -47,6 +47,14 @@
 										<td class="break-words whitespace-pre-line">:{{ Auth::user()->email }}</td>
 									</tr>
 									<tr>
+										<td>NIK</td>
+										<td class="break-words whitespace-pre-line">:{{ \Illuminate\Support\Facades\Crypt::decryptString(Auth::user()->nik) }}</td>
+									</tr>
+									<tr>
+										<td>No. Hp</td>
+										<td class="break-words whitespace-pre-line">:{{ Auth::user()->no_hp }}</td>
+									</tr>
+									<tr>
 										<td>Jabatan</td>
 										@if (Auth::user()->divisi->jabatan == null)
 											<td>:Kosong</td>

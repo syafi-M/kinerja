@@ -24,7 +24,7 @@ class AbsensiRequest extends FormRequest
         return [
             'user_id'       => 'required',
             'kerjasama_id'  => 'required',
-            'shift_id'      => 'required',
+            'shift_id'      => 'nullable',
             'perlengkapan'  => 'required',
             'keterangan'    => 'required',
             'absensi_type_masuk'  => 'required',
@@ -43,6 +43,11 @@ class AbsensiRequest extends FormRequest
             'sig_long' => 'nullable',
             'plg_lat' => 'nullable',
             'plg_long' => 'nullable',
+            'masuk' => 'nullable',
+            'tukar' => 'nullable',
+            'lembur' => 'nullable',
+            'terus' => 'nullable',
+            'tukar_id' => 'nullable'
 
         ];
     }

@@ -22,16 +22,24 @@
 
 			@if (Route::has('login'))
 				@auth
-					<div class="flex justify-between flex-col gap-1">
-						<p class="font-semibold text-white text-sm line-clamp-1 break-words">{{ Auth::user()->nama_lengkap }}</p>
+					<div class="flex justify-evenly flex-row gap-1">
+					    <div>
+    						<p class="font-semibold text-white text-sm line-clamp-1 break-words">{{ Auth::user()->nama_lengkap }}</p>
+					    </div>
 					</div>
-				@else
+			@else
 					<div>
 					</div>
 				@endauth
 			@endif
 		</div>
-            </a>
+        </a>
+			<!--<div class="flex justify-end items-center mx-5">-->
+			<!--    <div>-->
+			<!--        <i class="ri-error-warning-line text-lg" style="color: #B80000;"></i>-->
+			<!--    </div>-->
+			<!--</div>-->
+
 		
 		@if (Route::has('login'))
 			@auth

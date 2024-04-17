@@ -1,7 +1,13 @@
 <x-app-layout>
     <style>
         
-       
+       #isiModal {
+            width: 40%; /* Default width for screens wider than 640px */
+        
+            @media (max-width: 640px) {
+                width: 100%; /* Set width to 100% for screens 640px and below */
+            }
+        }
 
     </style>
     <x-main-div>
@@ -16,6 +22,19 @@
                 @else
                     <a href="{{ route('direksi.cp.index') }}" class="btn btn-error">Kembali</a>
                 @endif
+            </div>
+            <div class="flex flex-col bg-slate-50 p-2 rounded w-fit mx-5">
+                <p class="font-semibold text-lg">~ Kesimpulan (not finished) : </p>
+                @php
+                    $harr = round(count($typeHarian) * (100 / (count($pkHarian) * $thisHoly)));
+                    $weekk = round(100 / (count($pkMingguan) * Carbon\Carbon::now()->firstOfMonth()->diffInWeeks(Carbon\Carbon::now()->lastOfMonth()) + 1) * count($typeMingguan));
+                    $bull = round(100 / count($pkBulanan) * count($typeBulanan)) >= 100 ? 100 : round(100 / count($pkBulanan) * count($typeBulanan));
+                    $isident = round(100 / (count($pkIsi) * count($typeIsi)));
+                @endphp
+                <p>Harian: Jumlah Yang Dikerjakan {{ count($typeHarian) }}/{{ count($pkHarian) }} == {{$harr}}</p>
+                <p>Mingguan: Jumlah Yang Dikerjakan {{ count($typeMingguan) }}/{{ count($pkMingguan) }} == {{ $weekk }}</p>
+                <p>Bulanan: Jumlah Yang Dikerjakan {{ count($typeBulanan) }}/{{ count($pkBulanan) }} == {{ $bull }}</p>
+                <p>Isidental: Jumlah Yang Dikerjakan {{ count($typeIsi) }}/{{ count($pkIsi) }} == {{ $isident }}</p>
             </div>
             <div class="flex flex-col items-center mx-2 my-2 sm:justify-center justify-start">
                 <div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
@@ -151,7 +170,7 @@
                         <div id="modalShow" class="modalShow" style="display: none;">
                             <div
                             	style="z-index: 9000; backdrop-filter: blur(3px);" class="fixed w-full flex justify-center items-center inset-0 bg-slate-500/10 transition-all duration-300 ease-in-out h-screen">
-                                <div class="flex justify-center items-center" style="width: 40%;">
+                                <div id="isiModal" class="flex justify-center items-center">
                                 	<div class="bg-slate-50 inset-0 w-full p-3 mx-10 my-10 rounded-md shadow">
                                 		<div class="flex justify-end mb-3">
                                 			<button id="closeButton" class="btn btn-error scale-90 closeButton">&times;</button>

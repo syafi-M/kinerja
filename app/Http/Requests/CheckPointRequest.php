@@ -26,10 +26,10 @@ class CheckPointRequest extends FormRequest
             'user_id' => 'required',
             'divisi_id' => 'required',
             'type_check' => 'nullable',
-            'img' => 'required|image|mimes:png,jpg,svg,gif,jpeg',
-            'deskripsi' => 'required',
-            'latitude' => 'required',
-            'longtitude' => 'required',
+            'img' => 'nullable|image|mimes:png,jpg,svg,gif,jpeg',
+            'deskripsi' => 'nullable',
+            'latitude' => 'nullable',
+            'longtitude' => 'nullable',
             'note' => 'nullable'
         ];
     }

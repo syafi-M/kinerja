@@ -9,13 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 
 class ProfileController extends Controller
 {
     
     public function index()
     {
-        return view('profile.index');
+        $dataUser = User::findOrFail(Auth::user()->id);
+        return view('profile.index', compact('dataUser'));
     }
     
     /**
@@ -42,7 +44,10 @@ class ProfileController extends Controller
             'nama_lengkap' => $request->nama_lengkap,
             'email'     => $request->email,
             'image'     => $request->image,
+            'nik'       => Crypt::encryptString($request->nik),
+            'no_hp'     => $request->no_hp
         ];
+        
 
         if($request->hasFile('image'))
         {
@@ -55,12 +60,7 @@ class ProfileController extends Controller
         }else{
             $user['image'] = $request->oldimage;
         }
-        try {
-            User::findOrFail($id)->update($user);
-        } catch(\Illuminate\Database\QueryException $e){
-           toastr()->error('Data Sudah Ada', 'error');
-           return redirect()->back();
-        }
+        User::findOrFail($id)->update($user);
     
         toastr()->success('Data Berhasil diupdate', 'success');
         return to_route('profile.index');

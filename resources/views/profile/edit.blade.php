@@ -23,13 +23,21 @@
 								value="{{ $dataUser->email }}" required autocomplete="username" />
 							<x-input-error :messages="$errors->get('email')" class="mt-2" />
 						</div>
-						{{--<div class="mt-4">
-							<x-input-label for="status" :value="__('Status')" />
-						     <select name="status_id" id="status_id" class="select-bordered select">
-                            </select>
-                            <pre>{{ $datas}}</pre>
-							<x-input-error :messages="$errors->get('status')" class="mt-2" />
-						</div>--}}
+						<!-- NIK -->
+						<div class="mt-4">
+							<x-input-label for="NIK" :value="__('NIK')" />
+							<x-text-input id="NIK" class="block mt-1 w-full" type="text" name="nik"
+								value="{{ $dataUser->nik ? \Illuminate\Support\Facades\Crypt::decryptString($dataUser->nik) : ''}}" placeholder="Nik..." maxlength="16"  pattern="[0-9]*" autocomplete="nik" />
+							<x-input-error :messages="$errors->get('nik')" class="mt-2" />
+						</div>
+						<!-- No HP -->
+						<div class="mt-4">
+							<x-input-label for="no_hp" :value="__('No. HP Aktif')" />
+							<x-text-input id="no_hp" class="block mt-1 w-full" type="text" name="no_hp"
+								value="{{ $dataUser->no_hp }}" placeholder="No hp aktif..." maxlength="14" autocomplete="no_hp" />
+							<x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
+						</div>
+						
 						{{-- foto Profile --}}
 						<div class="md:mt-4 p-1">
                                 <x-input-label for="foto Profil" :value="__('foto Profil')" />
@@ -48,7 +56,7 @@
                                         <i class="ri-image-add-line text-xl text-slate-700/90"></i>
                                         <span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
                                         <input id="img" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-                                            type="file" name="image" :value="old('image')" autofocus autocomplete="img" />
+                                            type="file" name="image" :value="old('image')" autofocus autocomplete="img" accept="image/*" />
                                     </span>
                                 </label>
                                 <x-input-error :messages="$errors->get('image1')" class="mt-2" />

@@ -69,7 +69,7 @@
 									</td>
 								@endif
                                 <td class="p-1  break-words whitespace-pre-wrap">{{ $i->user->nama_lengkap }}</td>
-                                <td class="p-1 ">{{ $i->shift->shift_name }}</td>
+                                <td class="p-1 ">{{ $i->shift?->shift_name }}</td>
                                 <td class="p-1 text-center"><p>{{ $i->tanggal_absen }}</p></td>
                                 <td class="p-1 ">
                                     <span class="flex flex-col justify-center text-center">

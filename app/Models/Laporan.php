@@ -16,7 +16,11 @@ class Laporan extends Model
         'image1',
         'image2',
         'image3',
-        'keterangan'
+        'image4',
+        'image5',
+        'keterangan',
+        'pekerjaan',
+        'nilai'
     ];
 
     public function User()

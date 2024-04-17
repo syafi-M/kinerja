@@ -53,11 +53,10 @@
 								<td>{{ $i->fax }}</td>
 									<td class="space-y-2">
 										<x-btn-edit>{{ url('client/data-client/' . $i->id . '/edit') }}</x-btn-edit>
-										<form action="{{ url('client/data-client/' . $i->id) }}" method="POST">
-											@csrf
-											@method('DELETE')
-											<x-btn-submit />
-										</form>
+										@php
+										    $getDat = $i;
+										@endphp
+										<x-btn-submit type="button" id="deleteUser" class="deleteUser" data="{{ $i }}" data-dataId="{{ $i->id }}"/>
 									</td>
 							</tr>
 						@empty
@@ -76,6 +75,50 @@
 				<a href="{{ route('data-client.create') }}" class="btn btn-primary">+ Client</a>
 			</div>
 		</div>
+        <div
+        	class="fixed inset-0 modalDeleteUser hidden bg-slate-500/10 backdrop-blur-sm transition-all duration-300 ease-in-out">
+        	<div class="bg-slate-200 w-fit p-5 mx-2 rounded-md shadow">
+        		<div class="flex justify-end mb-3">
+        			<button id="close" class="btn btn-error scale-90">&times;</button>
+        		</div>
+        		<form id="formDelet" action="{{ url('client/data-client/' . $i->id) }}" method="POST"
+        			class="flex justify-center items-center formDelet ">
+        			@csrf
+        			@method('DELETE')
+        			<div class="flex justify-center flex-col gap-2">
+        				<div class="flex flex-col gap-2">
+        					<p id="textModalDelet" class="textModalDelet text-center text-lg font-semibold"></p>
+        				</div>
+        				<div class="flex justify-center items-center overflow-hidden">
+        					<button type="submit"
+        						class="btn btn-error overflow-hidden"><span class="font-bold overflow-hidden">Hapus Data</span>
+        					</button>
+        				</div>
+        			</div>
+        		</form>
+        	</div>
+        </div>
+        <script>
+            $(document).ready(function() {
+                $('.deleteUser').click(function(){
+                    var data = $(this).data('data');
+                    var dataId = $(this).data('dataId');
+                    
+                    var decodedJsonStr = data.replace(/&quot;/g, '"');
 
+                    var jsonObj = JSON.parse(decodedJsonStr);
+                    // console.log(jsonObj);
+                    
+                    $('.formDelet').attr('action', `{{ url('client/data-client/') }}/${jsonObj.id}`);
+                    $('.textModalDelet').text(`Apakah Anda Yakin Ingin Menghapus Client ${jsonObj.name}?`);
+        		    $('.modalDeleteUser').removeClass('hidden')
+        			.addClass('flex justify-center items-center opacity-100');
+        		});
+        		
+        		$('#close').click(function() {
+        		    $('.modalDeleteUser').addClass('hidden').removeClass('flex justify-center items-center opacity-100');
+        		});
+            })
+        </script>
 	</x-main-div>
 </x-app-layout>

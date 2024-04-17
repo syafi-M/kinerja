@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class CheckPoint extends Model
 {
     use HasFactory;
+    
+    protected $casts = [
+        'pekerjaan_cp_id' => 'array',
+        'img' => 'array'
+        
+        ];
 
     protected $fillable = [
         'user_id',

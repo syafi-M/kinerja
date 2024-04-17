@@ -11,6 +11,7 @@ use App\Models\Lokasi;
 use App\Models\Shift;
 use App\Models\Izin;
 use App\Models\JadwalUser;
+use App\Models\CheckPoint;
 use App\Models\News;
 use Carbon\Carbon;
 use App\Models\User;
@@ -25,32 +26,52 @@ class DashboardController extends Controller
     public function index()
     {
         
-
-        $news =  News::all();
+    
         $now = Carbon::now()->format('Y-m-d');
-        $now1 = Carbon::now()->subDay()->format('Y-m-d');
+        $news =  News::all();
+        $rate = Rating::all();
+        $shift = Shift::all();
+        $user = Auth::user();
         $hitungNews = News::whereDate('tanggal_lihat', '<=', $now)->whereDate('tanggal_tutup', '>=', $now)->get();
         $lembur = Lembur::latest('jam_selesai')->get();
-        $kerjasama = Kerjasama::all();
-        $absen = Absensi::all();
-        $warn = Absensi::where('user_id', Auth::user()->id)->where('absensi_type_pulang', 'Tidak Absen Pulang')->whereMonth('tanggal_absen', Carbon::now()->month)->get();
-        $sholat = Absensi::where('user_id', Auth::user()->id)->firstWhere('absensi_type_pulang', null);
-        $cekAbsen = Absensi::where('user_id', Auth::user()->id)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->where('absensi_type_pulang', null)->get();
-        $rate = Rating::all();
-        $user = Auth::user()->id;
-        $point = Point::all();
-        $shift = Shift::all();
-        $izin = Izin::where('user_id', Auth::user()->id)->get();
+        
+        $absen = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+            ->where('user_id', $user->id)
+            ->where('absensi_type_pulang', null)
+            ->get();
+            
+        $absenP = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+            ->where('user_id', $user->id)
+            ->where('absensi_type_pulang', null)
+            ->latest()->get();
+        
+        
+        $warn = $absen->filter(function ($item) {
+            return $item->absensi_type_pulang == 'Tidak Absen Pulang'
+                && $item->tanggal_absen->month == Carbon::now()->month;
+        });
+        
+        $sholat = $absen->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->firstWhere('absensi_type_pulang', null);
+        // dd($sholat);
+        
+        $cekAbsen = $absen->where('absensi_type_pulang', null)->where('tanggal_absen', Carbon::now()->format('Y-m-d'));
+        
+        // if(Auth::user()->id == 11){
+        //     dd($absenP);
+        // }
+        
         $jadwalUser = JadwalUser::all();
-        $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
-        $isModal = Session::get('is_modal', false);
+        
+        $izin = Izin::where('user_id', $user->id)->get();
+        $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
+        $isModal = Session::pull('is_modal', false);
+        $cex = CheckPoint::where('created_at', '>', Carbon::now()->subWeek())->where('user_id', Auth::user()->id)->latest()->first();
         return view('dashboard', [
             'absen' => $absen,
+            'absenP' => $absenP,
             'lembur' => $lembur,
-            'kerjasama' => $kerjasama,
             'rate' => $rate,
             'user' => $user,
-            'point' => $point,
             'harLok' => $harLok,
             'shift' => $shift,
             'izin' => $izin,
@@ -60,6 +81,7 @@ class DashboardController extends Controller
             'news' => $news,
             'hitungNews' => $hitungNews,
             'cekAbsen' => $cekAbsen,
+            'cex' => $cex,
             'warn' => $warn
         ]);
     }

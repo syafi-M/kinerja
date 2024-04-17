@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 
 class UserController extends Controller
 {
@@ -56,7 +57,9 @@ class UserController extends Controller
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
             'image'     => $request->image,
-            'nama_lengkap' => $request->nama_lengkap
+            'nama_lengkap' => $request->nama_lengkap,
+            'nik'       => Crypt::encryptString($request->nik),
+            'no_hp'     => $request->no_hp
         ];
 
         if ($request->hasFile('image')) {
@@ -100,7 +103,9 @@ class UserController extends Controller
             'devisi_id' => $request->devisi_id,
             'email'     => $request->email,
             'image'     => $request->image,
-            'nama_lengkap' => $request->nama_lengkap
+            'nama_lengkap' => $request->nama_lengkap,
+            'nik'       => Crypt::encryptString($request->nik),
+            'no_hp'     => $request->no_hp
         ];
 
         if($request->hasFile('image'))
@@ -155,7 +160,7 @@ class UserController extends Controller
             
             $user->delete();
             toastr()->warning('Data User Telah Dihapus', 'warning');
-            return redirect()->back();
+            return to_route('users.index');
         }else{
           toastr()->error('Data Tidak Ditemukan', 'error');
           return redirect()->back();

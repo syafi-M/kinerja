@@ -31,6 +31,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\FinalisasiController;
 use App\Http\Controllers\QrCodeController;
+use App\Http\Controllers\ListPekerjaanController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -77,6 +78,9 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('/mypoint/{id}', [PointController::class, 'myPoint'])->name('mypoint');
 
     Route::resource('checkpoint-user', CheckPointController::class);
+    Route::get('editBukti-checkpoint-user/{id}', [CheckPointController::class, 'editBukti'])->name('editBukti-checkpoint-user');
+    Route::put('uploadBukti-checkpoint-user/{id}', [CheckPointController::class, 'uploadBukti'])->name('uploadBukti-checkpoint-user');
+    
     Route::get('/riwayat-kerja/{id}', [RatingController::class, 'rateKerja'])->name('rate.kerja');
     Route::get('/getJadwal/{id}', [JadwalUserController::class, 'getJadwal'])->name('get-jadwal');
     
@@ -88,6 +92,9 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::put('/asar/{id}', [AbsensiController::class, 'updateAsar'])->name('updateAsar');
     Route::put('/magrib/{id}', [AbsensiController::class, 'updateMagrib'])->name('updateMagrib');
     Route::put('/isya/{id}', [AbsensiController::class, 'updateIsya'])->name('updateIsya');
+    
+    Route::get('/get-shifts/{cli}/{jab}', [AbsensiController::class, 'getShift'])->name('olehShift');
+    
 });
 
 // Untuk Direksi
@@ -147,6 +154,7 @@ Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     
     Route::resource('/leader-checklist', ChecklistController::class);
     Route::post('/leader-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('leader-checklist.ajx');
+    Route::resource('/absensi-karyawan-co-cs', AbsensiController::class);
    
 });
 // danru
@@ -166,6 +174,7 @@ Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
     Route::patch('/DANRU/danru-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('danru_acc');
     Route::patch('/DANRU/danru-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('danru_denied');
     Route::view('danruView','leader_view/leaderView')->name('danruView');
+    Route::resource('/absensi-karyawan-co-scr', AbsensiController::class);
    
 });
 
@@ -236,6 +245,9 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::resource('/admin-checklist', ChecklistController::class);
     Route::post('/admin-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('admin-checklist.ajx');
     Route::get('/admin-finalisasi/{start_date}/{end_date}', [FinalisasiController::class, 'exportPDF'])->name('finalisasi.export');
+    
+    Route::resource('/listPekerjaan', ListPekerjaanController::class);
+    Route::post('/listPekerjaan-import', [ListPekerjaanController::class, 'importExcel'])->name('listPekerjaan-excell');
 });
 
 

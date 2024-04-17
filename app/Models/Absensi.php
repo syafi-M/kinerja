@@ -33,6 +33,14 @@ class Absensi extends Model
         'sig_long',
         'plg_lat',
         'plg_long',
+        'masuk',
+        'tukar',
+        'lembur',
+        'terus',
+        'tukar_id'
+    ];
+    
+    protected $guarded = ['user_id', 'kerjasama_id', 'shift_id', 'perlengkapan', 'keterangan', 'absensi_type_masuk', 'tanggal_absen', 'tipe_id', 'absensi_type_pulang', 'image', 'deskripsi', 'point_id', 'subuh', 'dzuhur', 'asar', 'magrib', 'isya', 'msk_lat', 'msk_long', 'sig_lat', 'sig_long', 'plg_lat', 'plg_long', 'masuk', 'tukar', 'lembur', 'terus', 'tukar_id'
 
     ];
 

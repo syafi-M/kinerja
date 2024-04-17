@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -27,13 +28,24 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
-        $request->session()->regenerate();
-        
+        $data = DB::table('sessions')->where('user_id', Auth::user()->id)->get();
+        // $request->session()->put('device_id', $device_id);
+        // if(Auth::user()->name != 'admin')
+        // {
+        //     foreach($data as $i)
+        //     {
+        //         if($i)
+        //         {
+        //             toastr()->error('Akun Sedang Login Diperangkat Lain', 'Error');
+        //             Auth::guard('web')->logout();
+        //         }
+        //     }
+        // }
         if (!Session::has('is_modal')) {
             Session::put('is_modal', true);
         }
 
+        $request->session()->regenerate();
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

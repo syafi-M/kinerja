@@ -43,6 +43,10 @@
                                 <span>Shift :</span>
                                 <span class="indent-2">{{ $izinId->shift->shift_name }} | {{ $izinId->shift->jam_start }} - {{ $izinId->shift->jam_end }}</span>
                             </div>
+                            <div class="flex flex-col sm:flex-row w-full ">
+                                <span>Tanggal Dibuat: </span>
+                                <span class="indent-2">{{ $izinId->created_at->format('Y-m-d : H:i:s') }}</span>
+                            </div>
                             <div class="flex flex-col  w-full whitespace-normal break-words">
                                 <span>Alasan izin: </span>
                                 <span class="textarea textarea-bordered">{{ $izinId->alasan_izin }}</span>

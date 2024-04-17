@@ -1,12 +1,24 @@
 <x-app-layout>
 	<x-main-div>
-		<span class="p-2 mt-2 py-1 px-2 rounded-br-xl shadow-sm text-sm font-semibold text-white" style="background-color: #03a157;">Wellcomeback,
-			Admin !!</span>
+	    <div class="flex justify-between">
+    		<span class="p-2  py-1 px-2 rounded-br-xl shadow-sm text-sm font-semibold text-white" style="background-color: #03a157;">Wellcomeback,
+    			Admin !!</span>
+    		<span class="p-2  py-1 px-5 shadow-sm text-sm font-semibold text-white" style="background-color: #03a157; border-bottom-left-radius: 0.75rem;">Online : 
+    			 {{ $online }}</span>
+	    </div>
 		<div class="flex flex-col gap-2 justify-center items-center pb-3">
-		    <p class="text-center text-2xl uppercase font-bold bg-white p-5 rounded-md w-3/6 shadow-md">Dashboard Admin</p>
-		    <span class="flex flex-col justify-center items-center">
+		    <div class="flex flex-col justify-center items-center text-center bg-white p-5 rounded-md w-3/6 shadow-md">
+    		    <p class="text-center text-2xl uppercase font-bold">Dashboard Admin</p>
+    		    <p class="text-center text-md italic">Current Login IP : {{ $ip }}</p>
+		    </div>
+		    <span class="flex flex-col gap-2 justify-center items-center">
     		    @if($izin)
     		        <p class="text-center text-sm uppercase font-bold bg-sky-400 p-3 rounded-md w-fit shadow-md"># Ada {{ $izin }} izin yang belum Di Acc</p>
+    		    @endif
+    		    @if($expert)
+    		        @foreach($expert as $ex)
+    		            <p class="text-center text-sm uppercase font-bold p-3 rounded-md w-fit shadow-md text-white" style="background-color: #CB1414"># Kontrak Mitra {{ $ex->client->name }}, Berakhir {{ $ex->experied }}</p>
+    		        @endforeach
     		    @endif
 		    </span>
 		</div>
@@ -358,6 +370,14 @@
 				<div style="width: 17rem;">
 					<div class="flex justify-center px-2 menuQR">
 						<a id="btnQR" class="btn btn-warning w-full mt-5 flex" href="{{ route('qrcode.index')}}"><i class="ri-qr-code-line text-lg"></i> DATA QR CODE</a>
+					</div>
+				</div>
+				{{-- End Menu --}}
+				
+				{{-- Menu List Pekerjaan --}}
+				<div style="width: 17rem;">
+					<div class="flex justify-center px-2 listPekerjaan">
+						<a id="btnListPekerjaan" class="btn btn-warning w-full mt-5 flex" href="{{ route('listPekerjaan.index')}}"><i class="ri-calendar-2-line text-lg"></i>Data List Pekerjaan</a>
 					</div>
 				</div>
 				{{-- End Menu --}}

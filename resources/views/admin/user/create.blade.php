@@ -30,6 +30,21 @@
 							autocomplete="username" placeholder="Masukkan email user..."/>
 						<x-input-error :messages="$errors->get('email')" class="mt-2" />
 					</div>
+					
+					<!-- NIK -->
+        			<div class="mt-4">
+        				<x-input-label for="NIK" :value="__('NIK')" />
+        				<x-text-input id="NIK" class="block mt-1 w-full" type="text" name="nik"
+        					value="" placeholder="Nik..." maxlength="16"  pattern="[0-9]*" autocomplete="nik" />
+        				<x-input-error :messages="$errors->get('nik')" class="mt-2" />
+        			</div>
+        			<!-- No HP -->
+        			<div class="mt-4">
+        				<x-input-label for="no_hp" :value="__('No. HP Aktif')" />
+        				<x-text-input id="no_hp" class="block mt-1 w-full" type="text" name="no_hp"
+        					value="" placeholder="No hp aktif..." maxlength="14" autocomplete="no_hp" />
+        				<x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
+        			</div>
 
 					<!-- Password -->
 					<div class="mt-4">

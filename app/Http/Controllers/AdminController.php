@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use App\Models\CheckPoint;  
+use App\Models\PekerjaanCp;
 use App\Models\Client;
 use App\Models\Divisi;
 use App\Models\Kerjasama;
@@ -17,6 +18,11 @@ use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 
 class AdminController extends Controller
@@ -30,19 +36,38 @@ class AdminController extends Controller
 
     public function index(Request $request)
     {
+        
+       $user = User::all();
+       $datas = [];
+       foreach($user as $arr)
+       {
+            $data = DB::table('sessions')->where('last_seen_at', '>', now()->subMinutes(5))->get();
+            foreach($data as $dat)
+            {
+                if($dat->user_id == $arr->id)
+                {
+                    $datas[] = $dat;
+                }
+            }
+       }
+        $threeMonthsAgo = Carbon::now()->subMonths(3)->startOfMonth();
+
+      
+        // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)
+        //     ->orderBy('created_at', 'desc')->first();
+            
+        // dd($threeMonthsAgo, $abs, $abs2);
+       
+        $online = count($datas);
         $user = User::count();
         $client = Client::count();
         $izin = Izin::where('approve_status', 'process')->whereMonth('created_at', Carbon::now()->month)->count();
+        $ip = $request->ip();
         
-        
+        $expert = Kerjasama::whereDate('experied', '<=', Carbon::now()->addMonths(2))->get();
 
 
-        return view('admin.index',
-        [
-            'user' => $user,
-            'client' => $client,
-            'izin' => $izin,
-    ]);
+        return view('admin.index', compact('user', 'client', 'izin', 'ip', 'expert', 'online'));
     }
     public function getUptime()
     {
@@ -91,7 +116,46 @@ class AdminController extends Controller
         $inMonth = Carbon::now()->month;
         $user = User::findOrFail($id);
         $cek = CheckPoint::orderBy('created_at', 'asc')->where('user_id', $id)->whereMonth('created_at', $inMonth)->paginate(15);
-        return view('admin.check.lihatCP', compact('user', 'cek'));
+        $typeHarian = Checkpoint::where('type_check', 'harian')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
+        $typeMingguan = Checkpoint::where('type_check', 'mingguan')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
+        $typeBulanan = Checkpoint::where('type_check', 'bulanan')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
+        $typeIsi = Checkpoint::where('type_check', 'isidental')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
+        
+        $pkHarian = PekerjaanCP::where('type_check', 'harian')->where('user_id', $id)->get();
+        $pkMingguan = PekerjaanCP::where('type_check', 'mingguan')->where('user_id', $id)->get();
+        $pkBulanan = PekerjaanCP::where('type_check', 'bulanan')->where('user_id', $id)->get();
+        $pkIsi = PekerjaanCP::where('type_check', 'isidental')->where('user_id', $id)->get();
+        
+        $loginResponse = Http::get('https://kalenderindonesia.com/api/login');
+        $key = $loginResponse->json('key');
+        
+        $dayInMonth = Carbon::now()->daysInMonth;
+        $dayNoWeek = [];
+        $cYear = Carbon::now()->year;
+        $cMonth = Carbon::now()->month;
+        
+        
+        
+        
+        if ($loginResponse->successful()) {
+            $isNationalHoliday = Http::get("https://kalenderindonesia.com/api/{$key}/libur/masehi/{$cYear}");
+            if ($isNationalHoliday->successful()) {
+                // dd($isNationalHoliday->json()['data']['holiday'][$cMonth], Carbon::now()->month);
+                $natDay = $isNationalHoliday->json()['data']['holiday'][$cMonth]['count'];
+            }
+            for ($day = 1; $day <= $dayInMonth; $day++) {
+                $currentDay = Carbon::now()->day($day);
+                if ($currentDay->dayOfWeek != Carbon::SATURDAY && $currentDay->dayOfWeek != Carbon::SUNDAY) {
+                    $dayNoWeek[] = $currentDay;
+                }
+            }
+        }
+        // dd(count($dayNoWeek) - $natDay);
+        
+        $thisHoly = count($dayNoWeek) - $natDay;
+        
+        
+        return view('admin.check.lihatCP', compact('user','thisHoly', 'cek', 'typeHarian', 'typeMingguan', 'typeBulanan', 'typeIsi', 'pkHarian', 'pkMingguan', 'pkBulanan', 'pkIsi'));
     }
     
     public function approveCheck(Request $request, $id)
@@ -143,30 +207,37 @@ class AdminController extends Controller
     public function absen(Request $request)
     {
         
+        // Retrieve filter values from the request
         $filter = $request->filterKerjasama;
         $filterDivisi = $request->filterDevisi;
         
+        // Build the initial query
+        $absenQuery = Absensi::with(['User', 'Shift', 'Kerjasama', 'TipeAbsensi'])
+            ->orderBy('tanggal_absen', 'desc')
+            ->orderBy('created_at', 'desc');
+        
+        // Apply filters if provided
+        if ($filter && $filterDivisi) {
+            $absenQuery = $absenQuery->where('kerjasama_id', $filter)
+                ->whereHas('user', function ($query) use ($filterDivisi) {
+                    $query->where('devisi_id', $filterDivisi);
+                });
+        } elseif ($filterDivisi != null) {
+            $absenQuery = $absenQuery->whereHas('user', function ($query) use ($filterDivisi) {
+                $query->where('devisi_id', $filterDivisi);
+            });
+        } elseif ($filter) {
+            $absenQuery = $absenQuery->where('kerjasama_id', $filter);
+        }
+        
+        // Paginate and include the filter values in the pagination links
+        $absen = $absenQuery->paginate(50);
+        $absen->appends(['filterKerjasama' => $filter, 'filterDevisi' => $filterDivisi]);
+        
+        // Other data retrieval
         $absenSi = Kerjasama::all();
         $point = Point::all();
-        $absen = Absensi::orderBy('tanggal_absen', 'desc')->orderBy('created_at', 'desc')->paginate(50);      
         $divisi = Divisi::all();
-        
-        if($filter && $filterDivisi)
-        {
-            $absen = Absensi::with(['User', 'Shift', 'Kerjasama', 'TipeAbsensi'])->where('kerjasama_id', $filter)->whereHas('user', function ($query) use ($filterDivisi) {
-                $query->where('devisi_id', $filterDivisi);
-            })->orderBy('tanggal_absen', 'desc')->paginate(999999999);
-        }
-        elseif($filterDivisi != null)
-        {
-            $absen = Absensi::with(['User', 'Shift', 'Kerjasama', 'TipeAbsensi'])->whereHas('user', function ($query) use ($filterDivisi) {
-                $query->where('devisi_id', $filterDivisi);
-            })->orderBy('tanggal_absen', 'desc')->paginate(999999999);
-        }
-        elseif($filter) {
-            $absen = Absensi::with(['User', 'Shift', 'Kerjasama'])->where('kerjasama_id', $filter)->orderBy('tanggal_absen', 'desc')->paginate(999999999);
-
-        }
         
         return view('admin.absen.index',['absen' => $absen, 'filterDivisi' => $filterDivisi, 'absenSi' => $absenSi, 'point' => $point, 'divisi' => $divisi, 'filter' => $filter]);
     }
@@ -191,6 +262,7 @@ class AdminController extends Controller
         $dataAbsen = User::with(['absensi' => function ($query) use ($currentMonth, $currentYear) {
             $query->whereMonth('tanggal_absen', $currentMonth)->whereYear('tanggal_absen', $currentYear);
         }])->get();
+        
         $dataUser = User::all();
         $all = Absensi::all();
         $user = Absensi::all();
@@ -232,9 +304,46 @@ class AdminController extends Controller
 
     public function exportWith(Request $request)
     {
-        $tanggalSekarang = Carbon::now();
         $currentMonth = Carbon::parse($this->ended)->month;
         $currentYear = Carbon::parse($this->str)->year;
+        
+        $strYear = Carbon::parse($this->str)->year;
+        $endYear = Carbon::parse($this->ended)->year;
+        
+        $loginResponse = Http::get('https://kalenderindonesia.com/api/login');
+        $dailyData = [];
+        
+        $cMonth = Carbon::now()->month;
+        $getDateLib = Http::get("https://dayoffapi.vercel.app/api");
+        if($getDateLib->successful()){
+            if($strYear == $endYear){
+                $kalenderData = $getDateLib->json();
+                foreach($kalenderData as $dailys) {
+                    $dailyData[] = $dailys['tanggal'];
+                    // dd($dailyData);
+                }
+            }else{
+                $kalenderResponse = Http::get("https://dayoffapi.vercel.app/api?year={$strYear}");
+                $kalenderResponse2 = Http::get("https://dayoffapi.vercel.app/api?year={$endYear}");
+                if ($kalenderResponse->successful()) {
+                    $kalenderData = $kalenderResponse->json();
+                    foreach($kalenderData as $dailys) {
+                        $dailyData[] = $dailys['tanggal'];
+                        // dd($dailyData);
+                    }
+                }
+                if ($kalenderResponse2->successful()) {
+                    $kalenderData = $kalenderResponse2->json();
+                    foreach($kalenderData as $dailys) {
+                        $dailyData[] = $dailys['tanggal'];
+                        // dd($dailyData);
+                    }
+                }
+            }
+        }
+        
+        $tanggalSekarang = Carbon::now();
+        
         $dataUser = User::all();
         $divisi = Divisi::all();
         $user = Absensi::all();
@@ -257,7 +366,7 @@ class AdminController extends Controller
         if($request->has(['libur', 'end1', 'str1'])) {
             
          $expPDF = User::with(['absensi' => function ($query) use ($str1, $end1) {
-            return $query->whereBetween('created_at', [$str1, $end1]);
+            return $query->whereBetween('tanggal_absen', [$str1, $end1]);
         }, 'jadwalUser' => function ($query) use ($str1, $end1) {
             return $query->whereBetween('created_at', [$str1, $end1]);
         }])->when($mitra, function($query) use ($mitra) {
@@ -266,7 +375,7 @@ class AdminController extends Controller
             return $query->where('devisi_id', $divisiId);
         })->orderBy('nama_lengkap', 'asc')->get();
         
-
+        $point = Point::all();
 
         $path = 'logo/sac.png';
         $type = pathinfo($path, PATHINFO_EXTENSION);
@@ -279,7 +388,7 @@ class AdminController extends Controller
         $options->set('defaultFont', 'Arial');
 
         $pdf = new Dompdf($options);
-        $html = view('admin.absen.exportV2', compact('expPDF','izin','hitungIzin','jdwl', 'base64', 'totalHari', 'user', 'dataUser', 'currentYear', 'currentMonth', 'divisi', 'libur', 'str1', 'end1', 'mit', 'mitra'))->render();
+        $html = view('admin.absen.exportV2', compact('point', 'dailyData', 'expPDF','izin','hitungIzin','jdwl', 'base64', 'totalHari', 'user', 'dataUser', 'currentYear', 'currentMonth', 'divisi', 'libur', 'str1', 'end1', 'mit', 'mitra'))->render();
         $pdf->loadHtml($html);
 
         $pdf->setPaper('A4', 'landscape');

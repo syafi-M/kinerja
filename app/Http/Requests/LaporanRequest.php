@@ -24,10 +24,14 @@ class LaporanRequest extends FormRequest
         return [
             'user_id' => 'required',
             'client_id' => 'required',
-            'image1' => 'nullable|mimes:png,jpg,jpeg|max:3072',
-            'image2' => 'nullable|mimes:png,jpg,jpeg|max:3072',
-            'image3' => 'nullable|mimes:png,jpg,jpeg|max:3072',
-            'keterangan' => 'nullable'
+            'image1' => 'nullable|mimes:png,jpg,jpeg|max:6144',
+            'image2' => 'nullable|mimes:png,jpg,jpeg|max:6144',
+            'image3' => 'nullable|mimes:png,jpg,jpeg|max:6144',
+            'image4' => 'nullable|mimes:png,jpg,jpeg|max:6144',
+            'image5' => 'nullable|mimes:png,jpg,jpeg|max:6144',
+            'keterangan' => 'nullable',
+            'pekerjaan' => 'required',
+            'nilai' => 'nullable'
         ];
     }
 }

@@ -46,6 +46,11 @@ class Jabatan extends Model
         return $this->hasMany(Shift::class);
     }
     
+    public function User()
+    {
+        return $this->hasMany(User::class);
+    }
+    
     public function Kerjasama(): MorphMany
     {
         return $this->morphMany(Kerjasama::class, 'kerjasama');

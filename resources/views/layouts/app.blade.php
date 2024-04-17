@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 
 <head>
 	<meta charset="utf-8">
@@ -127,12 +127,19 @@
 
 				// handle rate
 
-				$("#searchInput").on("keyup", function() {
-					let value = $(this).val().toLowerCase();
-					$("#searchTable tbody tr").filter(function() {
-						$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-					});
-				});
+				var $tableRows = $('#searchTable tbody tr');
+
+                    $('#searchInput').on('keyup', function() {
+                        var value = $(this).val().toLowerCase();
+                
+                        // Show all rows initially
+                        $tableRows.show();
+                
+                        // Filter rows based on the search text
+                        $tableRows.filter(function() {
+                            return $(this).text().toLowerCase().indexOf(value) == -1;
+                        }).hide();
+                    });
 				
 			});
 			$('#img2').change(function() {
@@ -166,6 +173,42 @@
 						preview.removeClass('hidden');
 						preview.find('.img3').addClass('rounded-md shadow-md my-4');
 						$('.iImage3').removeClass('flex').addClass('hidden');
+					};
+
+					reader.readAsDataURL(input.files[0]);
+				}
+			});
+			$('#img4').change(function() {
+				const input = $(this)[0];
+				const preview = $('.preview4');
+
+				if (input.files && input.files[0]) {
+					const reader = new FileReader();
+
+					reader.onload = function(e) {
+						preview.show();
+						preview.find('.img4').attr('src', e.target.result);
+						preview.removeClass('hidden');
+						preview.find('.img4').addClass('rounded-md shadow-md my-4');
+						$('.iImage4').removeClass('flex').addClass('hidden');
+					};
+
+					reader.readAsDataURL(input.files[0]);
+				}
+			});
+			$('#img5').change(function() {
+				const input = $(this)[0];
+				const preview = $('.preview5');
+
+				if (input.files && input.files[0]) {
+					const reader = new FileReader();
+
+					reader.onload = function(e) {
+						preview.show();
+						preview.find('.img5').attr('src', e.target.result);
+						preview.removeClass('hidden');
+						preview.find('.img5').addClass('rounded-md shadow-md my-4');
+						$('.iImage5').removeClass('flex').addClass('hidden');
 					};
 
 					reader.readAsDataURL(input.files[0]);
@@ -309,6 +352,9 @@
 			});
 			$('#btnChecklist').click(function() {
 			  $('#Checklist').toggle();  
+			});
+			$('#btnListPekerjaan').click(function() {
+			  $('#listPekerjaan').toggle();  
 			});
 			
 		});

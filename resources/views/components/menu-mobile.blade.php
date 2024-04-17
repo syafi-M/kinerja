@@ -31,18 +31,28 @@
 			@auth
     			@if (Auth::user()->divisi->jabatan->code_jabatan != 'MITRA' && Auth::user()->divisi->jabatan->code_jabatan != 'LEADER' && Auth::user()->name != 'DIREKSI')
     				<li class="overflow-hidden">
-						@if (count($cekAbsen) == 1)
-						<a id="aAbsen2" href="{{ route('absensi.edit', $cekAbsen[0]->id ) }}" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">
-    						<i class="ri-file-edit-fill text-xl text-green-500"></i>
-    						<span class="font-semibold text-slate-700">Ubah Kehadiran</span>
-    					</a>
-						@else
-    					<a id="aAbsen2" href="{{ route('absensi.index') }}" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">
-    						<i class="ri-file-edit-fill text-xl text-green-500"></i>
-    						<span class="font-semibold text-slate-700">Kehadiran</span>
-    					</a>
-							
-						@endif
+    				    @if(Auth::user()->kerjasama_id == 1)
+    				        @if(Carbon\Carbon::now()->format('N') == 6 || Carbon\Carbon::now()->format('N') == 7)
+    					        <a id="aAbsen2" href="#" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">
+            						<i class="ri-file-edit-fill text-xl text-green-500"></i>
+            						<span class="font-semibold text-slate-700">Tidak Ada Jadwal</span>
+            					</a>
+    				        @else
+    					        <a id="aAbsen2" href="{{ route('absensi.index') }}" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">
+            						<i class="ri-file-edit-fill text-xl text-green-500"></i>
+            						<span class="font-semibold text-slate-700">Kehadiran</span>
+            					</a>
+    				        @endif
+    						@else
+    						    <a id="aAbsen2" href="{{ route('absensi.index') }}" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">
+            						<i class="ri-file-edit-fill text-xl text-green-500"></i>
+            						<span class="font-semibold text-slate-700">Kehadiran</span>
+            					</a>
+					    @endif
+    					<!--<a id="aAbsen2" href="{{ route('absensi.index') }}" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">-->
+    					<!--	<i class="ri-file-edit-fill text-xl text-green-500"></i>-->
+    					<!--	<span class="font-semibold text-slate-700">Kehadiran</span>-->
+    					<!--</a>-->
     				</li>
     			@endif
     		@endauth

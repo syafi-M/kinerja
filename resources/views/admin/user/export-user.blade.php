@@ -67,7 +67,7 @@
     					        <td>{{ $user->id }}</td>
     					        <td>{{ $user->nama_lengkap}}</td>
     					        <td>{{ $user->name}}</td>
-    					        <td><span style="background-color: red; padding-x: 2px; border-radius: 5px;">123456</span></td>
+    					        <td><span style="background-color: red; padding-x: 2px; border-radius: 5px;">{{$user->kerjasama_id == 1 ? '12345678' : '123456'}}</span></td>
     					    </tr>
         				@empty
         					<td colspan="31" class="text-center">Kosong</td>

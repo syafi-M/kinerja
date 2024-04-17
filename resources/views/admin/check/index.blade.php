@@ -95,7 +95,7 @@
                                     @endif
                                     
                                     
-                                    <td>{{ $u->kerjasama->client->name }}</td>
+                                    <td>{{ $u->kerjasama?->client->name }}</td>
                                     @if(Auth::user()->role_id == 2)
                                         <td>
                                             <form action="{{ route("cp_export.admin") }}" class="flex gap-2">

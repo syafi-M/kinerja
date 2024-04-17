@@ -40,6 +40,10 @@
                 <button id="btnLogin" type="submit" class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow">Log In</button>
             </div>
         </form>
+        
+        <div id="divNotChrome" class="hidden">
+            <p>Gunakan Chrome Untuk Menggunakan Website Ini</p>
+        </div>
     </div>
     <script>
         $(document).ready(function() {
@@ -48,7 +52,7 @@
     		    $(this).text('Tunggu...');
     		    $(this).css('background-color: rgb(96 165 250 / 0.5);');
     		    $('#form-login').submit();
-    		})
+    		});
         })
     </script>
 </x-guest-layout>

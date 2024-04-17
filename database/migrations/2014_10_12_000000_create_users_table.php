@@ -4,6 +4,7 @@ use App\Models\Divisi;
 use App\Models\Kerjasama;
 use App\Models\Role;
 use App\Models\Status;
+use App\Models\Jabatan;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->foreignIdFor(Role::class, 'role_id')->default(1);
             $table->foreignIdFor(Kerjasama::class);
             $table->foreignIdFor(Divisi::class, 'devisi_id');
+            $table->foreignIdFor(Jabatan::class, 'jabatan_id');
             $table->string('name');
             $table->string('nama_lengkap');
             $table->string('email')->unique('255');
@@ -27,6 +29,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('image');
             $table->foreignIdFor(Status::class)->nullable();
+            $table->string('temp_ban')->default('false');
             $table->rememberToken();
             $table->timestamps();
             $table->date('last_notification_date')->nullable();

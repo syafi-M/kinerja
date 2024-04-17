@@ -8,20 +8,39 @@
 					<div class="join  sm:mx-10 scale-[80%] sm:scale-100">
 						<input type="month" placeholder="pilih bulan..." class="join-item input input-bordered" name="search"
 							id="search" />
-						<button type="submit" class="btn btn-info join-item">search</button>
+						<button type="submit" class="btn btn-info join-item">Filter</button>
 					</div>
 				</span>
 			</form>
-			<div class="flex flex-col items-center mx-2 my-2 sm:justify-center justify-start">
+					
+    		<div class="{{ Auth::user()->kerjasama_id == 1 ? 'flex text-sm bg-slate-100 sm:w-fit p-2 rounded-md font-semibold': 'hidden' }}" style="place-items: start; margin-left: 12vw; margin-right: 12vw; margin-top: 10px;">
+    		    Note : 
+    		    <span class="flex flex-col gap-2 mx-5 text-xs" style="font-style: italic">
+    		        <div class="flex items-center gap-2">
+    		               <span class="px-3 text-white rounded-md" style="background-color: rgb(51, 153, 25);">Hijau</span> <span>Point Di Klaim</span>
+    		            
+    		        </div>
+    		        <div class="flex items-center gap-2">
+    		               <span class="px-2 text-white rounded-md" style="background-color: rgba(178, 37, 37);">Merah</span> <span>Point Tidak Di Klaim</span>
+    		            
+    		        </div>
+    		    </span>
+    		</div>
+    		
+			<div class="flex flex-col items-center mx-2 sm:justify-center justify-start" >
 				<div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
-					<table class="table w-full table-xs bg-slate-50 table-zebra sm:table-md text-sm sm:text-md scale-90 md:scale-90">
+				<table class="table w-full table-xs bg-slate-50 sm:table-md text-sm sm:text-md scale-90 md:scale-90 {{ Auth::user()->kerjasama_id != 1 ? 'table-zebra' : "" }}">
 						<thead>
 							<tr class="text-center">
 								<th class="bg-slate-300 rounded-tl-2xl">#</th>
-								<th class="bg-slate-300 px-7">Shift</th>
+								@if(Auth::user()->name != "DIREKSI")
+								    <th class="bg-slate-300 px-7">Shift</th>
+								@endif
 								<th class="bg-slate-300 px-7">Tanggal</th>
 								<th class="bg-slate-300">Absen Masuk</th>
-								<th class="bg-slate-300">Absen Siang(dzuhur)</th>
+								@if(Auth::user()->kerjasama_id == 1)
+								    <th class="bg-slate-300">Absen Siang(dzuhur)</th>
+								@endif
 								<th class="bg-slate-300 px-5">Absen Keluar</th>
 								<th class="bg-slate-300 rounded-tr-2xl" >Status</th>
 							</tr>
@@ -57,57 +76,66 @@
 								@break
 
 							@else
-								<tr>
+								<tr style="{{ Auth::user()->kerjasama_id == 1 ? (($arr->point_id == 1) ? 'background-color: rgba(37, 178, 79, 0.2);' : (($arr->point_id == 2) ? 'background-color: rgba(254, 153, 0, 0.2)' : 'background-color: rgba(178, 37, 37, 0.2)') ) : '' }}">
 									<td>{{ $no++ }}</td>
-									<td>{{ $arr->shift->shift_name }}</td>
+									@if(Auth::user()->name != "DIREKSI")
+									<td>{{ $arr->shift?->shift_name }}</td>
+									@endif
 									<td>{{ $arr->tanggal_absen }}</td>
 									<td class="text-center">{{ $arr->absensi_type_masuk }}</td>
-								    <td class="text-center">{!! $arr->dzuhur ? "Sudah Absen" : '<span class="text-red-500 font-semibold uppercase">Belum Absen</span>' !!}</td>
+									@if(Auth::user()->kerjasama_id == 1)
+								        <td class="text-center">{!! $arr->dzuhur ? "Sudah Absen Dzuhur" : '<span class="text-red-500 font-semibold uppercase">Belum Absen Dzuhur</span>' !!}</td>
+									@endif
 									{{-- Handle Absensi Type Pulang --}}
 									<td class="text-center">
 									    {!!$arr->absensi_type_pulang == null ? '<span class="text-red-500 underline font-bold">Belum Absen Pulang</span>' : $arr->absensi_type_pulang  !!}
 									</td>
 									{{-- End Handle Absensi Type Pulang --}}
-									
-									@php
-									    $jam_abs = $arr->created_at->format('H:i:s');
-									    $jam_abslen = strlen($jam_abs);
-									    
-									    $jam_str = $arr->shift->jam_start;
-									    $jam_strlen = strlen($jam_str);
-									    
-									    $jAbs = Carbon\Carbon::createFromFormat($jam_abslen == 5 ? 'H:i' : 'H:i:s', $jam_abs);
-									    $jJad = Carbon\Carbon::createFromFormat($jam_strlen == 5 ? 'H:i' : 'H:i:s', $jam_str);
-									    
-                                        if(Auth::user()->kerjasama_id == 1){
-                                            $jam_strlen == 5 ? $jJad->addMinutes(31): $jJad->addMinutes(31)->addSeconds(59);
-                                        }
-                                        $jDiff = $jAbs->diff($jJad);
-                                    
-                                        $diffHasil = '';
-                                        if ($jDiff->h > 0) {
-                                            $diffHasil .= $jDiff->format('%h Jam ');
-                                        }
-                                        if ($jDiff->i > 0) {
-                                            $diffHasil .= $jDiff->format('%i Menit ');
-                                        }
-                                        if ($jDiff->s > 0 && $jDiff->h == 0 && $jDiff->i == 0) {
-                                            $diffHasil .= $jDiff->format('%s Detik');
-                                        }
+									@if(Auth::user()->name != "DIREKSI")
+    									@php
+    									    $jam_abs = $arr->created_at->format('H:i:s');
+    									    $jam_abslen = strlen($jam_abs);
+    									    
+    									    $jam_str = $arr->shift->jam_start;
+    									    $jam_strlen = strlen($jam_str);
+    									    
+    									    $jAbs = Carbon\Carbon::createFromFormat($jam_abslen == 5 ? 'H:i' : 'H:i:s', $jam_abs);
+    									    $jJad = Carbon\Carbon::createFromFormat($jam_strlen == 5 ? 'H:i' : 'H:i:s', $jam_str);
+    									    
+                                            if(Auth::user()->kerjasama_id == 1){
+                                                $jam_strlen == 5 ? $jJad->addMinutes(31): $jJad->addMinutes(31)->addSeconds(59);
+                                            }
+                                            $jDiff = $jAbs->diff($jJad);
                                         
-                                        // Trim and display the result
-                                        $diffHasil = trim($diffHasil);
-                                       
-									@endphp
-									<span data-jad="{{ $jam_str }} {{ $jam_strlen }} {{ $jJad }}" data-abs="{{ $jam_abs }} {{ $jam_abslen }} {{ $jAbs }}" data-diff="{{ $diffHasil }}" id="test" class="hidden test"></span>
+                                            $diffHasil = '';
+                                            if ($jDiff->h > 0) {
+                                                $diffHasil .= $jDiff->format('%h Jam ');
+                                            }
+                                            if ($jDiff->i > 0) {
+                                                $diffHasil .= $jDiff->format('%i Menit ');
+                                            }
+                                            if ($jDiff->s > 0 && $jDiff->h == 0 && $jDiff->i == 0) {
+                                                $diffHasil .= $jDiff->format('%s Detik');
+                                            }
+                                            
+                                            // Trim and display the result
+                                            $diffHasil = trim($diffHasil);
+                                           
+    									@endphp
+    									<span data-jad="{{ $jam_str }} {{ $jam_strlen }} {{ $jJad }}" data-abs="{{ $jam_abs }} {{ $jam_abslen }} {{ $jAbs }}" data-diff="{{ $diffHasil }}" id="test" class="hidden test"></span>
+									@endif
 
 									{{-- Handle Keterangan --}}
+									@if(Auth::user()->name != 'DIREKSI')
 									<td class="flex flex-col justify-center items-center" style="width: 180px;">
 									   {!! $arr->keterangan == 'masuk' ? '<div class="badge badge-success gap-2 overflow-hidden">' . $arr->keterangan . '</div>' 
 									   : ($arr->keterangan == 'izin' ? '<div class="badge badge-warning gap-2 overflow-hidden">' . $arr->keterangan . '</div>' 
 									   : '<div class="badge badge-error gap-1 overflow-hidden">' . '<p>' . $arr->keterangan . '</p>' . '<p style="">' . $diffHasil . '</p>' . '</div>') !!}
 									   
 									</td>
+									@else
+									    <td></td>
+									@endif
 								</tr>
 									{{-- EndHandle Keterangan  . '<p>' . $diffHasil . '</p>' --}}
 							@endif
@@ -116,14 +144,15 @@
 					</tbody>
 				</table>
 			</div>
+    				
 			
-				<div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md" style="background-color: #00670A;">
     				@if(Auth::user()->kerjasama_id == 1)
-    				<span class ="text-center text-white font-semibold">
-    				    {{!empty($totalPointsPerUser) ? "Point Anda Sekarang" . toRupiah(array_sum($totalPointsPerUser)) : "~ Point Belum Di Peroleh ~" }}
-    				</span>
+        				<div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md" style="background-color: #00670A;">
+            				<span class ="text-center text-white font-semibold">
+            				    {{!empty($totalPointsPerUser) ? "Point Anda Sekarang" . toRupiah(array_sum($totalPointsPerUser)) : "~ Point Belum Di Peroleh ~" }}
+            				</span>
+        				</div>
     				@endif
-				</div>
 			<!--MODAL-->
                 <div>
                     <button id="btnShow" class="btn">Lihat Persentase Kehadiran</button>
@@ -142,7 +171,7 @@
                                 		    @if($status == "BAIK")
                                 			    <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md" style="background-color: #00670A;">
                                     				<span class ="text-center text-white font-semibold">
-                                    				    Persentase Kehadiran {{ $persentase . "%"}}
+                                    				    Persentase Kehadiran {{ $persentase > 100 ? "100%" : round($persentase) . "%"}}
                                     				    <br />
                                     				    <span class="bg-white px-2 rounded-md text-red-500">
                                     				        Telat {{ $telat }} kali
@@ -154,7 +183,7 @@
                                 				@elseif($status == "CUKUP")
                                 			    <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md" style="background-color: #663300;">
                                 					<span class ="text-center text-white font-semibold">
-                                    				    Persentase Kehadiran {{ $persentase . "%"}}
+                                    				    Persentase Kehadiran {{ round($persentase) . "%"}}
                                     				    <br />
                                     				    <span class="bg-white px-2 rounded-md text-red-500">
                                     				        Telat {{ $telat }} kali
@@ -166,7 +195,7 @@
                                 				@else
                                 			    <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md" style="background-color: #660000;">
                                 					<span class ="text-center text-white font-semibold">
-                                    				    Persentase Kehadiran {{ $persentase . "%"}}
+                                    				    Persentase Kehadiran {{ round($persentase) . "%"}}
                                     				    <br />
                                     				    <span class="bg-white px-2 rounded-md text-red-500">
                                     				        Telat {{ $telat }} kali
@@ -201,11 +230,6 @@
                 $('#closeButton').click(function() {
                     $('#modalShow').toggle(); // Show/hide content
                 });
-                // $('#test').data('jad');
-               // Assuming you have multiple elements with the ID 'test'
-                // $('[id^=test]').each(function() {
-                //     console.log("jadwal: ", $(this).data('jad'), "absen: ", $(this).data('abs'), "diff: ", $(this).data('diff'));
-                // });
             });
 		</script>
 </x-main-div>

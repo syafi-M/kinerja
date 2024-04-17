@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\DB;
+use Intervention\Image\ImageManagerStatic as Images;
 
 class CheckPointController extends Controller
 {
@@ -29,7 +31,7 @@ class CheckPointController extends Controller
         $cek = CheckPoint::where('user_id', Auth::user()->id)->whereMonth('created_at', $currentMonth)->paginate(90);
     }
        
-    return view('check.index', compact('cek'));
+    return view('check.index', compact('cek', 'pcp'));
 
    }
 
@@ -51,6 +53,125 @@ class CheckPointController extends Controller
    {
         $cek = new CheckPoint();
 
+        $data  = [
+            'user_id' => $request->user_id,
+            'divisi_id' => $request->divisi_id,
+            'pekerjaan_cp_id' => $request->pekerjaan_id,
+            'img' => $request->img,
+            'deskripsi' => $request->deskripsi,
+            'latitude' => $request->latitude,
+            'longtitude' => $request->longtitude
+        ];
+        // dd($data);
+        
+        $imagePaths = [];
+        
+        if($request->hasFile('img'))
+        {
+             foreach ($request->file('img') as $image) {
+                
+                $file = $request->file('img');
+                if ($file != null && $file->isValid()) {
+                    
+                $img = Image::make($file);
+                $imageSize = $img->filesize();
+                
+                $image = Images::make($file);
+                $extensions = $file->getClientOriginalExtension();
+                $randomNumber = mt_rand(1, 999999999999);
+                $rename = 'data' . $randomNumber . '.' . $extensions;
+                
+                $path = public_path('storage/images/' . $rename);
+                $img = Images::make($file->getRealPath());
+                $img->save($path, 13);
+            
+                $imagePaths[] = $rename; 
+                }
+                $data['img'] = implode(',', $imagePaths); 
+             }
+            
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $cek->create($data);
+            DB::commit();
+            toastr()->success('Data Berhasil Ditambahkan', 'success');
+            return to_route('checkpoint-user.index');
+        } catch (\Exception $e) {
+            DB::rollback();
+            dd($e);
+            toastr()->error('Error in storing data', 'error');
+            return redirect()->back();
+        }
+            
+   }
+
+   public function edit($id)
+   {
+    $pcp = PekerjaanCp::all();
+    $cex = CheckPoint::findOrFail($id);
+    return view('check.edit', compact('cex', 'pcp'));
+
+   }
+   
+   public function editBukti($id)
+   {
+    $pcp = PekerjaanCp::all();
+    $cex = CheckPoint::findOrFail($id);
+    // dd($cex);
+    return view('check.editBukti', compact('cex', 'pcp'));
+   }
+   
+   public function uploadBukti(Request $request, $id)
+   {
+    //   dd($request->all());
+       $cek = [
+            'img' => $request->img,
+            'deskripsi' => $request->deskripsi
+        ];
+        
+        
+        $imagePaths = [];
+        
+        if($request->hasFile('img'))
+        {
+             foreach ($request->file('img') as $image) {
+                
+                
+                if ($image != null) {
+                    
+                
+                $imag = Images::make($image);
+                $extensions = $image->getClientOriginalExtension();
+                $randomNumber = mt_rand(1, 999999999999);
+                $rename = 'data' . $randomNumber . '.' . $extensions;
+                
+                $path = public_path('storage/images/' . $rename);
+                $imag = Images::make($image->getRealPath());
+                $imag->save($path, 13);
+            
+                $imagePaths[] = $rename; 
+                }
+                $cek['img'] = implode(',', $imagePaths); 
+             }
+            
+        }
+        try {
+            CheckPoint::findOrFail($id)->update($cek);
+            toastr()->success('Data berhasil diedit', 'success');
+            return redirect()->to(route('checkpoint-user.index'));
+
+        } catch(\Illuminate\Database\QueryException $e){
+           toastr()->error('Data Tidak Ada', 'error');
+           return redirect()->back();
+        }
+   }
+
+   public function update(Request $request, $id)
+   {
+
         $cek = [
             'user_id' => $request->user_id,
             'divisi_id' => $request->divisi_id,
@@ -61,57 +182,19 @@ class CheckPointController extends Controller
             'latitude' => $request->latitude,
             'longtitude' => $request->longtitude
         ];
-        
+
         if($request->hasFile('img'))
-        {
-            $cek['img'] = UploadImageV2($request, 'img');
-        }else{
-            toastr()->error('Foto harus ditambahkan', 'error');
-            return redirect()->back();
-        }
-
-        CheckPoint::create($cek);
-        toastr()->success('Data Berhasil Ditambahkan', 'succes');
-        return to_route('checkpoint-user.index');
-
-        
-        
-   }
-
-   public function edit($id)
-   {
-    $pcp = PekerjaanCp::all();
-    $cex = CheckPoint::findOrFail($id);
-    return view('check.edit', compact('cex', 'pcp'));
-
-   }
-
-   public function update(Request $request, $id)
-   {
-
-    $cek = [
-        'user_id' => $request->user_id,
-        'divisi_id' => $request->divisi_id,
-        'pekerjaan_cp_id' => $request->pekerjaan_id,
-        'type_check' => $request->type_check,
-        'img' => $request->img,
-        'deskripsi' => $request->deskripsi,
-        'latitude' => $request->latitude,
-        'longtitude' => $request->longtitude
-    ];
-
-    if($request->hasFile('img'))
         {
             if($request->oldimage)
             {
                 Storage::disk('public')->delete('images/' . $request->oldimage);
             }
-
+    
             $cek['img'] = UploadImageV2($request, 'img');
         }else{
             $cek['img'] = $request->oldimage;
         }
-         try {
+        try {
             CheckPoint::findOrFail($id)->update($cek);
             toastr()->success('Data berhasil diedit', 'success');
             return redirect()->to(route('checkpoint-user.index'));

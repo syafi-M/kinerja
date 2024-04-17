@@ -19,18 +19,19 @@
 </head>
 
     <style>
-        @media screen and (min-height: 639px) {
+        @media screen and (min-height: 576px) {
             .bg-img{
-                background-image: url('{{ URL::asset('/logo/abs2 (1).jpg') }}');
+                background-image: url('{{ URL::asset('/logo/bg-versi-ramdhan.jpg') }}');
                 background-size: cover;
+                background-position: center;
                 background-repeat: no-repeat;
             }
         }
-        @media screen and (max-height: 639px) {
+        @media screen and (max-height: 576px) {
             .bg-img{
-                background-image: url('{{ URL::asset('/logo/abs2 (1).jpg') }}');
+                background-image: url('{{ URL::asset('/logo/bg-versi-ramdhan.jpg') }}');
                 background-size: cover;
-                background-position: center;
+                background-position: left;
                 background-repeat: no-repeat;
             }
         }
@@ -77,6 +78,36 @@
 
 
 	<script>
+	   // console.log("---", navigator.userAgentData.brands.length == 2)
+	   // console.log("---", navigator, "---")
+	    var OtherBrowser = navigator.userAgentData.brands[2] === undefined
+	    var ResLength = navigator.userAgentData.brands.length == 3
+	    
+	    if(ResLength)
+	    {
+    	    var Chrome = navigator.userAgentData.brands[0].brand == 'Chromium'
+    	    var ChromePC = navigator.userAgentData.brands[2].brand == 'Google Chrome'
+    	    var EdgePC = navigator.userAgentData.brands[2].brand == 'Microsoft Edge'
+    	    
+    	    
+    	    var MobileChrome = navigator.userAgentData.brands[1].brand == 'Google Chrome'
+    	    var MobileChromium = navigator.userAgentData.brands[2].brand == 'Chromium' 
+	    }
+	    
+	   // alert(Chrome == false || MobileChromium == false ||  MobileChrome == false || e == false && c == false)
+	   // console.log(MobileChromium, MobileChrome) 
+	    
+	    if(!ResLength)
+	    {
+	          alert('Gunakan Google Chrome Dan Update Ke Versi Terbaru !!');
+	          window.location.reload();
+	    }
+        else if(!MobileChrome && EdgePC && ChromePC)
+        {
+            alert('Browser Tidak Support Atau Bukan Google Chrome !!');
+            window.location.reload();
+        }
+         
 		// Preview Script
 		$(document).ready(function() {
 			$('#img').change(function () {

@@ -9,7 +9,7 @@
 				<input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..." required>
 			</div>
 		</div>
-		<div>
+		<div class="flex justify-start mx-10 mb-5">
     		<form action="{{ route('ruangan.import') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
     		    @csrf
     		    <label for="iCP" class="btn btn-success overflow-hidden" ><i class="ri-file-excel-2-line text-lg"></i><span id="importLabel" class="overflow-hidden">Import Ruangan</span></label>

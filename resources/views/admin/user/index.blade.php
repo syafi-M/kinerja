@@ -24,7 +24,7 @@
 		</div>
 
 		<div class="overflow-x-auto mx-10 my-10">
-			<table class="table  table-zebra w-full bg-slate-50" id="searchTable">
+			<table class="table table-xs table-zebra w-full bg-slate-50" id="searchTable">
 				<!-- head -->
 				<thead class="text-center">
 					<tr>
@@ -34,6 +34,8 @@
 						<th class="bg-slate-300 ">NAMA</th>
 						<th class="bg-slate-300 ">NAMA LENGKAP</th>
 						<th class="bg-slate-300 ">EMAIL</th>
+						<th class="bg-slate-300 ">NIK</th>
+						<th class="bg-slate-300 ">NO. HP</th>
 						<th class="bg-slate-300 ">KERJASAMA</th>
 						<th class="bg-slate-300 rounded-tr-2xl px-5">AKSI</th>
 					</tr>
@@ -79,6 +81,8 @@
 								<td>{{ $i->name }}</td>
 								<td class="break-words whitespace-pre-line">{{ $i->nama_lengkap }}</td>
 								<td class="break-words whitespace-pre-line">{{ $i->email }}</td>
+								<td class="break-words whitespace-pre-line">{{ $i->nik ? \Illuminate\Support\Facades\Crypt::decryptString($i->nik) : '' }}</td>
+								<td class="break-words whitespace-pre-line">{{ $i->no_hp ? "+62".$i->no_hp : '' }}</td>
 								@if ($i->kerjasama == null || $i->kerjasama->client == null)
 									<td>kosong</td>
 								@else

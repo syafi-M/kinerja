@@ -25,9 +25,10 @@ class QrCodeController extends Controller
 
     public function create()
     {
+        $qr = QrCode::all();
         $ruangan = Ruangan::all();
         $kerjasama = Kerjasama::all();
-        return view('admin.qrcode.create', compact('ruangan', 'kerjasama'));
+        return view('admin.qrcode.create', compact('ruangan', 'kerjasama', 'qr'));
     }
     
     public function edit($id)
@@ -120,7 +121,7 @@ class QrCodeController extends Controller
     {
         $selectedItems = $request->input('selected_items', []);
         
-        if($request->has(['type_export']) && $request->type_export == 1){
+        if($request->has(['type_export']) && $request->type_export == 1 && $selectedItems){
             $qr = QrCode::whereIn('id', $selectedItems)->get();
         }elseif($request->has(['kerjasama_id']) && $request->type_export == 0){
             $qr = QrCode::where('kerjasama_id', $request->kerjasama_id)->get();

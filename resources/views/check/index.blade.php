@@ -39,19 +39,54 @@
 							@endphp
                             @forelse ($cek as $c)
                                 <tr>
-                                    <td>{{ $no++ }}</td>
+                                    <td>
+                                        {{ $no++ }}
+                                    </td>
                                     @if ($c->img == 'no-image.jpg')
                                         <td>
                                             <x-no-img />
                                         </td>
                                     @else
-                                        <td><img src="{{ asset('storage/images/' . $c->img) }}" alt="" srcset=""
+                                        @php
+                                            $images = explode(',', $c->img);
+                                        @endphp
+                                        <td class="flex gap-1">
+                                        @foreach($images as $img)
+                                            <img src="{{ asset('storage/images/' . $img) }}" alt="" srcset=""
                                                 width="70px">
+                                        @endforeach
                                         </td>
                                     @endif
-                                    <td class="capitalize">{{ $c->pekerjaancp ? $c->pekerjaancp->name : "~ KOSONG ~" }}</td>
-                                    <td>{{ $c->deskripsi }}</td>
-                                    <td class="capitalize">{{ $c->type_check }}</td>
+                                    <td class="capitalize text-start">
+                                        @forelse($pcp->whereIn('id', $c->pekerjaan_cp_id) as $i => $pc)
+                                            @if($pc)
+                                                <p>~ {{ $pc->name }}@if($i < $pc->count() - 1),@endif</p>
+                                            @endif
+                                        @empty
+                                        @endforelse
+                                    </td>
+                                    <td class="capitalize text-start">
+                                        @php
+                                            $descriptions = json_decode($c->deskripsi, true);
+                                        @endphp
+                                    
+                                        @if(is_array($descriptions))
+                                            @foreach($descriptions as $i => $desk)
+                                                @if($desk)
+                                                    <p>~ {{ $desk }}@if($i < count($descriptions) - 1),@endif</p>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </td>
+
+                                    <td class="capitalize text-start">
+                                        @forelse($pcp->whereIn('id', $c->pekerjaan_cp_id) as $i => $pc)
+                                            @if($pc)
+                                                <p>~ {{ $pc->type_check }}@if($i < $pc->count() - 1),@endif</p>
+                                            @endif
+                                        @empty
+                                        @endforelse
+                                    </td>
                                     <td>{{ $c->created_at->format('Y-m-d') }}</td>
                                     <td>
                                         @if($c->approve_status == "accept")

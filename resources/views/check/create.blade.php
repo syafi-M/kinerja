@@ -2,7 +2,7 @@
 	<x-main-div>
 		<div class="px-5 py-10">
 			<div>
-                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">Check Point</p>
+                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">Buat Planning</p>
             </div>
 			<form method="POST" action="{{ route('checkpoint-user.store') }}" class=" my-10" id="form-cp" enctype="multipart/form-data">
 			@csrf
@@ -18,83 +18,69 @@
 					<input type="text" value="{{ Auth::user()->kerjasama->client->name }}" disabled
 						class="input input-bordered">
 				</div>
-				<div class="mt-3">
-					<x-input-label for="type_check " :value="__('Check Point')" class="required"/>
-					<select name="type_check" id="type_check" class="select select-bordered w-full mt-1" required>
-						<option selected disabled value="0">~ Pilih Check Point ~</option>
-						
-					    <option name="type_check" value="harian" data-typecheck="harian" class="py-2">Harian</option>
-						<option name="type_check" value="mingguan" data-typecheck="mingguan" class="py-2">Mingguan</option>
-						<option name="type_check" value="bulanan" data-typecheck="bulanan" class="py-2">Bulanan</option>
-						<option name="type_check" value="isidental" data-typecheck="isidental" class="py-2">Isidental</option>
-						
-					</select>
+				<div class="mt-3 flex flex-col gap-2">
+					<x-input-label for="type_check " :value="__('Check Point')" class="required text-center"/>
+					@php
+					    $pcpH = $pcp->where('type_check', 'harian');
+					    $pcpM = $pcp->where('type_check', 'migguan');
+					    $pcpB = $pcp->where('type_check', 'bulanan');
+					    $pcpI = $pcp->where('type_check', 'isidental');
+					@endphp
+					<span class="flex flex-col gap-1">
+                        <label for="example_checkbox" class="btn btn-sm btn-info" id="lHarian">Harian</label>
+                        <div class="flex flex-col" id="hCont" style="display: none;">
+                            @forelse ($pcpH as $p)
+                                <span class="flex items-center gap-2 p-1 overflow-hidden">
+                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="harian" class="checkbox">
+                                    <label for="checkbox">{{ $p->name }}</label>
+                                </span>
+                            @empty
+                                <span><p class="text-center">~Pekerjaan Tidak Tersedia~</p></span>
+                            @endforelse
+                        </div>
+					</span>
+					<span class="flex flex-col gap-1">
+                        <label for="example_checkbox" class="btn btn-sm btn-info" id="lMingguan">Mingguan</label>
+                        <div class="flex flex-col" id="mCont" style="display: none;">
+                            @forelse ($pcpM as $p)
+                                <span class="flex items-center gap-2 p-1 overflow-hidden">
+                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="mingguan" class="checkbox">
+                                    <label for="checkbox">{{ $p->name }}</label>
+                                </span>
+                            @empty
+                                <span><p class="text-center">~Pekerjaan Tidak Tersedia~</p></span>
+                            @endforelse
+                        </div>
+					</span>
+					<span class="flex flex-col gap-1">
+                        <label for="example_checkbox" class="btn btn-sm btn-info" id="lBulanan">Bulanan</label>
+                        <div class="flex flex-col" id="bCont" style="display: none;">
+                            @forelse ($pcpB as $p)
+                                <span class="flex items-center gap-2 p-1 overflow-hidden">
+                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="bulanan" class="checkbox">
+                                    <label for="checkbox">{{ $p->name }}</label>
+                                </span>
+                            @empty
+                                <span><p class="text-center">~Pekerjaan Tidak Tersedia~</p></span>
+                            @endforelse
+                        </div>
+					</span>
+					<span class="flex flex-col gap-1">
+                        <label for="example_checkbox" class="btn btn-sm btn-info" id="lIsidental">Isidental</label>
+                        <div class="flex flex-col" id="iCont" style="display: none;">
+                            @forelse ($pcpI as $p)
+                                <span class="flex items-center gap-2 p-1 overflow-hidden">
+                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="isidental" class="checkbox">
+                                    <label for="checkbox">{{ $p->name }}</label>
+                                </span>
+                            @empty
+                                <span><p class="text-center">~Pekerjaan Tidak Tersedia~</p></span>
+                            @endforelse
+                        </div>
+					</span>
 					<x-input-error :messages="$errors->get('type_check')" class="mt-2" />
 				</div>
-				<div class="flex flex-col mt-3">
-                    <x-input-label for="pekerjaan_id" :value="__('Pilih Pekerjaan')"/>
-                    <!--<p>{{ $pcp }} / {{ $cheli }}</p>-->
-                    <select name="pekerjaan_id" id="pekerjaan_id" class="select-bordered select">
-                        <option selected disabled value="0">~ Pilih pekerjaan ~</option>
-                        @forelse ($pcp as $p)
-                            @php
-                                $isDisabled = false;
-                            @endphp
-                            @forelse ($pch as $che)
-                                @if ($p->type_check == $che->type_check && $p->id == $che->pekerjaanCp->id)
-                                    @php
-                                        $isDisabled = true;
-                                    @endphp
-                                    @break
-                                @endif
-                            @empty
-                            @endforelse
-                
-                            @if ($isDisabled)
-                                @if ($p->kerjasama_id == Auth::user()->kerjasama_id)
-                                    <option disabled value="{{ $p->id }}" data-pekerjaan="{{ $p->type_check }}">{{ $p->name }} (sudah di isi)</option>
-                                @endif
-                            @else
-                                @if ($p->kerjasama_id == Auth::user()->kerjasama_id)
-                                    <option value="{{ $p->id }}" data-name="{{ $p->type_check }}" data-pekerjaan="{{ $p->type_check }}">{{ $p->name }}</option>
-                                @endif
-                            @endif
-                        @empty
-                            <option disabled>~ Data Kosong ~</option>
-                        @endforelse
-                    </select>
-                </div>
-
-				<div class="my-5">
-					<x-input-label for="deskripsi" :value="__('Deskripsi')"/>
-					<textarea name="deskripsi" id="deskripsi" rows="3" class="textarea textarea-bordered w-full" placeholder="deskripsi check point.."></textarea>
-					<x-input-error :messages="$errors->get('deskripsi')" class="mt-2" />
-				</div>
-				{{-- img --}}
-				<div class="my-5 p-1">
-					<x-input-label for="img" :value="__('Foto Bukti')" class="required"/>
-					<div class="preview hidden w-full">
-						<span class="flex justify-center items-center">
-							<label for="img" class="p-1">
-								<img class="img1 ring-2 ring-slate-500/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s"
-									src="" alt="" srcset="" height="120px" width="120px">
-								
-							</label>
-						</span>
-					</div>
-					<label for="img"
-						class="w-full iImage1 flex flex-col items-center justify-center rounded-md bg-slate-300/70  ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s">
-						<span class="p-3 flex justify-center flex-col items-center">
-							<i class="ri-image-add-line text-xl text-slate-700/90"></i>
-							<span class="text-xs font-semibold text-slate-700/70">+ Bukti</span>
-							<input id="img" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-								type="file" name="img" :value="old('img')" autofocus autocomplete="img" accept="image/*"/>
-						</span>
-					</label>
-					<label for="img" class="text-red-500 text-xs error-message hidden">File gambar terlalu besar. max( 3MB )</label>
-				</div>
-				<x-input-error :messages="$errors->get('img')" class="mt-2" />
-				<span>
+				<span class="hidden">
 				    <p class="text-center">~ Lokasi ~</p>
     				<span class="flex justify-center join">
         				<input type="text" value="" id="latitude" name="latitude" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
@@ -103,7 +89,7 @@
 				</span>
 			</div>
 			<div class="flex justify-center sm:justify-end gap-2 mt-10">
-				<button type="submit" id="btnSubmit" class="btn btn-primary">Simpan</button>
+				<button type="button" id="btnSubmit" class="btn btn-primary">Simpan</button>
 				<a href="{{ route('dashboard.index') }}" class="btn btn-error hover:bg-red-500 transition-all ease-linear .2s">
 					Kembali
 				</a>
@@ -148,6 +134,23 @@
     		    $('#form-cp').submit();
     		});
         
+        
+        $('#lHarian').click(function(){
+            $('#mCont, #bCont, #iCont').slideUp();
+            $('#hCont').slideToggle();
+        })
+        $('#lMingguan').click(function(){
+            $('#hCont, #bCont, #iCont').slideUp();
+            $('#mCont').slideToggle();
+        })
+        $('#lBulanan').click(function(){
+            $('#mCont, #hCont, #iCont').slideUp();
+            $('#bCont').slideToggle();
+        })
+        $('#lIsidental').click(function(){
+            $('#mCont, #bCont, #hCont').slideUp();
+            $('#iCont').slideToggle();
+        })
 	});
 	
 // 	$(document).ready(function() {

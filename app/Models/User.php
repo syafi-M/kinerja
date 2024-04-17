@@ -35,7 +35,11 @@ class User extends Authenticatable implements CanBeSigned
         'password',
         'image',
         'devisi_id',
-        'status_id'
+        'jabatan_id',
+        'status_id'.
+        'temp_ban',
+        'nik',
+        'no_hp'
     ];
 
     /**
@@ -101,6 +105,10 @@ class User extends Authenticatable implements CanBeSigned
     public function Divisi()
     {
         return $this->belongsTo(Divisi::class, 'devisi_id', 'id');
+    }
+    public function Jabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');
     }
     public function JadwalUser(): HasMany
     {

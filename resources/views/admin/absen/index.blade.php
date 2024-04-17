@@ -119,6 +119,8 @@
 							<th class="bg-slate-300 ">Ibadah</th>
 							<th class="bg-slate-300 ">Jam Masuk</th>
 							<th class="bg-slate-300 ">Jam Pulang</th>
+							<th class="bg-slate-300 ">Lokasi Masuk</th>
+							<th class="bg-slate-300 ">Lokasi Pulang</th>
 							<th class="bg-slate-300 ">Keterangan</th>
 							<th class="bg-slate-300 hidden">Point</th>
 							<th class="bg-slate-300 rounded-tr-2xl">Tipe Absen</th>
@@ -160,6 +162,18 @@
 										{{ $arr->absensi_type_pulang}}
 									@endif
 								</td>
+								@php
+								    $msLat = strlen($arr->msk_lat);
+                                    $msLong = strlen($arr->msk_long);
+                                    
+								    $plgLat = strlen($arr->plg_lat);
+                                    $plgLong = strlen($arr->plg_long);
+								@endphp
+								
+								
+								<td style="color: {{ $msLat <= 11 && $msLong <= 11 ? 'inherit' : 'red' }}">{{ $arr->msk_lat }}, {{ $arr->msk_long }}</td>
+								
+								<td style="color: {{ $plgLat <= 11 && $plgLong <= 11 ? 'inherit' : 'red' }}">{{ $arr->plg_lat }}, {{ $arr->plg_long }}</td>
 								{{-- End Handle Absensi Type Pulang --}}
                                 
 								{{-- Handle Keterangan --}}

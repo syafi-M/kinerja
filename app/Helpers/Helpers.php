@@ -1,10 +1,11 @@
 <?php
-use Intervention\Image\Facades\Image;
+// use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManagerStatic as Image;
 
 
 function UploadImage($request, $NameFile)
 {
-
+    Image::configure(['driver' => 'imagick']);
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
         
@@ -18,7 +19,8 @@ function UploadImage($request, $NameFile)
             
             $path = public_path('storage/images/' . $rename);
             $img = Image::make($file->getRealPath());
-            $img->save($path, 80);
+            $img->resize(450, 450);
+            $img->save($path, 13);
         
             return $rename;
       
@@ -41,7 +43,7 @@ function UploadImageV2($request, $NameFile)
             
             $path = public_path('storage/images/' . $rename);
             $img = Image::make($file->getRealPath());
-            $img->save($path, 80);
+            $img->save($path, 13);
         
             return $rename;
       
