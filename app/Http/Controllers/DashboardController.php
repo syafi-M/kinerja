@@ -42,8 +42,8 @@ class DashboardController extends Controller
             
         $absenP = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
             ->where('user_id', $user->id)
-            ->where('absensi_type_pulang', null)
-            ->latest()->get();
+            ->latest()->first();
+            // dd($absenP);
         
         
         $warn = $absen->filter(function ($item) {
@@ -65,7 +65,19 @@ class DashboardController extends Controller
         $izin = Izin::where('user_id', $user->id)->get();
         $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
         $isModal = Session::pull('is_modal', false);
-        $cex = CheckPoint::where('created_at', '>', Carbon::now()->subWeek())->where('user_id', Auth::user()->id)->latest()->first();
+        $awalMinggu = Carbon::now()->startOfWeek();
+        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+            ->where('user_id', Auth::user()->id)
+            ->where('type_check', 'rencana')
+            ->latest()
+            ->first();
+        $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+            ->where('user_id', Auth::user()->id)
+            ->where('type_check', 'dikerjakan')
+            ->latest()
+            ->first();
+        // dd($cex, $cex2);
         return view('dashboard', [
             'absen' => $absen,
             'absenP' => $absenP,
@@ -82,6 +94,7 @@ class DashboardController extends Controller
             'hitungNews' => $hitungNews,
             'cekAbsen' => $cekAbsen,
             'cex' => $cex,
+            'cex2' => $cex2,
             'warn' => $warn
         ]);
     }

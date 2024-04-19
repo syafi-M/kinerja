@@ -1,15 +1,25 @@
 {
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "npm": "npm install --scripts-prepend-node-path='/home/sacpocom/nodevenv/absensi-sac.sac-po.com/10/bin/node'",
-"get-vite" : "npm install -g vite"
-    },
-    "dependencies": {
-        "firebase": "^10.3.1",
-        "jquery": "^3.7.0",
-        "remixicon": "^3.3.0"
-    }
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "npm": "npm install --scripts-prepend-node-path='/home/sacpocom/nodevenv/absensi-sac.sac-po.com/10/bin/node'",
+    "get-vite": "npm install -g vite"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.8",
+    "axios": "^1.6.8",
+    "daisyui": "^4.10.2",
+    "firebase": "^10.3.1",
+    "jquery": "^3.7.0",
+    "laravel-vite-plugin": "^1.0.2",
+    "remixicon": "^3.3.0",
+    "tailwindcss": "^3.4.3",
+    "vite": "^5.2.9"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "autoprefixer": "^10.4.19"
+  }
 }

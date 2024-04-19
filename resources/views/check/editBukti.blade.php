@@ -2,16 +2,15 @@
 	<x-main-div>
 		<div class="px-5 py-10">
 			<div>
-                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">Kirim Bukti</p>
+                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">{{ "Kirim Bukti Pekerjaan" }}</p>
             </div>
-			<form method="POST" action="{{ route('uploadBukti-checkpoint-user', $cex->id) }}" class=" my-10" id="form-cp" enctype="multipart/form-data">
+			<form method="POST" action="{{ route('uploadBukti-checkpoint-user') }}" class=" my-10" id="form-cp" enctype="multipart/form-data">
 			@csrf
-			@method('PUT')
-			<div class="bg-slate-100 px-10 py-5 rounded shadow">
+			<div class="bg-slate-100 px-5 py-5 rounded shadow">
 				<div class="flex flex-col justify-between">
 					<label class="font-semibold">Nama: </label>
 					<input type="text" id="user_id" name="user_id" value="{{ Auth::user()->id }}" hidden>
-					<input type="text" value="{{ Auth::user()->nama_lengkap }}" disabled class="input input-bordered">
+					<input type="text" value="{{  Auth::user()->nama_lengkap }}" disabled class="input input-bordered">
 				</div>
 				<div class="flex flex-col  justify-between mt-3">
 					<label class="font-semibold">Bermitra Dengan: </label>
@@ -26,7 +25,9 @@
                             $pcpType = $pcp->whereIn('id', $cex->pekerjaan_cp_id)->where('type_check', $type);
                         @endphp
                         <span class="flex flex-col gap-1">
-                            <label for="example_checkbox" class="label font-semibold">~{{ ucfirst($type) }}</label>
+							@if ($pcpType->count() >= 1)
+                            	<label for="example_checkbox" class="label font-semibold">~{{ ucfirst($type) }}</label>
+							@endif
                             <div class="flex flex-col">
                                 @forelse ($pcpType as $p)
                                     <span class="flex flex-col justify-center gap-2 p-1 overflow-hidden">
@@ -38,7 +39,6 @@
                     								<label for="img_{{$p->id}}" class="p-1">
                     									<img class="img_{{$p->id}} ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s"
                     										src="" alt="" srcset="" height="120px" width="120px">
-                    									
                     								</label>
                     							</span>
                     						</div>
@@ -47,19 +47,20 @@
                     							<span class="p-2 flex justify-center items-center">
                     								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
                     								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
-                    								<input id="img_{{$p->id}}" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-                    									type="file" name="img[]" :value="old('image2')" autofocus autocomplete="img2" accept="image/*"/>
+                    								<input id="img_{{$p->id}}" data-pcp_id="{{ $p->id }}" class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
+                    									type="file" name="img[]" value="null" autofocus autocomplete="img2" accept="image/*"/>
                     							</span>
                     						</label>
                     					</div>
                     					<!---->
                     					<div class="my-2">
                     						<textarea name="deskripsi[]" id="deskripsi" rows="1" class="textarea textarea-bordered w-full" placeholder="Deskripsi laporan..."></textarea>
+                    						<textarea name="note[]" id="note" rows="1" class="textarea textarea-bordered w-full hidden" placeholder="Deskripsi laporan..."></textarea>
                     						<x-input-error :messages="$errors->get('deskripsi')" class="mt-2" />
                     					</div>
                                     </span>
                                 @empty
-                                    <span><p class="text-center">~Pekerjaan Tidak Tersedia~</p></span>
+                                    {{-- <span><p class="text-center">~Pekerjaan Tidak Tersedia~</p></span> --}}
                                 @endforelse
                             </div>
                         </span>
@@ -73,6 +74,9 @@
         				<input type="text" value="" id="longitude" name="longtitude" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
     				</span>
 				</span>
+				<div class="hidden" id="pcp_container">
+
+				</div>
 			</div>
 			<div class="flex justify-center sm:justify-end gap-2 mt-10">
 				<button type="submit" id="btnSubmit" class="btn btn-primary">Simpan</button>
@@ -127,6 +131,20 @@
                     $(`#img_${dataId}`).change(function() {
                         const input = $(this)[0];
         				const preview = $(`.preview_${dataId}`);
+						console.log($(this).data('pcp_id'), $(this).val());
+
+						if (input.files) {
+							const valueExists = $('.input_pcp').filter(function() {
+                            return $(this).val() == $(`.input_img_${dataId}`).data('pcp_id');
+                        }).length > 0;
+							console.log(valueExists);
+							if (!valueExists) {
+								$('#pcp_container').append(
+									$(`<input class="input_pcp" name="pekerjaan_cp_id[]" value="${$(this).data('pcp_id')}"/>
+									<input class="status" name="approve_status[]" value="proccess"/>`)
+								)
+							}
+						}
         
         				if (input.files && input.files[0]) {
         					const reader = new FileReader();

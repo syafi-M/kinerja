@@ -13,28 +13,33 @@
     <x-main-div>
         <div class="py-10">
             <div>
-                <p class="text-center text-lg sm:text-2xl font-bold uppercase">Check Point {{ $user->nama_lengkap }}</p>
+                <p class="text-center text-lg sm:text-2xl font-bold uppercase"> {{ $type == 'rencana' ? 'Rencana Kerja ' : 'Pekerjaan ' }} {{ $user->nama_lengkap }}</p>
             </div>
             
-            <div class="flex justify-end gap-2  mx-5 sm:mx-10 my-2">
-                @if(Auth::user()->role_id == 2)
-                    <a href="{{ route('admin.cp.index') }}" class="btn btn-error">Kembali</a>
-                @else
-                    <a href="{{ route('direksi.cp.index') }}" class="btn btn-error">Kembali</a>
-                @endif
+            <div class="flex justify-center items-center gap-2 mt-5 rounded-md">
+                <div class="flex flex-col gap-2 mt-5 bg-slate-200 p-4 drop-shadow-md rounded-md w-fit">
+                    <p class="text-center font-semibold text-sm"> ~>Filter<~ </p>
+                    <div class="flex gap-2 justify-center sm:justify-start overflow-hidden">
+                        <form action="" method="get" class="btn btn-info btn-sm overflow-hidden">
+                            <input type="hidden" name="type" value="rencana" id="">
+                            <button type="submit" class="overflow-hidden">Rencana</button>
+                        </form>
+                        {{-- <form action="" method="get" class="btn btn-warning btn-sm overflow-hidden">
+                            <input type="hidden" name="type" value="" id="">
+                            <button type="submit"><i class="ri-refresh-line"></i></button>
+                        </form> --}}
+                        <form action="" method="get" class="btn btn-info btn-sm overflow-hidden">
+                            <input type="hidden" name="type" value="dikerjakan" id="">
+                            <button type="submit" class="overflow-hidden">Dikerjakan</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-col bg-slate-50 p-2 rounded w-fit mx-5">
-                <p class="font-semibold text-lg">~ Kesimpulan (not finished) : </p>
-                @php
-                    $harr = round(count($typeHarian) * (100 / (count($pkHarian) * $thisHoly)));
-                    $weekk = round(100 / (count($pkMingguan) * Carbon\Carbon::now()->firstOfMonth()->diffInWeeks(Carbon\Carbon::now()->lastOfMonth()) + 1) * count($typeMingguan));
-                    $bull = round(100 / count($pkBulanan) * count($typeBulanan)) >= 100 ? 100 : round(100 / count($pkBulanan) * count($typeBulanan));
-                    $isident = round(100 / (count($pkIsi) * count($typeIsi)));
-                @endphp
-                <p>Harian: Jumlah Yang Dikerjakan {{ count($typeHarian) }}/{{ count($pkHarian) }} == {{$harr}}</p>
-                <p>Mingguan: Jumlah Yang Dikerjakan {{ count($typeMingguan) }}/{{ count($pkMingguan) }} == {{ $weekk }}</p>
-                <p>Bulanan: Jumlah Yang Dikerjakan {{ count($typeBulanan) }}/{{ count($pkBulanan) }} == {{ $bull }}</p>
-                <p>Isidental: Jumlah Yang Dikerjakan {{ count($typeIsi) }}/{{ count($pkIsi) }} == {{ $isident }}</p>
+            
+            <div class="mx-2 sm:mx-10 my-2">
+                <a href="{{ $type == 'rencana' ? route('checkpoint-user.edit', $cex2->id) : '' }}" {{ $type == 'rencana' ? '' : 'disabled' }}>
+                    <button type="submit"  class="btn btn-warning btn-sm {{ $type == 'rencana' ? '' : 'btn-disabled' }}">+ Ubah Rencana Kerja</button>
+                </a>
             </div>
             <div class="flex flex-col items-center mx-2 my-2 sm:justify-center justify-start">
                 <div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
@@ -42,118 +47,134 @@
                         <thead class="text-center">
                             <tr>
 								<th class="bg-slate-300 rounded-tl-2xl">#</th>
-								<th class="bg-slate-300">Gambar Bukti</th>
+								<th class="bg-slate-300 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">Gambar Bukti</th>
 								<th class="bg-slate-300">Nama CP</th>
-								<th class="bg-slate-300">Deskripsi</th>
-								<th class="bg-slate-300">Harian</th>
-								<th class="bg-slate-300">Mingguan</th>
-								<th class="bg-slate-300">Bulanan</th>
-								<th class="bg-slate-300">Isidental</th>
-								<th class="bg-slate-300 displayTH" id="displayTH">Informasi</th>
-								<th class="bg-slate-300 rounded-tr-2xl">Action</th>
+								<th class="bg-slate-300 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">Deskripsi</th>
+								<th class="bg-slate-300 {{ $type == 'rencana' ? 'rounded-tr-2xl' : '' }}">Check Point</th>
+								<th class="bg-slate-300   {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">Status</th>
+								{{-- <th class="bg-slate-300 displayTH" id="displayTH">Informasi</th> --}}
+								<th class="bg-slate-300 {{ $type == 'rencana' ? 'hidden' : 'table-cell rounded-tr-2xl' }}">Action</th>
 							</tr>
                         </thead>
                         <tbody>
                             @php
                                 $no = 1;
                             @endphp
-                            @forelse ($cek as $c)
+                            @forelse ($cex2->pekerjaan_cp_id as $index => $c)
                                 <tr>
                                     <td>{{ $no++ }}</td>
-                                    @if ($c->img == 'no-image.jpg')
-                                        <td >
-                                            <x-no-img />
+                                    @if ((empty($c) || $c == 'no-image.jpg') && $c != 'rencana')
+                                        <td>
+                                            <x-no-img class="scale-50"/>
                                         </td>
-                                    @elseif(Storage::disk('public')->exists('images/' . $c->img))
-                                        <td ><img class="lazy lazy-image" loading="lazy" src="" data-src="{{ asset('storage/images/' . $c->img) }}" alt="" srcset="{{ asset('storage/images/' . $c->img) }}" width="120px"></td>
+                                    @elseif ($c == 'rencana')
+                                        <td class="{{ $type == 'rencana' ? 'hidden' : '' }}"></td>
                                     @else
-                                        <td >
-                                            <x-no-img />
+                                        <td class="flex gap-1 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                            @if(isset($cex2->img[$index]))
+                                            <img src="{{ asset('storage/images/' . $cex2->img[$index]) }}" alt="" srcset=""
+                                                width="70px">
+                                        @endif
                                         </td>
                                     @endif
-                                    <td>{{ $c->pekerjaancp ? $c->pekerjaancp->name : $c->deskripsi }}</td>
-                                    <td>{{ $c->deskripsi }}, {{ $c->created_at->format('Y-m-d') }}</td>
-                                    @if($c->type_check == 'harian')
-                                        <td class="min-h-full">
-                                            <div class="flex items-center justify-center p-2 text-xl font-semibold">
-                                                <i class="ri-check-line"></i>
+                                    
+                                    <td class="capitalize text-start">
+                                        @php
+                                            $ce = $pcp->where('id', $c)->first();
+                                        @endphp
+                                        @if (empty($ce))
+                                            <div class="flex gap-1 ">
+                                                <p>~ {{ $c }} </p>
+                                                <p class="text-green-700 underline underline-offset-1 hidden sm:block"></p>
                                             </div>
-                                        </td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    @elseif($c->type_check == 'mingguan')
-                                        <td></td>
-                                        <td class="min-h-full">
-                                            <div class="flex items-center justify-center p-2 text-xl font-semibold">
-                                                <i class="ri-check-line"></i>
-                                            </div>
-                                        </td>
-                                        <td></td>
-                                        <td></td>
-                                    @elseif($c->type_check == 'bulanan')
-                                        <td></td>
-                                        <td></td>
-                                        <td class="min-h-full">
-                                            <div class="flex items-center justify-center p-2 text-xl font-semibold">
-                                                <i class="ri-check-line"></i>
-                                            </div>
-                                        </td>
-                                        <td></td>
-                                    @elseif($c->type_check == 'isidental')
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td class="min-h-full">
-                                            <div class="flex items-center justify-center p-2 text-xl font-semibold">
-                                                <i class="ri-check-line"></i>
-                                            </div>
-                                        </td>
-                                    @endif
-                                    <td class="overflow-hidden">
-                                        <a href="{{ Auth::user()->role_id == 2 ? route('admin-lihatMap', $c->id) : route('direksi-lihatMap', $c->id) }}"
+                                        @else
+                                            @forelse($pcp->whereIn('id', $c) as $i => $pc)
+                                                @if($pc)
+                                                @php
+                                                    $counts = count(array_filter($cex2->pekerjaan_cp_id, function ($value) use ($pc) {
+                                                        return $value == $pc->id;
+                                                    }));
+                                                @endphp
+                                                    <div class="flex gap-1 ">
+                                                        <p>~ {{ $pc->name }} </p>
+                                                        <p class="text-green-700 underline underline-offset-1 hidden sm:block">@if($i < $pc->count() - 1),@endif</p>
+                                                    </div>
+                                                @else
+                                                    <p>kosong</p>
+                                                @endif
+                                                
+                                            @empty
+                                            @endforelse
+                                        @endif
+                                    </td>
+                                    <td class="capitalize text-start {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                        @php
+                                            $descriptions = $cex2->deskripsi ? $cex2->deskripsi[$index] : '';
+                                        @endphp
+                                        <p>~ {{ $descriptions }}</p>
+                                    </td>
+                                    <td class="capitalize text-start">
+                                        @forelse($pcp->whereIn('id', $c) as $i => $pc)
+                                            @if($pc)
+                                                <p>~ {{ $pc->type_check }}</p>
+                                            @endif
+                                        @empty
+                                        @endforelse
+                                    </td>
+
+                                    {{-- <td class="overflow-hidden">
+                                        <a href="{{ Auth::user()->role_id == 2 ? route('admin-lihatMap', $cex2->id) : route('direksi-lihatMap', $cex2->id) }}"
                                             class="btn btn-sm btn-info text-xs overflow-hidden">
                                             <span id="displayText" class="displayText">Lokasi</span> <!-- Empty span to hold the text -->
                                         </a>
-                                    </td>
+                                    </td> --}}
 
                                     
-                                    <td>
-                                        @if ($c->approve_status == 'proccess')
-                                            <div class="flex justify-center gap-1 items-center text-center overflow-hidden"  style="width: 14rem;">
-                                                <div class="overflow-hidden">
-                                                    <button class="btn btn-success btn-xs rounded-btn flex items-center overflow-hidden" onclick="openModal({{ json_encode($c) }}, '{{ route('direksi.approveCP', $c->id) }}', {{ json_encode($c->user) }}, 'accept')">
-                                                        <i class="ri-check-double-line"></i>
-                                                        <p class="overflow-hidden">accept</p>
-                                                    </button>
-                                                </div>
-                                                <div class="overflow-hidden">
-                                                    <button class="btn btn-error btn-xs rounded-btn flex items-center overflow-hidden" onclick="openModal({{ json_encode($c) }}, '{{ route('direksi.deniedCP', $c->id) }}', {{ json_encode($c->user) }}, 'denied')">
-                                                        <i class="ri-close-line"></i>
-                                                        <p class="overflow-hidden">denied</p>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            
-                                            {{--<div class="flex flex-col gap-2 justify-center items-center mt-2">
-                                                <button type="button" id="{{ "note" . $c->id }}" class="btn btn-warning btn-xs rounded-btn flex items-center overflow-hidden px-10" >
-                                                    <i class="ri-sticky-note-line"></i>
-                                                    <p class="overflow-hidden">note?</p>
-                                                </button>
-                                                <input id="{{ "notes" . $c->id }}" type="text" name="note" class="input input-bordered" placeholder="notes..." style="display: none; height: 40px;"/>
-                                            </div>--}}
-                                        @else
-                                            @if($c->approve_status == "accept")
+                                    <td class="{{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                        @if (isset($cex2->approve_status[$index]) && is_array($cex2->approve_status))
+                                            @if($cex2->approve_status[$index] == 'accept')
                                                 <div class="flex flex-col justify-center items-center">
-                                                    <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $c->approve_status }}</span> 
-                                                    <p>Note: {{ $c->note }}</p>
+                                                    <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span> 
+                                                    <p>Note: {{ $cex2->note[$index] }}</p>
+                                                </div>
+                                            @elseif($cex2->approve_status[$index] == "proccess")
+                                                <div class="flex flex-col justify-center items-center">
+                                                    <span class="badge bg-amber-500 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span> 
                                                 </div>
                                             @else
                                                 <div class="flex flex-col justify-center items-center">
-                                                    <span class="badge bg-red-500 px-2 text-xs text-white overflow-hidden">{{ $c->approve_status }}</span>
-                                                    <p>Note: {{ $c->note }}</p>
+                                                    <span class="badge bg-red-500 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span>
+                                                    <p>Note: {{ $cex2->note[$index] }}</p>
                                                 </div>
                                             @endif
+                                            {{-- <p>{{ $cek->approve_status[$index] }}</p> --}}
+                                        @endif
+                                    </td>
+                                    
+                                    <td class="flex flex-col gap-2 items-center min-w-[300px] max-w-[300px] justify-center {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                        @if ($type == 'dikerjakan')
+                                        <div class="flex flex-col items-center justify-center {{ $cex2->approve_status[$index] == 'accept' ? 'hidden' : '' }}">
+                                            <button id="{{ 'btn_'.$c }}" class="btn btn-info btn-sm">Nilai</button>
+                                        </div>
+                                        <div id="div_form_{{ $c }}" class="hidden">
+                                            <form action="{{ route('direksi.uploadNilai', $cex2->id) }}" method="POST" class="flex justify-center items-center flex-col">
+                                                @csrf
+                                                @method('put')
+                                                <div class="flex gap-2 my-2">
+                                                    <div>
+                                                        <input type="radio" name="approve_status[]" placeholder="" value="accept" class="radio radio-sm radio-success">
+                                                        <label for="approve_status[]">accept</label>
+                                                    </div>
+                                                    <div>
+                                                        <input type="radio" name="approve_status[]" placeholder="" value="denied" class="radio radio-sm radio-error">
+                                                        <label for="approve_status[]">denied</label>
+                                                    </div>
+                                                </div>
+                                                <input type="text" name="note[]" placeholder="note.." class="input input-bordered input-sm text-sm">
+                                                <input type="hidden" name="arrKe" value="{{ $index }}" class="input input-bordered input-sm text-sm">
+                                                <button type="submit" class="btn btn-info btn-sm mt-2">Submit</button>
+                                            </form>
+                                        </div>
                                         @endif
                                     </td>
                                 </tr>
@@ -164,6 +185,13 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                <div class="flex justify-end gap-2  mx-5 sm:mx-10 my-2">
+                    @if(Auth::user()->role_id == 2)
+                        <a href="{{ route('admin.cp.index') }}" class="btn btn-error">Kembali</a>
+                    @else
+                        <a href="{{ route('direksi.cp.index') }}" class="btn btn-error">Kembali</a>
+                    @endif
                 </div>
                 <div>
                         <!-- Display your modal here -->
@@ -206,6 +234,11 @@
                     var id = $(this).attr('id').substring(4);
                     $('#notes' + id).toggle();
                     $('#note' + id).toggle();
+                });
+
+                $('[id^="btn_"]').click(function() {
+                    var id = $(this).attr('id').replace('btn_', '');
+                    $('#div_form_' + id).toggleClass('hidden');
                 });
             });
             
@@ -275,11 +308,11 @@
         
                 if (screenWidth >= 576) {
                     displayTexts.forEach(function(displayText) {
-                        displayText.textContent = 'Info Lokasi'; // Set text for larger screens
+                        // displayText.textContent = 'Info Lokasi'; // Set text for larger screens
                     });
         
                     displayTHs.forEach(function(displayTH) {
-                        displayTH.textContent = 'Koordinat'; // Set text for larger screens
+                        // displayTH.textContent = 'Koordinat'; // Set text for larger screens
                     });
                 } else {
                     displayTexts.forEach(function(displayText) {
@@ -287,7 +320,7 @@
                     });
         
                     displayTHs.forEach(function(displayTH) {
-                        displayTH.textContent = 'Informasi'; // Set text for smaller screens
+                        // displayTH.textContent = 'Informasi'; // Set text for smaller screens
                     });
                 }
             }

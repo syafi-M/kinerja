@@ -11,8 +11,10 @@ class CheckPoint extends Model
     
     protected $casts = [
         'pekerjaan_cp_id' => 'array',
-        'img' => 'array'
-        
+        'img' => 'array',
+        'approve_status' => 'array',
+        'note' => 'array',
+        'deskripsi' => 'array'
         ];
 
     protected $fillable = [

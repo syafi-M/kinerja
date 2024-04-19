@@ -20,7 +20,7 @@
     </style>
     <x-main-div>
         <div class="py-10">
-            <p class="text-center text-lg sm:text-2xl font-bold py-10 uppercase">Index Check Point</p>
+            <p class="text-center text-lg sm:text-2xl font-bold py-10 uppercase">Index Rencana Kerja</p>
             <div class="flex flex-col sm:flex-row justify-between mx-10">
                 @if(Auth::user()->role_id == 2)
                     <div>
@@ -91,7 +91,7 @@
                                     @if(Auth::user()->role_id == 2)
                                         <td class="overflow-hidden"><a href="{{ route('admin.cp.show', $u->id) }}" class="btn btn-sm btn-info text-xs overflow-hidden">Lihat CP</a></td>
                                     @else
-                                        <td class="overflow-hidden"><a href="{{ route('direksi.cp.show', $u->id) }}" class="btn btn-sm btn-info text-xs overflow-hidden">Lihat CP</a></td>
+                                        <td class="overflow-hidden"><a href="{{ route('direksi.cp.show', $u->id . '?type=dikerjakan',) }}" class="btn btn-sm btn-info text-xs overflow-hidden">Lihat CP</a></td>
                                     @endif
                                     
                                     

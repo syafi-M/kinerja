@@ -582,6 +582,7 @@ class AbsensiController extends Controller
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
         $radius = round($jarak['meters']);
         
+        // dd($request->all());
         
         if($absensi->tipe_id == 1)
         {

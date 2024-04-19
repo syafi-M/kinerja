@@ -107,7 +107,7 @@
 								    <select name="user_id" id="selectUser" class="select select-bordered">
 								        <option selected value="{{ Auth::user()->id }}" class="op" data-clien="{{ Auth::user()->kerjasama->client_id }}">{{ Auth::user()->nama_lengkap }}</option>
 								        @foreach($userL as $us)
-								            <option value="{{ $us->id }}" class="op" data-divisi="{{ $us->devisi_id }}" data-clien="{{ $us->kerjasama->client_id }}" data-jab="{{ $us->divisi->jabatan_id }}">{{ $us->nama_lengkap }}</option>
+								            <option value="{{ $us->id }}" class="op" data-divisi="{{ $us->devisi_id }}" data-clien="{{ $us->kerjasama->client_id }}" data-jab="{{ $us->divisi?->jabatan_id }}">{{ $us->nama_lengkap }}</option>
 								        @endforeach
 								    </select>
 								@else

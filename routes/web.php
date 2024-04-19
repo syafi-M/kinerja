@@ -78,8 +78,8 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('/mypoint/{id}', [PointController::class, 'myPoint'])->name('mypoint');
 
     Route::resource('checkpoint-user', CheckPointController::class);
-    Route::get('editBukti-checkpoint-user/{id}', [CheckPointController::class, 'editBukti'])->name('editBukti-checkpoint-user');
-    Route::put('uploadBukti-checkpoint-user/{id}', [CheckPointController::class, 'uploadBukti'])->name('uploadBukti-checkpoint-user');
+    Route::get('editBukti-checkpoint-user', [CheckPointController::class, 'editBukti'])->name('editBukti-checkpoint-user');
+    Route::post('uploadBukti-checkpoint-user', [CheckPointController::class, 'uploadBukti'])->name('uploadBukti-checkpoint-user');
     
     Route::get('/riwayat-kerja/{id}', [RatingController::class, 'rateKerja'])->name('rate.kerja');
     Route::get('/getJadwal/{id}', [JadwalUserController::class, 'getJadwal'])->name('get-jadwal');
@@ -108,8 +108,9 @@ Route::middleware('direksi')->group(function () {
     Route::get('/direksi-user', [LeaderController::class, 'indexUser'])->name('direksi_user');
     Route::get('/direksi-checkpoint', [AdminController::class, 'checkPoint'])->name('direksi.cp.index');
     Route::get('/direksi-lihat-check/{id}', [AdminController::class, 'lihatCheck'])->name('direksi.cp.show');
-    Route::patch('/direksi-approve-cp/{id}', [AdminController::class, 'approveCheck'])->name('direksi.approveCP');
-    Route::patch('/direksi-denied-cp/{id}', [AdminController::class, 'deniedCheck'])->name('direksi.deniedCP');
+    Route::put('/direksi-nilai-cp/{id}', [CheckPointController::class, 'uploadNilai'])->name('direksi.uploadNilai');
+    // Route::patch('/direksi-approve-cp/{id}', [AdminController::class, 'approveCheck'])->name('direksi.approveCP');
+    // Route::patch('/direksi-denied-cp/{id}', [AdminController::class, 'deniedCheck'])->name('direksi.deniedCP');
     Route::get('/direksi-check-koordinat/{id}', [CheckPointController::class, "show"])->name('direksi-lihatMap');
 });
 

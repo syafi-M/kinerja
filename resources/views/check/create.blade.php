@@ -2,36 +2,39 @@
 	<x-main-div>
 		<div class="px-5 py-10">
 			<div>
-                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">Buat Planning</p>
+                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">{{ $id ? "Ubah Planning Kerja ". $cex->user->nama_lengkap : "Buat Planning" }}</p>
             </div>
-			<form method="POST" action="{{ route('checkpoint-user.store') }}" class=" my-10" id="form-cp" enctype="multipart/form-data">
+			<form method="POST" action="{{ $id ? route('checkpoint-user.update', $cex->id) : route('checkpoint-user.store') }}" class=" my-10" id="form-cp" enctype="multipart/form-data">
 			@csrf
+            @if ($id)
+                @method('put')
+            @endif
 			<div class="bg-slate-100 px-10 py-5 rounded shadow">
 				<div class="flex flex-col justify-between">
-					<label>Nama: </label>
-					<input type="text" id="user_id" name="user_id" value="{{ Auth::user()->id }}" hidden>
-					<input type="text" value="{{ Auth::user()->nama_lengkap }}" disabled class="input input-bordered">
+					<label class="label label-text font-semibold">Nama: </label>
+					<input type="text" id="user_id" name="user_id" value="{{ $id ? $cex->user_id : Auth::user()->id }}" hidden>
+					<input type="text" value="{{ $id ? $cex->user->nama_lengkap : Auth::user()->nama_lengkap }}" disabled class="input input-bordered">
 				</div>
 				<div class="flex flex-col  justify-between mt-3">
-					<label>Bermitra Dengan: </label>
-					<input type="text" name="divisi_id" id="divisi_id" hidden value="{{ Auth::user()->divisi->id }}"> 
-					<input type="text" value="{{ Auth::user()->kerjasama->client->name }}" disabled
+					<label class="label label-text font-semibold">Bermitra Dengan: </label>
+					<input type="text" name="divisi_id" id="divisi_id" hidden value="{{ $id ? $cex->user->devisi_id : Auth::user()->divisi->id }}"> 
+					<input type="text" value="{{ $id ? $cex->user->kerjasama->client->name : Auth::user()->kerjasama->client->name }}" disabled
 						class="input input-bordered">
 				</div>
 				<div class="mt-3 flex flex-col gap-2">
 					<x-input-label for="type_check " :value="__('Check Point')" class="required text-center"/>
 					@php
 					    $pcpH = $pcp->where('type_check', 'harian');
-					    $pcpM = $pcp->where('type_check', 'migguan');
+					    $pcpM = $pcp->where('type_check', 'mingguan');
 					    $pcpB = $pcp->where('type_check', 'bulanan');
 					    $pcpI = $pcp->where('type_check', 'isidental');
 					@endphp
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lHarian">Harian</label>
-                        <div class="flex flex-col" id="hCont" style="display: none;">
+                        <div class="flex flex-col" id="hCont" >
                             @forelse ($pcpH as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="harian" class="checkbox">
+                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="harian" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -41,10 +44,10 @@
 					</span>
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lMingguan">Mingguan</label>
-                        <div class="flex flex-col" id="mCont" style="display: none;">
+                        <div class="flex flex-col" id="mCont" >
                             @forelse ($pcpM as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="mingguan" class="checkbox">
+                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="mingguan" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -54,10 +57,10 @@
 					</span>
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lBulanan">Bulanan</label>
-                        <div class="flex flex-col" id="bCont" style="display: none;">
+                        <div class="flex flex-col" id="bCont" >
                             @forelse ($pcpB as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="bulanan" class="checkbox">
+                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="bulanan" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -67,10 +70,10 @@
 					</span>
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lIsidental">Isidental</label>
-                        <div class="flex flex-col" id="iCont" style="display: none;">
+                        <div class="flex flex-col" id="iCont" >
                             @forelse ($pcpI as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" name="pekerjaan_id[]" value="{{ $p->id }}" id="isidental" class="checkbox">
+                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="isidental" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -79,6 +82,38 @@
                         </div>
 					</span>
 					<x-input-error :messages="$errors->get('type_check')" class="mt-2" />
+                    @if ($id)
+                    <span>
+                        @if (!empty($cex->pekerjaan_cp_id))
+                        @foreach ($cex->pekerjaan_cp_id as $i => $item)
+                        @php
+                                    $ce = $pcp->where('id', $item)->first();
+                                    @endphp
+                                @if (empty($ce))
+                                @if ($item)
+                                    <p id="tambahan_label" class="text-center font-semibold my-1">~ Tambahan ~</p>
+                                @endif
+                                <span class="flex items-center gap-2 p-1 overflow-hidden">
+                                    <input type="checkbox" checked  name="pekerjaan_id[]" value="{{ $item }}" id="isidental" class="checkbox">
+                                    <label for="checkbox">{{ $item }}</label>
+                                </span>
+                                @endif
+                            @endforeach
+                        @endif
+                    </span>
+                    
+                    
+                    
+                        <div>
+                            <div id="tambahan_pcp" class="flex flex-col gap-2">
+                                <p id="tambahan_label" class="hidden text-center font-semibold my-1">~ Tambahan ~</p>
+                            </div>
+                            <div class="flex justify-end mt-2">
+                                <button type="button" id="tambah_pcp_btn" class="btn btn-sm btn-info">+ Tambah</button>
+                            </div>
+                        </div>
+                    @endif
+
 				</div>
 				<span class="hidden">
 				    <p class="text-center">~ Lokasi ~</p>
@@ -86,6 +121,9 @@
         				<input type="text" value="" id="latitude" name="latitude" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
         				<input type="text" value="" id="longitude" name="longtitude" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
     				</span>
+                    <div id="div_status">
+    
+                    </div>
 				</span>
 			</div>
 			<div class="flex justify-center sm:justify-end gap-2 mt-10">
@@ -134,32 +172,51 @@
     		    $('#form-cp').submit();
     		});
         
+        $('#tambah_pcp_btn').click(function() {
+            $('#tambahan_label').show();
+            $('#tambahan_pcp').append(
+                $('<input type="text" name="pekerjaan_id[]" class="input input bordered" placeholder="CP tambahan.."/>')
+            )
+        })
         
         $('#lHarian').click(function(){
-            $('#mCont, #bCont, #iCont').slideUp();
+            // $('#mCont, #bCont, #iCont').slideUp();
             $('#hCont').slideToggle();
         })
         $('#lMingguan').click(function(){
-            $('#hCont, #bCont, #iCont').slideUp();
+            // $('#hCont, #bCont, #iCont').slideUp();
             $('#mCont').slideToggle();
         })
         $('#lBulanan').click(function(){
-            $('#mCont, #hCont, #iCont').slideUp();
+            // $('#mCont, #hCont, #iCont').slideUp();
             $('#bCont').slideToggle();
         })
         $('#lIsidental').click(function(){
-            $('#mCont, #bCont, #hCont').slideUp();
+            // $('#mCont, #bCont, #hCont').slideUp();
             $('#iCont').slideToggle();
         })
 	});
 	
-// 	$(document).ready(function() {
-//         $('#pekerjaan_id').on('change', function() {
-//             var selectedValue = $(this).val(); // Get the selected value
+	// $(document).ready(function() {
+    //     $('.checkbox').change(function() {
+    //         // Initialize an empty array to store the values of checked checkboxes
+    //         var checkedValues = [];
+    //         // Loop through each checked checkbox
+    //         $('.checkbox:checked').each(function() {
+    //             // Push the value of the checked checkbox to the array
+    //             checkedValues.push($(this).val());
+    //         });
 
-//             console.log(selectedValue); // Log the selected value to the console
-//         });
-//     });
+    //         // Clear the content of #div_status
+    //         $('#div_status').empty();
+
+    //         // Add inputStatus elements based on the number of checked checkboxes
+    //         for (var i = 0; i < checkedValues.length; i++) {
+    //             var inputStatus = $('<input type="text" name="approve_status[]" value="proccess"/>');
+    //             $('#div_status').append(inputStatus);
+    //         }
+    //     });
+    // });
     
     $(document).ready(function() {
         $('#pekerjaan_id').on('change', function() {

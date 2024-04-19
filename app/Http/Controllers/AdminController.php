@@ -99,20 +99,34 @@ class AdminController extends Controller
         $filter = $request->filterKerjasama;
         
         $kerjasama = Kerjasama::all();
+
+        $awalMinggu = Carbon::now()->startOfWeek();
+        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        
         
         if($filter)
         {
             $user = User::orderBy('kerjasama_id', 'asc')->where('kerjasama_id', $filter)->get();   
-            $cek = CheckPoint::paginate(800000);
+            $cek = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+                    ->paginate(80);
         }else{
-            $user = User::orderBy('kerjasama_id', 'asc')->get();
-            $cek = CheckPoint::paginate(800000);
+            if (Auth::user()->name == 'DIREKTUR') {
+                # code...
+                $user = User::orderBy('kerjasama_id', 'asc')->where('kerjasama_id', 1)->get();
+            } else {
+                # code...
+                $user = User::orderBy('kerjasama_id', 'asc')->get();
+            }
+            
+            $cek = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+                    ->paginate(80);
         }
         
         return view('admin.check.index', compact('cek', 'user', 'kerjasama', 'filter')); 
     }
-    public function lihatCheck($id)
+    public function lihatCheck(Request $request, $id)
     {
+        $type = $request->type;
         $inMonth = Carbon::now()->month;
         $user = User::findOrFail($id);
         $cek = CheckPoint::orderBy('created_at', 'asc')->where('user_id', $id)->whereMonth('created_at', $inMonth)->paginate(15);
@@ -126,36 +140,28 @@ class AdminController extends Controller
         $pkBulanan = PekerjaanCP::where('type_check', 'bulanan')->where('user_id', $id)->get();
         $pkIsi = PekerjaanCP::where('type_check', 'isidental')->where('user_id', $id)->get();
         
-        $loginResponse = Http::get('https://kalenderindonesia.com/api/login');
-        $key = $loginResponse->json('key');
-        
-        $dayInMonth = Carbon::now()->daysInMonth;
-        $dayNoWeek = [];
-        $cYear = Carbon::now()->year;
-        $cMonth = Carbon::now()->month;
-        
-        
-        
-        
-        if ($loginResponse->successful()) {
-            $isNationalHoliday = Http::get("https://kalenderindonesia.com/api/{$key}/libur/masehi/{$cYear}");
-            if ($isNationalHoliday->successful()) {
-                // dd($isNationalHoliday->json()['data']['holiday'][$cMonth], Carbon::now()->month);
-                $natDay = $isNationalHoliday->json()['data']['holiday'][$cMonth]['count'];
-            }
-            for ($day = 1; $day <= $dayInMonth; $day++) {
-                $currentDay = Carbon::now()->day($day);
-                if ($currentDay->dayOfWeek != Carbon::SATURDAY && $currentDay->dayOfWeek != Carbon::SUNDAY) {
-                    $dayNoWeek[] = $currentDay;
-                }
-            }
+        $awalMinggu = Carbon::now()->startOfWeek();
+        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        if ($type == 'rencana') {
+            $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+                ->where('user_id', $id)
+                ->where('type_check', 'rencana')
+                ->latest()
+                ->first();
+            # code...
+        } else {
+            $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+                ->where('user_id', $id)
+                ->where('type_check', 'dikerjakan')
+                ->latest()
+                ->first();
         }
-        // dd(count($dayNoWeek) - $natDay);
         
-        $thisHoly = count($dayNoWeek) - $natDay;
+        $pcp = PekerjaanCp::where('user_id', $id)->get();
+        // dd($cex2);
         
         
-        return view('admin.check.lihatCP', compact('user','thisHoly', 'cek', 'typeHarian', 'typeMingguan', 'typeBulanan', 'typeIsi', 'pkHarian', 'pkMingguan', 'pkBulanan', 'pkIsi'));
+        return view('admin.check.lihatCP', compact('user','type', 'cek','cex2', 'pcp', 'typeHarian', 'typeMingguan', 'typeBulanan', 'typeIsi', 'pkHarian', 'pkMingguan', 'pkBulanan', 'pkIsi'));
     }
     
     public function approveCheck(Request $request, $id)
