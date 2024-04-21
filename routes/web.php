@@ -109,6 +109,7 @@ Route::middleware('direksi')->group(function () {
     Route::get('/direksi-checkpoint', [AdminController::class, 'checkPoint'])->name('direksi.cp.index');
     Route::get('/direksi-lihat-check/{id}', [AdminController::class, 'lihatCheck'])->name('direksi.cp.show');
     Route::put('/direksi-nilai-cp/{id}', [CheckPointController::class, 'uploadNilai'])->name('direksi.uploadNilai');
+    Route::delete('/direksi-delete-rk/{id}', [CheckPointController::class, 'deleteRencana'])->name('direksi.deleteRencana');
     // Route::patch('/direksi-approve-cp/{id}', [AdminController::class, 'approveCheck'])->name('direksi.approveCP');
     // Route::patch('/direksi-denied-cp/{id}', [AdminController::class, 'deniedCheck'])->name('direksi.deniedCP');
     Route::get('/direksi-check-koordinat/{id}', [CheckPointController::class, "show"])->name('direksi-lihatMap');

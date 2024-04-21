@@ -261,8 +261,8 @@
                                 </div>
                                 <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="tambahCP">
                                     <!--<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full" {{ \Carbon\Carbon::now()->isWeekend() ? '' : 'disabled' }}>Tambah Planning (sabtu - minggu )</a>-->
-                                    <a href="{{ route('checkpoint-user.create') }}"
-                                        class="btn btn-info w-full">Tambah Planning (sabtu - minggu )</a>
+                                    <a href="{{ $cex ? route('checkpoint-user.edit', $cex->id) : route('checkpoint-user.create') }}"
+                                        class="btn btn-info w-full">{{ $cex ? "Ubah Planning" : "Tambah Planning" }} (sabtu - minggu )</a>
                                 </div>
                                 <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="kirimCP">
                                     <!--<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full" {{ \Carbon\Carbon::now()->isWeekend() ? 'disabled' : '' }}>Kirim Bukti (senin - jum'at)</a>-->

@@ -295,13 +295,16 @@ class CheckPointController extends Controller
         $deskripsi = array_filter($request->deskripsi, function ($value) {
             return $value !== null;
         });
+        $notes = array_filter($request->note, function ($value) {
+            return $value !== null;
+        });
         // Append new deskripsi values
         if (!$cex2) {
-            $cek['deskripsi'] = $request->deskripsi;
-            $cek['note'] = $request->note;
+            $cek['deskripsi'] = $deskripsi;
+            $cek['note'] = $notes;
         } else {
-            $cex2->deskripsi = array_merge($cex2->deskripsi ?? [], $request->deskripsi);
-            $cex2->note = array_merge($cex2->note ?? [], $request->note);
+            $cex2->deskripsi = array_merge($cex2->deskripsi ?? [], $deskripsi);
+            $cex2->note = array_merge($cex2->note ?? [], $notes);
         }
         
     }
@@ -343,12 +346,12 @@ class CheckPointController extends Controller
     $note = $cex2->note ?? [];
 
     // Update the values at the specified index
-    if (isset($request->approve_status[$arrKe])) {
-        $approveStatus[$arrKe] = $request->approve_status[$arrKe];
+    if (isset($request->approve_status)) {
+        $approveStatus[$arrKe] = $request->approve_status[0];
     }
 
-    if (isset($request->note[$arrKe])) {
-        $note[$arrKe] = $request->note[$arrKe];
+    if (isset($request->note)) {
+        $note[$arrKe] = $request->note[0];
     }
 
     // Assign the modified arrays back to the properties
@@ -374,6 +377,48 @@ class CheckPointController extends Controller
 
    
 
+   public function deleteRencana(Request $request, $id)
+   {
+       $cek = CheckPoint::findOrFail($id);
+       try {
+        // Check if arrKe exists in the request
+        if ($request->has('arrKe')) {
+            $arrKe = $request->arrKe;
+
+            // Check if arrKe is a valid index in the array
+            if (isset($cek->pekerjaan_cp_id[$arrKe])) {
+                // Create a copy of the arrays
+                $pekerjaan_cp_id = $cek->pekerjaan_cp_id;
+
+                // Unset the item at the specified index
+                unset($pekerjaan_cp_id[$arrKe]);
+
+                // Reset array keys to maintain continuity
+                $pekerjaan_cp_id = array_values($pekerjaan_cp_id);
+
+                // Assign modified arrays back to the object properties
+                $cek->pekerjaan_cp_id = $pekerjaan_cp_id;
+
+                // dd($cek);
+                // Save the changes to the model
+                $cek->save();
+
+                toastr()->warning('Data Telah Dihapus', 'warning');
+                return redirect()->back();
+            } else {
+                toastr()->error('Index Tidak Valid', 'error');
+                return redirect()->back();
+            }
+        } else {
+            toastr()->error('Parameter arrKe Tidak Ditemukan', 'error');
+            return redirect()->back();
+        }
+    } catch (\Illuminate\Database\QueryException $e) {
+        toastr()->error('Data Tidak Ditemukan', 'error');
+        return redirect()->back();
+    }
+
+   }
    public function destroy($id)
    {
 

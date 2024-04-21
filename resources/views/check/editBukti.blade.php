@@ -25,6 +25,7 @@
                             $pcpType = $pcp->whereIn('id', $cex->pekerjaan_cp_id)->where('type_check', $type);
                         @endphp
                         <span class="flex flex-col gap-1">
+							
 							@if ($pcpType->count() >= 1)
                             	<label for="example_checkbox" class="label font-semibold">~{{ ucfirst($type) }}</label>
 							@endif
@@ -64,7 +65,50 @@
                                 @endforelse
                             </div>
                         </span>
-                    @endforeach
+						@endforeach
+						<span>
+							@if (!empty($cex->pekerjaan_cp_id))
+							@foreach ($cex->pekerjaan_cp_id as $i => $item)
+								@php
+									$ce = $pcp->where('id', $item)->first();
+								@endphp
+								@if (empty($ce))
+									@if ($item)
+										<p id="tambahan_label" class="text-center font-semibold my-1">~ Tambahan ~</p>
+									@endif
+									<label for="checkbox" style="padding-left: 10px;" class="lab" data-id="{{ str_replace(' ', '_', $item) }}" data-loop="{{ $i }}">{{ $i + 1 }}. {{ $item }}</label>
+									<div class="p-1">
+										<div class="preview_{{str_replace(' ', '_', $item)}} hidden w-full">
+											<span class="flex justify-center items-center">
+												<label for="img_{{str_replace(' ', '_', $item)}}" class="p-1">
+													<img class="img_{{str_replace(' ', '_', $item)}} ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s"
+														src="" alt="" srcset="" height="120px" width="120px">
+												</label>
+											</span>
+										</div>
+										<label for="img_{{str_replace(' ', '_', $item)}}"
+											class="w-full iImage_{{str_replace(' ', '_', $item)}} flex flex-col items-center justify-center rounded-md bg-slate-300/70 ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s">
+											<span class="p-2 flex justify-center items-center">
+												<i class="ri-image-add-line text-xl text-slate-700/90"></i>
+												<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
+												<input id="img_{{str_replace(' ', '_', $item)}}" data-pcp_id="{{ str_replace(' ', '_', $item) }}" class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
+													type="file" name="img[]" value="null" autofocus autocomplete="img2" accept="image/*"/>
+											</span>
+										</label>
+									</div>
+									<div class="my-2">
+										<textarea name="deskripsi[]" id="deskripsi" rows="1" class="textarea textarea-bordered w-full" placeholder="Deskripsi laporan..."></textarea>
+										<textarea name="note[]" id="note" rows="1" class="textarea textarea-bordered w-full hidden" placeholder="Deskripsi laporan..."></textarea>
+										<x-input-error :messages="$errors->get('deskripsi')" class="mt-2" />
+									</div>
+									{{-- <span class="flex items-center gap-2 p-1 overflow-hidden">
+										<input type="checkbox" checked  name="pekerjaan_id[]" value="{{ $item }}" id="isidental" class="checkbox">
+										<label for="checkbox">{{ $item }}</label>
+									</span> --}}
+								@endif
+							@endforeach
+							@endif
+						</span>
 					<x-input-error :messages="$errors->get('type_check')" class="mt-2" />
 				</div>
 				<span class="hidden">
@@ -117,6 +161,7 @@
 	</script>
 	<script>
     $(document).ready(function() {
+		// console.log({!! json_encode($pcpType) !!});
         let checkedCount = 0;
             var checkedCheckboxes = $('.lab');
             checkedCount = checkedCheckboxes.length;
@@ -126,18 +171,19 @@
             $('.lab').each(function(index, element) {
                 var dataId = $(element).data('id');
                 var matchedPcp = Object.values(pcp).find(item => item.id == dataId);
-                // console.log(dataId, matchedPcp);
-                if (matchedPcp) {
+                // console.log($(this).data('id'));
+                // if (matchedPcp) {
                     $(`#img_${dataId}`).change(function() {
                         const input = $(this)[0];
         				const preview = $(`.preview_${dataId}`);
-						console.log($(this).data('pcp_id'), $(this).val());
+
+						// console.log($(this).data('pcp_id'), $(this).val());
 
 						if (input.files) {
 							const valueExists = $('.input_pcp').filter(function() {
                             return $(this).val() == $(`.input_img_${dataId}`).data('pcp_id');
                         }).length > 0;
-							console.log(valueExists);
+							// console.log(valueExists);
 							if (!valueExists) {
 								$('#pcp_container').append(
 									$(`<input class="input_pcp" name="pekerjaan_cp_id[]" value="${$(this).data('pcp_id')}"/>
@@ -145,6 +191,7 @@
 								)
 							}
 						}
+						console.log(input.files, dataId);
         
         				if (input.files && input.files[0]) {
         					const reader = new FileReader();
@@ -161,7 +208,7 @@
         				}
                     });
         
-                }
+                // }
         $(`#img_${dataId}`).change(function() {
             var maxSizeInBytes = 3 * 1024 * 1024; // 5MB (change this value to your desired max size)
             var fileSize = this.files[0].size;
