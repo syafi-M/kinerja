@@ -58300,3 +58300,6 @@ In ProviderRepository.php line 206:
   2024-04-22 12:00:07 Running ['artisan' app:absen-update] ...... 3,775ms DONE
   ⇂ '/opt/alt/php82/usr/bin/php' 'artisan' app:absen-update > '/dev/null' 2>&1  
 
+
+   INFO  No scheduled commands are ready to run.  
+
