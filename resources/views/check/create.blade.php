@@ -34,7 +34,7 @@
                         <div class="flex flex-col" id="hCont" >
                             @forelse ($pcpH as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="harian" class="checkbox">
+                                    <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="harian" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -47,7 +47,7 @@
                         <div class="flex flex-col" id="mCont" >
                             @forelse ($pcpM as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="mingguan" class="checkbox">
+                                    <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="mingguan" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -60,7 +60,7 @@
                         <div class="flex flex-col" id="bCont" >
                             @forelse ($pcpB as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="bulanan" class="checkbox">
+                                    <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="bulanan" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -73,7 +73,7 @@
                         <div class="flex flex-col" id="iCont" >
                             @forelse ($pcpI as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
-                                    <input type="checkbox" {{in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="isidental" class="checkbox">
+                                    <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="isidental" class="checkbox">
                                     <label for="checkbox">{{ $p->name }}</label>
                                 </span>
                             @empty
@@ -165,6 +165,16 @@
 	</script>
 	<script>
 	$(document).ready(function() {
+	    $('.checkbox').change(function() {
+            if($(this).is(':checked')) {
+                // console.log("checked");
+                $('#div_status').append($('<input type="hidden" name="approve_status[]" value="proccess" class="input input-bordered" placeholder="CP tambahan.."/>'));
+            } else {
+                // Remove the appended input field if the checkbox is unchecked
+                $('#div_status input[type="hidden"]').remove();
+            }
+        });
+
 	    $('#btnSubmit').click(function(){
     		    $(this).prop('disabled', true);
     		    $(this).text('Tunggu..');
@@ -181,19 +191,19 @@
         
         $('#lHarian').click(function(){
             // $('#mCont, #bCont, #iCont').slideUp();
-            $('#hCont').slideToggle();
+            $('#hCont').slideToggle('fast');
         })
         $('#lMingguan').click(function(){
             // $('#hCont, #bCont, #iCont').slideUp();
-            $('#mCont').slideToggle();
+            $('#mCont').slideToggle('fast');
         })
         $('#lBulanan').click(function(){
             // $('#mCont, #hCont, #iCont').slideUp();
-            $('#bCont').slideToggle();
+            $('#bCont').slideToggle('fast');
         })
         $('#lIsidental').click(function(){
             // $('#mCont, #bCont, #hCont').slideUp();
-            $('#iCont').slideToggle();
+            $('#iCont').slideToggle('fast');
         })
 	});
 	

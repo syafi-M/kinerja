@@ -108,6 +108,7 @@
 </div>
 <script>
     $(document).ready(function() {
+        // console.log({!! json_encode(Auth::user()->jabatan) !!}, {!! json_encode($dev) !!});
         $('#deleteUser').click(function(){
 		    $('.modalDeleteUser').removeClass('hidden')
 			.addClass('flex justify-center items-center opacity-100');

@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
         $isModal = Session::pull('is_modal', false);
         $awalMinggu = Carbon::now()->startOfWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(1); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
         $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
             ->where('user_id', Auth::user()->id)
             ->where('type_check', 'rencana')
@@ -77,6 +77,10 @@ class DashboardController extends Controller
             ->where('type_check', 'dikerjakan')
             ->latest()
             ->first();
+        $totcex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+            ->where('type_check', 'dikerjakan')
+            ->latest()
+            ->get();
         // dd($cex, $cex2);
         return view('dashboard', [
             'absen' => $absen,
@@ -95,6 +99,7 @@ class DashboardController extends Controller
             'cekAbsen' => $cekAbsen,
             'cex' => $cex,
             'cex2' => $cex2,
+            'totcex' => $totcex,
             'warn' => $warn
         ]);
     }

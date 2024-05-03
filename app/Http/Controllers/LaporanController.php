@@ -148,6 +148,7 @@ class LaporanController extends Controller
         // })->get();
         
         if($str1 != $end1 && !$request->has('ruangan_id')){
+            // $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('nilai', '!=', 'baik')->get();
             $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->get();
         }else if($str1 != $end1 && $request->has('ruangan_id')){
             $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();

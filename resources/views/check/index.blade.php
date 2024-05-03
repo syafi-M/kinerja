@@ -55,6 +55,7 @@
                             @php
 								$no = 1;
 							@endphp
+							@if($cek)
                             @forelse ($cek->pekerjaan_cp_id as $index => $c)
                                 <tr>
                                     <td>
@@ -105,9 +106,9 @@
                                     </td>
                                     <td class="capitalize text-start  {{ $type == 'rencana' ? 'hidden' : 'hidden sm:table-cell' }}">
                                         @php
-                                            $descriptions = $cek->deskripsi ? $cek->deskripsi[$index] : '';
+                                            $descriptions = isset($cek->deskripsi) ? ($cek->deskripsi[$index] ?? '') : '';
                                         @endphp
-                                        <p>~ {{ $descriptions }}</p>
+                                        <p>~ {{ $descriptions ? $descriptions : '' }}</p>
                                     </td>
 
                                     <td class="capitalize text-start hidden sm:table-cell">
@@ -152,6 +153,7 @@
                                 <td colspan="7" class="text-center">CP Saat Ini Kosong</td> 
                             </tr>
                             @endforelse
+							@endif
                         </tbody>
                     </table>
                 </div>

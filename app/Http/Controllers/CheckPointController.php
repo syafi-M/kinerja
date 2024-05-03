@@ -72,9 +72,10 @@ class CheckPointController extends Controller
             'latitude' => $request->latitude,
             'longtitude' => $request->longtitude,
             // 'approve_status' => $request->approve_status,
-            'type_check' => 'rencana'
+            'type_check' => 'rencana',
+            'approve_status' => $request->approve_status,
         ];
-        // dd($data);
+        // dd($request->all(), $data);
         
         $imagePaths = [];
         
@@ -261,8 +262,8 @@ class CheckPointController extends Controller
 
         // Append new approve_status values
         $approve_status = $cex2->approve_status ?? [];
-        $approve_status = array_merge($approve_status, $request->approve_status ?? []);
-        $cex2->approve_status = $approve_status;
+        // $approve_status = array_merge($approve_status, $request->approve_status ?? []);
+        // $cex2->approve_status = $approve_status;
         // $cex2->pekerjaan_cp_id = array_unique($pekerjaanCpId);
     }
     
@@ -285,7 +286,7 @@ class CheckPointController extends Controller
             $cek['img'] = $imagePaths;
         } else {
             $cex2->img = array_merge($cex2->img ?? [], $imagePaths);
-            $cex2->approve_status = array_merge($cex2->approve_status, $request->approve_status);
+            $cex2->approve_status = array_merge($cex2->approve_status ?? [], $request->approve_status);
         }
         
     }
@@ -295,22 +296,23 @@ class CheckPointController extends Controller
         $deskripsi = array_filter($request->deskripsi, function ($value) {
             return $value !== null;
         });
-        $notes = array_filter($request->note, function ($value) {
-            return $value !== null;
-        });
+        $deskripsi = array_values($deskripsi);
+        // $notes = array_filter($request->note, function ($value) {
+        //     return $value !== null;
+        // });
         // Append new deskripsi values
         if (!$cex2) {
             $cek['deskripsi'] = $deskripsi;
-            $cek['note'] = $notes;
+            // $cek['note'] = $notes;
         } else {
             $cex2->deskripsi = array_merge($cex2->deskripsi ?? [], $deskripsi);
-            $cex2->note = array_merge($cex2->note ?? [], $notes);
+            // $cex2->note = array_merge($cex2->note ?? [], $notes);
         }
         
     }
 
 
-    // dd($request->all(),$cex2);
+    // dd($request->all(), $cex2);
     
     try {
         if (!$cex2) {

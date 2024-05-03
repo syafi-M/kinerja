@@ -55,8 +55,8 @@
                     					</div>
                     					<!---->
                     					<div class="my-2">
-                    						<textarea name="deskripsi[]" id="deskripsi" rows="1" class="textarea textarea-bordered w-full" placeholder="Deskripsi laporan..."></textarea>
-                    						<textarea name="note[]" id="note" rows="1" class="textarea textarea-bordered w-full hidden" placeholder="Deskripsi laporan..."></textarea>
+                    						<textarea name="deskripsi[]" id="deskripsi_{{$p->id}}" rows="1" class="textarea textarea-bordered w-full" placeholder="Deskripsi laporan..."></textarea>
+                    						{{--<textarea name="note[]" id="note" rows="1" class="textarea textarea-bordered w-full hidden" placeholder="Deskripsi laporan..."></textarea>--}}
                     						<x-input-error :messages="$errors->get('deskripsi')" class="mt-2" />
                     					</div>
                                     </span>
@@ -176,6 +176,8 @@
                     $(`#img_${dataId}`).change(function() {
                         const input = $(this)[0];
         				const preview = $(`.preview_${dataId}`);
+        				
+        				$('#deskripsi_' + dataId).attr('required', true);
 
 						// console.log($(this).data('pcp_id'), $(this).val());
 

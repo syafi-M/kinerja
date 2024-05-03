@@ -30,7 +30,7 @@
         								</select>
     								</span>
     							</div>
-    							<span style="width: 36%" class="flex gap-1 items-center bg-red-500">
+    							<span style="width: 36%" class="flex gap-1 items-center ">
         							<div class="mr-2" style="width: 50%">
         								<input type="date" name="str1" id="str1" placeholder="Tanggal Mulai"
         									class="text-md block py-2 text-sm rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
@@ -142,9 +142,8 @@
 							@if (Auth::user()->role_id == 2 ||
 									Auth::user()->divisi->jabatan->code_jabatan == 'LEADER' ||
 									Auth::user()->divisi->jabatan->code_jabatan == 'MITRA')
-								<td>{{ $i->user->nama_lengkap }}</td>
+								<td>{{ $i->user?->nama_lengkap }}</td>
 							@endif
-								<!--<td>{{ $i->user->nama_lengkap }}</td>-->
 
 							<td>{{ $i->client->name }}</td>
 							<td>{{ $i->ruangan?->nama_ruangan }}</td>

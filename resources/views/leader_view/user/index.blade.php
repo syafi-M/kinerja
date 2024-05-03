@@ -65,7 +65,7 @@
         								@endif
                                         <td class="p-1 ">{{ $i->name }}</td>
                                         <td class="p-1  break-words whitespace-pre-wrap">{{ $i->nama_lengkap }}</td>
-                                        <td class="p-1  break-words whitespace-pre-wrap" style="width: 90px">{{ $i->divisi->jabatan->code_jabatan }}</td>
+                                        <td class="p-1  break-words whitespace-pre-wrap" style="width: 90px">{{ $i->divisi ? $i->divisi->jabatan->code_jabatan : "Jabatan Kosong ?" }}</td>
                                         <td class="p-1 break-words whitespace-pre-line">{{ $i->email}}</td>
                                         @if ($i->kerjasama == null)
         									<td>kosong</td>

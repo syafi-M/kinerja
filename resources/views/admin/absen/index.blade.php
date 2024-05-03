@@ -171,9 +171,9 @@
 								@endphp
 								
 								
-								<td style="color: {{ $msLat <= 11 && $msLong <= 11 ? 'inherit' : 'red' }}">{{ $arr->msk_lat }}, {{ $arr->msk_long }}</td>
+								<td style="color: {{ $msLat <= 19 && $msLong <= 19 ? 'inherit' : 'red' }}">{{ $arr->msk_lat }}, {{ $arr->msk_long }}</td>
 								
-								<td style="color: {{ $plgLat <= 11 && $plgLong <= 11 ? 'inherit' : 'red' }}">{{ $arr->plg_lat }}, {{ $arr->plg_long }}</td>
+								<td style="color: {{ $plgLat <= 19 && $plgLong <= 19 ? 'inherit' : 'red' }}">{{ $arr->plg_lat }}, {{ $arr->plg_long }}</td>
 								{{-- End Handle Absensi Type Pulang --}}
                                 
 								{{-- Handle Keterangan --}}

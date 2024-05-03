@@ -40,34 +40,34 @@
 										<td>
 											Nama Lengkap
 										</td>
-										<td class="break-words whitespace-pre-wrap">:{{ Auth::user()->nama_lengkap }}</td>
+										<td class="break-words whitespace-pre-wrap">: {{ Auth::user()->nama_lengkap }}</td>
 									</tr>
 									<tr>
 										<td>Email</td>
-										<td class="break-words whitespace-pre-line">:{{ Auth::user()->email }}</td>
+										<td class="break-words whitespace-pre-line">: {{ Auth::user()->email }}</td>
 									</tr>
 									<tr>
 										<td>NIK</td>
-										<td class="break-words whitespace-pre-line">:{{ \Illuminate\Support\Facades\Crypt::decryptString(Auth::user()->nik) }}</td>
+										<td class="break-words whitespace-pre-line">: {{ Auth::user()->nik ? \Illuminate\Support\Facades\Crypt::decryptString(Auth::user()->nik) : '' }}</td>
 									</tr>
 									<tr>
 										<td>No. Hp</td>
-										<td class="break-words whitespace-pre-line">:{{ Auth::user()->no_hp }}</td>
+										<td class="break-words whitespace-pre-line">: {{ Auth::user()?->no_hp }}</td>
 									</tr>
 									<tr>
 										<td>Jabatan</td>
 										@if (Auth::user()->divisi->jabatan == null)
-											<td>:Kosong</td>
+											<td>: Kosong</td>
 										@else
-											<td>:{{ Auth::user()->divisi->jabatan->name_jabatan }}</td>
+											<td>: {{ Auth::user()->divisi->jabatan->name_jabatan }}</td>
 										@endif
 									</tr>
 									<tr>
 										<td>Bermitra</td>
 										@if (Auth::user()->kerjasama == null)
-											<td>:Kosong</td>
+											<td>: Kosong</td>
 										@else
-											<td>:{{ Auth::user()->kerjasama->client->name }}</td>
+											<td>: {{ Auth::user()->kerjasama->client->name }}</td>
 										@endif
 									</tr>
 								</thead>

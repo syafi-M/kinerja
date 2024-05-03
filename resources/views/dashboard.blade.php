@@ -153,6 +153,8 @@
                             @method('PUT')
                             <div class="flex justify-center flex-col">
                                 <div class="flex justify-center items-center">
+                                    <input id="lat" name="lat_user" value="" class="hidden lat" />
+                                    <input id="long" name="long_user" value="" class="hidden long" />
                                     <button type="submit"
                                         class="bg-yellow-600 flex justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 text-xl rounded-md transition all ease-out duration-100 mt-5 mr-0 sm:mr-2 uppercase items-center">
                                         <i class="ri-sun-foggy-line"></i><span class="font-bold">Oke</span>
@@ -376,21 +378,79 @@
                             ];
                         @endphp
                         @if(array_key_exists($jabatan, $routes))
-						<div class="sm:grid sm:grid-cols-3 sm:gap-2 sm:space-y-0 space-y-2 overflow-hidden w-full">
-
-                            @foreach($routes[$jabatan] as $key => $route)
-                                <div class="w-full space-y-4 overflow-hidden {{ $key == 'rating' && $jabatan == 'DIREKSI' ? 'hidden' : '' }}" id="L{{ $key }}">
-                                    <a href="{{ route($route) }}" class="btn btn-info w-full">
-                                        <i class="{{ $icons[$key] }} text-xl"></i>{{ ucfirst($key) }}
-                                    </a>
+						<div class="w-full gap-2">
+						    @if(Auth::user()->divisi->jabatan->code_jabatan == 'DIREKSI')
+                                {{-- absensi --}}
+                                <div id="btnAbsensi"
+                                    class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
+                                    <i class="ri-todo-line text-xl"></i>
+                                    <button class="uppercase font-bold text-sm">Attendance( Kehadiran )</button>
                                 </div>
-                            @endforeach
+                                {{-- menu menu dashboard absensi --}}
+                                @php
+                                    $hariIni = Carbon\Carbon::now()->format('N');
+                                    $tampilkanAbsensi = !in_array($hariIni, [6, 7]) || Auth::user()->kerjasama_id != 1;
+                                    $codeJabatan = Auth::user()->divisi->jabatan->code_jabatan;
+                                    $absensiRoute = match($codeJabatan) {
+                                        'CO-CS' => 'absensi-karyawan-co-cs.index',
+                                        'CO-SCR' => 'absensi-karyawan-co-scr.index',
+                                        default => '',
+                                    };
+                                @endphp
+                                <div class="flex flex-col gap-2 mt-2">
+                                    
+                                    <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngabsen">
+                                        @if ($tampilkanAbsensi)
+                                            <a href="{{ route('absensi.index') }}" class="btn btn-info w-full">Kehadiran</a>
+                                        @else
+                                            <a href="#" class="btn btn-info w-full">Tidak Ada Jadwal</a>
+                                        @endif
+                                    </div>
+                                    @if (!empty($absensiRoute))
+                                        <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngabsenK">
+                                            <a href="{{ route($absensiRoute) }}" class="btn btn-info w-full">Kehadiran karyawan</a>
+                                        </div>
+                                    @endif
+                                    <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="ngIzin">
+                                        <a href="{{ route('izin.create') }}" class="btn btn-info w-full">Izin</a>
+                                    </div>
+                                    <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="btnRiwayat">
+                                        <a href="#" class="btn btn-success w-full">Riwayat</a>
+                                    </div>
+                                    <div class="hidden w-full space-y-4 px-4 sm:px-20 overflow-hidden" id="isiAbsen">
+                                        <a href="historyAbsensi" class="btn btn-info w-full">Riwayat Kehadiran</a>
+                                    </div>
+                                    <div class="hidden w-full space-y-4 px-4 sm:px-20 overflow-hidden" id="isiLembur">
+                                        <a href="{{ route('lemburIndexUser') }}" class="btn btn-info w-full">Riwayat Lembur</a>
+                                    </div>
+                                    <div class="hidden w-full space-y-4 px-4 sm:px-20 overflow-hidden" id="isiIzin">
+                                        <a href="{{ route('izin.index') }}" class="btn btn-info w-full">Riwayat Izin</a>
+                                    </div>
+                                </div>
+						    @endif
+                                
+                            <div class="mt-5 sm:grid sm:grid-cols-3 sm:gap-2 sm:space-y-0 space-y-2 overflow-hidden w-full">
+                                @foreach($routes[$jabatan] as $key => $route)
+                                    <div class="w-full space-y-4 overflow-hidden {{ $key == 'rating' && $jabatan == 'DIREKSI' ? 'hidden' : '' }}" id="L{{ $key }}">
+                                        <a href="{{ route($route) }}" class="btn btn-info w-full flex justify-center items-center relative">
+                                            <i class="{{ $icons[$key] }} text-xl"></i>{{ ucfirst($key) }}
+                                            @if($jabatan == 'DIREKSI' && $key == 'rencana kerja')
+                                                <span class="bg-yellow-500 text-center absolute" style="padding: 20px 25px 5px 35px; right: -20px; top: -18px; transform: rotate(35deg);">
+                                                    <p style="transform: rotate(-35deg);">
+                                                        {{ count($totcex) }}
+                                                    </p>
+                                                </span>
+                                            @endif
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
 						</div>
                         @endif
                         @endif
 						
                         {{-- quran --}}
-                        <div class="flex items-center justify-center">
+                        <div class="flex items-center justify-center w-full">
                             <div id="btnAbsi"
                                 class="mx-10 mt-5 flex justify-center w-2/3 max-w-[300px] items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                 <i class="ri-todo-line text-xl"></i>
@@ -966,7 +1026,7 @@
 
         $(document).ready(function() {
             $(document).on('click', '.closeNews', function() {
-                $('.modalNews').addClass('hidden');
+                $('.modalNews').hide();
             });
         });
     </script>
