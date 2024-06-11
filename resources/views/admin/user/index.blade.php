@@ -22,6 +22,42 @@
 				
 			</div>
 		</div>
+		<div class="hidden justify-between items-center overflow-hidden mx-10 my-1">
+			<div>
+				<form id="massUpdateUser" action="{{ route('user.massUpdate') }}" method="POST" class="p-1 flex flex-col gap-2">
+				    @csrf
+				    <label>Mass Update User (jangan digunakan sembarangan)</label>
+				    <div class="flex w-full gap-1">
+    					<select name="kerjasama" id="filterKerjasama" class="select select-sm text-sm select-bordered active:border-none border-none w-full">
+    						<option selected disabled>~ Kerja Sama ~</option>
+    						@foreach ($kerjasama as $i)
+    							<option value="{{ $i->id }}">{{ $i->client->name }}</option>
+    						@endforeach
+    					</select>
+    					<select name="devisi" id="filterKerjasama" class="select select-sm text-sm select-bordered active:border-none border-none w-full">
+    						<option selected disabled>~ Devisi ~</option>
+    						@foreach ($dev as $i)
+    							<option value="{{ $i->id }}">{{ $i->jabatan->name_jabatan }} id: {{ $i->id }}</option>
+    						@endforeach
+    					</select>
+    					<select name="field" id="filterKerjasama" class="select select-sm text-sm select-bordered active:border-none border-none w-full">
+    						<option selected disabled>~ Field (yang mau diisi/diganti) ~</option>
+    						<option value="jabatan_id">Jabatan ID</option>
+    						<option value="kerjasama_id">Kerjasama ID</option>
+    						<!--<option value="devisi_id">Devisi ID</option>-->
+    					</select>
+				    </div>
+					<div class="flex w-full gap-1">
+    					<input name="old_value" type="text" placeholder="data lama..." class="input input-bordered input-sm w-full"/>
+    					<input name="new_value" type="text" placeholder="data baru..." class="input input-bordered input-sm w-full"/>
+					</div>
+					<div class="flex justify-end">
+    					<button type="submit"
+    						class="bg-amber-500 px-5 py-2 rounded-md hover:bg-blue-600 transition-colors ease-in .2s font-bold uppercase ml-3">Update</button>
+					</div>
+				</form>
+			</div>
+		</div>
 
 		<div class="overflow-x-auto mx-10 my-10">
 			<table class="table table-xs table-zebra w-full bg-slate-50" id="searchTable">

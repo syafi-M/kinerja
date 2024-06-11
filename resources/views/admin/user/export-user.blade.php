@@ -40,10 +40,20 @@
 	</style>
 </head>
 
+<body>
 <main>
 	<div class="title">
 		<span class="sub-title" style="vertical-align: 20px; font-weight: bolder; font-size: 25px;">PT. Surya
 			Amanah Cendekia</span>
+			@forelse ($data as $items)
+        		@forelse ($items as $user)
+        		    <p style="font-weight: 700;">User Mitra {{ $user->kerjasama->client->name }}</p>
+        		    @break
+        		@empty
+        		@endforelse
+        		@break
+        	@empty
+        	@endforelse
 	</div>
 	<div class="table-wrapper">
 		<table class="border">

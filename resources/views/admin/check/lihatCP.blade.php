@@ -37,8 +37,8 @@
             </div>
             
             <div class="mx-2 sm:mx-10 my-2">
-                <a href="{{ $type == 'rencana' ? route('checkpoint-user.edit', $cex2->id) : '' }}" {{ $type == 'rencana' ? '' : 'disabled' }}>
-                    <button type="submit"  class="btn btn-warning btn-sm {{ $type == 'rencana' ? '' : 'btn-disabled' }}">+ Ubah Rencana Kerja</button>
+                <a href="{{ $type == 'rencana' && $cex2 ? route('checkpoint-user.edit', $cex2->id) : '' }}" {{ $type == 'rencana' ? '' : 'disabled' }}>
+                    <button type="submit"  class="btn btn-warning btn-sm {{ $type == 'rencana' && $cex2 ? '' : 'btn-disabled' }}">+ Ubah Rencana Kerja</button>
                 </a>
             </div>
             <div class="flex flex-col items-center mx-2 my-2 sm:justify-center justify-start">
@@ -50,6 +50,7 @@
 								<th class="bg-slate-300 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">Gambar Bukti</th>
 								<th class="bg-slate-300">Nama CP</th>
 								<th class="bg-slate-300 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">Deskripsi</th>
+								<th class="bg-slate-300">Tanggal</th>
 								<th class="bg-slate-300">Check Point</th>
 								<th class="bg-slate-300   {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">Status</th>
 								{{-- <th class="bg-slate-300 displayTH" id="displayTH">Informasi</th> --}}
@@ -60,124 +61,136 @@
                             @php
                                 $no = 1;
                             @endphp
-                            @forelse ($cex2->pekerjaan_cp_id as $index => $c)
-                                <tr>
-                                    <td>{{ $no++ }}</td>
-                                    @if ((empty($c) || $c == 'no-image.jpg') && $c != 'rencana')
-                                        <td>
-                                            <x-no-img class="scale-50"/>
-                                        </td>
-                                    @elseif ($c == 'rencana')
-                                        <td class="{{ $type == 'rencana' ? 'hidden' : '' }}"></td>
-                                    @else
-                                        <td class="flex gap-1 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
-                                            @if(isset($cex2->img[$index]))
-                                            <img src="{{ asset('storage/images/' . $cex2->img[$index]) }}" alt="" srcset=""
-                                                width="70px" class="rounded">
-                                        @endif
-                                        </td>
-                                    @endif
-                                    
-                                    <td class="capitalize text-start min-w-[100px]">
-                                        @php
-                                            $ce = $pcp->where('id', $c)->first();
-                                        @endphp
-                                        @if (empty($ce))
-                                            <div class="flex gap-1 ">
-                                                <p>~ {{ $c }} </p>
-                                                <p class="text-green-700 underline underline-offset-1 hidden sm:block"></p>
-                                            </div>
+                            @if($cex2)
+                                @forelse ($cex2->pekerjaan_cp_id as $index => $c)
+                                    <tr>
+                                        <td>{{ $no++ }}</td>
+                                        @if ((empty($c) || $c == 'no-image.jpg') && $c != 'rencana')
+                                            <td>
+                                                <x-no-img class="scale-50"/>
+                                            </td>
+                                        @elseif ($c == 'rencana')
+                                            <td class="{{ $type == 'rencana' ? 'hidden' : '' }}"></td>
                                         @else
-                                            @forelse($pcp->whereIn('id', $c) as $i => $pc)
-                                                @if($pc)
-                                                @php
-                                                    $counts = count(array_filter($cex2->pekerjaan_cp_id, function ($value) use ($pc) {
-                                                        return $value == $pc->id;
-                                                    }));
-                                                @endphp
-                                                    <div class="flex gap-1 ">
-                                                        <p>~ {{ $pc->name }} </p>
-                                                        <p class="text-green-700 underline underline-offset-1 hidden sm:block">@if($i < $pc->count() - 1),@endif</p>
-                                                    </div>
-                                                @else
-                                                    <p>kosong</p>
-                                                @endif
-                                                
-                                            @empty
-                                            @endforelse
-                                        @endif
-                                    </td>
-                                    <td class="capitalize text-start min-w-[200px] {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
-                                        @php
-                                            $descriptions = $cex2->deskripsi ? $cex2->deskripsi[$index] : '';
-                                        @endphp
-                                        <p>~ {{ $descriptions }}</p>
-                                    </td>
-                                    <td class="capitalize text-start">
-                                        @forelse($pcp->whereIn('id', $c) as $i => $pc)
-                                            
-                                            @if($pc)
-                                                <p>~ {{ $pc->type_check }}</p>
+                                            <td class="flex gap-1 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                                @if(isset($cex2->img[$index]))
+                                                <img src="{{ asset('storage/images/' . $cex2->img[$index]) }}" alt="" srcset=""
+                                                    width="70px" class="rounded">
                                             @endif
-                                        @empty
-                                        @endforelse
-                                    </td>
-
-                                    {{-- <td class="overflow-hidden">
-                                        <a href="{{ Auth::user()->role_id == 2 ? route('admin-lihatMap', $cex2->id) : route('direksi-lihatMap', $cex2->id) }}"
-                                            class="btn btn-sm btn-info text-xs overflow-hidden">
-                                            <span id="displayText" class="displayText">Lokasi</span> <!-- Empty span to hold the text -->
-                                        </a>
-                                    </td> --}}
-
-                                    
-                                    <td class="min-w-[100px] {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
-                                        @if (isset($cex2->approve_status[$index]) && is_array($cex2->approve_status))
-                                            @if($cex2->approve_status[$index] == 'accept')
-                                                <div class="flex flex-col justify-center items-center">
-                                                    <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span> 
-                                                    <p>Note: <br> {{ $cex2->note[$index] }}</p>
-                                                </div>
-                                            @elseif($cex2->approve_status[$index] == "proccess")
-                                                <div class="flex flex-col justify-center items-center">
-                                                    <span class="badge bg-amber-500 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span> 
-                                                </div>
-                                            @else
-                                                <div class="flex flex-col justify-center items-center">
-                                                    <span class="badge bg-red-500 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span>
-                                                    <p>Note: <br> {{ $cex2->note[$index] }}</p>
-                                                </div>
-                                            @endif
-                                            {{-- <p>{{ $cek->approve_status[$index] }}</p> --}}
+                                            </td>
                                         @endif
-                                    </td>
-                                    
-                                    <td class="flex flex-col gap-2 items-center p-2 justify-center">
-                                        @if ($type == 'dikerjakan')
-                                        <div class="flex flex-col items-center justify-center {{ $cex2->approve_status[$index] == 'accept' ? 'hidden' : '' }}">
-                                            <button id="{{ 'btn_'.$c }}" data-id="{{ $c }}" data-btn="edit" data-index-arr="{{ $index }}" class="btn btn-info btn-sm">Nilai</button>
-                                        </div>
                                         
-                                        @else
-                                        <div class="flex flex-col items-center justify-center">
+                                        <td class="capitalize text-start min-w-[100px]">
+                                            @php
+                                                $ce = $pcp->where('id', $c)->first();
+                                            @endphp
                                             @if (empty($ce))
-                                                <button id="{{ 'btn_'. str_replace(' ', '_', $c) }}" data-btn="delete" data-id="{{ $cex2->id }}" data-index-arr="{{ $index }}" data-pc="{{ $c }}" class="btn btn-error btn-sm">Hapus</button>
+                                                <div class="flex gap-1 ">
+                                                    <p>~ {{ $c }} </p>
+                                                    <p class="text-green-700 underline underline-offset-1 hidden sm:block"></p>
+                                                </div>
                                             @else
                                                 @forelse($pcp->whereIn('id', $c) as $i => $pc)
-                                                    <button id="{{ 'btn_'. str_replace(' ', '_', $c) }}" data-btn="delete" data-id="{{ $cex2->id }}" data-index-arr="{{ $index }}" data-pc="{{ $pc->name }}" class="btn btn-error btn-sm">Hapus</button>
+                                                    @if($pc)
+                                                    @php
+                                                        $counts = count(array_filter($cex2->pekerjaan_cp_id, function ($value) use ($pc) {
+                                                            return $value == $pc->id;
+                                                        }));
+                                                    @endphp
+                                                        <div class="flex gap-1 ">
+                                                            <p>~ {{ $pc->name }} </p>
+                                                            <p class="text-green-700 underline underline-offset-1 hidden sm:block">@if($i < $pc->count() - 1),@endif</p>
+                                                        </div>
+                                                    @else
+                                                        <p>kosong</p>
+                                                    @endif
+                                                    
                                                 @empty
                                                 @endforelse
                                             @endif
-                                        </div>
+                                        </td>
+                                        <td class="capitalize text-start min-w-[200px] {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                            @php
+                                                $descriptions = $cex2->deskripsi ? $cex2->deskripsi[$index] : '';
+                                            @endphp
+                                            <p>~ {{ $descriptions }}</p>
+                                        </td>
+                                        <td class="capitalize text-start min-w-[200px]">
+                                            @php
+                                                $tanggal = $cex2->tanggal ? $cex2->tanggal[$index] : 'Kosong';
+                                            @endphp
+                                            <p>~ {{ $tanggal }}</p>
+                                        </td>
+                                        <td class="capitalize text-start">
+                                            @forelse($pcp->whereIn('id', $c) as $i => $pc)
+                                                
+                                                @if($pc)
+                                                    <p>~ {{ $pc->type_check }}</p>
+                                                @endif
+                                            @empty
+                                            @endforelse
+                                        </td>
+    
+                                        {{-- <td class="overflow-hidden">
+                                            <a href="{{ Auth::user()->role_id == 2 ? route('admin-lihatMap', $cex2->id) : route('direksi-lihatMap', $cex2->id) }}"
+                                                class="btn btn-sm btn-info text-xs overflow-hidden">
+                                                <span id="displayText" class="displayText">Lokasi</span> <!-- Empty span to hold the text -->
+                                            </a>
+                                        </td> --}}
+    
                                         
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center">~ Kosong ~</td>
-                                </tr>
-                            @endforelse
+                                        <td class="min-w-[100px] {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
+                                            @if (isset($cex2->approve_status[$index]) && is_array($cex2->approve_status))
+                                                @if($cex2->approve_status[$index] == 'accept')
+                                                    <div class="flex flex-col justify-center items-center">
+                                                        <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span> 
+                                                        <p>Note: <br> {{ $cex2->note[$index] }}</p>
+                                                    </div>
+                                                @elseif($cex2->approve_status[$index] == "proccess")
+                                                    <div class="flex flex-col justify-center items-center">
+                                                        <span class="badge bg-amber-500 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span> 
+                                                    </div>
+                                                @else
+                                                    <div class="flex flex-col justify-center items-center">
+                                                        <span class="badge bg-red-500 px-2 text-xs text-white overflow-hidden">{{ $cex2->approve_status[$index] }}</span>
+                                                        <p>Note: <br> {{ $cex2->note[$index] }}</p>
+                                                    </div>
+                                                @endif
+                                                {{-- <p>{{ $cek->approve_status[$index] }}</p> --}}
+                                            @endif
+                                        </td>
+                                        
+                                        <td class="flex flex-col gap-2 items-center p-2 justify-center">
+                                            @if ($type == 'dikerjakan')
+                                            <div class="flex flex-col items-center justify-center {{ $cex2->approve_status[$index] == 'accept' ? 'hidden' : '' }}">
+                                                <button id="{{ 'btn_'.$c }}" data-id="{{ $c }}" data-btn="edit" data-index-arr="{{ $index }}" class="btn btn-info btn-sm">Nilai</button>
+                                            </div>
+                                            
+                                            @else
+                                            <div class="flex flex-col items-center justify-center">
+                                                @if (empty($ce))
+                                                    <button id="{{ 'btn_'. str_replace(' ', '_', $c) }}" data-btn="delete" data-id="{{ $cex2->id }}" data-index-arr="{{ $index }}" data-pc="{{ $c }}" class="btn btn-error btn-sm">Hapus</button>
+                                                @else
+                                                    @forelse($pcp->whereIn('id', $c) as $i => $pc)
+                                                        <button id="{{ 'btn_'. str_replace(' ', '_', $c) }}" data-btn="delete" data-id="{{ $cex2->id }}" data-index-arr="{{ $index }}" data-pc="{{ $pc->name }}" class="btn btn-error btn-sm">Hapus</button>
+                                                    @empty
+                                                    @endforelse
+                                                @endif
+                                            </div>
+                                            
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center">~ Kosong ~</td>
+                                    </tr>
+                                @endforelse
+                            @else
+                            <tr>
+                                <td colspan="9" class="text-center">~ Kosong ~</td>
+                            </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -280,47 +293,49 @@
                             $('#div_form_delete').toggleClass('hidden flex').html(formHtml);
                             
                         } else {
-                            var formHtml2 = `
-                            <div class="flex overflow-hidden p-2 px-5 rounded-md flex-col bg-slate-200 min-w-full sm:min-w-fit sm:max-w-20">
-                                <div class="flex justify-end">
-                                    <button id="btnClose" class="btn btn-error">&times;</button>
-                                </div>
-                                <form action="{{ route('direksi.uploadNilai', $cex2->id) }}" method="POST" class="flex justify-center items-center flex-col">
-                                    @csrf
-                                    @method('put')
-                                    <div class="flex flex-col gap-2 my-2 w-full">
-                                        <div>
-                                            <p class="text-center font-semibold">~${filterData[0].name}~</p>
-                                            </div>
-                                        <div class="flex justify-center">
-                                            ${isImg ? `<img src="{{ asset('storage/images/${dataCex.img[indexArr]}') }}" class="rounded" alt="" srcset="" width="70px">` : ''}
-                                        </div>
-                                        <div class="flex justify-start my-2">
-                                            <p class="text-start font-semibold text-xs sm:text-sm line-clamp-2">${dataCex.deskripsi[indexArr]}</p>
-                                        </div>
-                                        <div class="">
-                                            <x-input-label for="approve_status[]" class="text-center" :value="__('Status: ')" />
-                                            <div class="flex gap-2 justify-around">
-                                                <div>
-                                                    <input type="radio" name="approve_status[]" checked placeholder="" value="accept" class="radio radio-sm radio-success">
-                                                    <label for="approve_status[]" class="text-sm font-semibold">Disetujui</label>
-                                                </div>
-                                                <div>
-                                                    <input type="radio" name="approve_status[]" placeholder="" value="denied" class="radio radio-sm radio-error">
-                                                    <label for="approve_status[]" class="text-sm font-semibold">Ditolak</label>
-                                                </div>
-                                            </div>
-                                        </div>
+                            @if($cex2)
+                                var formHtml2 = `
+                                <div class="flex overflow-hidden p-2 px-5 rounded-md flex-col bg-slate-200 min-w-full sm:min-w-fit sm:max-w-20">
+                                    <div class="flex justify-end">
+                                        <button id="btnClose" class="btn btn-error">&times;</button>
                                     </div>
-                                    <div class="w-full">
-                                        <x-input-label for="note[]" class="" :value="__('Note: ')" />
-                                        <input type="text" name="note[]" placeholder="note.." class="input input-bordered w-full input-sm text-sm">
-                                    </div>
-                                    <input type="hidden" name="arrKe" value="${indexArr}" class="input input-bordered input-sm text-sm">
-                                    <button type="submit" class="btn btn-info btn-sm mt-2">Submit</button>
-                                </form>
-                            </div>`;
-                            $('#div_form_nilai').toggleClass('hidden flex').html(formHtml2);
+                                    <form action="{{ route('direksi.uploadNilai', $cex2->id) }}" method="POST" class="flex justify-center items-center flex-col">
+                                        @csrf
+                                        @method('put')
+                                        <div class="flex flex-col gap-2 my-2 w-full">
+                                            <div>
+                                                <p class="text-center font-semibold">~${filterData[0].name}~</p>
+                                                </div>
+                                            <div class="flex justify-center">
+                                                ${isImg ? `<img src="{{ asset('storage/images/${dataCex.img[indexArr]}') }}" class="rounded" alt="" srcset="" width="70px">` : ''}
+                                            </div>
+                                            <div class="flex justify-start my-2">
+                                                <p class="text-start font-semibold text-xs sm:text-sm line-clamp-2">${dataCex.deskripsi[indexArr]}</p>
+                                            </div>
+                                            <div class="">
+                                                <x-input-label for="approve_status[]" class="text-center" :value="__('Status: ')" />
+                                                <div class="flex gap-2 justify-around">
+                                                    <div>
+                                                        <input type="radio" name="approve_status[]" checked placeholder="" value="accept" class="radio radio-sm radio-success">
+                                                        <label for="approve_status[]" class="text-sm font-semibold">Disetujui</label>
+                                                    </div>
+                                                    <div>
+                                                        <input type="radio" name="approve_status[]" placeholder="" value="denied" class="radio radio-sm radio-error">
+                                                        <label for="approve_status[]" class="text-sm font-semibold">Ditolak</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full">
+                                            <x-input-label for="note[]" class="" :value="__('Note: ')" />
+                                            <input type="text" name="note[]" placeholder="note.." class="input input-bordered w-full input-sm text-sm">
+                                        </div>
+                                        <input type="hidden" name="arrKe" value="${indexArr}" class="input input-bordered input-sm text-sm">
+                                        <button type="submit" class="btn btn-info btn-sm mt-2">Submit</button>
+                                    </form>
+                                </div>`;
+                                $('#div_form_nilai').toggleClass('hidden flex').html(formHtml2);
+                            @endif
                             
                         }
                         // console.log("clicked", id, indexArr);

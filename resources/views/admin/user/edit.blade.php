@@ -64,6 +64,16 @@
 					@endforeach
 				</select>
 			</div>
+			<!-- jabatan -->
+			<div class="mt-4">
+				<x-input-label for="jabatan_id" :value="__('Jabatan')" />
+				<select name="jabatan_id" id="" class="select select-bordered w-full mt-1">
+					<option selected disabled>~ Pilih Jabatan ~</option>
+					@foreach ($jabatan as $i)
+						<option name="jabatan_id" {{ $dataUser?->jabatan_id == $i->id ? 'selected' : '' }} value="{{ $i->id }}" class="py-2">{{ $i->name_jabatan }}</option>
+					@endforeach
+				</select>
+			</div>
 			{{-- foto Profile --}}
 			<div class="md:mt-4">
 				<div class="preview hidden">

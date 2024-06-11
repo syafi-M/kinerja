@@ -435,6 +435,7 @@
 			<li>K : Meneruskan Shift</li>
 			@endif
 			<li>- : Kosong</li>
+			<li>// : Libur/merah</li>
 		</ul>
 
 		<div style="right: 25px; position:absolute;">

@@ -39,7 +39,7 @@
         						</div>
         					</form>
         				</div>
-        		@elseif(Auth::user()->name == 'DIREKSI')
+        		@elseif(Auth::user()->name == 'DIREKTUR')
             		<div>
     					<form id="filterForm" action="{{ route('direksi.cp.index') }}" method="GET" class="p-1 flex flex-col gap-2 sm:flex-row items-center">
     						<span class="flex gap-2">
@@ -84,7 +84,7 @@
                                 $no = 1;
                             @endphp
                             @forelse ($user as $u)
-                            @if($u->nama_lengkap != 'user' && $u->nama_lengkap != 'admin')
+                            @if($u->nama_lengkap != 'user' && $u->nama_lengkap != 'admin' && $u->divisi?->jabatan?->code_jabatan != 'DIREKSI' && $u->divisi?->jabatan?->code_jabatan != 'MITRA')
                                 <tr>
                                     <td>{{ $no++ }}</td>
                                     <td>{{ $u->nama_lengkap }}</td>

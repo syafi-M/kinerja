@@ -32,6 +32,7 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\FinalisasiController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ListPekerjaanController;
+use App\Http\Controllers\SlipGajiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -94,6 +95,16 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::put('/isya/{id}', [AbsensiController::class, 'updateIsya'])->name('updateIsya');
     
     Route::get('/get-shifts/{cli}/{jab}', [AbsensiController::class, 'getShift'])->name('olehShift');
+    // laporan Mitra
+    Route::get('/laporanMitra', [LaporanController::class, 'indexLaporanMitra'])->name('laporanMitra.index');
+    Route::get('/laporanMitra/create', [LaporanController::class, 'createLaporanMitra'])->name('laporanMitra.create');
+    Route::post('/laporanMitra/post', [LaporanController::class, 'storeLaporanMitra'])->name('laporanMitra.post');
+    Route::get('/laporanMitra/{id}', [LaporanController::class, 'editLaporanMitra'])->name('laporanMitra.edit');
+    Route::put('/laporanMitra/{id}/update', [LaporanController::class, 'updateLaporanMitra'])->name('laporanMitra.update');
+    Route::delete('/laporanMitra/{id}', [LaporanController::class, 'deleteLaporanMitra'])->name('laporanMitra.delete');
+    
+    Route::get('/slip-gaji', [SlipGajiController::class, 'index'])->name('slip-gaji.index');
+    Route::get('/slip-gaji/export', [SlipGajiController::class, 'exportWith'])->name('slip-gaji.export');
     
 });
 
@@ -126,6 +137,8 @@ Route::middleware('mitra')->group(function () {
     Route::get('/mitra-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('mitra-lihatMap');
     Route::get('/mitra-jadwal', [JadwalUserController::class, 'index'])->name('mitra_jadwal');
     Route::get('/mitra-user', [LeaderController::class, 'indexUser'])->name('mitra_user');
+    
+    Route::get('/mitra-laporan-bulanan', [LaporanController::class, 'indexLaporanMitra'])->name('mitra-laporan-bulanan.index');
 });
 
 // untuk SPV
@@ -250,6 +263,9 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     
     Route::resource('/listPekerjaan', ListPekerjaanController::class);
     Route::post('/listPekerjaan-import', [ListPekerjaanController::class, 'importExcel'])->name('listPekerjaan-excell');
+    
+    Route::post('/admin-user-massUpdate', [UserController::class, 'massUpdate'])->name('user.massUpdate');
+    Route::post('/admin-absen-hapus-foto', [AdminController::class, 'hapusFotoAbsen'])->name('absen.hapusFotoAbsen');
 });
 
 

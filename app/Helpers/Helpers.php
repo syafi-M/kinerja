@@ -14,7 +14,7 @@ function UploadImage($request, $NameFile)
     
             $image = Image::make($file);
             $extensions = $file->getClientOriginalExtension();
-            $randomNumber = mt_rand(1, 999999999999);
+            $randomNumber = mt_rand(1, 999999);
             $rename = 'data' . $randomNumber . '.' . $extensions;
             
             $path = public_path('storage/images/' . $rename);
@@ -38,7 +38,7 @@ function UploadImageV2($request, $NameFile)
     
             $image = Image::make($file);
             $extensions = $file->getClientOriginalExtension();
-            $randomNumber = mt_rand(1, 999999999999);
+            $randomNumber = mt_rand(1, 999999);
             $rename = 'data' . $randomNumber . '.' . $extensions;
             
             $path = public_path('storage/images/' . $rename);
@@ -50,11 +50,26 @@ function UploadImageV2($request, $NameFile)
     }
 }
 
+function UploadFile($request, $NameFile)
+{
+    $file = $request->file($NameFile);
+    if($file != null && $file->isValid()) {
+
+        $extensions = $file->getClientOriginalExtension();
+        $randomName = mt_rand(1, 9999999);
+        $rename = 'pdf' . $randomName . '.' . $extensions;
+        $path = public_path('storage/file/' . $rename);
+        $file->storeAs('pdf', $rename, 'public');
+
+        return $rename;
+    }
+}
+
 function toRupiah($angka)
 {
     if(strpos($angka, '.')){
-        return "Rp.". $angka;
+        return "Rp. ". $angka;
     }else{
-        return "Rp.". number_format($angka, 0, '.','.');
+        return "Rp. ". number_format($angka, 0, '.','.');
     }
 }

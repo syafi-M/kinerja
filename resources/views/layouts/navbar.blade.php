@@ -1,10 +1,11 @@
 
-    <nav class="mx-5 sm:mx-5 mb-5 sm:mb-5 pt-5">
-	<div class="flex pt-1 pl-2 w-full h-auto bg-slate-500 shadow-md rounded-md justify-between">
-		   <a href="{{ route('profile.index')}}">
+    <nav class="mx-5 sm:mx-5 mb-5 sm:mb-5 pt-5 capitalize">
+	<div class="flex pt-1 pl-2 w-full h-auto bg-slate-500 shadow-md rounded-md justify-between capitalize">
+		   <a href="{{ route('profile.index')}}" class="">
 		<div class="flex items-center justify-between gap-2">
 			<div
-				class="p-2 mx-2 my-2 overflow-hidden flex items-center bg-slate-300 rounded-full shadow-md shadow-slate-600 hover:shadow-none transition-all .2s w-10 h-10 ease-in-out">
+				class="p-2 mx-2 my-2 overflow-hidden flex items-center bg-slate-300 rounded-full shadow-md shadow-slate-600 hover:shadow-none transition-all .2s ease-in-out"
+				style="min-width: 2.5rem; min-height: 2.5rem; max-width: 2.5rem; max-height: 2.5rem;">
 			@if(Route::has('login'))
 				    @auth
         				@if (Auth::user()->image == 'no-image.jpg')
@@ -22,7 +23,7 @@
 
 			@if (Route::has('login'))
 				@auth
-					<div class="flex justify-evenly flex-row gap-1">
+					<div class="flex justify-evenly flex-row gap-1" style="width: 65%;" >
 					    <div>
     						<p class="font-semibold text-white text-sm line-clamp-1 break-words">{{ Auth::user()->nama_lengkap }}</p>
 					    </div>
@@ -34,15 +35,19 @@
 			@endif
 		</div>
         </a>
-			<!--<div class="flex justify-end items-center mx-5">-->
-			<!--    <div>-->
-			<!--        <i class="ri-error-warning-line text-lg" style="color: #B80000;"></i>-->
-			<!--    </div>-->
-			<!--</div>-->
-
-		
 		@if (Route::has('login'))
 			@auth
+			    <div class="flex md:hidden overflow-hidden mx-5 items-center">
+			        <form action="{{ route('slip-gaji.index') }}" method="get">
+			            <input type="hidden" name="bulan" value="{{ Carbon\Carbon::now()->format('Y-m') }}"/>
+			            <button class="btn btn-sm btn-warning">
+			                <span class="flex items-center">
+			                    <i class="ri-bank-card-line"></i>
+			                    <p>Slip</p>
+			                </span>
+			            </button>
+			        </form>
+			    </div>
 				<div class="md:flex gap-3 mr-7 hidden overflow-hidden">
 					<x-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard.index')">
 						{{ __('Dashboard') }}

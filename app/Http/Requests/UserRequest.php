@@ -24,6 +24,7 @@ class UserRequest extends FormRequest
         return [
             'kerjasama_id' => 'required',
             'devisi_id' => 'required',
+            'jabatan_id' => 'required',
             'name'      => 'required',
             'nama_lengkap' => 'required',
             'email'     => 'email:rfc',

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="bumblebee">
+<html lang="id" data-theme="bumblebee">
 
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,7 @@
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    
     <script src="{{ URL::asset('src/js/jquery-min.js') }}"></script>
     <script src="{{ URL::asset('src/js/serviceWorker.min.js') }}"></script>
 
@@ -258,19 +259,20 @@
                                     </button>
                                 </div>
                                 <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="isiIndex">
-                                    <a href="/checkpoint-user?type=dikerjakan" class="btn btn-info w-full">Data
+                                    <a href="/checkpoint-user" class="btn btn-info w-full">Data
                                         Rencana Kerja</a>
                                 </div>
                                 <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="tambahCP">
                                     <!--<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full" {{ \Carbon\Carbon::now()->isWeekend() ? '' : 'disabled' }}>Tambah Planning (sabtu - minggu )</a>-->
                                     <a href="{{ $cex ? route('checkpoint-user.edit', $cex->id) : route('checkpoint-user.create') }}"
-                                        class="btn btn-info w-full">{{ $cex ? "Ubah Planning" : "Tambah Planning" }} (sabtu - minggu )</a>
+                                        class="btn btn-info w-full">{{ $cex ? "Ubah Rencana Kerja" : "Tambah Rencana Kerja" }} (sabtu - minggu )</a>
                                 </div>
                                 <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden" id="kirimCP">
                                     <!--<a href="{{ route('checkpoint-user.create') }}" class="btn btn-info w-full" {{ \Carbon\Carbon::now()->isWeekend() ? 'disabled' : '' }}>Kirim Bukti (senin - jum'at)</a>-->
-                                    <a href="{{ route('editBukti-checkpoint-user') }}"
-                                        class="btn btn-info w-full {{ (!$cex && !$cex2) ? 'btn-disabled' : '' }}">Kirim Bukti
-                                        (senin - jum'at)</a>
+                                        <a href="{{ route('editBukti-checkpoint-user') }}"
+                                            {{ !$cex ? 'disabled' : '' }}
+                                            style="{{ !$cex ? 'background: #7dd3fc; border: none; color: #1e293b;' : '' }}"
+                                            class="btn btn-info w-full ">{{ $cex ? "Kirim Bukti" : "Buat Rencana Kerja Terlebih Dahulu" }} (senin - jum'at)</a>
                                 </div>
                             @else
                                 <div class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s"
@@ -338,16 +340,17 @@
                             $role_id = Auth::user()->role_id;
                             $routes = [
                                 'MITRA' => [
-                                    'user' => 'mitra_user',
+                                    'karyawan' => 'mitra_user',
                                     'jadwal' => $role_id == 2 ? 'admin-jadwal.index' : 'mitra_jadwal',
                                     'absensi' => 'mitra_absensi',
                                     'izin' => 'mitra_izin',
                                     'lembur' => 'mitra_lembur',
                                     'laporan' => 'mitra_laporan',
                                     'rating' => 'mitra-rating.index',
+                                    'laporan bulanan' => 'mitra-laporan-bulanan.index',
                                 ],
                                 'LEADER' => [
-                                    'user' => 'lead_user',
+                                    'karyawan' => 'lead_user',
                                     'jadwal' => $role_id == 2 ? 'admin-jadwal.index' : 'leader-jadwal.index',
                                     'absensi' => 'lead_absensi',
                                     'izin' => 'lead_izin',
@@ -356,7 +359,7 @@
                                     'rating' => 'leader-rating.index',
                                 ],
                                 'DIREKSI' => [
-                                    'user' => 'direksi_user',
+                                    'karyawan' => 'direksi_user',
                                     'jadwal' => $role_id == 2 ? 'admin-jadwal.index' : 'direksi_jadwal',
                                     'absensi' => 'direksi_absensi',
                                     'izin' => 'direksi_izin',
@@ -367,12 +370,13 @@
                                 ],
                             ];
                             $icons = [
-                                'user' => 'ri-pass-pending-line',
+                                'karyawan' => 'ri-pass-pending-line',
                                 'jadwal' => 'ri-calendar-check-line',
                                 'absensi' => 'ri-todo-line',
                                 'izin' => 'ri-shield-user-line',
                                 'lembur' => 'ri-time-line',
                                 'laporan' => 'ri-image-add-line',
+                                'laporan bulanan' => 'ri-image-add-line',
                                 'rating' => 'ri-sparkling-line',
                                 'rencana kerja' => 'ri-sparkling-line',
                             ];
@@ -431,7 +435,7 @@
                                 
                             <div class="mt-5 sm:grid sm:grid-cols-3 sm:gap-2 sm:space-y-0 space-y-2 overflow-hidden w-full">
                                 @foreach($routes[$jabatan] as $key => $route)
-                                    <div class="w-full space-y-4 overflow-hidden {{ $key == 'rating' && $jabatan == 'DIREKSI' ? 'hidden' : '' }}" id="L{{ $key }}">
+                                    <div class="w-full space-y-4 overflow-hidden rounded-lg {{ $key == 'rating' && $jabatan == 'DIREKSI' ? 'hidden' : '' }}" id="L{{ $key }}">
                                         <a href="{{ route($route) }}" class="btn btn-info w-full flex justify-center items-center relative">
                                             <i class="{{ $icons[$key] }} text-xl"></i>{{ ucfirst($key) }}
                                             @if($jabatan == 'DIREKSI' && $key == 'rencana kerja')
@@ -548,8 +552,8 @@
                                     <div class="flex justify-center items-center">
                                         <div style="z-index: 9001;"
                                             class="bg-slate-200 inset-0 w-fit p-3 mx-10 my-10 rounded-md shadow relative">
-                                            <img src="{{ URL::asset('/logo/ketupat-2.png') }}" width="20%"
-                                                style="z-index: 9000; position: absolute; top: 0px; left: 0px; transform: rotate(15deg);" />
+                                            <img src="{{ URL::asset('/logo/sac.png') }}" width="20%"
+                                                style="z-index: 9000; position: absolute; top: 0px; left: 0px; transform: rotate(-15deg); padding: 10px; border-radius: 100%;" />
                                             <div class="flex justify-end mb-3">
                                                 <button class="btn btn-error scale-90 closeNews">&times;</button>
                                             </div>
@@ -687,13 +691,13 @@
 
         // modal pulang
         $(document).ready(function() {
-            $(document).on('click', '#modalPulangBtn', function() {
+            $('#modalPulangBtn').click(function() {
                 $('.modalp')
                     .removeClass('hidden')
                     .addClass('flex justify-center items-center opacity-100'); // Add opacity class
             });
 
-            $(document).on('click', '.close', function() {
+            $('.close').click(function() {
                 $('.modalp')
                     .removeClass('flex justify-center items-center opacity-100') // Remove opacity class
                     .addClass('opacity-0') // Add opacity class for fade-out
@@ -882,12 +886,6 @@
                 iAbsensi.toggle();
             });
 
-            
-
-           
-
-            
-
             $('#menuAbsen').click(function() {
                 var absen = $('#absen').toggle();
                 menu3.toggle();
@@ -1015,17 +1013,17 @@
                     .addClass('flex justify-center items-center opacity-100');
             });
 
-            $(document).on('click', '.close', function() {
+            $('.close').click(function() {
                 $('.modalSiang')
                     .removeClass('flex justify-center items-center opacity-100')
                     .addClass('opacity-0')
                     .addClass('hidden')
                     .removeClass('flex justify-center items-center');
-            });
+            })
         };
 
         $(document).ready(function() {
-            $(document).on('click', '.closeNews', function() {
+            $('.closeNews').click(function() {
                 $('.modalNews').hide();
             });
         });

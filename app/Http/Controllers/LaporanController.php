@@ -8,6 +8,7 @@ use App\Models\Ruangan;
 use App\Models\Kerjasama;
 use App\Models\User;
 use App\Models\ListPekerjaan;
+use App\Models\LaporanMitra;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -130,10 +131,11 @@ class LaporanController extends Controller
         
         $mitra = $request->input('client_id');
         $ruangan = $request->input('ruangan_id');
+        $nilai = $request->nilai;
         
         $kerjasama = Kerjasama::firstWhere('id', $mitra);
         
-        // dd($request->all());
+        // dd($nilai);
         
         $totalHari =  Carbon::parse($this->ended)->diffInDays(Carbon::parse($this->str));
         
@@ -147,10 +149,14 @@ class LaporanController extends Controller
         //     });
         // })->get();
         
-        if($str1 != $end1 && !$request->has('ruangan_id')){
+        if($str1 != $end1 && !$request->has('ruangan_id') && !$request->has('nilai')){
             // $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('nilai', '!=', 'baik')->get();
             $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->get();
-        }else if($str1 != $end1 && $request->has('ruangan_id')){
+        }else if($str1 != $end1 && $request->has('ruangan_id') && !$request->has('nilai')){
+            $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();
+        }else if($str1 != $end1 && !$request->has('ruangan_id') && $request->has('nilai')){
+            $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->whereIn('nilai', $nilai)->get();
+        }else if($str1 != $end1 && $request->has('ruangan_id') && $request->has('nilai')){
             $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();
         }else{
             $expPDF = Laporan::with(['User'])->whereDate('created_at', $str1)->where('client_id', $mitra)->get();
@@ -198,5 +204,93 @@ class LaporanController extends Controller
             toastr()->error('Mohon Masukkan Filter Export', 'error');
             return redirect()->back();
         }
+    }
+    
+    // laporan mitra
+    public function indexLaporanMitra() {
+        if(Auth::user()->divisi->jabatan->code_jabatan == "MITRA"){
+            $laporanMitra = LaporanMitra::where('kerjasama_id', Auth::user()->kerjasama_id)->get();
+        }else{
+            $laporanMitra = LaporanMitra::all();
+        }
+        return view('admin.laporanMitra.index', compact('laporanMitra'));
+    }
+    public function createLaporanMitra() {
+        $laporanMitra = LaporanMitra::all();
+        $kerjasama = Kerjasama::all();
+        return view('admin.laporanMitra.create', compact('laporanMitra', 'kerjasama'));
+    }
+    public function storeLaporanMitra(Request $request) {
+        
+        $laporan = new LaporanMitra();
+
+        $laporan = [
+            'kerjasama_id' => $request->kerjasama_id,
+            'file_pdf' => $request->file_pdf,
+        ];
+
+        if ($request->hasFile('file_pdf')) {
+            $laporan['file_pdf'] = UploadFile($request, 'file_pdf');
+        }else{
+            toastr()->error('File harus ditambahkan', 'error');
+        }
+        // dd($request->all(), $laporan);
+        try {
+            LaporanMitra::create($laporan);
+        } catch(\Illuminate\Database\QueryException $e){
+           toastr()->error('Data Sudah Ada', 'error');
+           return redirect()->back();
+        }
+            toastr()->success('Laporan Berhasil Ditambahkan', 'success');
+            return redirect()->to(route('laporanMitra.index'));
+    }
+    public function editLaporanMitra($id) {
+        $laporanMitra = LaporanMitra::findOrFail($id);
+        $kerjasama = Kerjasama::all();
+        return view('admin.laporanMitra.edit', compact('laporanMitra', 'kerjasama'));
+    }
+    public function updateLaporanMitra(Request $request, $id) {
+        $laporan = [
+            'kerjasama_id' => $request->kerjasama_id,
+            'file_pdf' => $request->file_pdf,
+        ];
+
+        if($request->hasFile('file_pdf'))
+        {
+            if($request->oldfile)
+            {
+                Storage::disk('public')->delete('pdf/' . $request->oldfile);
+            }
+
+            $laporan['file_pdf'] = UploadFile($request, 'file_pdf');
+        }else{
+            $laporan['file_pdf'] = $request->oldfile;
+        }
+        // dd($laporan, $request->all());
+         try {
+            LaporanMitra::findOrFail($id)->update($laporan);
+        } catch(\Illuminate\Database\QueryException $e){
+           toastr()->error('Data Sudah Ada', 'error');
+           return redirect()->back();
+        }
+        toastr()->success('Laporan berhasil diedit', 'success');
+        return redirect()->back();
+        
+        // $laporanMitra = LaporanMitra::all();
+        // return view('admin.laporanMitra.update', compact('laporanMitra'));
+    }
+    public function deleteLaporanMitra($id) {
+        $laporan = LaporanMitra::find($id);
+        if ($laporan != null) {
+            if ($laporan->file_pdf == null) {
+                toastr()->error('File Tidak Ditemukan', 'error');
+            }
+                if ($laporan->logo) {
+                    Storage::disk('public')->delete('pdf/'.$laporan->file_pdf);
+                }
+        }
+        $laporan->delete();
+        toastr()->error('Data Telah Dihapus', 'error');
+        return redirect()->back();
     }
 }

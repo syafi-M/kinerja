@@ -22,6 +22,9 @@ class MainController extends Controller
         $filter = $request->search;
         $filter2 = Carbon::parse($filter);
         
+        $tanggalIki = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
+        // dd($tanggalIki);
+        
         if ($filter) {
             $kerjasama = Auth::user()->kerjasama_id;
             $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $filter2->month)->paginate(1000);
@@ -45,7 +48,12 @@ class MainController extends Controller
             }
         }
         
-        return view('leader_view/absen/index', compact('absen'));
+        if(!$tanggalIki){
+            return view('leader_view/absen/index', compact('absen'));
+        } else {
+            abort(500);
+            return view('leader_view/absen/index');
+        }
     }
 
     public function indexLaporan()

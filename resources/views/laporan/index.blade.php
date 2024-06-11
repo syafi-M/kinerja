@@ -3,16 +3,16 @@
 		<div>
 			<p class="text-center text-lg sm:text-2xl font-bold py-10 uppercase">Data Laporan</p>
 		</div>
-        <span class="flex justify-between items-center">
+        <span class="flex justify-between items-center w-full">
     		@if (Auth::user()->role_id == 2)
-    			<div class="ml-5">
-    				<form action="{{ route('export.laporans') }}" method="get" class="w-full">
-    					<div class="flex items-center justify-start gap-2">
-    						<div class="flex justify-between items-center gap-2">
-    							<div style="width: 60%" class="flex flex-col mb-5 gap-2">
-    								<label for="client_id">Pilih Mitra</label>
-    								<span class="flex gap-2 w-full">
-        								<select name="client_id" id="client_id" style="width: 66.66%" class="select select-bordered  ">
+    			<div class="ml-5 w-full">
+    				<form action="{{ route('export.laporans') }}" method="get" class="w-full mb-5">
+    					<div class="flex items-center justify-start gap-2 w-full">
+    						<div class="flex items-center gap-2 " style="width: 90%">
+    							<div style="width: 50%;" class="flex flex-col gap-2">
+    								<label for="client_id" class="label">Pilih Mitra & Ruangan (opsional)</label>
+    								<span class="flex flex-col gap-2" style="width: 100%;">
+        								<select name="client_id" id="client_id" style="" class="select select-bordered">
         									<option selected disabled>~Pilih Mitra~</option>
         									@forelse ($mitra as $i)
         										<option value="{{ $i->client_id }}">{{ $i->client->name }}</option>
@@ -20,7 +20,7 @@
         										<option>~Kosong~</option>
         									@endforelse
         								</select>
-        								<select name="ruangan_id" style="width: 33.33%" class="select select-bordered">
+        								<select name="ruangan_id" style="" class="select select-bordered">
         								    <option selected disabled>~Pilih Ruangan (opsional)~</option>
         								    @forelse($ruangan as $ru)
         								        <option value="{{ $ru->id }}">{{ $ru->nama_ruangan }}</option>
@@ -30,18 +30,34 @@
         								</select>
     								</span>
     							</div>
-    							<span style="width: 36%" class="flex gap-1 items-center ">
-        							<div class="mr-2" style="width: 50%">
+    							<span style="width: 30%" class="flex flex-col gap-2">
+    							    <label for="str1" class="label">Tanggal</label>
+        							<div class="flex flex-col gap-2" style="">
         								<input type="date" name="str1" id="str1" placeholder="Tanggal Mulai"
-        									class="text-md block py-2 text-sm rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
-        							</div>
-        							<div class="ml-2" style="width: 50%">
+        									class="text-md input input-bordered">
         								<input type="date" name="end1" id="end1"
-        									class="text-md block py-2 text-sm rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
+        									class="text-md input input-bordered">
         							</div>
     							</span>
+    							<div style="width: 20%;" class="">
+    							    <label for="nilai" class="label">Nilai</label>
+    							    <div class="form-control bg-slate-50 rounded-lg">
+                                      <label class="label cursor-pointer">
+                                        <span class="label-text">Baik</span> 
+                                        <input type="checkbox" name="nilai[]" value="baik" class="checkbox" />
+                                      </label>
+                                      <label class="label cursor-pointer">
+                                        <span class="label-text">Cukup</span> 
+                                        <input type="checkbox" name="nilai[]" value="cukup" class="checkbox" />
+                                      </label>
+                                      <label class="label cursor-pointer">
+                                        <span class="label-text">Kurang</span> 
+                                        <input type="checkbox" name="nilai[]" value="kurang" class="checkbox" />
+                                      </label>
+                                    </div>
+    							</div>
     						</div>
-    						<div class="flex">
+    						<div class="flex items-center justify-center" style="width: 10%">
     						    <input type="hidden" name="action" value="download"/>
     							<button type="submit" class="btn btn-warning text-sm sm:btn-sm btn-xs">Print PDF</button>
     						</div>

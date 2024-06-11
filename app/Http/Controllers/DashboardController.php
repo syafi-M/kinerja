@@ -13,6 +13,7 @@ use App\Models\Izin;
 use App\Models\JadwalUser;
 use App\Models\CheckPoint;
 use App\Models\News;
+use App\Models\SlipGaji;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -56,8 +57,10 @@ class DashboardController extends Controller
         
         $cekAbsen = $absen->where('absensi_type_pulang', null)->where('tanggal_absen', Carbon::now()->format('Y-m-d'));
         
+        // $dataSlip = SlipGaji::on('mysql2')->get();
+        
         // if(Auth::user()->id == 11){
-        //     dd($absenP);
+        //     dd($dataSlip);
         // }
         
         $jadwalUser = JadwalUser::all();
@@ -65,8 +68,10 @@ class DashboardController extends Controller
         $izin = Izin::where('user_id', $user->id)->get();
         $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
         $isModal = Session::pull('is_modal', false);
-        $awalMinggu = Carbon::now()->startOfWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(1); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        
+        $awalMinggu = Carbon::now()->subWeek()->startOfWeek()->addDays(5);
+        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
+        
         $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
             ->where('user_id', Auth::user()->id)
             ->where('type_check', 'rencana')
@@ -77,11 +82,13 @@ class DashboardController extends Controller
             ->where('type_check', 'dikerjakan')
             ->latest()
             ->first();
-        $totcex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+        $totcex = CheckPoint::whereBetween('created_at', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->endOfMonth()])
             ->where('type_check', 'dikerjakan')
             ->latest()
             ->get();
-        // dd($cex, $cex2);
+        // if(Auth::user()->id == 11){
+        //     dd($awalMinggu, $cex);
+        // }
         return view('dashboard', [
             'absen' => $absen,
             'absenP' => $absenP,

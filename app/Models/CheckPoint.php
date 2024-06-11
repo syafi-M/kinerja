@@ -14,7 +14,10 @@ class CheckPoint extends Model
         'img' => 'array',
         'approve_status' => 'array',
         'note' => 'array',
-        'deskripsi' => 'array'
+        'deskripsi' => 'array',
+        'latitude' => 'array',
+        'longtitude' => 'array',
+        'tanggal' => 'array',
         ];
 
     protected $fillable = [
@@ -27,7 +30,8 @@ class CheckPoint extends Model
         'approve_status',
         'latitude',
         'longtitude',
-        'note'
+        'note',
+        'tanggal',
     ];
 
     public function User()

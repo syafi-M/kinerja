@@ -20,28 +20,30 @@ class CheckPointController extends Controller
    public function index(Request $request)
    {
     $filter = $request->search;
-    $type = $request->type;
+    $type = $request->get('type');
     $filter2 = Carbon::parse($filter);
 
     // Menghitung tanggal awal dua minggu yang lalu
-    $tanggalAwal = Carbon::now()->startOfWeek()->subWeeks(1);
+    $tanggalAwal = Carbon::now()->subMonth()->startOfMonth();
 
     // Menghitung tanggal akhir minggu sekarang
     $tanggalAkhir = Carbon::now()->endOfWeek();
-
-    if ($type) {
-        $cek = CheckPoint::where('user_id', Auth::user()->id)->where('type_check', $type)->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir])->paginate(90)->first();
-    } else {
-        $cek = CheckPoint::where('user_id', Auth::user()->id)->paginate(90)->first();
-    }
     
+    $check_point = CheckPoint::where('user_id', Auth::user()->id);
     $pcp = PekerjaanCp::where('kerjasama_id', Auth::user()->kerjasama_id)->get();
     
-    $currentMonth = Carbon::now()->month;
-     
-       
-    return view('check.index', compact('cek', 'pcp', 'type'));
-
+    $currentMonth = Carbon::now()->month;      
+ 
+    if ($type) {
+        if($type == 'rencana'){
+            $cek2 = $check_point->where('type_check', $type)->whereBetween('created_at', [Carbon::now()->subWeek(), $tanggalAkhir])->latest()->get();
+        }else{
+            $cek2 = $check_point->where('type_check', $type)->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir])->latest()->get();
+        }
+    } else {
+        $cek2 = $check_point->paginate(90);
+    }
+        return view('check.index', compact('cek2', 'pcp', 'type'));
    }
 
    public function create()
@@ -74,6 +76,7 @@ class CheckPointController extends Controller
             // 'approve_status' => $request->approve_status,
             'type_check' => 'rencana',
             'approve_status' => $request->approve_status,
+            'tanggal' => $request->tanggal,
         ];
         // dd($request->all(), $data);
         
@@ -85,20 +88,15 @@ class CheckPointController extends Controller
                 
                 $file = $request->file('img');
                 if ($file != null && $file->isValid()) {
+    
+                    $extensions = $file->getClientOriginalExtension();
+                    $randomNumber = md5(uniqid(rand(), true));
+                    $rename = 'data' . $randomNumber . '.' . $extensions;
                     
-                $img = Image::make($file);
-                $imageSize = $img->filesize();
+                    $path = public_path('storage/images/' . $rename);
+                    $file->storeAs('images', $rename, 'public');
                 
-                $image = Images::make($file);
-                $extensions = $file->getClientOriginalExtension();
-                $randomNumber = mt_rand(1, 999999999999);
-                $rename = 'data' . $randomNumber . '.' . $extensions;
-                
-                $path = public_path('storage/images/' . $rename);
-                $img = Images::make($file->getRealPath());
-                $img->save($path, 13);
-            
-                $imagePaths[] = $rename; 
+                    $imagePaths[] = $rename; 
                 }
                 $data['img'] = implode(',', $imagePaths); 
              }
@@ -126,7 +124,7 @@ class CheckPointController extends Controller
     // $user = Auth::user()->id;
     $c = CheckPoint::where('id', $id)->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
     // $pch = Checkpoint::where('user_id', Auth::user()->id)->where('type_check', 'harian')->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
-    $awalMinggu = Carbon::now()->startOfWeek();
+    $awalMinggu = Carbon::now()->startOfWeek()->subWeek();
     $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); 
     $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
     ->where('id', $id)
@@ -143,7 +141,7 @@ class CheckPointController extends Controller
 
    public function update(Request $request, $id)
    {
-    $awalMinggu = Carbon::now()->startOfWeek();
+    $awalMinggu = Carbon::now()->startOfWeek()->subWeek();
     $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); 
     $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
         ->where('id', $id)
@@ -172,6 +170,7 @@ class CheckPointController extends Controller
             return in_array($value, $request->pekerjaan_id ?? []);
         });
 
+        
         // Merge the filtered new pekerjaan_id values with the existing pekerjaan_cp_id array
         $pekerjaanCpId = array_merge($pekerjaanCpId, $newPekerjaanIds);
 
@@ -201,14 +200,10 @@ class CheckPointController extends Controller
 
     $pcp = PekerjaanCp::all();
     // $cex = CheckPoint::latest()->first();
-    $awalMinggu = Carbon::now()->startOfWeek();
+    $awalMinggu = Carbon::now()->startOfWeek()->subWeek();
     $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
     if ($cId) {
-        $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-            ->where('type_check', 'rencana')
-            ->where('id', $cId)
-            ->latest()
-            ->first();
+        $cex = CheckPoint::findOrFail($cId);
     } else {
         $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
             ->where('user_id', Auth::user()->id)
@@ -217,119 +212,102 @@ class CheckPointController extends Controller
             ->first();
     }
     
-    // dd($cex);
+    // dd($cId);
     return view('check.editBukti', compact('cex', 'pcp', 'cId'));
    }
    
    public function uploadBukti(Request $request)
-{
-    $awalMinggu = Carbon::now()->startOfWeek();
-    $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
-    $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-        ->where('user_id', Auth::user()->id)
-        ->where('type_check', 'rencana')
-        ->latest()
-        ->first();
-    $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-        ->where('user_id', Auth::user()->id)
-        ->where('type_check', 'dikerjakan')
-        ->latest()
-        ->first();
-
-    if (!$cex2) {
-        $cek = [
+    {
+        $awalMinggu = Carbon::now()->startOfWeek()->subWeek()->addDays(5);
+        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
+        $cId = $request->cpId;
+        
+        $userId = Auth::user()->id;
+        $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
+            ->where('user_id', $userId)
+            ->where('type_check', 'rencana')
+            ->latest()
+            ->first();
+        $cex2 = CheckPoint::whereBetween('created_at', [Carbon::now()->startOfWeek(), $akhirMinggu])
+            ->where('user_id', $userId)
+            ->where('type_check', 'dikerjakan')
+            ->latest()
+            ->first();
+            
+        // Initialize data for new or existing checkpoint
+        $data = [
             'user_id' => $request->user_id,
             'divisi_id' => $request->divisi_id,
-            'pekerjaan_cp_id' => $request->pekerjaan_cp_id,
-            'latitude' => $request->latitude,
-            'longtitude' => $request->longtitude,
-            'approve_status' => $request->approve_status,
-            'note' => $request->note,
+            // 'latitude' => $request->latitude,
+            // 'longtitude' => $request->longtitude,
             'type_check' => 'dikerjakan'
         ];
-    } else {
-        $cex2->user_id = $request->user_id;
-        $cex2->divisi_id = $request->divisi_id;
-        $cex2->latitude = $request->latitude;
-        $cex2->longtitude = $request->longtitude;
-        $cex2->approve_status = $request->approve_status;
-        $cex2->type_check = 'dikerjakan';
-
-        // Append new pekerjaan_cp_id values
-        $pekerjaanCpId = $cex2->pekerjaan_cp_id ?? [];
-        $pekerjaanCpId = array_merge($pekerjaanCpId, $request->pekerjaan_cp_id ?? []);
-        $cex2->pekerjaan_cp_id = $pekerjaanCpId;
-
-        // Append new approve_status values
-        $approve_status = $cex2->approve_status ?? [];
-        // $approve_status = array_merge($approve_status, $request->approve_status ?? []);
-        // $cex2->approve_status = $approve_status;
-        // $cex2->pekerjaan_cp_id = array_unique($pekerjaanCpId);
-    }
     
-    $imagePaths = [];
-    if ($request->hasFile('img')) {
-        foreach ($request->file('img') as $image) {
-            if ($image != null) {
-                $imag = Images::make($image);
-                $extensions = $image->getClientOriginalExtension();
-                $randomNumber = mt_rand(1, 999999999999);
-                $rename = 'data' . $randomNumber . '.' . $extensions;
-                $path = public_path('storage/images/' . $rename);
-                $imag->save($path, 13);
-                // Add the image path to the array
-                $imagePaths[] = $rename; 
+        // If no 'dikerjakan' checkpoint exists, create data array for new record
+        if (!$cex2) {
+            $data['pekerjaan_cp_id'] = $request->pekerjaan_cp_id;
+            $data['approve_status'] = $request->approve_status;
+            $data['note'] = $request->note;
+            $data['latitude'] = $request->latitude;
+            $data['longtitude'] = $request->longtitude;
+            $data['tanggal'] = $request->tanggal;
+        } else {
+            $cex2->fill($data);
+            $cex2->pekerjaan_cp_id = array_merge($cex2->pekerjaan_cp_id ?? [], $request->pekerjaan_cp_id ?? []);
+            $cex2->approve_status = array_merge($cex2->approve_status ?? [], $request->approve_status ?? []);
+            $cex2->latitude = array_merge($cex2->latitude ?? [], $request->latitude ?? []);
+            $cex2->longtitude = array_merge($cex2->longtitude ?? [], $request->longtitude ?? []);
+            $cex2->tanggal = array_merge($cex2->tanggal ?? [], $request->tanggal ?? []);
+        }
+    
+        // Handle file uploads
+        $imagePaths = [];
+        if ($request->hasFile('img')) {
+            foreach ($request->file('img') as $image) {
+                if ($image) {
+                    $extensions = $image->getClientOriginalExtension();
+                    $randomNumber = md5(uniqid(rand(), true));
+                    $rename = 'data' . $randomNumber . '.' . $extensions;
+                    $path = public_path('storage/images/' . $rename);
+                    $image->storeAs('images', $rename, 'public');
+                    $imagePaths[] = $rename; 
+                }
+            }
+            if (!$cex2) {
+                $data['img'] = $imagePaths;
+            } else {
+                $cex2->img = array_merge($cex2->img ?? [], $imagePaths);
             }
         }
-        // Append new image paths
-        if (!$cex2) {
-            $cek['img'] = $imagePaths;
-        } else {
-            $cex2->img = array_merge($cex2->img ?? [], $imagePaths);
-            $cex2->approve_status = array_merge($cex2->approve_status ?? [], $request->approve_status);
-        }
-        
-    }
-
-    // Filter out null values from deskripsi array
-    if ($request->has('deskripsi')) {
-        $deskripsi = array_filter($request->deskripsi, function ($value) {
-            return $value !== null;
-        });
-        $deskripsi = array_values($deskripsi);
-        // $notes = array_filter($request->note, function ($value) {
-        //     return $value !== null;
-        // });
-        // Append new deskripsi values
-        if (!$cex2) {
-            $cek['deskripsi'] = $deskripsi;
-            // $cek['note'] = $notes;
-        } else {
-            $cex2->deskripsi = array_merge($cex2->deskripsi ?? [], $deskripsi);
-            // $cex2->note = array_merge($cex2->note ?? [], $notes);
-        }
-        
-    }
-
-
-    // dd($request->all(), $cex2);
     
-    try {
-        if (!$cex2) {
-            CheckPoint::create($cek);
-        } else {
-            $cex2->save();
+        // Filter and merge deskripsi values
+        if ($request->has('deskripsi')) {
+            $deskripsi = array_filter($request->deskripsi, function ($value) {
+                return $value !== null;
+            });
+            if (!$cex2) {
+                $data['deskripsi'] = array_values($deskripsi);
+            } else {
+                $cex2->deskripsi = array_merge($cex2->deskripsi ?? [], array_values($deskripsi));
+            }
         }
-        
-        toastr()->success('Data berhasil diedit', 'success');
-        return to_route('checkpoint-user.index', 'type=dikerjakan');
-
-    } catch(\Illuminate\Database\QueryException $e){
-        dd($e);
-        toastr()->error('Data Tidak Ada', 'error');
-        return redirect()->back();
+        // dd($request->all(), $data, $cex2);
+    
+        try {
+            if (!$cex2) {
+                CheckPoint::create($data);
+            } else {
+                $cex2->save();
+            }
+    
+            toastr()->success('Data Berhasil Diupload', 'success');
+            return to_route('checkpoint-user.index', 'type=dikerjakan');
+    
+        } catch (\Illuminate\Database\QueryException $e) {
+            toastr()->error('Data Tidak Berhasil Dikirim', 'error');
+            return redirect()->back();
+        }
     }
-}
    public function uploadNilai(Request $request, $id)
 {
     $awalMinggu = Carbon::now()->startOfWeek();

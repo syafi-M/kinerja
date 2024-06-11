@@ -8,6 +8,7 @@ use App\Models\Absensi;
 use App\Models\Divisi;
 use App\Models\Kerjasama;
 use App\Models\User;
+use App\Models\Jabatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -23,12 +24,13 @@ class UserController extends Controller
 
         $kerjasama = Kerjasama::all();
         $client = Client::all();
+        $dev = Divisi::all();
         $user = User::with('Kerjasama')->orderBy('name', 'desc');
         $user->when($request->filterKerjasama, function($query) use($request) {
             return $query->where('kerjasama_id', '=',  $request->filterKerjasama. '%');
         });
 
-        return view('admin.user.index', ['user' => $user->paginate(5000), 'kerjasama' => $kerjasama, 'client' => $client]);
+        return view('admin.user.index', ['user' => $user->paginate(5000), 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev]);
     }
 
     /**
@@ -38,10 +40,12 @@ class UserController extends Controller
     {
         $dev = Divisi::all();
         $data = Kerjasama::all();
-        $excludedUserIDs = [9, 7, 55, 261, 3, 109, 292, 11, 58, 146, 8, 1, 6, 60];
-        $lastUser = User::orderBy('name', 'desc')->whereNotIn('id', $excludedUserIDs)->first();
+        $jabatan = Jabatan::all();
         
-        return view('admin.user.create', compact('data', 'dev', 'lastUser')); 
+        $excludedUserIDs = [9, 7, 55, 261, 3, 109, 292, 11, 58, 146, 8, 1, 6, 60];
+        $lastUser = User::whereNotIn('id', $excludedUserIDs)->latest()->first();
+        
+        return view('admin.user.create', compact('data', 'dev', 'lastUser', 'jabatan')); 
     }
 
     /**
@@ -53,6 +57,7 @@ class UserController extends Controller
         $user = [
             'kerjasama_id' => $request->kerjasama_id,
             'devisi_id' => $request->devisi_id,
+            'jabatan_id' => $request->jabatan_id,
             'name'      => $request->name,
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
@@ -85,8 +90,10 @@ class UserController extends Controller
         $kerjasama = Kerjasama::all();
         $user = User::find($id);
         $dataUser = User::findOrFail($id);
+        $jabatan = Jabatan::all();
+        
         if ($user != null) {
-            return view('admin.user.edit', compact('user', 'kerjasama', 'dev', 'dataUser'));
+            return view('admin.user.edit', compact('user', 'kerjasama', 'dev', 'dataUser', 'jabatan'));
         }
         toastr()->error('Data tidak tidak ditemukan', 'error');
         return redirect()->back();
@@ -101,6 +108,7 @@ class UserController extends Controller
             'kerjasama_id' => $request->kerjasama_id,
             'name'      => $request->name,
             'devisi_id' => $request->devisi_id,
+            'jabatan_id' => $request->jabatan_id,
             'email'     => $request->email,
             'image'     => $request->image,
             'nama_lengkap' => $request->nama_lengkap,
@@ -125,9 +133,32 @@ class UserController extends Controller
            toastr()->error('Data Sudah Ada', 'error');
            return redirect()->back();
         }
+        
     
         toastr()->success('Data Berhasil diupdate', 'success');
         return to_route('users.index');
+        // return redirect()->back();
+    }
+    
+    public function massUpdate(Request $request)
+    {
+        $kerjasama = $request->input('kerjasama');
+        $devisi = $request->input('devisi');
+        $field = $request->input('field');
+        $oldValue = $request->input('old_value');
+        $newValue = $request->input('new_value');
+        
+        // dd($request->all());
+
+        // Perform the mass update
+        if($kerjasama){
+            User::where($field, $oldValue)->where('devisi_id', $devisi)->where('kerjasama_id', $kerjasama)->update([$field => $newValue]);
+        }else{
+            User::where($field, $oldValue)->where('devisi_id', $devisi)->update([$field => $newValue]);
+        }
+        
+        toastr()->success('Data '. $field. ' Berhasil diupdate', 'success');
+        return redirect()->back();
     }
 
     public function show($id)

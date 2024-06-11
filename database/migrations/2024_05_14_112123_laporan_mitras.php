@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Client;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Kerjasama;
+
 
 return new class extends Migration
 {
@@ -13,13 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('check_points', function (Blueprint $table) {
+        Schema::create('laporan_mitras', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class);
-            $table->integer('check_count')->nullable();
-            $table->string('name')->nullable();
-            $table->foreignIdFor(Client::class);
-            $table->string('tanggal')->nullable();
+            $table->foreignIdFor(Kerjasama::class);
+            $table->string('file_pdf');
             $table->timestamps();
         });
     }
@@ -29,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('check_points');
+        //
     }
 };

@@ -75,13 +75,23 @@
 							@endforeach
 						</select>
 					</div>
-					<!-- client -->
+					<!-- divisi -->
 					<div class="mt-4">
 						<x-input-label for="divisi" :value="__('Divisi')" />
 						<select name="devisi_id" id="" class="select select-bordered w-full mt-1">
 							<option selected disabled>~ Pilih Devisi ~</option>
 							@foreach ($dev as $i)
 								<option name="devisi_id" value="{{ $i->id }}" class="py-2">{{ $i->name }}</option>
+							@endforeach
+						</select>
+					</div>
+					<!-- jabatan -->
+					<div class="mt-4">
+						<x-input-label for="jabatan_id" :value="__('Jabatan')" />
+						<select name="jabatan_id" id="" class="select select-bordered w-full mt-1">
+							<option selected disabled>~ Pilih Jabatan ~</option>
+							@foreach ($jabatan as $i)
+								<option name="jabatan_id" value="{{ $i->id }}" class="py-2">{{ $i->name_jabatan }}</option>
 							@endforeach
 						</select>
 					</div>

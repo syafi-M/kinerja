@@ -16,9 +16,24 @@
     		        <p class="text-center text-sm uppercase font-bold bg-sky-400 p-3 rounded-md w-fit shadow-md"># Ada {{ $izin }} izin yang belum Di Acc</p>
     		    @endif
     		    @if($expert)
-    		        @foreach($expert as $ex)
-    		            <p class="text-center text-sm uppercase font-bold p-3 rounded-md w-fit shadow-md text-white" style="background-color: #CB1414"># Kontrak Mitra {{ $ex->client->name }}, Berakhir {{ $ex->experied }}</p>
-    		        @endforeach
+    		        <div class="bg-slate-50 rounded-md shadow-md ">
+    		            <table class="m-2">
+    		                <thead>
+    		                    <tr class="rounded-md">
+    		                        <th class="bg-red-500 text-white rounded-md" colspan="2" >#Info Kontrak Mitra (yang akan berakhir)</th>
+    		                    </tr>
+    		                </thead>
+    		                <tbody class="font-semibold">
+                		        @foreach($expert as $ex)
+                		        <tr>
+                		            <td>{{ $ex->client->name }}</td>
+                		            <td>| {{ $ex->experied }}</td>
+                		        </tr>
+                		            <!--<p class="text-center text-sm uppercase font-bold p-3 rounded-md w-fit shadow-md text-white" style="background-color: #CB1414"># Kontrak Mitra {{ $ex->client->name }}, Berakhir {{ $ex->experied }}</p>-->
+                		        @endforeach
+    		                </tbody>
+    		            </table>
+    		        </div>
     		    @endif
 		    </span>
 		</div>
@@ -378,6 +393,13 @@
 				<div style="width: 17rem;">
 					<div class="flex justify-center px-2 listPekerjaan">
 						<a id="btnListPekerjaan" class="btn btn-warning w-full mt-5 flex" href="{{ route('listPekerjaan.index')}}"><i class="ri-calendar-2-line text-lg"></i>Data List Pekerjaan</a>
+					</div>
+				</div>
+				{{-- End Menu --}}
+				{{-- Menu Laporan Mitra --}}
+				<div style="width: 17rem;">
+					<div class="flex justify-center px-2 laporanMitra">
+						<a id="btnLaporanMitra" class="btn btn-warning w-full mt-5 flex" href="{{ route('laporanMitra.index') }}"><i class="ri-calendar-2-line text-lg"></i>Data Laporan Mitra</a>
 					</div>
 				</div>
 				{{-- End Menu --}}

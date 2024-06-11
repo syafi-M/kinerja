@@ -48,10 +48,14 @@
                     							<span class="p-2 flex justify-center items-center">
                     								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
                     								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
-                    								<input id="img_{{$p->id}}" data-pcp_id="{{ $p->id }}" class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-                    									type="file" name="img[]" value="null" autofocus autocomplete="img2" accept="image/*"/>
+                    								<input id="img_{{$p->id}}" data-pcp_id="{{ $p->id }}" 
+                                                       class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
+                                                       type="file" name="img[]" value="null" autofocus accept="image/*"/>
                     							</span>
                     						</label>
+                    						<div class="hidden too_big_{{$p->id}}">
+        									    <p style="color: red;">*Gambar Terlalu Besar!!! (Max 5 Mb)</p>
+        									</div>
                     					</div>
                     					<!---->
                     					<div class="my-2">
@@ -92,9 +96,12 @@
 												<i class="ri-image-add-line text-xl text-slate-700/90"></i>
 												<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
 												<input id="img_{{str_replace(' ', '_', $item)}}" data-pcp_id="{{ str_replace(' ', '_', $item) }}" class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-													type="file" name="img[]" value="null" autofocus autocomplete="img2" accept="image/*"/>
+													type="file" name="img[]" value="null" autofocus accept="image/*"/>
 											</span>
 										</label>
+    									<div class="hidden too_big_{{ str_replace(' ', '_', $item) }}">
+    									    <p style="color: red;">*Gambar Terlalu Besar!!! (Max 5 Mb)</p>
+    									</div>
 									</div>
 									<div class="my-2">
 										<textarea name="deskripsi[]" id="deskripsi" rows="1" class="textarea textarea-bordered w-full" placeholder="Deskripsi laporan..."></textarea>
@@ -111,19 +118,26 @@
 						</span>
 					<x-input-error :messages="$errors->get('type_check')" class="mt-2" />
 				</div>
+				
+				<!--<div class="flex justify-end">-->
+				<!--    <button id="addMoreCP" type="button" class="btn btn-sm btn-warning">+ Tambahan</button>-->
+				<!--</div>-->
+				<!--<div id="divMoreCP" class="flex flex-col gap-2 hidden">-->
+				    
+				<!--</div>-->
+				
 				<span class="hidden">
 				    <p class="text-center">~ Lokasi ~</p>
-    				<span class="flex justify-center join">
-        				<input type="text" value="" id="latitude" name="latitude" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
-        				<input type="text" value="" id="longitude" name="longtitude" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
+    				<span class="flex justify-center join lokasi">
+        				
     				</span>
 				</span>
 				<div class="hidden" id="pcp_container">
-
+                    <input name="cpId" value="{{ $cId }}" type="hidden"/>
 				</div>
 			</div>
 			<div class="flex justify-center sm:justify-end gap-2 mt-10">
-				<button type="submit" id="btnSubmit" class="btn btn-primary">Simpan</button>
+				<button type="button" id="btnSubmit" class="btn btn-primary">Simpan</button>
 				<a href="{{ route('dashboard.index') }}" class="btn btn-error hover:bg-red-500 transition-all ease-linear .2s">
 					Kembali
 				</a>
@@ -140,28 +154,17 @@
 		
 		
 	<script>
-		var latitudeInput = $('#latitude');
-        var longitudeInput = $('#longitude');
-    
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position){
-                showPosition(position);
-            });
-        } else {
-            alert('Geo Location Not Supported By This Browser !!');
-        }
-    
-            function showPosition(position) {
-                var latitude = position.coords.latitude;
-                var longitude = position.coords.longitude;
-        
-                latitudeInput.val(latitude);
-                longitudeInput.val(longitude);
-            }
+		
 	</script>
 	<script>
     $(document).ready(function() {
-		// console.log({!! json_encode($pcpType) !!});
+        
+        $('#btnSubmit').click(function () {
+            $(this).attr('disabled', true);
+            $(this).html('Tunggu...');
+            $('#form-cp').submit();
+        });
+    
         let checkedCount = 0;
             var checkedCheckboxes = $('.lab');
             checkedCount = checkedCheckboxes.length;
@@ -176,10 +179,18 @@
                     $(`#img_${dataId}`).change(function() {
                         const input = $(this)[0];
         				const preview = $(`.preview_${dataId}`);
+        				let isBig = this.files[0].size > 5 * 1024 * 1024;
         				
-        				$('#deskripsi_' + dataId).attr('required', true);
+        				$('#deskripsi_' + dataId).attr('required', 'required');
+        				
+        				if(isBig){
+        				    $('.too_big_' + dataId).show();
+        				    this.value = '';
+        				}else{
+        				    $('.too_big_' + dataId).hide();
+        				}
 
-						// console.log($(this).data('pcp_id'), $(this).val());
+				// 		console.log(this.files[0].size > 3 * 1024 * 1024);
 
 						if (input.files) {
 							const valueExists = $('.input_pcp').filter(function() {
@@ -191,9 +202,34 @@
 									$(`<input class="input_pcp" name="pekerjaan_cp_id[]" value="${$(this).data('pcp_id')}"/>
 									<input class="status" name="approve_status[]" value="proccess"/>`)
 								)
+								$('.lokasi').append(
+								    $(`<input type="text" value="" id="latitude" name="latitude[]" class="lat join-item w-fit input input-disabled text-xs text-center" readonly/>
+        				<input type="text" value="" id="longitude" name="longtitude[]" class="long join-item w-fit input input-disabled text-xs text-center" readonly/>
+        				<input type="text" value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" id="tanggal" name="tanggal[]" class="join-item w-fit input input-disabled text-xs text-center" readonly/>
+        				`)
+								);
+								var latitudeInput = $('.lat');
+                                var longitudeInput = $('.long');
+                            
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(function(position){
+                                        showPosition(position);
+                                    });
+                                } else {
+                                    alert('Geo Location Not Supported By This Browser !!');
+                                }
+                            
+                                    function showPosition(position) {
+                                        var latitude = position.coords.latitude;
+                                        var longitude = position.coords.longitude;
+                                
+                                        latitudeInput.val(latitude);
+                                        longitudeInput.val(longitude);
+                                    }
+								// console.log($('.lokasi').clone());
 							}
 						}
-						console.log(input.files, dataId);
+				// 		console.log(input.files, dataId, $('.input_pcp').val() == $(`.input_img_${dataId}`).data('pcp_id'));
         
         				if (input.files && input.files[0]) {
         					const reader = new FileReader();

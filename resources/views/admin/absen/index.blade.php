@@ -105,6 +105,25 @@
                 </form>
 			</div>
 			
+            <div class="bg-slate-50 rounded-md w-fit p-2 mx-10 font-semibold">
+                <p>*Hapus Foto Absen</p>
+                <form action="{{ route('absen.hapusFotoAbsen') }}" method="post">
+                    @csrf
+                    <div class="flex gap-2 items-end">
+                        <span>
+                            <label class="label">Mulai: </label>
+                            <input type="date" min="{{ $min }}" max="{{ $max }}" name="mulai" class="input input-bordered input-sm" />
+                        </span>
+                        <span>
+                            <label class="label">Selesai: </label>
+                            <input type="date" min="{{ $min }}" max="{{ $max }}" name="selesai" class="input input-bordered input-sm" />
+                        </span>
+                        <span>
+                            <button type="submit" class="btn btn-sm btn-warning">Hapus</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
 			
 			<div class="overflow-x-auto mx-10 my-10">
 				<table class="table table-zebra w-full bg-slate-50" id="searchTable">

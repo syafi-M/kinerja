@@ -31,7 +31,7 @@
 					@endphp
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lHarian">Harian</label>
-                        <div class="flex flex-col" id="hCont" >
+                        <div class="flex flex-col hidden" id="hCont" >
                             @forelse ($pcpH as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
                                     <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="harian" class="checkbox">
@@ -44,7 +44,7 @@
 					</span>
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lMingguan">Mingguan</label>
-                        <div class="flex flex-col" id="mCont" >
+                        <div class="flex flex-col hidden" id="mCont" >
                             @forelse ($pcpM as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
                                     <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="mingguan" class="checkbox">
@@ -57,7 +57,7 @@
 					</span>
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lBulanan">Bulanan</label>
-                        <div class="flex flex-col" id="bCont" >
+                        <div class="flex flex-col hidden" id="bCont" >
                             @forelse ($pcpB as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
                                     <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="bulanan" class="checkbox">
@@ -70,7 +70,7 @@
 					</span>
 					<span class="flex flex-col gap-1">
                         <label for="example_checkbox" class="btn btn-sm btn-info" id="lIsidental">Isidental</label>
-                        <div class="flex flex-col" id="iCont" >
+                        <div class="flex flex-col hidden" id="iCont" >
                             @forelse ($pcpI as $p)
                                 <span class="flex items-center gap-2 p-1 overflow-hidden">
                                     <input type="checkbox" {{$id && in_array($p->id, $cex->pekerjaan_cp_id) ? 'checked' : '' }} name="pekerjaan_id[]" value="{{ $p->id }}" id="isidental" class="checkbox">
@@ -185,7 +185,7 @@
         $('#tambah_pcp_btn').click(function() {
             $('#tambahan_label').show();
             $('#tambahan_pcp').append(
-                $('<input type="text" name="pekerjaan_id[]" class="input input bordered" placeholder="CP tambahan.."/>')
+                $('<input type="text" name="pekerjaan_id[]" class="input input bordered" placeholder="CP tambahan.."/> <input type="text" value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" id="tanggal" name="tanggal[]" class="join-item w-fit input input-disabled text-xs text-center" readonly/>')
             )
         })
         

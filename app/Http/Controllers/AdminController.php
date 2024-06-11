@@ -129,35 +129,38 @@ class AdminController extends Controller
         $type = $request->type;
         $inMonth = Carbon::now()->month;
         $user = User::findOrFail($id);
-        $cek = CheckPoint::orderBy('created_at', 'asc')->where('user_id', $id)->whereMonth('created_at', $inMonth)->paginate(15);
-        $typeHarian = Checkpoint::where('type_check', 'harian')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
-        $typeMingguan = Checkpoint::where('type_check', 'mingguan')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
-        $typeBulanan = Checkpoint::where('type_check', 'bulanan')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
-        $typeIsi = Checkpoint::where('type_check', 'isidental')->where('user_id', $id)->whereMonth('created_at', $inMonth)->get();
         
-        $pkHarian = PekerjaanCP::where('type_check', 'harian')->where('user_id', $id)->get();
-        $pkMingguan = PekerjaanCP::where('type_check', 'mingguan')->where('user_id', $id)->get();
-        $pkBulanan = PekerjaanCP::where('type_check', 'bulanan')->where('user_id', $id)->get();
-        $pkIsi = PekerjaanCP::where('type_check', 'isidental')->where('user_id', $id)->get();
+        // Ambil data berdasarkan user_id dan bulan
+        $check_points_query = CheckPoint::where('user_id', $id)
+            ->whereMonth('created_at', $inMonth);
+        $pekerjaan_cp_query = PekerjaanCP::where('user_id', $id);
         
-        $awalMinggu = Carbon::now()->startOfWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        // Lakukan paginasi
+        $cek = (clone $check_points_query)->orderBy('created_at', 'asc')->paginate(15);
+        
+        // Ambil data berdasarkan tipe
+        $typeHarian = (clone $check_points_query)->where('type_check', 'harian')->get();
+        $typeMingguan = (clone $check_points_query)->where('type_check', 'mingguan')->get();
+        $typeBulanan = (clone $check_points_query)->where('type_check', 'bulanan')->get();
+        $typeIsi = (clone $check_points_query)->where('type_check', 'isidental')->get();
+        
+        $pkHarian = (clone $pekerjaan_cp_query)->where('type_check', 'harian')->get();
+        $pkMingguan = (clone $pekerjaan_cp_query)->where('type_check', 'mingguan')->get();
+        $pkBulanan = (clone $pekerjaan_cp_query)->where('type_check', 'bulanan')->get();
+        $pkIsi = (clone $pekerjaan_cp_query)->where('type_check', 'isidental')->get();
+        
+        $awalMinggu = Carbon::now()->startOfMonth()->subMonth();
+        $akhirMinggu = Carbon::now()->endOfMonth(); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
         if ($type == 'rencana') {
-            $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-                ->where('user_id', $id)
+            $cex2 = (clone $check_points_query)
                 ->where('type_check', 'rencana')
                 ->latest()
                 ->first();
-            # code...
         } else {
-            $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-                ->where('user_id', $id)
-                ->where('type_check', 'dikerjakan')
-                ->latest()
-                ->first();
+            $cex2 = (clone $check_points_query)->where('type_check', 'dikerjakan')->latest()->first();
         }
         
-        $pcp = PekerjaanCp::where('user_id', $id)->get();
+        $pcp = (clone $pekerjaan_cp_query)->get();
         // dd($cex2);
         
         
@@ -245,7 +248,15 @@ class AdminController extends Controller
         $point = Point::all();
         $divisi = Divisi::all();
         
-        return view('admin.absen.index',['absen' => $absen, 'filterDivisi' => $filterDivisi, 'absenSi' => $absenSi, 'point' => $point, 'divisi' => $divisi, 'filter' => $filter]);
+        $min1 = Absensi::orderBy('tanggal_absen', 'asc')->first();
+        $min2 = $min1->created_at->format('Y-m-d');
+        
+        $max1 = Absensi::orderBy('tanggal_absen', 'desc')->first();
+        $max2 = $max1->created_at->subMonth(3)->format('Y-m-d');
+        
+        // dd($max2);
+        
+        return view('admin.absen.index',['min' => $min2,'max' => $max2,'absen' => $absen, 'filterDivisi' => $filterDivisi, 'absenSi' => $absenSi, 'point' => $point, 'divisi' => $divisi, 'filter' => $filter]);
     }
 
     public function izin()
@@ -498,7 +509,24 @@ class AdminController extends Controller
         
     }
     
-    
+    public function hapusFotoAbsen(Request $request)
+    {
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+        
+        $absen = Absensi::whereBetween('tanggal_absen', [$mulai, $selesai])->get();
+        // dd($mulai, $selesai, $absen);
+        
+        foreach($absen as $abs){
+            if (Storage::disk('public')->exists('images/' . $abs->image)) {
+                Storage::disk('public')->delete('images/' . $abs->image);
+            }
+            $abs->delete();
+        }
+        
+        toastr()->warning('Data Sudah Dihapus', 'success');
+        return redirect()->back();
+    }
     
     
     
