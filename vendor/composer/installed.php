@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'cbde2667798374a5650d71ede856116ef4ed0028',
+        'reference' => '4669d1d29045965f84055dd2336f433c3c618727',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -219,6 +219,15 @@
             'install_path' => __DIR__ . '/../hamcrest/hamcrest-php',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'hi-folks/rando-php' => array(
+            'pretty_version' => 'v0.2.0',
+            'version' => '0.2.0.0',
+            'reference' => 'fd1e1421effa441c652f1df25e4a55c934bb6709',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../hi-folks/rando-php',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'illuminate/auth' => array(
             'dev_requirement' => false,
@@ -463,7 +472,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'cbde2667798374a5650d71ede856116ef4ed0028',
+            'reference' => '4669d1d29045965f84055dd2336f433c3c618727',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -1009,8 +1018,8 @@
         'psr/http-client-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '*',
-                1 => '1.0',
+                0 => '1.0',
+                1 => '*',
             ),
         ),
         'psr/http-factory' => array(
@@ -1025,8 +1034,8 @@
         'psr/http-factory-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '*',
-                1 => '1.0',
+                0 => '1.0',
+                1 => '*',
             ),
         ),
         'psr/http-message' => array(
@@ -1041,8 +1050,8 @@
         'psr/http-message-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '*',
-                1 => '1.0',
+                0 => '1.0',
+                1 => '*',
             ),
         ),
         'psr/log' => array(
@@ -1057,8 +1066,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0|2.0|3.0',
-                1 => '3.0.0',
+                0 => '3.0.0',
+                1 => '1.0|2.0|3.0',
             ),
         ),
         'psr/simple-cache' => array(
@@ -1142,6 +1151,15 @@
             'reference' => 'e41d2140031d533348b2192a83f02d8dd8a71d30',
             'type' => 'library',
             'install_path' => __DIR__ . '/../sabberworm/php-css-parser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'sadiqsalau/laravel-otp' => array(
+            'pretty_version' => 'v1.0.6',
+            'version' => '1.0.6.0',
+            'reference' => 'f322ef85df45a640f787d0c37d0c304a40ab09d9',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../sadiqsalau/laravel-otp',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

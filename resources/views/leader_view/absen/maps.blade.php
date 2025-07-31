@@ -30,6 +30,7 @@
         #map {
             height: 240px;
         }
+        
     </style>
 </head>
 
@@ -39,86 +40,141 @@
         <div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
             <main>
                 <div class="px-5 py-5">
-                    <p class="p-2 rounded-full bg-white text-center mx-10 my-5 font-semibold">Lokasi Absen Masuk {{ $absen->user->nama_lengkap }}</p>
-                    @if($absen->msk_lat && $absen->msk_long)
+                    <p class="p-2 rounded-full bg-white text-center mx-10 my-5 font-semibold">Lokasi Absen Masuk & Pulang {{ $absen?->user->nama_lengkap }}</p>
+                    <div class="flex justify-end">
+                        <form method="get" action="{{ $absen ? Auth::user()->role_id == 2 ? route('admin-lihatMap', $absen?->id) : route('mitra-lihatMap', $absen?->id) : '' }}" class="form-control bg-base-100 p-5 rounded-md join">
+                            <input type="date" value="{{ $tgl ? $tgl : $absen?->tanggal_absen }}" name="tgl" class="join-item input input-bordered input-sm" />
+                            <input type="hidden" name="user" value="{{ $us ? $us : $absen?->user_id }}"/>
+                            <button class="btn btn-sm" style="border-radius: 0 10px 10px 0;">Submit</button>
+                        </form>
+                    </div>
+                    @if($absen)
+                        <span id="data" data-latitude="{{ $absen->msk_lat }}" data-lat-pulang="{{ $absen->plg_lat }}" data-long-pulang="{{ $absen->plg_long }}" data-longtitude="{{ $absen->msk_long }}" data-user="{{ $absen->user->nama_lengkap }}"></span>
+                    @endif
+                    @if($absen?->msk_lat && $absen?->msk_long)
                         <div id="map" class="rounded-lg"></div>
                     @else
                         <div class="rounded-lg bg-white flex items-center justify-center font-semibold" style="height: 240px;"><span>~ Tidak Ada Koordinat ~</span></div>
                     @endif
-                    
-                    
-                    <p class="p-2 rounded-full bg-white text-center mx-10 my-5 font-semibold">Lokasi Absen Pulang {{ $absen->user->nama_lengkap }}</p>
-                    @if($absen->plg_lat && $absen->plg_long)
-                        <div id="mapPulang" class="rounded-lg" style="height: 240px;"></div>
-                    @else
-                        <div class="rounded-lg bg-white flex items-center justify-center font-semibold" style="height: 240px;"><span>~ Tidak Ada Koordinat ~</span></div>
-                    @endif
+                    <div class="flex justify-start ikiKet font-medium {{ $absen ? '' : 'hidden' }}">
+                        <div class="bg-slate-200 mt-1" style="padding: 4px 1rem 4px 1rem;">
+                            <p class="font-semibold">#Keterangan</p>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <img src="{{ URL::asset('logo/pin-biru.png') }}" />
+                                        </td>
+                                        <td>
+                                            <p>: Lokasi Masuk</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img src="{{ URL::asset('logo/pin-oren.png') }}" />
+                                        </td>
+                                        <td>
+                                            <p>: Lokasi Pulang</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p>Jarak</p>
+                                        </td>
+                                        <td>
+                                            <p id="jarak"></p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     <div class="flex justify-center gap-2 sm:justify-end mx-10 my-5">
                         
-                            <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
+                            <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : route('dashboard.index') }}" class="btn btn-error">Kembali</a>
                     </div>
                 </div>
             </main>
         </div>
     </div>
     
-    <span id="data" data-latitude="{{ $absen->msk_lat }}" data-lat-pulang="{{ $absen->plg_lat }}" data-long-pulang="{{ $absen->plg_long }}" data-longtitude="{{ $absen->msk_long }}" data-user="{{ $absen->user->nama_lengkap }}"></span>
 
 
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
             function initMap() {
                 var lat = document.getElementById("data").getAttribute('data-latitude');
                 var long = document.getElementById("data").getAttribute('data-longtitude');
+                var latPulang = parseFloat(document.getElementById("data").getAttribute('data-lat-pulang'));
+                var longPulang = parseFloat(document.getElementById("data").getAttribute('data-long-pulang'));
                 var user = document.getElementById("data").getAttribute('data-user');
+                
+                var lokMitra = @json($lokMitra);
+                
+                // Initialize map
+                var map = L.map('map').setView([lat, long], 15);
+    
+                // Add tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                var circleRadius = L.circle([lokMitra.latitude, lokMitra.longtitude], {
+                    color: 'crimson',
+					fillColor: '#f09',
+					fillOpacity: 0.5,
+                    radius: lokMitra.radius             // Radius in meters
+                }).addTo(map).bindPopup("Lokasi Mitra ").openPopup();
+                
+                // Custom red marker icon for start point
+                var redIcon = L.icon({
+                    iconUrl: @json(URL::asset('logo/pin-oren.png')),
+                    iconSize: [25, 27], // size of the icon
+                    iconAnchor: [14, 24], // point of the icon which will correspond to marker's location
+                    popupAnchor: [1, -34] // point from which the popup should open relative to the iconAnchor
+                });
+        
+                // Custom blue marker icon for end point
+                var blueIcon = L.icon({
+                    iconUrl: @json(URL::asset('logo/pin-biru.png')),
+                    iconSize: [25, 27], // size of the icon
+                    iconAnchor: [14, 24], // point of the icon which will correspond to marker's location
+                    popupAnchor: [1, -34] // point from which the popup should open relative to the iconAnchor
+                });
+    
+                // Add markers for start and end points
+                var markerStart = L.marker([lat, long], {icon: blueIcon}).addTo(map).bindPopup("Lokasi Masuk ");
+                var markerEnd = L.marker([latPulang, longPulang], {icon: redIcon}).addTo(map).bindPopup("Lokasi Pulang ");
+    
+                // Add path (polyline)
+                var pathCoordinates = [[lat, long], [latPulang, longPulang]];
+                var polyline = L.polyline(pathCoordinates, {
+                    color: 'blue',
+                    weight: 5,
+                    opacity: 0.7
+                }).addTo(map);
+    
+                // Zoom the map to fit the path with padding to zoom out
+                map.fitBounds(polyline.getBounds(), {
+                    padding: [55, 55] // Adjust padding in pixels (horizontal, vertical)
+                });
 
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(showPosition);
-                }
-
-                function showPosition(position) {
-                    var map = L.map('map').setView([lat, long], 17);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap contributors'
-                    }).addTo(map);
-                    var marker = L.marker([lat, long]).addTo(map);
-                    var circle = L.circle([lat, long], {
-                        color: 'red',
-                        fillColor: '#f03',
-                        fillOpacity: 0.5,
-                        radius: 50
-                    }).addTo(map).bindPopup("Lokasi " + user).openPopup();
+    
+                // Calculate distance in meters
+                var distance = map.distance([lat, long], [latPulang, longPulang]);
+    
+                // Display distance below the map
+                var distanceElement = document.getElementById("jarak");
+                if(distance >= 1000) {
+                    distance = distance / 1000;
+                    distanceElement.textContent = `: ${distance.toFixed(2)} KM`;
+                }else{
+                    distanceElement.textContent = `: ${distance.toFixed(2)} meter`;
                 }
             }
-
-            function initMapPulang() {
-                var latPulang = document.getElementById("data").getAttribute('data-lat-pulang');
-                var longPulang = document.getElementById("data").getAttribute('data-long-pulang');
-                var user = document.getElementById("data").getAttribute('data-user');
-    
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(showPositionPulang);
-                }
-    
-                function showPositionPulang(position) {
-                    var mapPulang = L.map('mapPulang').setView([latPulang, longPulang], 17);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap contributors'
-                    }).addTo(mapPulang);
-                    var markerPulang = L.marker([latPulang, longPulang]).addTo(mapPulang);
-                    var circlePulang = L.circle([latPulang, longPulang], {
-                        color: 'red',
-                        fillColor: '#f03',
-                        fillOpacity: 0.5,
-                        radius: 50
-                    }).addTo(mapPulang).bindPopup("Lokasi Pulang " + user).openPopup();
-                }
-            }
-
-
             initMap();
-            initMapPulang();
+        })
         </script>
 </body>
 

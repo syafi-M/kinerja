@@ -44,7 +44,7 @@
 								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
 								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
 								<input id="img" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-									type="file" name="image1" :value="old('image1')" autofocus autocomplete="img" accept="image/*"/>
+									type="file" name="image1" :value="old('image1')" autofocus autocomplete="img" accept="image/*;capture=camera"/>
 							</span>
 						</label>
 						<x-input-error :messages="$errors->get('image1')" class="mt-2" />
@@ -68,7 +68,7 @@
 								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
 								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
 								<input id="img2" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-									type="file" name="image2" :value="old('image2')" autofocus autocomplete="img2" accept="image/*"/>
+									type="file" name="image2" :value="old('image2')" autofocus autocomplete="img2" accept="image/*;capture=camera"/>
 							</span>
 						</label>
 					</div class="my-5">
@@ -91,7 +91,7 @@
 								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
 								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
 								<input id="img3" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-									type="file" name="image3" :value="old('image3')" autofocus autocomplete="img3" accept="image/*"/>
+									type="file" name="image3" :value="old('image3')" autofocus autocomplete="img3" accept="image/*;capture=camera"/>
 							</span>
 						</label>
 						<x-input-error :messages="$errors->get('image3')" class="mt-2" />
@@ -114,7 +114,7 @@
 								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
 								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
 								<input id="img4" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-									type="file" name="image4" :value="old('image4')" autofocus autocomplete="img4" accept="image/*"/>
+									type="file" name="image4" :value="old('image4')" autofocus autocomplete="img4" accept="image/*;capture=camera"/>
 							</span>
 						</label>
 						<x-input-error :messages="$errors->get('image4')" class="mt-2" />
@@ -137,7 +137,7 @@
 								<i class="ri-image-add-line text-xl text-slate-700/90"></i>
 								<span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
 								<input id="img5" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-									type="file" name="image5" :value="old('image5')" autofocus autocomplete="img5" accept="image/*"/>
+									type="file" name="image5" :value="old('image5')" autofocus autocomplete="img5" accept="image/*;capture=camera"/>
 							</span>
 						</label>
 						<x-input-error :messages="$errors->get('image5')" class="mt-2" />
@@ -208,7 +208,7 @@
 		</div>
 		<script>
 		$(document).ready(function() {
-		    console.log($('#submitLaporan'));
+		  //  console.log($('#submitLaporan'));
 		    $('#submitLaporan').click(function(){
     		    $(this).prop('disabled', true);
     		    $(this).text('Tunggu...');

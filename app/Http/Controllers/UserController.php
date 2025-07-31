@@ -8,11 +8,18 @@ use App\Models\Absensi;
 use App\Models\Divisi;
 use App\Models\Kerjasama;
 use App\Models\User;
+use App\Models\TempUser;
 use App\Models\Jabatan;
+use App\Notifications\OtpNotif;
+use App\Notifications\RegSukses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use SadiqSalau\LaravelOtp\Facades\Otp;
 
 class UserController extends Controller
 {
@@ -29,8 +36,10 @@ class UserController extends Controller
         $user->when($request->filterKerjasama, function($query) use($request) {
             return $query->where('kerjasama_id', '=',  $request->filterKerjasama. '%');
         });
+        
+        // dd(User::whereRaw("name REGEXP '^[a-zA-Z]{3}[0-9]{3}$'")->latest()->first());
 
-        return view('admin.user.index', ['user' => $user->paginate(5000), 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev]);
+        return view('admin.user.index', ['user' => $user->paginate(5000), 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev, 'filterKerjasama' => $request->filterKerjasama]);
     }
 
     /**
@@ -43,7 +52,7 @@ class UserController extends Controller
         $jabatan = Jabatan::all();
         
         $excludedUserIDs = [9, 7, 55, 261, 3, 109, 292, 11, 58, 146, 8, 1, 6, 60];
-        $lastUser = User::whereNotIn('id', $excludedUserIDs)->latest()->first();
+        $lastUser = User::whereNotIn('id', $excludedUserIDs)->latest()->where('name', 'REGEXP', '[0-9]')->first();
         
         return view('admin.user.create', compact('data', 'dev', 'lastUser', 'jabatan')); 
     }
@@ -64,15 +73,16 @@ class UserController extends Controller
             'image'     => $request->image,
             'nama_lengkap' => $request->nama_lengkap,
             'nik'       => Crypt::encryptString($request->nik),
-            'no_hp'     => $request->no_hp
+            'no_hp'     => normalizePhone($request->no_hp)
         ];
 
         if ($request->hasFile('image')) {
-            $user['image'] = UploadImage($request, 'image');
+            $user['image'] = UploadImageV2($request, 'image');
         }
         try {
             User::create($user);
         } catch(\Illuminate\Database\QueryException $e){
+            dd($e);
            toastr()->error('Data Sudah Ada', 'error');
            return redirect()->back();
         }
@@ -107,13 +117,14 @@ class UserController extends Controller
         $user = [
             'kerjasama_id' => $request->kerjasama_id,
             'name'      => $request->name,
+            'password'  => Hash::make($request->password),
             'devisi_id' => $request->devisi_id,
             'jabatan_id' => $request->jabatan_id,
             'email'     => $request->email,
             'image'     => $request->image,
             'nama_lengkap' => $request->nama_lengkap,
             'nik'       => Crypt::encryptString($request->nik),
-            'no_hp'     => $request->no_hp
+            'no_hp'     => normalizePhone($request->no_hp)
         ];
 
         if($request->hasFile('image'))
@@ -123,13 +134,14 @@ class UserController extends Controller
                 Storage::disk('public')->delete('images/' . $request->oldimage);
             }
 
-            $user['image'] = UploadImage($request, 'image');
+            $user['image'] = UploadImageV2($request, 'image');
         }else{
             $user['image'] = $request->oldimage;
         }
         try {
             User::findOrFail($id)->update($user);
         } catch(\Illuminate\Database\QueryException $e){
+            dd($e);
            toastr()->error('Data Sudah Ada', 'error');
            return redirect()->back();
         }
@@ -197,5 +209,115 @@ class UserController extends Controller
           return redirect()->back();
         }
         
+    }
+    
+    public function addKaryawanIndex()
+    {
+        $kerjasama = Kerjasama::all();
+        $devisi = Divisi::whereNotIn('id', [2, 3, 4, 7, 8, 9, 10, 11, 12, 14, 18, 20, 24, 26])->get();
+        // sendOtpReg('syafimq00@gmail.com');
+        return view('admin.user.addKaryawan.index', compact('kerjasama', 'devisi')); 
+    }
+    
+    public function addKaryawanStore(Request $request)
+    {
+        $image = $request->file('image');
+        $image2 = $request->file('ktp');
+        
+        // dd($request->all(), Kerjasama::where('client_id', $request->client_id)->value('id'), Divisi::find($request->devisi_id)->value('jabatan_id'));
+        
+        // Ambil angka terbesar dari username dengan format 'SACXXX'
+        $lastNumber = User::where('name', 'LIKE', 'SAC%')
+            ->select(DB::raw('MAX(CAST(SUBSTRING(name, 4) AS UNSIGNED)) AS max_number'))
+            ->value('max_number');
+        
+        // Jika belum ada, mulai dari 1
+        $nextNumber = $lastNumber ? $lastNumber + 1 : 1;
+        
+        // Format jadi 3 digit, misalnya SAC001, SAC099
+        $newUsername = 'SAC' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        
+        // absen
+        $userAbsen = new User();
+        $userAbsen = [
+            'kerjasama_id' => Kerjasama::where('client_id', $request->client_id)->value('id'),
+            'devisi_id' => $request->devisi_id,
+            'jabatan_id' => Divisi::find($request->devisi_id)->value('jabatan_id'),
+            'name'      => $newUsername,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'image'     => $image,
+            'nama_lengkap' => $request->nama_lengkap,
+            'nik'       => Crypt::encryptString($request->nik),
+            'no_hp'     => normalizePhone($request->no_hp),
+            'status_id' => '6'
+        ];
+
+        if ($request->hasFile('image')) {
+            $userAbsen['image'] = UploadImageUser($request, 'image');
+        }
+        
+        // data center
+        $user = [
+            'username' => $newUsername,
+            'nama_lengkap' => $request->nama_lengkap,
+            'password' => Hash::make($request->password),
+            'pw' => $request->password,
+            'email' => $request->email,
+            'image' => $image,
+            'img_ktp_dpn' => $image2,
+            'ttl' => $request->tpt . ', ' . $request->tgl,
+            'nik' => Crypt::encryptString($request->nik),
+            'no_kk' => Crypt::encryptString($request->kk),
+            'no_hp' => normalizePhone($request->no_hp),
+            'client_id' => $request->client_id,
+            'devisi_id' => $request->devisi_id,
+        ];
+        
+        if ($request->hasFile('image')) {
+            $user['image'] = UploadImageUser($request, 'image');
+        }
+        
+        if ($request->hasFile('ktp')) {
+            $user['img_ktp_dpn'] = UploadImageUser($request, 'ktp');
+        }
+        
+        
+        $tUser = new TempUser();
+        $tUser = [
+            'data' => json_encode($user),
+            'status' => 0,
+        ];
+        
+        try {
+            User::create($userAbsen);
+            TempUser::create($tUser);
+            
+            Notification::route('mail', $request->email)
+                ->notify(new RegSukses($newUsername, $request->password));
+            Cache::forget("otp_{$request->email}");
+                
+            // dd($request->all(), $user, $tUser);
+            return view('admin.user.addKaryawan.wait'); 
+        } catch(\Illuminate\Database\QueryException $e){
+            dd($e);
+           toastr()->error('Ada Kesalahan Input Data', 'error');
+           return redirect()->back();
+        }
+        
+    }
+    
+    public function addKaryawanAdminIndex()
+    {
+        $kerjasama = Kerjasama::all();
+        $devisi = Divisi::whereNotIn('id', [2, 3, 4, 7, 8, 9, 10, 11, 12, 14, 18, 20, 24, 26])->get();
+        return view('admin.user.addKaryawan.adminIndex', compact('kerjasama', 'devisi')); 
+    }
+    
+    public function addKaryawanStatus(Request $request)
+    {
+        $kerjasama = Kerjasama::all();
+        $devisi = Divisi::whereNotIn('id', [2, 3, 4, 7, 8, 9, 10, 11, 12, 14, 18, 20, 24, 26])->get();
+        return view('admin.user.addKaryawan.adminIndex', compact('kerjasama', 'devisi')); 
     }
 }

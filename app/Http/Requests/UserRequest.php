@@ -29,7 +29,7 @@ class UserRequest extends FormRequest
             'nama_lengkap' => 'required',
             'email'     => 'email:rfc',
             'password'  => 'required',
-            'image'     => 'required|image|mimes:jpg,jpeg,png,svg|max:2048',
+            'image'     => 'required|image|mimes:jpg,jpeg,png,svg|max:10240',
             'nik'       => 'nullable',
             'no_hp'     => 'nullable|max:20'
         ];

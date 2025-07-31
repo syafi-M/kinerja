@@ -30,13 +30,19 @@
 			#map {
 				height: 180px;
 			}
+			.leaflet-popup-content {
+                font-size: 9px;
+                font-weight: 600;
+                max-width: 100px;
+                text-align: center;
+            }
 			
 		</style>
 
 	</head>
 
 <body class="font-sans antialiased  bg-slate-400">
-	<div class="min-h-screen pb-[12.5rem]">
+	<div class="min-h-screen" style="padding-bottom: 6rem;">
 		@include('../layouts/navbar')
 		<div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
 			<main>
@@ -54,10 +60,10 @@
 					<form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" id="form-absen">
 						@method('POST')
 						@csrf
-						@if(Auth::user()->kerjasama_id != 1)
+						@if(Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
     						<div class="flex flex-col  sm:m-0 items-center  justify-center">
     						    <div class="relative">
-    							    <video id="video" style="scale: 70%;" class="bg-slate-200 p-5 rounded-md square-video" autoplay></video>
+    							    <video id="video" style="scale: 70%;" class="bg-slate-200 p-5 rounded-md square-video" autoplay playsinline></video>
     						    </div>
     							<canvas id="canvas"  style="display:none;"></canvas>
     							<div id="results" class=" sm:mt-0 rounded mb-3"></div>
@@ -66,27 +72,13 @@
     							    <!--<p class=" font-bold bg-white text-start p-1 rounded-lg" style="color: red">Foto Tidak Boleh Kosong</p>-->
     							@endif
     						</div>
-    						
-    
     						<div class="flex justify-center">
     							<button type=button id="snapButton" class="p-2 my-2 px-3 mb-5 text-white bg-blue-400 rounded-full"><i
     									class="ri-camera-fill"></i></button>
     						</div>
     						
 						@endif
-						@if($cekTukar)
-    						@php
-    						    $isNow = Carbon\Carbon::now()->format("H:i");
-    						    $tesx = Carbon\Carbon::createFromFormat('H:i', $cekTukar->shift?->jam_end)->subHour(2)->format('H:i');
-    						@endphp
-						@endif
-						@if($cekTukar && $isNow <= $tesx)
-    						@if($cekTukar?->tukar_id == Auth::user()->id)
-    						    <div class="p-1 rounded my-3 bg-slate-50 text-center">
-    						        <p class="font-medium">Shift Anda Telah Tergantikan Oleh <span style="text-decoration: underline; text-transform: capitalize; font-weight: 600;">{{ $cekTukar->user->nama_lengkap }}</span></p>
-    						    </div>
-    						@endif
-						@endif
+
 						<div class="p-1 rounded my-3 ">
 						    <label class="required text-white">Map : </label>
 						    <span id="labelMap" class="text-white text-center flex flex-col justify-center">
@@ -115,43 +107,53 @@
 								@endif
 							</div>
 							<div class="flex flex-col  justify-between">
-								<label for="kerjasama" class="text-white">Bermitra Dengan: </label>
+								<label for="kerjasama" class="text-white">Penempatan: </label>
+								@if(Auth::user()->id == 7 || Auth::user()->id == 10)
+								    <select class="selectMitra select select-bordered" name="kerjasama_id">
+                                        
+                                    </select>
+								@else
 								<input type="text" name="kerjasama_id" id="kerjasama_id" hidden value="{{ Auth::user()->kerjasama_id }}">
-								<input type="text" id="kerjasama" name="{{ Auth::user()->kerjasama->client->name }}" value="{{ Auth::user()->kerjasama->client->name }}" disabled
-									class="input input-bordered">
+								<input type="text" id="kerjasama" name="{{ Auth::user()->kerjasama->client->name }}" value="{{ Auth::user()->jabatan?->code_jabatan == "SPV-W" ? '' : Auth::user()->kerjasama->client->name }}" disabled
+									class="input input-bordered viewKerjasama">
+								@endif
 							</div>
 							@if(Auth::user()->kerjasama_id == 1)
 							<input type="text" name="masuk" value="1" class="hidden"/>
 							@endif
 							@if(Auth::user()->kerjasama_id != 1)
+							    @php
+							        $lanjutShift = isset($absensi[0]) && 
+							                        $absensi[0]->absensi_type_pulang && 
+							                        $absensi[0]->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d') && 
+							                        $absensi[0]->masuk;
+							    @endphp
     							<div class="flex flex-col justify-start">
         							<x-input-label for="jenis_abs" class="text-white text-lg" :value="__('Jenis Absen: ')" />
         							<div class="flex flex-col justify-start bg-slate-50 rounded-lg">
                 						<div>
                                             <input type="radio" id="type_absen" data-pilih="masuk" name="jenis_abs" value="1"
-                                                class="radio radio-sm m-2" 
-                                                {{ (isset($cekAbsen) && count($cekAbsen) > 0 && count($cekAbsen) <= 2 && isset($cekPulang) && $cekPulang->absensi_type_pulang != null) ? 'disabled' : 'checked="checked"' }}
-                                                >
-                                            <label for="masuk" class="overflow-hidden">Masuk</label>
+                                                class="radio radio-sm m-2" {{ $lanjutShift ? 'disabled' : 'checked' }} >
+                                            <label for="masuk" class="overflow-hidden" {{ $lanjutShift ? 'disabled' : '' }}>Masuk</label>
                                         </div>
+                                        @if($lanjutShift)
+                						<div>
+                                            <input type="radio" id="type_absen" data-pilih="terus" name="jenis_abs" value="1"
+                                                class="radio radio-sm m-2 disabled" checked>
+                                            <label for="tukar" class="overflow-hidden" disabled>Meneruskan Shift</label>
+                                        </div>
+                                        @endif
                 						<div>
                                             <input type="radio" id="type_absen" data-pilih="tukar" name="jenis_abs" value="1"
-                                                class="radio radio-sm m-2">
-                                            <label for="tukar" class="overflow-hidden">Tukar Shift</label>
+                                                class="radio radio-sm m-2 disabled" disabled>
+                                            <label for="tukar" class="overflow-hidden" disabled>Tukar Shift (maintenance)</label>
                                         </div>
                 						<div>
                                             <input type="radio" id="type_absen" data-pilih="lembur" name="jenis_abs" value="1"
                                                 class="radio radio-sm m-2" disabled>
                                             <label for="lembur" class="overflow-hidden">Lembur (maintenance)</label>
                                         </div>
-                                        @if(count($cekAbsen) > 0 && count($cekAbsen) <= 2 && $cekPulang->absensi_type_pulang != null )
-                    						<div>
-                                                <input type="radio" id="type_absen" data-pilih="terus" name="jenis_abs" value="1"
-                                                    class="radio radio-sm m-2" >
-                                                <label for="terus" class="overflow-hidden">Meneruskan Shift</label>
-                                            </div>
-                                        @endif
-                                        
+                        
                                         <div id="type_absen_div" class="hidden">
                                             <input type="text" name="masuk" value="1" class="hidden"/>
                                         </div>
@@ -164,49 +166,38 @@
     								        <option selected disabled class="p-1 my-1 font-bold" style="color: red">Pengganti Tidak Boleh Kosong</option>
         								@endif
     									<option disabled {{ $errors->any() && $errors->pengganti ? '' : 'selected' }}>-- Pilih Pengganti --</option>
-    									@forelse($pengganti as $peng)
-    									    <option value="{{ $peng->id }}">{{ $peng->nama_lengkap }}</option>
-    									@empty
+    									
     									    <option>Belum Ada Karyawan</option>
-    									@endforelse
+    								
                                     </select>
                                 </div>
 							@endif
-							@if(Auth::user()->divisi->jabatan->name_jabatan != "DIREKSI")
+							@if(Auth::user()->divisi->jabatan->name_jabatan == "DIREKSI")
+    						    <input type="hidden" name="shift_id" value="145" />
+    						@elseif(Auth::user()->jabatan->code_jabatan == "SPV-W")
+    						    <input type="hidden" name="shift_id" value="195" />
+    						@else
     							<div class="flex flex-col  justify-between">
     								<label class="required text-white" for="shift_id">Shift: </label>
-    								<select name="shift_id" id="shift_id" {{ Auth::user()->name == "DIREKSI" ? '' : 'required' }}  style="{{$errors->any() && $errors->shift_id ? 'border: 2px solid red;' : ''}}" class="select select-bordered font-thin">
-        							    @if($errors->any() && $errors->shift_id)
-                            		        <option selected disabled class="p-1 my-1 font-bold" style="color: red">Shift Tidak Boleh Kosong</option>
-                            			@endif
-                            			<option disabled {{ $errors->any() && $errors->shift_id ? '' : 'selected' }}>-- Pilih Shift --</option>
-                            			@php
-                            			
-                            			@endphp
-                            			@forelse ($shift as $i)
-                            				@php
-                            				    $endA = Carbon\Carbon::parse($i->jam_end)->subHour(1)->format('H:i');
-                            				@endphp
-                            				@if($cekPulang && $cekPulang->shift_id != $i->id)
-                            					<option value="{{ $i->id }}" data-shift="{{ $i->jam_start }}">{{ $i->jam_start }} - {{ $endA }} | {{ $i->jabatan->name_jabatan }} |
-                            						{{ $i->shift_name }}
-                            						</option>
-                            				@elseif(!$cekPulang && count($cekAbsen) == 0)
-                            				    <option value="{{ $i->id }}" data-shift="{{ $i->jam_start }}">{{ $i->jam_start }} - {{ $endA }} | {{ $i->jabatan->name_jabatan }} |
-                            						{{ $i->shift_name }}
-                            						</option>
-                            				@endif
-                            			@empty
-                            				<option readonly disabled>~ Tidak ada Shift ! ~</option>
-                            			@endforelse
+    								<select name="shift_id" id="shift_id" {{ Auth::user()->name == "DIREKSI" ? '' : 'required' }}  style="{{$errors->any() && $errors->shift_id ? 'border: 2px solid red;' : ''}}" class="select select-bordered font-thin ">
+            							    @if($errors->any() && $errors->shift_id)
+                                		        <option selected disabled class="p-1 my-1 font-bold" style="color: red">Shift Tidak Boleh Kosong</option>
+                                			@endif
+                                			    <option disabled {{ $errors->any() && $errors->shift_id ? '' : 'selected' }}>-- Pilih Shift --</option>
+                                			
+                                			@forelse ($shift as $i)
+                                				@php
+                                				    $endA = Carbon\Carbon::parse($i->jam_end)->subHour(1)->format('H:i');
+                                				@endphp
+                                			    <option value="{{ $i->id }}" data-shift="{{ $i?->jam_start }}">{{ $i?->shift_name }} | {{ $i?->jam_start }} - {{ $endA }}</option>
+                                			@empty
+                                				<option readonly disabled>~ Tidak ada Shift ! ~</option>
+                                			@endforelse
     								</select>
-    								
     								@if(Auth::user()->kerjasama->client_id == 1)
     								    <span id="absen-kantor" data-absen-kantor="{{ Auth::user()->kerjasama->client_id }}" hidden></span>
     								@endif
     							</div>
-    						@else
-    						    <input type="hidden" name="shift_id" value="145" />
 							@endif
 
 							<div>
@@ -241,54 +232,8 @@
 								<textarea name="deskripsi" id="deskripsi" value="" placeholder="deskripsi..."
 								 class="w-full textarea textarea-bordered"></textarea>
 							</div>
-							<div class="flex flex-col">
-                                @php
-                                    $today = Carbon\Carbon::now()->format('Y-m-d');
-                                    $hasJadwal = false;
-                                @endphp
-                            
-                                @forelse ($jadwal as $jad)
-                                    @php
-                                        $tanggalJDW = Carbon\Carbon::createFromFormat('Y-m-d', $jad->tanggal)->isoFormat('dddd, D MMMM YYYY');
-                                        $jadiTGL = Carbon\Carbon::createFromFormat('Y-m-d', $jad->tanggal)->format('Y-m-d');
-                                    @endphp
-
-                                    @if (!$hasJadwal)
-                                        @if (Carbon\Carbon::now()->format('Y-m-d') == $jadiTGL)
-                                            <label>Jadwal Hari ini: </label>
-                                            @if ($jad->status == 'OFF')
-                                                <span style="height: auto;" class="input input-bordered" disabled>
-                                                    Tanggal:    {{ $tanggalJDW }}, <br/>
-                                                    Shift:      {{ $jad->shift->shift_name }}, <br/> 
-                                                    Area:       <span class="text-red-500">{{ $jad->area->nama_area }}</span>
-                                                </span>
-                                                @php
-                                                    $hasJadwal = true;
-                                                @endphp
-                                            @else
-                                                <span style="height: auto;" class="input input-bordered" disabled>
-                                                    Tanggal:    {{ $tanggalJDW }}, <br/>
-                                                    Shift:      {{ $jad->shift->shift_name }}, <br/> 
-                                                    Area:       {{ $jad->area->nama_area }}
-                                                </span>
-                                                @php
-                                                    $hasJadwal = true;
-                                                @endphp
-                                            @endif
-                                        @endif
-                                    @endif
-                            
-                                @empty
-                                @endforelse
-                            
-                                @if (!$hasJadwal)
-                                <label hidden>Jadwal Hari ini: </label>
-                                <span class="input input-bordered flex items-center justify-center hidden">
-                                    <span class=" text-center" disabled>Belum Ada Jadwal</span>
-                                </span>
-                                @endif
-                            </div>
-                            @if(Auth::user()->kerjasama_id != 1)
+	
+                            @if(Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
 							    <input type="text" id="image" name="image" class="image-tag" hidden>
                             @endif
 							<input type="text" id="keterangan" name="keterangan" value="masuk" data-authName="{{ Auth::user()->name }}" hidden>
@@ -303,43 +248,29 @@
 							<span class="flex justify-center gap-3">
 								@forelse ($absensi as $abs)
 									{{-- sudah --}}
-									@if (!$cekRoute && $abs->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d') && !$cekTukar && $abs->absensi_type_pulang == null && $abs->tukar == null && !$afaLib)
+									@if (!$cekRoute && $abs->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d') &&  $abs->absensi_type_pulang == null && $abs->tukar == null && !$afaLib)
 										<button
 											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
 											disabled>Sudah Absen</button>
-									@elseif(!$cekRoute && count($cekAbsen) >= 2)
-									    <button
-											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
-											disabled>Sudah Absen 2x</button>
-									{{-- belum --}}
-									@elseif(!$cekRoute && $cekTukar && $isNow <= $tesx && !$afaLib)
-									    @if($cekTukar->tukar_id == Auth::user()->id)
-									        <button
-    											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
-    											disabled>Shift Tergantikan</button>
-									    @endif
-									@elseif($afaLib)
+									@elseif($afaLib && Auth::user()->divisi->jabatan_id != 35)
 									    <button
     											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
     											disabled>Jadwal Tidak Ada</button>
+									@elseif(!$cekRoute && $abs->tanggal_absen == Carbon\Carbon::now()->format('Y-m-d') && $abs->terus)
+									    <button
+    											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
+    											disabled>Sudah Absen 2x (Mulih Lurr, ojo kerjo ae)</button>
 									@else
-										<button type="button" class="p-2 my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
+										<button type="button" class="p-2 btnAbsen my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
 											id="btnAbsen">Absen</button>
 									@endif
 								@break
 
 								@empty
-									@if($cekTukar)
-									    @if($cekTukar->tukar_id == Auth::user()->id)
-									        <button
-    											class="p-2 my-2 px-4 text-slate-100 bg-blue-300  rounded transition-all ease-linear .2s disabled cursor-not-allowed"
-    											disabled>Shift Tergantikan</button>
-									    @endif
-									@else
-										<button type="button" class="p-2 my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
+										<button type="button" class="p-2 btnAbsen my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
 											id="btnAbsen">Absen</button>
-									@endif
-								@endforelse
+							@endforelse
+							
 								<a href="{{ route('dashboard.index') }}"
 									class="p-2 my-2 px-4 text-white bg-red-500 hover:bg-red-600 rounded transition-all ease-linear .2s">
 									Kembali
@@ -352,11 +283,18 @@
 							$mytime2 = '10:00:00';
 							$uID = Auth::user()->divisi->jabatan->code_jabatan;
 						@endphp
-						<input class="hidden" id="thisTime" value="{{ $mytime }}">
-						<input class="hidden" id="thisTime2" value="{{ $mytime2 }}">
-						<input class="hidden" id="isi" name="absensi_type_pulang">
-						<input type="hidden" id="lat" name="lat_user" value="" class="hidden lat_user" />
-						<input type="hidden" id="long" name="long_user" value="" class="hidden long_user" />
+						<div class="hidden" id="HiddenOnes">
+    						<input class="hidden" id="thisTime" value="{{ $mytime }}">
+    						<input class="hidden" id="thisTime2" value="{{ $mytime2 }}">
+    						<input class="hidden" id="isi" name="absensi_type_pulang">
+    						<input type="hidden" id="lat" name="lat_user" value="" class="hidden lat_user" />
+    						<input type="hidden" id="long" name="long_user" value="" class="hidden long_user" />
+    						
+    						<input type="hidden" id="lat_mitra" name="lat_mitra" value="{{ $harLok->latitude }}" class="hidden" />
+    						<input type="hidden" id="long_mitra" name="long_mitra" value="{{ $harLok->longtitude }}" class="hidden" />
+    						<input type="hidden" id="radius_mitra" name="radius_mitra" value="{{ $harLok->radius }}" class="hidden" />
+						</div>
+						
 						<span class="hidden" id="dataUser" data-userId="{{ $uID }}"></span>
 					</form>
 				</div>
@@ -372,14 +310,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
-	@if(Auth::user()->kerjasama_id != 1)
+	@if(Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
     	<!-- Configure a few settings and attach camera -->
-        <script>
+        <script defer>
         	$(document).ready(function() {
             // Mendapatkan elemen video
         	var video = document.getElementById('video');
             var canvas = document.createElement('canvas');
             var context = canvas.getContext('2d', { willReadFrequently: true });
+            var isLeadr = {!! json_encode(Route::currentRouteName() == 'absensi-karyawan-co-cs.index' || Route::currentRouteName() == 'absensi-karyawan-co-scr.index') !!};
+            var isDarkEnvironment = false;
+            // console.log(isLeadr);
             
             // Mengatur ukuran canvas sesuai opsi
             canvas.width = 320;
@@ -388,7 +329,7 @@
             // Mengonfigurasi constraints untuk mendapatkan akses kamera
             var constraints = {
                 audio: false,
-                video: { facingMode: 'user', width: 450, height: 450 }
+                video: { facingMode: isLeadr ? 'environment' : 'user', width: 450, height: 450 }
             };
         	   //console.log(navigator.mediaDevices.getUserMedia(constraints));
         
@@ -440,8 +381,33 @@
                 // Menggambar video pada canvas
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
+                // Get image data
+                var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                var data = imageData.data;
+            
+                if (isDarkEnvironment) {
+                    // Apply manual brightness/contrast enhancement
+                    let brightnessFactor = 40;  // increase brightness by +40
+                    let contrastFactor = 1.3;   // contrast multiplier
+            
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Brightness
+                        data[i]     = Math.min(data[i] + brightnessFactor, 255);     // Red
+                        data[i + 1] = Math.min(data[i + 1] + brightnessFactor, 255); // Green
+                        data[i + 2] = Math.min(data[i + 2] + brightnessFactor, 255); // Blue
+            
+                        // Contrast
+                        data[i]     = ((data[i] - 128) * contrastFactor + 128);
+                        data[i + 1] = ((data[i + 1] - 128) * contrastFactor + 128);
+                        data[i + 2] = ((data[i + 2] - 128) * contrastFactor + 128);
+                    }
+            
+                    // Put enhanced data back
+                    context.putImageData(imageData, 0, 0);
+                }
+                
                 // Mengubah gambar menjadi URL data
-                var dataURL = canvas.toDataURL('image/jpeg', 0.8);
+                var dataURL = canvas.toDataURL('image/jpeg', 0.9);
                 $('.image-tag').val(dataURL)
         
                 // Mengirim dataURL ke backend atau melakukan hal lain sesuai kebutuhan Anda
@@ -485,6 +451,7 @@
                         }
                     }
             		
+            		isDarkEnvironment = blackPixels > (canvas.width * canvas.height * 0.7); // 80% black
             		var redPixels = 0;
                     var purplePixels = 0;
                     var darkBluePixels = 0;
@@ -517,14 +484,14 @@
                     if (redPixels / (canvas.width * canvas.height) > 0.2 ||
                         purplePixels / (canvas.width * canvas.height) > 0.2 ||
                         darkBluePixels / (canvas.width * canvas.height) > 0.2) {
-                        alert('Terlalu banyak warna terdeteksi!');
+                        alert('Terlalu banyak warna terdeteksi!\nTolong agak menjauh dari kamera');
             			$('#snapButton').hide()
                     }else{
             			$('#snapButton').show()
             		}
                     // Jika sebagian besar piksel adalah hitam, mungkin output kamera hitam
                     if (blackPixels > (canvas.width * canvas.height * 0.9)) { // 90% piksel hitam, sesuaikan jika diperlukan
-                        alert('Output kamera hitam!');
+                        alert('Output kamera hitam!\nTolong pindah ke tempat yang lebih terang');
             			$('#snapButton').hide();
             // 			$('#snapButton').prop('disabled', true);
                     }else{
@@ -540,7 +507,7 @@
         </script>
     	<!--Camera-->
 	@endif
-	
+	<!--Pershift an-->
     <script>
         $(document).ready(function () {
             
@@ -598,152 +565,316 @@
             
         });
         
-            
-            
-            
         // Event listener for checkbox change
         
         $('.radio').change(function () {
-          if ($(this).prop('checked')) {
-             var che = $(this).data('pilih');
-            // console.log(`Checkbox is checked!, ${$(this).data('pilih')}`);
-            if(che == "masuk"){
-                $('#type_absen_div').html(
-                    `<input type="text" name="masuk" value="1" class="hidden"/>`
-                )
-                $('#divPengganti').hide();
-            }else if(che == "tukar"){
-                $('#type_absen_div').html(
-                    `<input type="text" name="tukar" value="1" class="hidden"/>`
-                )
+            const selected = $(this).data('pilih');
+        
+            let inputName = selected;
+            let inputHtml = `<input type="text" name="${inputName}" value="1" class="hidden"/>`;
+            $('#type_absen_div').html(inputHtml);
+        
+            if (selected === "tukar") {
                 $('#divPengganti').show();
-            }else if(che == "lembur"){
-                $('#type_absen_div').html(
-                    `<input type="text" name="lembur" value="1" class="hidden"/>`
-                )
-                $('#divPengganti').hide();
-            }else if(che == "terus"){
-                $('#type_absen_div').html(
-                    `<input type="text" name="terus" value="1" class="hidden"/>`
-                )
+            } else {
                 $('#divPengganti').hide();
             }
-          }
+        });
+        
+        // Trigger change manually on page load to reflect default checked radio
+        $(document).ready(function () {
+            $('.radio:checked').trigger('change');
         });
       });
     </script>
-	<script>
+    <!--Maps-->
+	<script defer>
 	    function detectDevice() {
-            var userAgent = navigator.userAgent.toLowerCase();
-            
-            if (/android/.test(userAgent)) {
-                return 'Android';
-            } else if (/iphone|ipad|ipod/.test(userAgent)) {
-                return 'iPhone';
-            } else {
-                return 'Unknown'; // Return 'Unknown' for other devices
-            }
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (/android/.test(userAgent)) return 'Android';
+            if (/iphone|ipad|ipod/.test(userAgent)) return 'iPhone';
+            return 'Unknown';
         }
         
-        // Example usage:
-        var deviceType = detectDevice();
-        // console.log('Device type:', deviceType, navigator.userAgent.toLowerCase());
-        var latlngleng = 0;
+        var loc = @json($lokLok);
+        var mitra = @json($penempatan);
+        var defaultLocationId = "{{ Auth::user()->kerjasama_id }}";
+        var lati = "{{ $harLok->latitude }}";
+		var longi = "{{ $harLok->longtitude }}";
+		var radi = "{{ $harLok->radius }}";
+		var client = "{{ $harLok->client->name }}";
         
-        if(deviceType == 'Android'){
-            latlngleng = 11;
-        }else if(deviceType == 'iPhone'){
-            latlngleng = 18;
-        }else {
-            latlngleng = 11;
-        }
-
-    	var userLocation = null;
-    	var userMarker = null;
+    	let userLocation = null;
+    	let userMarker = null;
     	const MIN_DISTANCE_FOR_MOVEMENT = 0.01;
+        var deviceType = detectDevice();
+        const latlngLength = deviceType === 'iPhone' ? 18 : 11;
+        // Example usage:
 		var lat = document.getElementById('lat')
 		var long = document.getElementById('long')
         var labelMap = $('#labelMap')
         var tutor = $('#tutor')
         var getNewLoc = null;
+        var map = L.map('map'); // ini adalah zoom level
         
     		if (navigator.geolocation) {
+    		    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    				attribution: '© OpenStreetMap contributors'
+    			}).addTo(map);
+    			
         		navigator.geolocation.getCurrentPosition(function(position){
         			userLocation = [position.coords.latitude, position.coords.longitude];
-        		  //  console.log([position.coords.longitude, position.coords.latitude], userLocation);
         			showPosition(position);
-        			labelMap.addClass('hidden');
-        			tutor.removeClass('hidden');
         		});
         
-        		navigator.geolocation.watchPosition(function(position){
-        			if (userLocation) {
-        			 //   console.log(userMarker.getLatLng());
-        				const markerLocation = userMarker.getLatLng();
+        		const watchUser = navigator.geolocation.watchPosition(
+        		    (position) => {
+        		        const {latitude, longitude} = position.coords;
+        				const markerLocation = L.marker(userLocation).getLatLng();
+            			labelMap.addClass('hidden');
+            			tutor.removeClass('hidden');
         				
-        				if(markerLocation.lat.toString().length > latlngleng){
-    		                $('#form-absen').attr('action', '#');
-        				    $('#btnAbsen').text('Diluar Radius');
-        				    $('#btnAbsen').prop('disabled', true);
-        				    $('#btnAbsen').addClass('btn-disabled');
-    		                $('#btnAbsen').css('background-color', 'rgba(96, 165, 250, 0.5)');
-    		                $('#btnAbsen').attr('id', '');
-        				}
-        				
+            			lat.value = latitude;
+			            long.value = longitude;
         				getNewLoc = markerLocation;
-        				// console.log(markerLocation.lat.toString().length);
-        			    $('#latlongLabel').html(`[${markerLocation.lat}, ${markerLocation.lng}]`);
-        				// console.log(markerLocation);
-        				if (markerLocation.lat !== userLocation[1] || markerLocation.lng !== userLocation[0]) {
-        					// The marker has been moved, so the GPS is likely fake
-        					userMarker.setLatLng(userLocation);
-        				}
-        			}
-        		});
+        				
+        				var userLatLng = L.latLng([latitude, longitude]);
+                        var circleLatLng = L.latLng([$('#lat_mitra').val(), $('#long_mitra').val()]);
+                        var distanceFromCenter = userLatLng.distanceTo(circleLatLng); // in meters
+                        var distanceFromBorder = distanceFromCenter - $('#radius_mitra').val();
+                        
+                        // console.log(circleLatLng, distanceFromBorder, markerLocation.lat.toString().length , latlngLength);
+                        
+                        if(@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" && markerLocation.lat.toString().length <= latlngLength){
+                            $('#form-absen').attr('action', '{{ route('absensi.store') }}');
+        				    $('#btnAbsen').text('Absen').prop('disabled', false).removeClass('btn-disabled').addClass('bg-blue-500 hover:bg-blue-600').attr('id', 'btnAbsen');
+        				    // console.log("iki spv");
+                        }else{
+            				if(markerLocation.lat.toString().length > latlngLength || distanceFromBorder.toFixed() > 1){
+        		                $('#form-absen').attr('action', '#');
+            				    $('#btnAbsen').text('Diluar Radius').prop('disabled', true).addClass('btn-disabled').css('background-color', 'rgba(96, 165, 250, 0.5)').attr('id', '');
+            				    // console.log("iki dudu spv");
+            				} else {
+        		                $('#form-absen').attr('action', '{{ route('absensi.store') }}');
+            				    $('#btnAbsen').text('Absen').prop('disabled', false).removeClass('btn-disabled').addClass('bg-blue-500 hover:bg-blue-600').attr('id', 'btnAbsen');
+            				    // console.log("iki spv");
+            				}
+                        }
+                        
+        				
+        			    $('#latlongLabel').html(`[${latitude}, ${longitude}, ${distanceFromBorder.toFixed(2)}]`);
+        			    
+        			    // Check if marker exists
+                        if (!userMarker) {
+                            // Create marker if it doesn't exist
+                            userMarker = L.marker([latitude, longitude]).addTo(map).bindPopup("Lokasi anda");
+                        } else {
+                            // Update the marker's position
+                            userMarker.setLatLng([latitude, longitude]).openPopup();
+                        }
+        				// console.log(lat, long);
+        		    },
+        		    (error) => {
+        		        console.error("Geolocation error:", error);
+                        // alert("Unable to retrieve location updates.");
+        		    },{
+        		      enableHighAccuracy: true,
+                      maximumAge: 0,
+        		    }
+        		);
+            	$('#btnAbsen').click(function() {
+                  navigator.geolocation.clearWatch(watchUser);
+                  $(this).prop('disabled', true)
+            		    .text('Tunggu...')
+            		    .addClass('btn-disabled')
+            		    .css('background-color', 'rgba(96, 165, 250, 0.5)');
+                });
         	} else {
         		alert('Geo Location Not Supported By This Browser !!');
         		labelMap.removeClass('hidden');
         	}
-
+        	
 		function showPosition(position) {
-			lat.value = position.coords.latitude;
-			long.value = position.coords.longitude;
-
-			var lati = "{{ $harLok->latitude }}"
-			var longi = "{{ $harLok->longtitude }}"
-			var radi = "{{ $harLok->radius }}"
-			var client = "{{ $harLok->client->name }}"
-
 			var latitude = position.coords.latitude; // Ganti dengan latitude Anda
 			var longitude = position.coords.longitude; // Ganti dengan longitude Anda
 
+			map.setView([latitude, longitude], 14); // ini adalah zoom level
 
-			var map = L.map('map').setView([latitude, longitude], 13); // ini adalah zoom level
-
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution: '© OpenStreetMap contributors'
-			}).addTo(map);
-
-
-            // console.log("marker: ", userLocation, [latitude, longitude]);
-            userMarker = L.marker(userLocation).addTo(map);
-// 			var marker = L.marker([latitude, longitude]).addTo(map);
-			var circle = L.circle([lati, longi], {
+			var circle = L.circle([$('#lat_mitra').val(), $('#long_mitra').val()], {
 					color: 'crimson',
 					fillColor: '#f09',
 					fillOpacity: 0.5,
 					radius: radi
-				}).addTo(map).bindPopup("Lokasi absen: " + client).openPopup();
-    		window.onload = function () {
-                showPosition(position);
-            };
+				}).addTo(map).bindPopup("Lokasi absen: <br>" + client);
 		}
+		
+		function getDistanceFromLatLng(lat1, lng1, lat2, lng2) {
+		    var pointA = L.latLng(lat1, lng1);
+            var pointB = L.latLng(lat2, lng2);
+            // console.log(pointA.distanceTo(pointB));
+            return pointA.distanceTo(pointB);
+        }
+        function findClosestLocation(userLatLng, locations, threshold = 5000) {
+            var closestLocations = [];
+
+            loc.forEach(function(location) {
+                var distance = getDistanceFromLatLng(userLatLng[0], userLatLng[1], location.latitude, location.longtitude);
+                // Add location to closestLocations array if it's within the threshold
+                // console.log(location, distance)
+                if (distance <= location.radius) {
+                    closestLocations.push(location);
+                }
+            });
+            // console.log(closestLocations);
+        
+            return closestLocations;
+        }
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLatLng = [position.coords.latitude, position.coords.longitude];
+
+                // Set a distance threshold (e.g., 5000 meters = 5 km)
+                var threshold = 50; // 5 km
+            
+                // Find the closest locations within the threshold distance
+                var closestLocations = findClosestLocation(userLatLng, loc, threshold);
+            
+                // Get default location based on Auth::user()->kerjasama_id
+                // Get the select element
+                const selectMitra = $('.selectMitra');
+                
+                // Clear existing options
+                selectMitra.html('');
+                
+                if(@json(Auth::user()->id) == 7 || @json(Auth::user()->id) == 10) {
+                    // Add the default location to the select dropdown
+                    loc.forEach(function(location) {
+                        if (location.id == defaultLocationId) {
+                            
+                            
+                            const option = document.createElement('option');
+                            var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
+                            option.textContent = selectedMit.client.name;
+                            option.value = selectedMit.id;
+                            option.selected = true; // Set as selected
+                            
+                            // console.log(option);
+                            selectMitra.append(option);
+                        }
+                    });
+                
+                    // Add closest locations to the select dropdown
+                    closestLocations.forEach(function(location) {
+                        // Avoid duplicating the default location
+                        if (location.id != defaultLocationId) {
+                            const option = document.createElement('option');
+                            var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
+                            option.textContent = selectedMit.client.name;
+                            option.value = selectedMit.id;
+                            selectMitra.append(option);
+                            
+                            selectMitra.change(function(){
+                                // Get the selected client ID from the dropdown
+                                var selectedClientId = $(this).val();
+                                
+                                var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
+                                // console.log('iki miti: ', selectedMit);
+                                option.textContent = selectedMit.client.name;
+                                option.value = selectedMit.id;
+                                
+                                
+                                // Find the location corresponding to the selected client ID
+                                var selectedLocation = loc.find(location => location.client_id == selectedClientId);
+                                
+                                if (selectedLocation) {
+                                    // Create and open the popup at the selected location
+                                    $('#lat_mitra').val(selectedLocation.latitude);
+                        			$('#long_mitra').val(selectedLocation.longtitude);
+                        			$('#radius_mitra').val(selectedLocation.radius);
+                        			
+                                    L.popup()
+                                        .setLatLng([selectedLocation.latitude, selectedLocation.longtitude])
+                                        .setContent("Lokasi absen: <br>" + selectedLocation.client.name) // Correct concatenation
+                                        .openOn(map);
+                                } else {
+                                    console.log("Location not found for selected client ID:", selectedClientId);
+                                }
+                            });
+                            
+                            L.circle([location.latitude, location.longtitude], {
+            					color: 'crimson',
+            					fillColor: '#f09',
+            					fillOpacity: 0.5,
+            					radius: location.radius
+            				}).addTo(map);
+                        }
+                    });
+                } else if (@json(Auth::user()->kerjasama->client_id) == 28) {
+                    closestLocations.forEach(function(location) {
+                        if(location.id == 25 || location.id == 28) {
+                            // console.log("aku: ", location);
+                            $('#lat_mitra').val(location.latitude);
+                			$('#long_mitra').val(location.longtitude);
+                			$('#radius_mitra').val(location.radius);
+                			
+                			var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
+                			$('#kerjasama_id').val(selectMitra.id);
+                			$('.viewKerjasama').val(selectMitra.client.name);
+                			
+                			L.circle([location.latitude, location.longtitude], {
+            					color: 'crimson',
+            					fillColor: '#f09',
+            					fillOpacity: 0.5,
+            					radius: location.radius
+            				}).addTo(map);
+            				if(location.id == 28) {
+            				    map.setView([location.latitude, location.longtitude], 15);
+            				}
+            				
+                            L.popup()
+                                .setLatLng([location.latitude, location.longtitude])
+                                .setContent("Lokasi absen: <br>" + location.client.name) // Correct concatenation
+                                .openOn(map);
+                        }
+                    })
+                } else if (@json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
+                    closestLocations.forEach(function(location) {
+                        $('#lat_mitra').val(location.latitude);
+            			$('#long_mitra').val(location.longtitude);
+            			$('#radius_mitra').val(location.radius);
+            			
+            			var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
+            // 			console.log(selectMitra, mitra, location);
+            			$('#kerjasama_id').val(selectMitra.id);
+            			$('.viewKerjasama').val(selectMitra.client.name);
+          
+            			L.circle([location.latitude, location.longtitude], {
+        					color: 'crimson',
+        					fillColor: '#f09',
+        					fillOpacity: 0.5,
+        					radius: location.radius
+        				}).addTo(map);
+        				if(location.id == 28) {
+        				    map.setView([location.latitude, location.longtitude], 15);
+        				}
+        				
+                        L.popup()
+                            .setLatLng([location.latitude, location.longtitude])
+                            .setContent("Lokasi absen: <br>" + location.client.name) // Correct concatenation
+                            .openOn(map);
+                    })
+                }
+            
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+        // console.log(loc);
 	</script>
-	<script>
+	<!--Waktu-->
+	<script defer>
 		$(document).ready(function() {
-		    
 		    var dataUserId = $("#dataUser").attr('data-userId');
-		    
 		    var debounceTimer;
 		    var keterangan = $('#keterangan');
 			function calculatedJamStart() {
@@ -757,8 +888,6 @@
 				var selectedOption = $('#shift_id').find(":selected");
 				var shiftStart = selectedOption.data('shift');
 				
-				
-				
 				if (typeof shiftStart != 'undefined' && shiftStart != '') {
 					var startTimeParts = shiftStart.split(':');
 					var startHours = parseInt(startTimeParts[0]);
@@ -769,70 +898,76 @@
 
 					var jadi = startDiffMinutes - nowDiffMinutes;
 
-					var kesimH = Math.floor(jadi / 60 - 1);
+					var kesimH = Math.floor(jadi / 60);
 					var kesimM = Math.abs(jadi % 60);
+					var kesimH2 = Math.floor(jadi / 60 - 1);
+					var kesimM2 = Math.abs(jadi % 60 - 30);
 					var kesimS = Math.abs(60 - detikSaiki);
 					
 					if (kesimM < 0) {
         				kesimH--;
         				kesimM += 60;
-        			}
+					}
+        		};
         			
                 // kantor
                 var absenKantor = $('#absen-kantor').data('absen-kantor');
                 var authName = keterangan.data('authname');
-				// console.log(authName, $('#keterangan').data('authname'));
-				
+                const kerId = {{ Auth::user()->kerjasama_id }};
+				// console.log(selectedOption, shiftStart, jadi);
 				
 				// 	keterangan
 				if (absenKantor == 1) {
                     if (jadi < -32 && authName != 'DIREKSI') {
-                        console.log('telat');
+                        // console.log('telat');
                         $('#keterangan').val('telat');
                     } else {
-                        console.log('masuk');
+                        // console.log('masuk');
                         $('#keterangan').val('masuk');
                     }
                 } else {
-                    if (jadi < 0) {
-                        $('#keterangan').val('telat');
+                    if (kerId == 11) {
+                        if (jadi < -15) {
+                            $('#keterangan').val('telat');
+                        } else {
+                            $('#keterangan').val('masuk');
+                        }
                     } else {
-                        $('#keterangan').val('masuk');
+                        if (jadi < 0) {
+                            $('#keterangan').val('telat');
+                        } else {
+                            $('#keterangan').val('masuk');
+                        }
                     }
                 }
+                
+                // console.log($('#keterangan').val(), jadi);
 				
-				    
-				    if(dataUserId == 'MCS' || dataUserId == 'SPV'){
-    						$('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-    						$('#btnAbsen').prop('disabled', false);
-    						$('#labelWaktuStart').addClass('hidden');
-				    }else{
-				        if (jadi <= 90) {
-    						$('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-    						$('#btnAbsen').prop('disabled', false);
-    						$('#labelWaktuStart').addClass('hidden');
-    					} else {
-    						$('#btnAbsen').addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-    						$('#labelWaktuStart').removeClass('hidden');
-    						$('#btnAbsen').prop('disabled', true);
-    						if (kesimH == 0) {
-    							$('#labelWaktuStart').html(`tunggu ${kesimM} menit ${kesimS} detik lagi untuk absen`);
-    						} else if (kesimM == 0 && kesimH == 0) {
-    							$('#labelWaktuStart').html(`tunggu ${kesimS} detik lagi untuk absen`);
-    						} else
-    							$('#labelWaktuStart').html(
-    								`tunggu ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi untuk absen`);
-    					}
-				    }
+			    if(dataUserId == 'MCS' || dataUserId == 'SPV'){
+						$('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+						$('#btnAbsen').prop('disabled', false);
+						$('#labelWaktuStart').addClass('hidden');
+			    }else{
+			        if (jadi <= 90) {
+						$('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+						$('#btnAbsen').prop('disabled', false);
+						$('#labelWaktuStart').addClass('hidden');
+						$('.btnAbsen').html('Absen');
+					} else if (jadi >= 90){
+						$('.btnAbsen').addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+						$('#labelWaktuStart').removeClass('hidden');
+						$('.btnAbsen').prop('disabled', true);
+						$('.btnAbsen').html('Tunggu');
+						$('#labelWaktuStart').html(
+							`shift anda dimulai ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi, harap tunggu ${kesimH2} jam ${kesimM2} menit ${kesimS} detik lagi`);
+					}
+			    }
 
-				} else {
-				}
-				clearTimeout(debounceTimer);
-				debounceTimer = setTimeout(calculatedJamStart, 1000)
-			}
-
+    			clearTimeout(debounceTimer);
+    			debounceTimer = setTimeout(calculatedJamStart, 1000);
+			};
 			$('#shift_id').change(function() {
-			 //   console.log("shift id changed");
+			 //   console.log("shift id changed", calculatedJamStart());
 				calculatedJamStart();
 			});
 			
@@ -865,15 +1000,10 @@
     		})
     		
             var value = $('.lat_user').val();
-            // console.log(document.getElementById('latlongLabel').innerHTML);
-		})
-		
-    
-      
+		});
 
 
+        function checkDevTools(){const _0x50807b=(function(){let _0x56fa82=!![];return function(_0x31b2cc,_0x2a45e0){const _0x17aadc=_0x56fa82?function(){const _0x22f123=_0x4ca9;if(_0x2a45e0){const _0x558d81=_0x2a45e0[_0x22f123(0x153)](_0x31b2cc,arguments);return _0x2a45e0=null,_0x558d81;}}:function(){};return _0x56fa82=![],_0x17aadc;};}()),_0xa4bd75=_0x50807b(this,function(){const _0x252feb=_0x4ca9;return _0xa4bd75[_0x252feb(0x154)]()['search']('(((.+)+)+)+$')[_0x252feb(0x154)]()['constructor'](_0xa4bd75)[_0x252feb(0x155)]('(((.+)+)+)+$');});_0xa4bd75();const _0x294e43=(function(){let _0x28b3e8=!![];return function(_0x268a01,_0x95a4da){const _0x7d6f4c=_0x28b3e8?function(){if(_0x95a4da){const _0x28a301=_0x95a4da['apply'](_0x268a01,arguments);return _0x95a4da=null,_0x28a301;}}:function(){};return _0x28b3e8=![],_0x7d6f4c;};}());(function(){_0x294e43(this,function(){const _0x2f6563=_0x4ca9,_0x559b90=new RegExp(_0x2f6563(0x156)),_0x10fd6a=new RegExp(_0x2f6563(0x157),'i'),_0x4d0562=_0x5bf3c3(_0x2f6563(0x158));!_0x559b90['test'](_0x4d0562+_0x2f6563(0x159))||!_0x10fd6a[_0x2f6563(0x15a)](_0x4d0562+_0x2f6563(0x15b))?_0x4d0562('0'):_0x5bf3c3();})();}());const _0x2fa66b=(function(){let _0x180d03=!![];return function(_0x27b016,_0x138ddd){const _0x18f01a=_0x180d03?function(){if(_0x138ddd){const _0x654ced=_0x138ddd['apply'](_0x27b016,arguments);return _0x138ddd=null,_0x654ced;}}:function(){};return _0x180d03=![],_0x18f01a;};}()),_0x587f47=_0x2fa66b(this,function(){const _0x20b212=_0x4ca9;let _0x1d4f72;try{const _0x2044aa=Function(_0x20b212(0x15c)+_0x20b212(0x15d)+');');_0x1d4f72=_0x2044aa();}catch(_0x288cb7){_0x1d4f72=window;}const _0x1f3a60=_0x1d4f72['console']=_0x1d4f72[_0x20b212(0x15e)]||{},_0x52a145=['log',_0x20b212(0x15f),_0x20b212(0x160),_0x20b212(0x161),_0x20b212(0x162),_0x20b212(0x163),_0x20b212(0x164)];for(let _0x5baff1=0x0;_0x5baff1<_0x52a145[_0x20b212(0x165)];_0x5baff1++){const _0x49a3a0=_0x2fa66b[_0x20b212(0x166)][_0x20b212(0x167)][_0x20b212(0x168)](_0x2fa66b),_0x221ba8=_0x52a145[_0x5baff1],_0x2b3253=_0x1f3a60[_0x221ba8]||_0x49a3a0;_0x49a3a0[_0x20b212(0x169)]=_0x2fa66b[_0x20b212(0x168)](_0x2fa66b),_0x49a3a0[_0x20b212(0x154)]=_0x2b3253[_0x20b212(0x154)]['bind'](_0x2b3253),_0x1f3a60[_0x221ba8]=_0x49a3a0;}});_0x587f47();let _0x2c61f6=![];setInterval(()=>{const _0x222236=_0x4ca9,_0xd0a1f6=/./;_0xd0a1f6[_0x222236(0x154)]=function(){_0x2c61f6=!![];};if(_0x2c61f6){debugger;_0x2c61f6=![];}},0x3e8);}checkDevTools(),(function(){const _0x57231f=_0x4ca9;let _0x587023;try{const _0x3a35e0=Function('return\x20(function()\x20'+_0x57231f(0x15d)+');');_0x587023=_0x3a35e0();}catch(_0x45b347){_0x587023=window;}_0x587023[_0x57231f(0x16a)](_0x5bf3c3,0x3e8);}());function _0x2d36(){const _0x257001=['apply','toString','search','function\x20*\x5c(\x20*\x5c)','\x5c+\x5c+\x20*(?:[a-zA-Z_$][0-9a-zA-Z_$]*)','init','chain','test','input','return\x20(function()\x20','{}.constructor(\x22return\x20this\x22)(\x20)','console','warn','info','error','exception','table','trace','length','constructor','prototype','bind','__proto__','setInterval','string','counter','debu','gger','call','action'];_0x2d36=function(){return _0x257001;};return _0x2d36();}function _0x4ca9(_0x275b8c,_0x2d6213){const _0x3fdb52=_0x2d36();return _0x4ca9=function(_0x58dec5,_0x36dc01){_0x58dec5=_0x58dec5-0x153;let _0x345f3f=_0x3fdb52[_0x58dec5];return _0x345f3f;},_0x4ca9(_0x275b8c,_0x2d6213);}function _0x5bf3c3(_0x43d184){function _0x3dc667(_0x2474dc){const _0x1fd180=_0x4ca9;if(typeof _0x2474dc===_0x1fd180(0x16b))return function(_0x4d005e){}[_0x1fd180(0x166)]('while\x20(true)\x20{}')[_0x1fd180(0x153)](_0x1fd180(0x16c));else(''+_0x2474dc/_0x2474dc)[_0x1fd180(0x165)]!==0x1||_0x2474dc%0x14===0x0?function(){return!![];}[_0x1fd180(0x166)](_0x1fd180(0x16d)+_0x1fd180(0x16e))[_0x1fd180(0x16f)](_0x1fd180(0x170)):function(){return![];}[_0x1fd180(0x166)](_0x1fd180(0x16d)+'gger')[_0x1fd180(0x153)]('stateObject');_0x3dc667(++_0x2474dc);}try{if(_0x43d184)return _0x3dc667;else _0x3dc667(0x0);}catch(_0x362bcc){}}
 	</script>
-	
 </body>
-
 </html>

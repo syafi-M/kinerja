@@ -15,6 +15,15 @@
 					autofocus autocomplete="name" />
 				<x-input-error :messages="$errors->get('name')" class="mt-2" />
 			</div>
+			<!-- Password -->
+			<div class="mt-4">
+				<x-input-label for="password" :value="__('Password')" />
+
+				<x-text-input id="password" class="block mt-1 w-full" type="password" name="password"
+					autocomplete="new-password" placeholder="Masukkan password user..."/>
+
+				<x-input-error :messages="$errors->get('password')" class="mt-2" />
+			</div>
         	<!-- Nama lengkap -->
 			<div>
 				<x-input-label for="nama_lengkap" :value="__('Nama Lengkap')" />
@@ -50,7 +59,7 @@
 				<select name="kerjasama_id" id="kerjasama_id" class="select select-bordered w-full mt-1">
 					<option disabled>~ Pilih Client ~</option>
 					@foreach ($kerjasama as $i)
-						<option name="kerjasama_id" {{ $dataUser->kerjasama_id == $i->id ? 'selected' : '' }}  value="{{ $i->id }}" class="py-2">{{ $i->client->name }}</option>
+						<option name="kerjasama_id" {{ $dataUser->kerjasama_id == $i->id ? 'selected' : '' }}  value="{{ $i->id }}" class="py-2">{{ $i?->client?->name }}</option>
 					@endforeach
 				</select>
 			</div>

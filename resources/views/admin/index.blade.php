@@ -13,21 +13,40 @@
 		    </div>
 		    <span class="flex flex-col gap-2 justify-center items-center">
     		    @if($izin)
-    		        <p class="text-center text-sm uppercase font-bold bg-sky-400 p-3 rounded-md w-fit shadow-md"># Ada {{ $izin }} izin yang belum Di Acc</p>
+    		        <a href="{{ route('data-izin.admin') }}" class="text-center text-sm uppercase font-bold bg-sky-400 p-3 rounded-md w-fit shadow-md"># Ada {{ $izin }} izin yang belum Di Acc</a>
     		    @endif
     		    @if($expert)
     		        <div class="bg-slate-50 rounded-md shadow-md ">
     		            <table class="m-2">
     		                <thead>
     		                    <tr class="rounded-md">
-    		                        <th class="bg-red-500 text-white rounded-md" colspan="2" >#Info Kontrak Mitra (yang akan berakhir)</th>
+    		                        <th class="bg-red-500 text-white rounded-md" colspan="7" >#Info Kontrak Mitra (yang akan berakhir)</th>
     		                    </tr>
     		                </thead>
     		                <tbody class="font-semibold">
                 		        @foreach($expert as $ex)
                 		        <tr>
-                		            <td>{{ $ex->client->name }}</td>
-                		            <td>| {{ $ex->experied }}</td>
+                		            <td>
+                		                |
+                		            </td>
+                		            <td class="" style="font-size: 11pt; padding: 10px 0 10px 0;">
+            		                    {{ $ex->client->name }} 
+                		            </td>
+                		            <td>
+                		                |
+                		            </td>
+                		            <td>
+                		                {{ Carbon\Carbon::createFromFormat('Y-m-d', $ex->experied)->isoFormat('dddd, DD MMMM Y') }}
+                		            </td>
+                		             <td>
+                		                |
+                		            </td>
+                		            <td>
+                		                <a class="btn btn-sm btn-warning" href="{{ url('kerjasamas/' . $ex->id . '/edit') }}" >Update</a>
+                		            </td>
+                		            <td>
+                		                |
+                		            </td>
                 		        </tr>
                 		            <!--<p class="text-center text-sm uppercase font-bold p-3 rounded-md w-fit shadow-md text-white" style="background-color: #CB1414"># Kontrak Mitra {{ $ex->client->name }}, Berakhir {{ $ex->experied }}</p>-->
                 		        @endforeach
@@ -400,6 +419,20 @@
 				<div style="width: 17rem;">
 					<div class="flex justify-center px-2 laporanMitra">
 						<a id="btnLaporanMitra" class="btn btn-warning w-full mt-5 flex" href="{{ route('laporanMitra.index') }}"><i class="ri-calendar-2-line text-lg"></i>Data Laporan Mitra</a>
+					</div>
+				</div>
+				{{-- End Menu --}}
+				{{-- Menu Laporan Sholat --}}
+				<div style="width: 17rem;">
+					<div class="flex justify-center px-2 laporanSholat">
+						<a id="btnLaporanSholat" class="btn btn-warning w-full mt-5 flex" href="{{ route('reportSholat.index') }}"><i class="ri-shield-check-line text-lg"></i>Data Sholat</a>
+					</div>
+				</div>
+				{{-- End Menu --}}
+				{{-- Menu Laporan Slip --}}
+				<div style="width: 17rem;">
+					<div class="flex justify-center px-2 listSlip">
+						<a id="btnListSlip" class="btn btn-warning w-full mt-5 flex" href="{{ route('admin-slip') }}"><i class="ri-wallet-3-line text-lg"></i>Data Slip</a>
 					</div>
 				</div>
 				{{-- End Menu --}}

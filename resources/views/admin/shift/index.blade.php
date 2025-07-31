@@ -9,7 +9,7 @@
 				</div>
 			</div>
 			<div class="flex justify-center overflow-x-auto mx-10 pb-10">
-				<table class="table table-fixed w-full shadow-md bg-slate-50" id="searchTable">
+				<table class="table table-fixed table-sm w-full shadow-md bg-slate-50" id="searchTable">
 					<thead>
 						<tr>
 							<th class="bg-slate-300 rounded-tl-2xl">#</th>

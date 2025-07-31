@@ -26,89 +26,177 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Simpan waktu sekarang dan user dalam variabel
+        $now = Carbon::now();
+        $today = $now->format('Y-m-d');
+        $user  = Auth::user();
         
-    
-        $now = Carbon::now()->format('Y-m-d');
-        $news =  News::all();
-        $rate = Rating::all();
-        $shift = Shift::all();
-        $user = Auth::user();
-        $hitungNews = News::whereDate('tanggal_lihat', '<=', $now)->whereDate('tanggal_tutup', '>=', $now)->get();
+        // Ambil semua data news (pertimbangkan pagination jika data sangat banyak)
+        $news = News::all();
+        
+        // Hitung news yang masih berlaku berdasarkan tanggal
+        $hitungNews = News::whereDate('tanggal_lihat', '<=', $today)
+            ->whereDate('tanggal_tutup', '>=', $today)
+            ->get();
+        
+        // Ambil data lembur dengan sorting berdasarkan 'jam_selesai'
         $lembur = Lembur::latest('jam_selesai')->get();
         
-        $absen = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
-            ->where('user_id', $user->id)
-            ->where('absensi_type_pulang', null)
+        // Buat dasar query absensi untuk user
+        $absenQuery = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+            ->where('user_id', $user->id);
+        
+        // Ambil data absensi yang belum melakukan absensi pulang
+        $absen = (clone $absenQuery)
+            ->whereNull('absensi_type_pulang')
             ->get();
-            
-        $absenP = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
-            ->where('user_id', $user->id)
-            ->latest()->first();
-            // dd($absenP);
         
+        // Ambil absensi pada rentang waktu dari kemarin hingga hari ini
+        $absenP = (clone $absenQuery)
+            ->whereBetween('created_at', [
+                Carbon::yesterday()->startOfDay(), 
+                Carbon::today()->endOfDay()
+            ])
+            ->latest()
+            ->first();
         
-        $warn = $absen->filter(function ($item) {
-            return $item->absensi_type_pulang == 'Tidak Absen Pulang'
-                && $item->tanggal_absen->month == Carbon::now()->month;
+        // Jika absensiP ada, ambil lokasi berdasarkan client_id dari kerjasama
+        $lok = ($absenP && $absenP->kerjasama)
+            ? Lokasi::with('client')->firstWhere('client_id', $absenP->kerjasama->client_id)
+            : null;
+        
+        // Filter absensi untuk mengambil yang memiliki tipe "Tidak Absen Pulang" 
+        // dan terjadi di bulan berjalan. Jika memungkinkan, filter ini juga bisa dilakukan di query.
+        $currentMonth = $now->month;
+        $warn = $absen->filter(function ($item) use ($currentMonth) {
+            return $item->absensi_type_pulang === ''
+                && $item->tanggal_absen->month === $currentMonth;
         });
         
-        $sholat = $absen->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->firstWhere('absensi_type_pulang', null);
-        // dd($sholat);
+        // Ambil absensi hari ini untuk kondisi sholat (misal belum melakukan absensi pulang)
+        $sholat = (clone $absenQuery)
+            ->where('tanggal_absen', $today)
+            ->whereNull('absensi_type_pulang')
+            ->first();
         
-        $cekAbsen = $absen->where('absensi_type_pulang', null)->where('tanggal_absen', Carbon::now()->format('Y-m-d'));
+        // Atau jika ingin menggunakan koleksi yang sudah diambil sebelumnya:
+        $cekAbsen = $absen->where('tanggal_absen', $today);
         
-        // $dataSlip = SlipGaji::on('mysql2')->get();
+        // Ambil data izin untuk user terkait
+        $izin = Izin::with('user')
+            ->where('user_id', $user->id)
+            ->where('updated_at', Carbon::now()->format('Y-m-d'))
+            ->latest()
+            ->first();
+        if($izin) {
+            $status = $izin->approve_status;
+        } else {
+            $status = '';
+        }
+        $statusClass = $status == 'process' ? 'bg-yellow-500' : ($status == 'accept' ? 'bg-green-500' : 'bg-red-500');
+        $statusMessage = $status == 'process' ? 'Izin Masih Dalam Proses !!' : ($status == 'accept' ? 'Izin Sudah Disetujui !!' : 'Izin Anda Ditolak !!');
         
-        // if(Auth::user()->id == 11){
-        //     dd($dataSlip);
-        // }
+        // Tentukan rentang tanggal untuk pengecekan CheckPoint
+        $awalMinggu = $now->copy()->subWeek()->startOfWeek()->addDays(5);
+        $akhirMinggu = $now->copy()->endOfWeek()->subDays(2);
         
-        $jadwalUser = JadwalUser::all();
-        
-        $izin = Izin::where('user_id', $user->id)->get();
-        $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
-        $isModal = Session::pull('is_modal', false);
-        
-        $awalMinggu = Carbon::now()->subWeek()->startOfWeek()->addDays(5);
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
-        
+        // Ambil CheckPoint dengan tipe 'rencana'
         $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', $user->id)
             ->where('type_check', 'rencana')
             ->latest()
             ->first();
+        
+        // Ambil CheckPoint dengan tipe 'dikerjakan'
         $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', $user->id)
             ->where('type_check', 'dikerjakan')
             ->latest()
             ->first();
-        $totcex = CheckPoint::whereBetween('created_at', [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->endOfMonth()])
+        
+        // Ambil CheckPoint tipe 'dikerjakan' untuk bulan berjalan
+        $startOfMonth = $now->copy()->subMonth()->startOfMonth();
+        $endOfMonth   = $now->copy()->endOfMonth();
+        $totcex = CheckPoint::whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->where('type_check', 'dikerjakan')
             ->latest()
             ->get();
-        // if(Auth::user()->id == 11){
-        //     dd($awalMinggu, $cex);
-        // }
-        return view('dashboard', [
-            'absen' => $absen,
-            'absenP' => $absenP,
-            'lembur' => $lembur,
-            'rate' => $rate,
-            'user' => $user,
-            'harLok' => $harLok,
-            'shift' => $shift,
-            'izin' => $izin,
-            'jadwalUser' => $jadwalUser,
-            'sholat' => $sholat,
-            'isModal' => $isModal,
-            'news' => $news,
-            'hitungNews' => $hitungNews,
-            'cekAbsen' => $cekAbsen,
-            'cex' => $cex,
-            'cex2' => $cex2,
-            'totcex' => $totcex,
-            'warn' => $warn
-        ]);
+            
+        $sholatSaatIni = null;
+        
+        if ($sholat) {
+            $waktuSekarang = Carbon::now()->format('H:i');
+    
+            $waktuSholat = [
+                'subuh' => ['start' => '03:30', 'end' => '04:00', 'status' => $sholat->subuh],
+                'dzuhur' => ['start' => '11:20', 'end' => '14:00', 'status' => $sholat->dzuhur],
+                'asar' => ['start' => '15:00', 'end' => '17:00', 'status' => $sholat->asar],
+                'magrib' => ['start' => '17:20', 'end' => '18:30', 'status' => $sholat->magrib],
+                'isya' => ['start' => '18:30', 'end' => '21:00', 'status' => $sholat->isya],
+            ];
+    
+            $waktuSholat2 = [
+                'dzuhur' => ['start' => '11:20', 'end' => '14:00', 'status' => $sholat->dzuhur],
+                'magrib' => ['start' => '17:20', 'end' => '18:30', 'status' => $sholat->magrib],
+            ];
+    
+            if (Auth::user()->kerjasama_id == 1) {
+                foreach ($waktuSholat as $namaSholat => $waktu) {
+                    if (
+                        $waktu['status'] === 0 &&
+                        $waktuSekarang >= $waktu['start'] &&
+                        $waktuSekarang <= $waktu['end']
+                    ) {
+                        $sholatSaatIni = $namaSholat;
+                        break;
+                    }
+                }
+            } else {
+                foreach ($waktuSholat2 as $namaSholat => $waktu) {
+                    if (
+                        $waktu['status'] === 0 &&
+                        $waktuSekarang >= $waktu['start'] &&
+                        $waktuSekarang <= $waktu['end']
+                    ) {
+                        $sholatSaatIni = $namaSholat;
+                        break;
+                    }
+                }
+            }
+        }
+        $rillSholat = $sholatSaatIni && (
+            Auth::user()->kerjasama_id == 1 ||
+            Auth::user()->divisi->jabatan->code_jabatan == "CO-CS" ||
+            Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR"
+        );
+    
+        $luweh1Dino = false;
+        if ($absenP) {
+            $luweh1Dino = Carbon::createFromFormat('Y-m-d, H:i:s', $absenP->created_at->format('Y-m-d, H:i:s'))
+                ->diffInHours(Carbon::now()) <= 20;
+        }
+            
+        return view('dashboard', compact(
+            'absen',
+            'absenP',
+            'lembur',
+            'user',
+            'izin',
+            'sholat',
+            'news',
+            'hitungNews',
+            'cekAbsen',
+            'cex',
+            'cex2',
+            'totcex',
+            'lok',
+            'warn',
+            'sholatSaatIni',
+            'rillSholat',
+            'luweh1Dino',
+            'statusClass',
+            'statusMessage'
+        ));
     }
     
     public function sendTestEmail()

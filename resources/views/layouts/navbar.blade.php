@@ -1,29 +1,49 @@
-
-    <nav class="mx-5 sm:mx-5 mb-5 sm:mb-5 pt-5 capitalize">
-	<div class="flex pt-1 pl-2 w-full h-auto bg-slate-500 shadow-md rounded-md justify-between capitalize">
-		   <a href="{{ route('profile.index')}}" class="">
-		<div class="flex items-center justify-between gap-2">
+<style>
+    .profile-image-circle {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      border-radius: 50%;
+    }
+</style>
+<nav class="mx-5 sm:mx-5 mb-5 sm:mb-5 pt-5 capitalize">
+	<div class="flex pl-2 w-full h-auto bg-slate-500 shadow-md rounded-md justify-between capitalize">
+		<a href="{{ route('profile.index')}}" class="" style="width: {{ Auth::user()->role_id == 2 ? '70%' : '85%' }};">
+		<div class="flex items-center gap-1">
 			<div
-				class="p-2 mx-2 my-2 overflow-hidden flex items-center bg-slate-300 rounded-full shadow-md shadow-slate-600 hover:shadow-none transition-all .2s ease-in-out"
-				style="min-width: 2.5rem; min-height: 2.5rem; max-width: 2.5rem; max-height: 2.5rem;">
-			@if(Route::has('login'))
-				    @auth
-        				@if (Auth::user()->image == 'no-image.jpg')
-        					    <img class=" rounded-full" src="{{ URL::asset('/logo/person.png') }}" alt="profile-logo.png"
-        						    srcset="{{ URL::asset('/logo/person.png') }}" width="100px" height="100px">	
-        				    @elseif(Storage::disk('public')->exists('images/' . Auth::user()->image))
-        					    <img class=" rounded-full" src="{{ asset('storage/images/'.  Auth::user()->image) }}" width="100px" height="100px" alt="profile-logo2.png" srcset="{{ asset('storage/images/'.  Auth::user()->image) }}">
-        				    @else
-        				        <img class=" rounded-full" src="{{ URL::asset('/logo/person.png') }}" alt="profile-logo.png"
-        						    srcset="{{ URL::asset('/logo/person.png') }}" width="100px" height="100px">	
-        				@endif
-				    @endauth
-			@endif
-			</div>
+                class="mx-2 my-2 overflow-hidden flex items-center justify-center bg-slate-300 rounded-full shadow-md shadow-slate-600 hover:shadow-none transition-all duration-200 ease-in-out"
+                style="width: 2.5rem; height: 2.5rem; padding: 0.25rem;">
+                
+                @if(Route::has('login'))
+                    @auth
+                        @php
+                            $userImage = Auth::user()->image;
+                            
+                            if (Auth::user()->image == 'no-image.jpg') {
+                                $imgSrc = URL::asset('/logo/person.png');
+                            }elseif(Storage::disk('public')->exists('images/' . Auth::user()->image)) {
+                                $imgSrc = asset('storage/images/' . Auth::user()->image);
+                            }elseif(Storage::disk('public')->exists('user/' . Auth::user()->image)) {
+                                $imgSrc = asset('storage/user/' . Auth::user()->image);
+                            }else {
+                                $imgSrc = URL::asset('/logo/person.png');
+                            }
+                        @endphp
+                        <img 
+                            class="profile-image-circle" 
+                            src="{{ $imgSrc }}" 
+                            alt="profile-logo"
+                        />
+                    @endauth
+                @endif
+            </div>
+
 
 			@if (Route::has('login'))
 				@auth
-					<div class="flex justify-evenly flex-row gap-1" style="width: 65%;" >
+					<div class="flex justify-evenly flex-row gap-1" style="max-width: 65%;" >
 					    <div>
     						<p class="font-semibold text-white text-sm line-clamp-1 break-words">{{ Auth::user()->nama_lengkap }}</p>
 					    </div>
@@ -37,13 +57,13 @@
         </a>
 		@if (Route::has('login'))
 			@auth
-			    <div class="flex md:hidden overflow-hidden mx-5 items-center">
+			    <div class="flex md:hidden overflow-hidden mx-5 items-center" style="width: 28%;">
 			        <form action="{{ route('slip-gaji.index') }}" method="get">
-			            <input type="hidden" name="bulan" value="{{ Carbon\Carbon::now()->format('Y-m') }}"/>
+			            <input type="hidden" name="bulan" value="{{ Carbon\Carbon::now()->subMonth()->format('Y-m') }}"/>
 			            <button class="btn btn-sm btn-warning">
-			                <span class="flex items-center">
+			                <span class="flex items-center gap-1">
 			                    <i class="ri-bank-card-line"></i>
-			                    <p>Slip</p>
+			                    <p class="overflow-hidden">Slip</p>
 			                </span>
 			            </button>
 			        </form>
@@ -82,9 +102,6 @@
 				</div>
 			@endauth
 		@endif
-		
 	</div>
-
 	</div>
-
 </nav>

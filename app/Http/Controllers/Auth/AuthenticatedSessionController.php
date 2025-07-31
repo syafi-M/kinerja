@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,26 +28,27 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        $cekUser = User::where('name', $request->name)->where('status_id', 6)->first();
+        
+        if($cekUser) {
+            toastr()->error('Akun Anda Belum Di Verifikasi', 'error');
+            return redirect()->back();
+        }
+        
         $request->authenticate();
-        $data = DB::table('sessions')->where('user_id', Auth::user()->id)->get();
-        // $request->session()->put('device_id', $device_id);
-        // if(Auth::user()->name != 'admin')
-        // {
-        //     foreach($data as $i)
-        //     {
-        //         if($i)
-        //         {
-        //             toastr()->error('Akun Sedang Login Diperangkat Lain', 'Error');
-        //             Auth::guard('web')->logout();
-        //         }
-        //     }
-        // }
-        if (!Session::has('is_modal')) {
-            Session::put('is_modal', true);
+        $this_auth = Auth::user();
+        if (!$request->session()->has('is_modal')) {
+            $request->session()->put('is_modal', true);
         }
 
         $request->session()->regenerate();
-        return redirect()->intended(RouteServiceProvider::HOME);
+        
+        if($this_auth->role_id == 2) {
+            // dd($data);
+            return redirect()->intended(RouteServiceProvider::ADMIN);
+        }else {
+            return redirect()->intended(RouteServiceProvider::HOME);
+        }
     }
 
     /**

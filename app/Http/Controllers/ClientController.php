@@ -29,6 +29,7 @@ class ClientController extends Controller
 
         $client = [
             'name' => $request->name,
+            'panggilan' => $request->panggilan,
             'address' => $request->address,
             'province' => $request->province,
             'kabupaten' => $request->kabupaten,
@@ -80,6 +81,7 @@ class ClientController extends Controller
     {
         $client = [
             'name' => $request->name,
+            'panggilan' => $request->panggilan,
             'address' => $request->address,
             'province' => $request->province,
             'kabupaten' => $request->kabupaten,

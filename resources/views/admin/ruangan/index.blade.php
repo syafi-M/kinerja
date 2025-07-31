@@ -19,7 +19,7 @@
 		</div>
 
 		<div class="overflow-x-auto mx-10">
-			<table class="table table-zebra w-full bg-slate-50" id="searchTable">
+			<table class="table table-zebra table-sm w-full bg-slate-50" id="searchTable">
 				<!-- head -->
 				<thead>
 					<tr>

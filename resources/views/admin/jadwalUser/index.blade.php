@@ -91,7 +91,7 @@
 				</div>
 			@endif
 
-			<div class="flex justify-center mx-2 pb-10 text-xs">
+			{{-- <div class="flex justify-center mx-2 pb-10 text-xs">
 				<div class="overflow-x-auto md:overflow-hidden w-full">
 					<table class="table table-zebra w-full table-sm bg-slate-50 overflow-auto shadow-md text-xs md:text-base"   
 						id="searchTable">
@@ -225,10 +225,12 @@
     					</tbody>
 				</table>
 			</div>
+		</div> --}}
+		
+		<div>
+		    <a href="{{ route('leader-jadwal.create', ['hari' => 'senin']) }}">Senin</a>
 		</div>
-		<div class="mt-5 mx-10">
-			{{ $user->links() }}
-		</div>
+		
 		<div class="flex justify-center sm:justify-end my-5">
 		    @if(Auth::user()->divisi->code_jabatan == "CO-CS")
 			    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>

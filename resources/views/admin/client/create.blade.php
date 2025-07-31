@@ -12,6 +12,12 @@
 					<x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" autofocus
 						autocomplete="name" />
 				</div>
+				{{-- client panggilan --}}
+				<div class="mt-2">
+					<x-input-label for="panggilan" :value="__('Nama Singkat')" />
+					<x-text-input id="panggilan" class="block mt-1 w-full" type="text" name="panggilan" :value="old('panggilan')" autofocus
+						autocomplete="panggilan" />
+				</div>
 				<div class="flex w-full gap-2">
 					{{-- alamat --}}
 					<div class="mt-2 w-full">

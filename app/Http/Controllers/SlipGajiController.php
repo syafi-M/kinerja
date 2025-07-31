@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\SlipGaji;
+use App\Models\User;
+use App\Models\Kerjasama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -18,9 +20,9 @@ class SlipGajiController extends Controller
     {
         $bulan = $request->bulan;
         
-        $slip = SlipGaji::on('mysql2')->where('user_id', Auth::user()->id)->where('bulan_tahun', $bulan)->first();
+        $slip = SlipGaji::on('mysql2')->where('user_id', Auth::user()->id)->where('bulan_tahun', $bulan)->latest()->first();
         
-        return view('slip.index', compact('slip'));
+        return view('slip.index', compact('slip', 'bulan'));
     }
 
     /**
@@ -54,7 +56,7 @@ class SlipGajiController extends Controller
         $pdf->render();
 
         $output = $pdf->output();
-        $filename = 'Slip Gaji Bulan '.$formatedMonth.'.pdf';
+        $filename = 'Slip Gaji Saya Bulan '.$formatedMonth.'.pdf';
 
         if ($request->input('action') == 'download') {
             return response()->download($output, $filename);
@@ -108,5 +110,30 @@ class SlipGajiController extends Controller
     public function destroy(SlipGaji $slipGaji)
     {
         //
+    }
+    
+    
+    public function leaderIndex(Request $request)
+    {
+        $bulan = $request->bulan;
+        $mitra = Kerjasama::all();
+        
+        $penempatan = $request->penempatan;
+        
+        if(Auth::user()->divisi->jabatan_id == 10){
+            $user = User::where('kerjasama_id', Auth::user()->kerjasama_id)->where('jabatan_id', [9, 10])->pluck('id');
+        }else if(Auth::user()->divisi->jabatan_id == 11){
+            $user = User::where('kerjasama_id', Auth::user()->kerjasama_id)->where('jabatan_id', [8, 11])->pluck('id');
+        }else if(Auth::user()->devisi_id == 26){
+            $user = User::where('kerjasama_id', '!=', 1)->when($penempatan, function ($query, $penempatan) { return $query->where('kerjasama_id', $penempatan); })->whereNotIn('devisi_id', [6, 11, 23, 13])->pluck('id');
+        }else if(Auth::user()->id == 175) {
+            $user = User::where('jabatan_id', 8)->pluck('id');
+        }else {
+            $user = User::where('kerjasama_id', '!=', 1)->orderBy('kerjasama_id', 'asc')->when($penempatan, function ($query, $penempatan) { return $query->where('kerjasama_id', $penempatan); })->whereNotIn('id', [289, 387])->pluck('id');
+        }
+        $slip = SlipGaji::with('User')->whereIn('user_id', $user)->where('bulan_tahun', $bulan ? $bulan : Carbon::now()->subMonth()->format('Y-m'))->get();
+        // dd($slip[0]->user);
+        
+        return view('leader_view.slip.index', compact('slip', 'bulan', 'mitra', 'penempatan'));
     }
 }

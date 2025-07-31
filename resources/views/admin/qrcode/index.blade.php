@@ -18,7 +18,7 @@
                         <select name="kerjasama_id" id="kerjasama_id" class="select-bordered select">
                             <option selected disabled>~ Select Kerjasama~</option>
                             @forelse ($kerjasama as $ke)
-                             <option name="kerjasama_id" value="{{ $ke->id }}">{{ $ke->client->name }}</option>
+                             <option name="kerjasama_id" value="{{ $ke->id }}">{{ $ke->client?->name }}</option>
                             @empty
                             @endforelse
                         </select>
@@ -67,8 +67,8 @@
 							    <td>{{ $no++ }}.</td>
 							    <td class="flex justify-center"> <img src="{{asset('storage/images/'. $i->qr_code )}}"/></td>
 							    
-							    <td>{{ $i->kerjasama->client->name }}</td>
-							    <td>{{ $i->ruangan->nama_ruangan }}</td>
+							    <td>{{ $i->kerjasama ? $i->kerjasama->client->name : 'Kosong' }}</td>
+							    <td>{{ $i->ruangan?->nama_ruangan }}</td>
 							    <td>
                                 <form action="{{ url('admin/qrcode/' . $i->id) }}" method="POST" class="h-9">
 									@csrf

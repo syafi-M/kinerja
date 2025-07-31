@@ -56,15 +56,16 @@ class JadwalUserController extends Controller
 
     public function create(Request $request)
     {
-        if (Auth::user()->divisi->jabatan->code_jabatan == "MITRA" && Auth::user()->divisi->jabatan->code_jabatan == "LEADER") {
-            $user = User::with('Kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->get();
-        } else {
-            $kerj = Kerjasama::all();
-            $filter = $request->filter;
-            $user = User::with('Kerjasama')->where('kerjasama_id', $filter)->get();
+        $hari = $request->hari;
+        $user = User::with('Kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->get();
+    
+        $kerj = Kerjasama::all();
+        if(Auth::user()->divisi->jabatan_id == 10) {
+            $shift = Shift::where('client_id', Auth::user()->kerjasama->client_id)->where('jabatan_id', [9, 10, 34, 36])->get();
+        } else if(Auth::user()->divisi->jabatan_id == 11) {
+            $shift = Shift::where('client_id', Auth::user()->kerjasama->client_id)->where('jabatan_id', [8, 11, 17, 18, 21, 22])->get();
         }
-        $shift = Shift::all();
-        return view('admin.jadwalUser.create', compact('user', 'shift', 'kerj'));
+        return view('admin.jadwalUser.create', compact('user', 'shift', 'kerj', 'hari'));
     }
 
     public function processDate(Request $request)
@@ -100,6 +101,8 @@ class JadwalUserController extends Controller
 
     public function store(JadwalUserRequest $request)
     {
+        dd($request->all());
+        
         $jadwal = new JadwalUser();
         $user = User::all();
         
@@ -112,7 +115,7 @@ class JadwalUserController extends Controller
         ];
         
         JadwalUser::create($jadwal);
-        return response()->noContent();
+        return redirect()->back();
     }
 
     public function edit($id)
@@ -189,22 +192,40 @@ class JadwalUserController extends Controller
         }
     }
     
-    public function storeJadwal(JadwalUserRequest $request)
+    public function storeJadwal(Request $request)
     {
-        $jadwal = new JadwalUser();
-        $user = User::all();
+        //  dd($request->all());
+         $userIDs = $request->input('userID', []);
+        $shifts  = $request->input('shift', []);
+        // Optionally validate length match
+        if (count($userIDs) !== count($shifts)) {
+            return response()->json(['message' => 'Mismatch in user and shift data'], 422);
+        }
+    
+        // Loop and create entries
+        foreach ($userIDs as $index => $userID) {
+            JadwalUser::create([
+                'user_id'   => $userID,
+                'shift_id'  => $shifts[$index],
+                'hari'   => $request->input('hari'),  // pass from form or default
+                'status'    => 'M', // optional default
+            ]);
+        }
+        // $jadwal = new JadwalUser();
+        // $user = User::all();
         
-        $jadwal = [
-            'user_id' => $request->user_id,
-            'shift_id' => $request->shift_id,
-            'tanggal' => $request->tanggal,
-            'area_id' => $request->area,
-            'status' => $request->status
-        ];
+        // $jadwal = [
+        //     'user_id' => $request->user_id,
+        //     'shift_id' => $request->shift_id,
+        //     'tanggal' => $request->tanggal,
+        //     'area_id' => $request->area,
+        //     'status' => $request->status
+        // ];
         
         
-        JadwalUser::create($jadwal);
-        return response()->noContent();
+        // JadwalUser::create($jadwal);
+        toastr('Data Success To Add', 'success', 'Success !');
+        return redirect()->back();
     }
     
     public function getJadwal(Request $request, $id)

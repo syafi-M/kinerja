@@ -10,7 +10,7 @@
 								<select name="filterKerjasama" id="filterKerjasama" style="width: 16rem;" class="select  select-bordered text-md active:border-none border-none">
 									<option selected disabled>~ Nama Klien ~</option>
 									@foreach ($absenSi as $i)
-										<option value="{{ $i->id }}" {{ $filter == $i->id ? 'selected' : '' }}>{{ $i->client->name }}</option>
+										<option value="{{ $i->id }}" {{ $filter == $i->id ? 'selected' : '' }}>{{ $i?->client?->name }}</option>
 									@endforeach
 								</select>
 							</span>
@@ -18,14 +18,14 @@
 								<select name="filterDevisi" id="filterDevisi" class="select select-bordered  text-md active:border-none border-none">
 									<option selected disabled>~ Devisi ~</option>
 									@foreach ($divisi as $i)
-										<option value="{{ $i->id }}" {{ $filterDivisi == $i->id ? 'selected' : '' }}>{{ $i->name }}</option>
+										<option value="{{ $i->id }}" {{ $filterDivisi == $i->id ? 'selected' : '' }}>{{ $i?->name }}</option>
 									@endforeach
 								</select>
 							</span>
     						<div>
     						    <button type="submit"
-    							    class="bg-blue-500 px-5 py-2 rounded-md hover:bg-blue-600 transition-colors ease-in .2s font-bold uppercase ml-3">Filter</button>
-    					            <a href="{{ route('admin.index') }}" class="btn btn-error py-1">back</a>
+    							    class="bg-blue-500 px-5 py-2 rounded-md hover:bg-blue-600 transition-colors ease-in .2s font-bold ml-3">Filter</button>
+    					            <a href="{{ route('admin.index') }}" class="btn btn-error">Kembali</a>
     						</div>
     					</form>
     				</div>
@@ -59,7 +59,7 @@
         						    <select name="kerjasama_id" id="selectInput" style="width: 10rem;" class="text-sm py-2 rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
         						        <option disabled selected>Pilih Mitra</option>
         						        @forelse ($absenSi as $i)
-        						        <option value="{{ $i->id}}" class="break-words whitespace-pre-wrap">{{ $i->client->name }}</option>
+        						        <option value="{{ $i->id}}" class="break-words whitespace-pre-wrap">{{ $i?->client?->name }}</option>
         						        @empty
         						        <option >~Kosong~</option>
         						        @endforelse
@@ -130,16 +130,15 @@
 					<thead>
 						<tr>
 							<th class="bg-slate-300 rounded-tl-2xl">#</th>
-							<th class="bg-slate-300 ">Photo</th>
+							<th class="bg-slate-300 " style="padding: 0 24px;">Photo</th>
 							<th class="bg-slate-300 ">Nama User</th>
-							<th class="bg-slate-300 px-10">Tanggal</th>
-							<th class="bg-slate-300 ">Shift</th>
+							<th class="bg-slate-300" style="padding: 0 34px;">Tanggal</th>
+							<th class="bg-slate-300 text-center" style="padding: 0 58px">Shift</th>
 							<th class="bg-slate-300 ">Client</th>
 							<th class="bg-slate-300 ">Ibadah</th>
 							<th class="bg-slate-300 ">Jam Masuk</th>
 							<th class="bg-slate-300 ">Jam Pulang</th>
-							<th class="bg-slate-300 ">Lokasi Masuk</th>
-							<th class="bg-slate-300 ">Lokasi Pulang</th>
+							<th class="bg-slate-300 ">Lokasi Presensi</th>
 							<th class="bg-slate-300 ">Keterangan</th>
 							<th class="bg-slate-300 hidden">Point</th>
 							<th class="bg-slate-300 rounded-tr-2xl">Tipe Absen</th>
@@ -151,7 +150,7 @@
 						@endphp
 					@forelse ($absen as $arr)
 							<tr>
-								<td>{{ $no++ }}</td>
+								<td>{{ $no++ }}.</td>
 								<td>
 								    @if($arr->image == "no-image.jpg")
 								        <img class="lazy lazy-image" loading="lazy" srcset="{{ URL::asset('/logo/no-image.jpg') }}" data-src="{{asset('storage/images/'.$arr->image)}}" alt="data-absensi-image" width="120px"/>
@@ -159,14 +158,14 @@
 								        <img class="lazy lazy-image" loading="lazy" src="{{asset('storage/images/'.$arr->image)}}" data-src="{{asset('storage/images/'.$arr->image)}}" alt="data-absensi-image" width="120px"/>
 								    @endif
 								</td>
-								<td class="break-words whitespace-pre-line">{{ $arr->user?$arr->user->nama_lengkap : 'user_id'. ' : '. $arr->user_id . 'AKU KOSONG' }}</td>
+								<td class="break-words whitespace-pre-line">{{ $arr->user ? ucwords(strtolower($arr->user->nama_lengkap)) : 'user_id'. ' : '. $arr->user_id . 'AKU KOSONG' }}</td>
 								<td>{{ $arr->tanggal_absen }}</td>
 								@if($arr->shift != null)
-								<td id="mitra">{{ $arr->shift->shift_name }}</td>
+								<td id="mitra" class="text-center">{{ $arr->shift->shift_name }} <br/> <span style="font-size: 10pt;">{{ $arr->shift->jam_start }} - {{ $arr->shift->jam_end }}</span></td>
 					            @else
 					            <td class="break-words whitespace-pre-wrap text-red-500 font-semibold">Shift Kosong</td>
 					            @endif
-								<td class="break-words whitespace-pre-line">{{ $arr->kerjasama->client->name }}</td>
+								<td class="break-words whitespace-pre-line">{{ $arr?->kerjasama?->client?->panggilan ? $arr?->kerjasama?->client?->panggilan : $arr?->kerjasama?->client?->name }}</td>
 								<td class="break-words whitespace-pre-line">
 								    @if($arr->subuh != 0 || $arr->dzuhur != 0 || $arr->asar != 0 || $arr->magrib != 0 || $arr->isya != 0)
 								        <span>{{ $arr->subuh ? 'subuh,' : '' }} {{ $arr->dzuhur? 'dzuhur,': '' }} {{ $arr->asar? 'asar,': '' }} {{ $arr->magrib? 'magrib,':'' }} {{ $arr->isya? 'isya':'' }}</span>
@@ -190,25 +189,54 @@
 								@endphp
 								
 								
-								<td style="color: {{ $msLat <= 19 && $msLong <= 19 ? 'inherit' : 'red' }}">{{ $arr->msk_lat }}, {{ $arr->msk_long }}</td>
-								
-								<td style="color: {{ $plgLat <= 19 && $plgLong <= 19 ? 'inherit' : 'red' }}">{{ $arr->plg_lat }}, {{ $arr->plg_long }}</td>
+								<td class="flex justify-center items-center">
+								    <a class="btn btn-sm btn-primary flex justify-center items-center text-center" href="{{ route('admin-lihatMap', $arr->id) }}"><i class="ri-map-pin-2-line"></i> Lihat</a>
+								</td>
 								{{-- End Handle Absensi Type Pulang --}}
                                 
 								{{-- Handle Keterangan --}}
 								<td>
+								    @php
+                                        $jamAbs = $arr->absensi_type_masuk ?? '00:00:00';
+                                        $jamStr = $arr->shift?->jam_start ?? '00:00:00';
+                                    
+                                        // Determine time format
+                                        $formatAbs = strlen($jamAbs) === 5 ? 'H:i' : 'H:i:s';
+                                        $formatStr = strlen($jamStr) === 5 ? 'H:i' : 'H:i:s';
+                                    
+                                        // Parse times using Carbon
+                                        $jAbs = Carbon\Carbon::createFromFormat($formatAbs, $jamAbs);
+                                        $jJad = Carbon\Carbon::createFromFormat($formatStr, $jamStr);
+                                    
+                                        // Calculate the difference
+                                        $jDiff = $jAbs->diff($jJad);
+                                    
+                                        // Build readable difference
+                                        $diffHasil = '';
+                                        if ($jDiff->h > 0) {
+                                            $diffHasil .= $jDiff->format('%h Jam ');
+                                        }
+                                        if ($jDiff->i > 0) {
+                                            $diffHasil .= $jDiff->format('%i Menit ');
+                                        }
+                                        if ($jDiff->s > 0) {
+                                            $diffHasil .= $jDiff->format('%s Detik');
+                                        }
+                                    
+                                        $diffHasil = trim($diffHasil);
+                                    @endphp
 									@if ($arr->keterangan == 'masuk')
 									<div class="badge badge-success gap-2 overflow-hidden">
 										{{ $arr->keterangan }}
-									  </div>
+									</div>
 									@elseif ($arr->keterangan == 'izin')
 									<div class="badge badge-warning gap-2 overflow-hidden">
 										{{ $arr->keterangan }}
 									  </div>
 									@else
-									<div class="badge badge-error gap-2 overflow-hidden">
-										{{ $arr->keterangan }}
-									  </div>
+									<div class="badge badge-error rounded-md gap-2 overflow-hidden text-center text-xs" style="height: 50pt; width: 60pt;">
+										Terlambat <br/> {{ $diffHasil }}
+									</div>
 									@endif
 								</td>
 								{{-- EndHandle Keterangan --}}
@@ -220,7 +248,7 @@
 											@method('PATCH')
 											@forelse ($point as $item)
 											
-											    @if($arr->kerjasama->client_id == $item->client_id && $arr->point_id != null)
+											    @if($arr?->kerjasama?->client_id == $item?->client_id && $arr?->point_id != null)
 													{{ $arr->point->sac_point }}
 												@endif
 											@if($arr->point_id == null)
@@ -240,8 +268,10 @@
 									</td>
 									<td class="text-center">
 									    @if($arr->tipe_id)
-									        @if($arr->tipe_id == 1)
+									        @if($arr->tipe_id == 1 && !$arr->terus)
 									            <span style="background-color: #02c9cc; color: black; padding: .45rem; border-radius: 5px; font-weight: bold;"> {{ $arr->tipeAbsensi->name }}</span>
+									        @elseif($arr->tipe_id == 1 && $arr->terus)
+									            <span style="background-color: #02c9cc; color: black; padding: .45rem; border-radius: 5px; font-weight: bold;"> Nerus</span>
 									        @else
 									            <span style="background-color: #cc0213; color: white; padding: .45rem; border-radius: 5px; font-weight: bold;"> {{ $arr->tipeAbsensi->name }}</span>
 									        @endif

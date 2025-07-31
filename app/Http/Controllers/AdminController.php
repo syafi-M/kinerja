@@ -12,6 +12,7 @@ use App\Models\Point;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\Izin;
+use App\Models\SlipGaji;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -240,7 +241,7 @@ class AdminController extends Controller
         }
         
         // Paginate and include the filter values in the pagination links
-        $absen = $absenQuery->paginate(50);
+        $absen = $absenQuery->paginate(200);
         $absen->appends(['filterKerjasama' => $filter, 'filterDevisi' => $filterDivisi]);
         
         // Other data retrieval
@@ -321,107 +322,261 @@ class AdminController extends Controller
 
     public function exportWith(Request $request)
     {
-        $currentMonth = Carbon::parse($this->ended)->month;
-        $currentYear = Carbon::parse($this->str)->year;
+        ini_set('max_execution_time', 1800); // 30 minutes
+        ini_set('memory_limit', '1024M');    // 1GB memory
+        set_time_limit(1800);                // Also 30 minutes
+    
+        $startDate = Carbon::parse($this->str);
+        $endDate = Carbon::parse($this->ended);
         
-        $strYear = Carbon::parse($this->str)->year;
-        $endYear = Carbon::parse($this->ended)->year;
+        $currentMonth = $endDate->month;
+        $currentYear = $startDate->year;
+        $strYear = $startDate->year;
+        $endYear = $endDate->year;
         
-        $loginResponse = Http::get('https://kalenderindonesia.com/api/login');
-        $dailyData = [];
+        $dailyData = Cache::remember("libur_{$strYear}_{$endYear}", now()->addHours(12), function () use ($strYear, $endYear) {
+            $allDates = [];
         
-        $cMonth = Carbon::now()->month;
-        $getDateLib = Http::get("https://dayoffapi.vercel.app/api");
-        if($getDateLib->successful()){
-            if($strYear == $endYear){
-                $kalenderData = $getDateLib->json();
-                foreach($kalenderData as $dailys) {
-                    $dailyData[] = $dailys['tanggal'];
-                    // dd($dailyData);
-                }
-            }else{
-                $kalenderResponse = Http::get("https://dayoffapi.vercel.app/api?year={$strYear}");
-                $kalenderResponse2 = Http::get("https://dayoffapi.vercel.app/api?year={$endYear}");
-                if ($kalenderResponse->successful()) {
-                    $kalenderData = $kalenderResponse->json();
-                    foreach($kalenderData as $dailys) {
-                        $dailyData[] = $dailys['tanggal'];
-                        // dd($dailyData);
-                    }
-                }
-                if ($kalenderResponse2->successful()) {
-                    $kalenderData = $kalenderResponse2->json();
-                    foreach($kalenderData as $dailys) {
-                        $dailyData[] = $dailys['tanggal'];
-                        // dd($dailyData);
+            $years = $strYear == $endYear ? [$strYear] : [$strYear, $endYear];
+        
+            foreach ($years as $year) {
+                $res = Http::get("https://dayoffapi.vercel.app/api?year={$year}");
+                if ($res->successful()) {
+                    foreach ($res->json() as $d) {
+                        $allDates[] = $d['tanggal'];
                     }
                 }
             }
-        }
+        
+            return $allDates;
+        });
+        // dd($dailyData);
         
         $tanggalSekarang = Carbon::now();
         
-        $dataUser = User::all();
-        $divisi = Divisi::all();
-        $user = Absensi::all();
-        $mit = Kerjasama::all();
+        $user = Absensi::select('created_at')->get();
         $str1 = $this->str;
         $end1 = $this->ended;
+        $starte = Carbon::createFromFormat('Y-m-d', $str1);
+		$ende = Carbon::createFromFormat('Y-m-d', $end1);
         
         $izin = Izin::whereBetween('created_at', [$str1, $end1])->get();
-        $hitungIzin = Izin::whereBetween('created_at', [$str1, $end1])->get();
         
         $mitra = $request->input('kerjasama_id');
         $divisiId = $request->input('divisi_id');
         $libur = $request->input('libur');
         $jdwl = $request->input('jadwal'); 
 
-        // dd($izin);
-        
         $totalHari =  Carbon::parse($this->ended)->diffInDays(Carbon::parse($this->str));
         
         if($request->has(['libur', 'end1', 'str1'])) {
+            $expPDF = User::query()
+                ->with([
+                    'absensi' => function ($query) use ($str1, $end1) {
+                        $query->whereBetween('tanggal_absen', [$str1, $end1]);
+                    },
+                    'jadwalUser' => function ($query) use ($str1, $end1) {
+                        $query->whereBetween('created_at', [$str1, $end1]);
+                    }
+                ])
+                ->whereHas('absensi', function ($query) use ($str1, $end1) {
+                    $query->whereBetween('tanggal_absen', [$str1, $end1]);
+                })
+                ->when($mitra, fn($q) => $q->where('kerjasama_id', $mitra))
+                ->when($divisiId, fn($q) => $q->where('devisi_id', $divisiId))
+                ->orderBy('nama_lengkap', 'asc')
+                ->get();
+    
             
-         $expPDF = User::with(['absensi' => function ($query) use ($str1, $end1) {
-            return $query->whereBetween('tanggal_absen', [$str1, $end1]);
-        }, 'jadwalUser' => function ($query) use ($str1, $end1) {
-            return $query->whereBetween('created_at', [$str1, $end1]);
-        }])->when($mitra, function($query) use ($mitra) {
-            return $query->where('kerjasama_id', $mitra);
-        })->when($divisiId, function($query) use ($divisiId) {
-            return $query->where('devisi_id', $divisiId);
-        })->orderBy('nama_lengkap', 'asc')->get();
-        
-        $point = Point::all();
+            $point = Point::all();
+            $kerjasama = Kerjasama::find($mitra);
+            $kantor = optional($kerjasama)->id === 1;
+            $liburCount = 0;
+            $hae = 0;
+            $calendarHeaders = [];
+            
+            $startDate = Carbon::parse($str1);
+            $endDate = Carbon::parse($end1);
+            $current = $startDate->copy();
+            
+            while ($current->lte($endDate)) {
+                $isHoliday = in_array($current->format('Y-m-j'), $dailyData);
+                
+                if ($current->isWeekend() || $isHoliday) {
+                    $liburCount++;
+                }
+            
+                if (!$current->isWeekend() && !$isHoliday) {
+                    $hae++;
+                }
+                
+                $calendarHeaders[] = [
+                    'day' => $current->format('d'),
+                    'isHoliday' => in_array($current->format('Y-m-j'), $dailyData),
+                    'isWeekend' => $current->isWeekend(),
+                ];
+            
+                $current->addDay();
+            }
+            // dd($expPDF);
+            
+            $processedUsers = [];
+            $dummy = [];
 
-        $path = 'logo/sac.png';
-        $type = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-
-        $options = new Options();
-        $options->setIsHtml5ParserEnabled(true);
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'Arial');
-
-        $pdf = new Dompdf($options);
-        $html = view('admin.absen.exportV2', compact('point', 'dailyData', 'expPDF','izin','hitungIzin','jdwl', 'base64', 'totalHari', 'user', 'dataUser', 'currentYear', 'currentMonth', 'divisi', 'libur', 'str1', 'end1', 'mit', 'mitra'))->render();
-        $pdf->loadHtml($html);
-
-        $pdf->setPaper('A4', 'landscape');
-        $pdf->render();
-
-        $output = $pdf->output();
-        $filename = 'absensi.pdf';
-
-        if ($request->input('action') == 'download') {
-            return response()->download($output, $filename);
-        }
-
-        return response($output, 200)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
+            foreach ($expPDF as $user) {
+                if (in_array(strtolower($user->nama_lengkap), ['admin', 'user', 'subhan santosa'])) {
+                    continue;
+                }
+            
+                $uid = $user->id;
+            
+                // Preload user's absensi and izin
+                $userAbsensi = $user->absensi->groupBy(fn ($absen) => $absen->created_at->format('Y-m-d'));
+                $userIzin = $izin->where('user_id', $uid)->keyBy(fn ($izin) => $izin->created_at->format('Y-m-d'));
+            
+                $rows = [];
+                $totalMasuk = 0;
+                $totalMasukTidakPulang = 0;
+                $totalTelat = 0;
+                $totalIzin = 0;
+                $totalTerus = 0;
+                $totalMS = 0;
+                $totalST = 0;
+            
+                $current = $starte->copy();
+                while ($current->lte($ende)) {
+                    $dateKey = $current->format('Y-m-d');
+                    $isHoliday = in_array($current->format('Y-m-j'), $dailyData);
+                    $isWeekend = $current->isWeekend();
+            
+                    $absensiList = $userAbsensi->get($dateKey) ?? collect();
+                    $izinItem = $userIzin->get($dateKey);
                     
+            
+                    // Default status
+                    $symbol = '-';
+                    $alterSymbol = '-';
+                    $hasTerus = false;
+                    $mainMarked = false;
+            
+                    foreach ($absensiList as $absen) {
+                        if (!$mainMarked) {
+                            if ($absen->keterangan === 'masuk' && $absen->terus == null) {
+                                $symbol = 'M';
+                                $totalMasuk++;
+                                $mainMarked = true;
+                            } elseif ($absen->keterangan === 'masuk' && $absen->absensi_type_pulang == null) {
+                                $symbol = 'TP';
+                                $totalMasukTidakPulang++;
+                                $mainMarked = true;
+                            } elseif ($absen->keterangan === 'telat' && $absen->terus == null) {
+                                $symbol = 'T';
+                                $totalTelat++;
+                                $mainMarked = true;
+                            } elseif ($absen->tukar) {
+                                $symbol = 'MS';
+                                $totalMS++;
+                                $mainMarked = true;
+                            } elseif ($absen->tukar_id === $uid) {
+                                $symbol = 'ST';
+                                $totalST++;
+                                $mainMarked = true;
+                            }
+                        }
+    
+                        if ($absen->terus) {
+                            if ($absen->keterangan === 'masuk') {
+                                $alterSymbol = 'N';
+                            } elseif ($absen->keterangan === 'telat') {
+                                $alterSymbol = 'NT';
+                            }
+                            $hasTerus = true;
+                        } elseif ($isHoliday || $isWeekend) {
+                            $alterSymbol = '//';
+                        }
+                    }
+                    
+                    if (!$mainMarked && $izinItem && $izinItem->approve_status === 'accept') {
+                        $symbol = 'I';
+                        $totalIzin++;
+                        $mainMarked = true;
+                    }
+                    
+                    if (!$mainMarked && ($isHoliday || $isWeekend)) {
+                        $symbol = '//';
+                        $alterSymbol = '//';
+                    }
+                    
+                    if ($hasTerus) $totalTerus++;
+            
+                    $rows[] = [
+                        'date' => $dateKey,
+                        'symbol' => $symbol,
+                        'alterSymbol' => $alterSymbol,
+                        'isHoliday' => $isHoliday,
+                        'isWeekend' => $isWeekend,
+                    ];
+            
+                    $current->addDay();
+                    // $dummy[] = $absen;
+                }
+            
+                
+                $totalHariKerja = $kantor ? $hae - $libur : $totalHari - $libur + 1;
+                
+                $totalMasukAdjusted = $kantor ? $totalMasuk : $totalMasuk + $totalTerus;
+                $tesPer = $totalHariKerja > 0 ? round(($totalMasukAdjusted + $totalTelat + $totalMasukTidakPulang) / $totalHariKerja * 100) : 0;
+                
+                // $totalMasukAdjusted = $kantor ? $totalMasuk : $totalMasuk + $totalTerus;
+                // $totalMinusAdjusted = $totalHariKerja > 0 ? ((($totalTelat + $totalMasukTidakPulang) / $totalHariKerja * 100) / 2) : 0;
+                // $tesPer = $totalHariKerja > 0 ? round(($totalMasukAdjusted / $totalHariKerja * 100) + $totalMinusAdjusted) : 0;
+                
+                $tesPer = min($tesPer, 100);
+            
+                $processedUsers[] = [
+                    'user' => $user,
+                    'rows' => $rows,
+                    'm' => $totalMasuk,
+                    'mt' => $totalMasukTidakPulang,
+                    't' => $totalTelat,
+                    'z' => $totalIzin,
+                    'terus' => $totalTerus,
+                    'ms' => $totalMS,
+                    'st' => $totalST,
+                    'percentage' => $tesPer,
+                    'totalHariKerja' => $totalHariKerja,
+                    'totalPoints' => $user->absensi->whereNotNull('point_id')->sum(fn($p) => (int) optional($p->point)->sac_point),
+                ];
+            }
+            
+            // dd($dummy);
+    
+            $logoPath = public_path('logo/sac.png');
+            $base64 = 'data:image/' . pathinfo($logoPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($logoPath));
+    
+            $options = new Options();
+            $options->setIsHtml5ParserEnabled(true);
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Arial');
+    
+            $pdf = new Dompdf($options);
+            $html = view('admin.absen.exportV2', compact('point', 'starte', 'ende', 'dailyData', 'expPDF','izin','jdwl', 'base64', 'totalHari', 'user', 'currentYear', 'currentMonth', 'libur', 'str1', 'end1', 'mitra', 'kerjasama', 'kantor', 'liburCount', 'hae', 'calendarHeaders', 'processedUsers'))->render();
+            $pdf->loadHtml($html);
+    
+            $pdf->setPaper('A4', 'landscape');
+            $pdf->render();
+    
+            $output = $pdf->output();
+            $filename = 'Absensi_Penempatan '. $kerjasama?->client?->name . '_' . $str1 .'-'. $end1 .'.pdf';
+    
+            if ($request->input('action') == 'download') {
+                return response()->download($output, $filename);
+            }
+    
+            return response($output, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
+                        
         }else{
             toastr()->error('Mohon Masukkan Filter Export', 'error');
             return redirect()->back();
@@ -475,6 +630,10 @@ class AdminController extends Controller
     {
         $check = $request->input('check');
         $checkAll = $request->input('check_all');
+        $exportType = $request->input('export_type');
+        
+        // dd($request->all());
+        
         if ($check != null || $checkAll != null)
         {
             $data = [];
@@ -483,28 +642,43 @@ class AdminController extends Controller
                 $arr = User::where('id', $id)->get();
                 $data[] = $arr;
             }
+            
+            if($exportType == 'delete'){
+                // dd($check, $request->all());
+                User::destroy($check);
+                
+                toastr()->success('User berhasil dihapus', 'success');
+                return redirect()->back();
+            }else{
+                $options = new Options();
+                $options->setIsHtml5ParserEnabled(true);
+                $options->set('isRemoteEnabled', true);
+                $options->set('defaultFont', 'Arial');
         
-            $options = new Options();
-            $options->setIsHtml5ParserEnabled(true);
-            $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'Arial');
-    
-            $pdf = new Dompdf($options);
-            $html = view('admin.user.export-user', compact('data'))->render();
-            $pdf->loadHtml($html);
-            $pdf->setPaper('A4', 'landscape');
-            $pdf->render();
-    
-            $output = $pdf->output();
-            $filename = 'user.pdf';
-    
-            if ($request->input('action') == 'download') {
-                return response()->download($output, $filename);
+                $pdf = new Dompdf($options);
+                if ($exportType === 'data') {
+                    // Logic for exporting data
+                    $html = view('admin.user.export-user', compact(['data', 'exportType']))->render();
+                } elseif ($exportType === 'id_card') {
+                    // Logic for exporting ID cards
+                    $html = view('admin.user.export-card', compact(['data', 'exportType']))->render();
+                }
+                $pdf->loadHtml($html);
+                $pdf->setPaper('A4', 'landscape');
+                $pdf->render();
+        
+                $output = $pdf->output();
+                $filename = 'user.pdf';
+        
+                if ($request->input('action') == 'download') {
+                    return response()->download($output, $filename);
+                }
+        
+                return response($output, 200)
+                    ->header('Content-Type', 'application/pdf')
+                    ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
             }
-    
-            return response($output, 200)
-                ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
+        
         }
         
     }
@@ -518,7 +692,7 @@ class AdminController extends Controller
         // dd($mulai, $selesai, $absen);
         
         foreach($absen as $abs){
-            if (Storage::disk('public')->exists('images/' . $abs->image)) {
+            if ($abs->image != null) {
                 Storage::disk('public')->delete('images/' . $abs->image);
             }
             $abs->delete();
@@ -528,7 +702,25 @@ class AdminController extends Controller
         return redirect()->back();
     }
     
-    
+    public function indexSlip(Request $request)
+    {
+        $bulan = $request->bulan;
+        $mitra = Kerjasama::all();
+        
+        $penempatan = $request->penempatan;
+        if ($penempatan == 'semua') {
+            $user = User::pluck('id');
+        } else if($penempatan) {
+            $user = User::where('kerjasama_id', $penempatan)->pluck('id');
+        } else {
+            $user = User::pluck('id');
+        }
+        
+        $slip = SlipGaji::on('mysql2')->whereIn('user_id', $user)->where('bulan_tahun', $bulan ? $bulan : Carbon::now()->subMonth()->format('Y-m'))->orderby('karyawan', 'asc')->get();
+        // dd(count($slip));
+        
+        return view('admin.slip.index', compact('slip', 'bulan', 'mitra', 'penempatan'));
+    }
     
     
     

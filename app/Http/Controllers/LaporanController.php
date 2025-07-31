@@ -39,10 +39,18 @@ class LaporanController extends Controller
                 return view('laporan.index', ['laporan' => $laporan]);
             }elseif(Auth::user()->role_id == 2)
             {
+                $min1 = Laporan::orderBy('created_at', 'asc')->first();
+                $min = $min1->created_at->format('Y-m-d');
+                
+                $max1 = Laporan::orderBy('created_at', 'desc')->first();
+                $max = $max1->created_at->subMonth(3)->format('Y-m-d');
+                
+                // dd($min, $max);
+                
                 $mitra = Kerjasama::all();
                 $ruangan = Ruangan::all();
-                $laporan = Laporan::paginate(25);
-                return view('laporan.index', ['laporan' => $laporan, 'mitra' => $mitra, 'ruangan' => $ruangan]);
+                $laporan = Laporan::orderBy('created_at', 'desc')->paginate(25);
+                return view('laporan.index', ['laporan' => $laporan, 'mitra' => $mitra, 'ruangan' => $ruangan, 'min' => $min, 'max' => $max]);
             }elseif(Auth::user()->divisi->jabatan->code_jabatan == 'MITRA'){
                 $ker = Auth::user()->kerjasama->client_id;
                 $laporan = Laporan::where('client_id', $ker)->paginate(25);
@@ -184,7 +192,7 @@ class LaporanController extends Controller
         $pdf->render();
 
         $output = $pdf->output();
-        $filename = 'laporan.pdf';
+        $filename = 'laporan '. $kerjasama?->client?->name . '_' . $str1 .'-'. $end1 .'.pdf';
 
         if ($request->input('action') == 'download') {
             return response()->stream(function () use ($output) {
@@ -204,6 +212,40 @@ class LaporanController extends Controller
             toastr()->error('Mohon Masukkan Filter Export', 'error');
             return redirect()->back();
         }
+    }
+    
+    public function hapusFotoLaporan(Request $request)
+    {
+        $mulai = $request->mulai;
+        $selesai = $request->selesai;
+        
+        $laporan = Laporan::whereBetween('created_at', [$mulai, $selesai])->get();
+        // dd($mulai, $selesai, $laporan);
+        
+        // dd($laporan, $laporan[0]->image5, Storage::disk('public')->exists('images/' . $laporan[0]->image5), public_path('storage/images/' . $laporan[0]->image5));
+        
+        foreach($laporan as $abs){
+            if ($abs->image1 != null) {
+                Storage::disk('public')->delete('images/' . $abs->image1);
+            }
+            if ($abs->image2 != null) {
+                Storage::disk('public')->delete('images/' . $abs->image2);
+            }
+            if ($abs->image3 != null) {
+                Storage::disk('public')->delete('images/' . $abs->image3);
+            }
+            if ($abs->image4 != null) {
+                Storage::disk('public')->delete('images/' . $abs->image4);
+            }
+            if ($abs->image5 != null) {
+                Storage::disk('public')->delete('images/' . $abs->image5);
+            }
+            
+            $abs->delete();
+        }
+        
+        toastr()->warning('Data Sudah Dihapus', 'success');
+        return redirect()->back();
     }
     
     // laporan mitra

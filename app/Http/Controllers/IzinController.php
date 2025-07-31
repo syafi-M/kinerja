@@ -21,14 +21,20 @@ class IzinController extends Controller
     public function indexLead()
     {
         $user = Auth::user()->kerjasama_id;
+        if(auth()->user()->id == 175) {
+            
+        $izin = Izin::latest()->orderBy('kerjasama_id', 'asc')->paginate(40);
+        }else {
+            
         $izin = Izin::where('kerjasama_id', $user)->paginate(30);
+        }
 
         return view('leader_view.absen.izin', ['izin' => $izin]);
     }
 
     public function indexAdmin()
     {
-        $izin = Izin::paginate(50);
+        $izin = Izin::latest()->paginate(50);
         $kerja = Kerjasama::all();
         return view('admin.absen.izin', compact('izin', 'kerja'));
     }

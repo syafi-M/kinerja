@@ -32,7 +32,7 @@ class AbsenUpdate extends Command
     {
 
         // Handle to auto send absensi_type_pulang when time has passed
-        $kantor = Client::where('id', 1)->first(); 
+        $kantor = Client::find(1); 
         $shift = Shift::all();
         // $abs = Absensi::with(['Shift', 'Kerjasama', 'User'])->get();
         $user = User::all();

@@ -22,10 +22,6 @@
 			border: 1px solid black;
 		}
 
-		/*td {*/
-		/*	text-align: center;*/
-		/*}*/
-
 		th {
 			background-color: rgb(19, 110, 170);
 			color: white;
@@ -34,18 +30,11 @@
 		tr:nth-child(even) {
 			background-color: #e2e8f0;
 		}
-		
-		/*tr:nth-child(odd) .nama-lengkap {*/
-  /*          background-color: #fcd34d;*/
-  /*      }*/
-    
-  /*      tr:nth-child(even) .nama-lengkap {*/
-  /*          background-color: #fbbf24;*/
-  /*      }*/
         
         .mtli{
             padding-left: 2px;
             padding-right:2px;
+            font-size: 12px;
         }
 
 		.page-break {
@@ -59,30 +48,6 @@
 
 <body>
 	<main>
-		@php
-			$starte = \Carbon\Carbon::createFromFormat('Y-m-d', $str1);
-			$ende = \Carbon\Carbon::createFromFormat('Y-m-d', $end1);
-			
-			$kantor = false;
-			if (!isset($liburCount)) {
-                $liburCount = 0; // Initialize the liburCount variable only if it's not set
-            }
-            $hae = 0;
-            
-		@endphp
-		@for ($date = $starte->copy(); $date->lte($ende); $date->addDay())
-            @php
-                $isHoliday = in_array($date->format('Y-m-j'), $dailyData);
-                // Check if the current day is a weekend and increment the count
-                if ($date->isWeekend() || $isHoliday) {
-                    $liburCount++;
-                }
-                
-                if (!$date->isWeekend() && !$isHoliday) {
-                    $hae++;
-                }
-            @endphp
-        @endfor
 		<div>
     		<div class="title">
     			<img class="hero" src="{{ $base64 }}" width="60px">
@@ -91,23 +56,12 @@
     		</div>
     		
     		<div style="text-align: center; margin: 16px auto 12px auto; font-size: 14px; ">
-                @foreach ($mit as $mitName)
-                        @if ($mitName->id == $mitra)
-                            @if($mitName->id == 1)
-                                @php
-                                    $kantor = true;
-                                @endphp
-                            @endif
-                            <span style="display: inline-block; font-weight: bold; ">
-                                {{ $mitName->client->name }}
-                            </span>
-                        @endif
-                @endforeach
+                <span style="display: inline-block; font-weight: bold; ">
+                    {{ $kerjasama ? $kerjasama->client->name : 'Semua Klien' }}
+                </span>
                 <br>
-                <span style="display: inline-block;">{{ $starte->isoFormat('D-MMMM-Y') }} / {{ $ende->isoFormat('D-MMMM-Y') }}</span>
+                <span style="display: inline-block;">{{ $starte->isoFormat('D MMMM Y') }} / {{ $ende->isoFormat('D MMMM Y') }}</span>
             </div>
-
-
 		</div>
 		<div class="table-wrapper">
 			<table class="border" id="myTable">
@@ -117,254 +71,98 @@
 						<th rowspan="2">Nama</th>
 						<th rowspan="2">Jab.</th>
 						<th colspan="{{ $totalHari + 1 }}" style="font-size: 14px;">Rekab Bulanan</th>
-						<th colspan="{{ $kantor ? 7 : 8 }}">Total</th>
+						<th colspan="{{ $kantor ? 7 : 6 }}">Total</th>
 					</tr>
 
 					<tr>
-						@for ($date = $starte->copy(); $date->lte($ende); $date->addDay())
-    						@php
-                                $isWeekend = $date->isWeekend();
-                                $isHoliday = in_array($date->format('Y-m-j'), $dailyData);
-                            @endphp
-    						<th style="{{$isWeekend || $isHoliday ? "background-color: #ef4444" : ""}}; font-size: 14px; padding: 0 2px 0 2px;">{{ $date->format('d') }}</th>
-						@endfor
+						@foreach ($calendarHeaders as $header)
+                            <th style="{{ ($header['isWeekend'] || $header['isHoliday']) ? 'background-color: #ef4444;' : '' }} font-size: 12px; padding: 0 2px 0 2px;">
+                                {{ $header['day'] }}
+                            </th>
+                        @endforeach
 						<th class="mtli">HE</th>
 						<th class="mtli">M</th>
 						<th class="mtli">I</th>
 						<th class="mtli">T</th>
 						<th class="mtli">L</th>
-						@if(!$kantor)
-						    <th class="mtli">MS</th>
-						    <th class="mtli">ST</th>
-						@endif
 						<th>%</th>
 						<th style="{{ $kantor ? '' : 'display: none;' }}">Point</th>
 					</tr>
 				</thead>
 				<tbody>
-					@php
-						$sortedData = collect($expPDF)->sortBy('user.nama_lengkap');
-						$previousUser = null;
-						$n = 1;
-						$rowCount = 0;
-						if($kantor){
-						    $noGap = 13;
-						    $noGap2 = 20;
-						}else{
-						    $noGap = 26;
-						    $noGap2 = 28;
-						}
-					@endphp
-					
-					@forelse ($sortedData as $data)
-						@if ($previousUser != $data->nama_lengkap)
-						@if ($rowCount < $noGap)
-    						@php
-                                $rowCount++;
-                            @endphp
-                        @elseif ($rowCount == $noGap)
-                            </tbody>
-                            </table>
-                            </div>
-                            <div class="table-wrapper">
-                            <table class="border" id="myTable">
-                            <tbody>
-                        @elseif (($rowCount - $noGap) % $noGap2 == 0)
-                            <!-- Close the table and div to start a new page -->
-                            </tbody>
-                            </table>
-                            </div>
-                            <!-- Open a new table wrapper for subsequent pages -->
-                            <div class="table-wrapper">
-                            <table class="border" id="myTable">
-                            <tbody>
+                    @php
+                        $rowCount = 0;
+                        $noGap = $kantor ? 13 : 26;
+                        $noGap2 = $kantor ? 20 : 38;
+                    @endphp
+                    @foreach ($processedUsers as $userRow)
+                        <!--@if ($rowCount < $noGap)-->
+                        <!--    @php $rowCount++; @endphp-->
+                        <!--@elseif ($rowCount == $noGap || ($rowCount - $noGap) % $noGap2 == 0)-->
+                        <!--    </tbody></table></div>-->
+                        <!--    <div class="table-wrapper">-->
+                        <!--        <table class="border" id="myTable">-->
+                        <!--            <tbody>-->
+                        <!--@endif-->
+                        <tr>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="text-align: center; font-size: 14px; padding: 2px; width: 14px;">{{ $loop->iteration }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" class="nama-lengkap" style="text-align: start; padding-left: 5px; font-size: 12px; width: 100px;">{{ ucwords(strtolower($userRow['user']->nama_lengkap)) }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" class="nama-lengkap" style="text-align: center; padding: 0 5px; font-size: 12px; width: 40px;">{{ $userRow['user']->divisi->jabatan->code_jabatan ?? '-' }}</td>
+                            @foreach ($userRow['rows'] as $day)
+                                @php
+                                    $bg = match ($day['symbol']) {
+                                        'M' => 'background-color: #90EE90;',   // LightGreen
+                                        'TP' => 'background-color: #dc2626;',   // Dark Red
+                                        'T' => 'background-color: #dc2626;',   // Dark Red
+                                        'I' => 'background-color: #f59e0b;',   // DeepSkyBlue
+                                        'N' => 'background-color: #3b82f6;',   // LimeGreen
+                                        'NT' => 'background-color: #3b82f6;',  // Tomato (for telat terus)
+                                        'MS' => 'background-color: #FFD700;',  // Gold (for Menukar Shift)
+                                        'ST' => 'background-color: #FFA07A;',  // LightSalmon (for Shift Tukar)
+                                        default => '',
+                                    };
+                                @endphp
+                                <td style="text-align: center; font-size: 12px; width: 18px; {{ $bg }}">{{ $day['symbol'] }}</td>
+                            @endforeach
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="background-color: #7dd3fc; text-align: center; font-size: 12px; width: 18px;">{{ $userRow['totalHariKerja'] }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="background-color: #7dd3fc; text-align: center; font-size: 12px; width: 18px;">{{ $userRow['m'] + $userRow['terus'] }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="background-color: #7dd3fc; text-align: center; font-size: 12px; width: 18px;">{{ $userRow['z'] }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="background-color: #7dd3fc; text-align: center; font-size: 12px; width: 18px;">{{ $userRow['t'] }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="background-color: #7dd3fc; text-align: center; font-size: 12px; width: 18px;">{{ $libur }}</td>
+                            <td rowspan="{{ $kantor ? 1 : 2 }}" style="text-align: center; font-size: 14px; width: 24px; {{ $userRow['percentage'] < 80 ? 'background-color: #f97316;' : '' }}">{{ $userRow['percentage'] }}%</td>
+                            @if ($kantor)
+                                <td rowspan="1" style="font-size: 12px;">{{ toRupiah($userRow['totalPoints']) }}</td>
+                            @endif
+                        </tr>
+                        @if (!$kantor)
+                            <tr>
+                                @foreach ($userRow['rows'] as $day)
+                                    @php
+                                        $bg = match ($day['alterSymbol']) {
+                                            'N' => 'background-color: #60a5fa;',   // LimeGreen
+                                            'NT' => 'background-color: #3b82f6;',  // Tomato (for telat terus)
+                                            'MS' => 'background-color: #FFD700;',  // Gold (for Menukar Shift)
+                                            'ST' => 'background-color: #FFA07A;',  // LightSalmon (for Shift Tukar)
+                                            default => '',
+                                        };
+                                    @endphp
+                                    <td style="text-align: center; font-size: 12px; {{ $bg }}">{{ $day['alterSymbol'] }}</td>
+                                @endforeach
+                            </tr>
                         @endif
-						    @if($data->nama_lengkap != 'admin' && $data->nama_lengkap != 'user' && $data->nama_lengkap != 'SUBHAN SANTOSA')
-							<tr>
-								<!--Valid name cuy-->
-								@php
-									$previousUser = $data->nama_lengkap;
-									$userAbsensi = collect($expPDF)->where('user', $data->user);
-								@endphp
-								<td style="text-align: center; font-size: 14px;" rowspan="{{ $kantor ? '1' : '2' }}">{{ $n++ }}</td>
-								<td class="nama-lengkap" rowspan="{{ $kantor ? '1' : '2' }}" style="text-align: start; padding-left: 5px; font-size: 12px;">{{ $data->nama_lengkap }}</td>
-								<td class="nama-lengkap" rowspan="{{ $kantor ? '1' : '2' }}" style="text-align: center; padding-left: 5px; padding-right: 5px; font-size: 12px;">{{ $data->divisi->jabatan->code_jabatan }}</td>
-								@for ($date = $starte->copy(); $date->lte($ende); $date->addDay())
-    									@php
-    									    $isHoliday = in_array($date->format('Y-m-j'), $dailyData);
-    										$absensi = $data->absensi->first(function ($item) use ($date) {
-                                                return $item->created_at->format('Y-m-d') === $date->format('Y-m-d');
-                                            });
-                                            $nerus = $data->absensi->where('terus', '!=', null)->first(function ($item) use ($date){
-                                                return $item->created_at->format('Y-m-d') === $date->format('Y-m-d');
-                                            });
-    										$ngizin = $izin->where('user_id', $data->id)->first(function ($item) use ($date) {
-                                                return $item->created_at->format('Y-m-d') === $date->format('Y-m-d');
-                                            });
-                                            
-                                            $isDateInRange = $date->gte($starte) && $date->lte($ende);
-                                            
-    										$keterangan = $absensi ? $absensi->keterangan : '-';
-    										$keterus = $nerus ? $nerus->terus : '';
-    										$jadiIzin = $ngizin ? $ngizin->approve_status : '';
-    									@endphp
-    									@if ($isDateInRange)
-                                            @if ($keterangan == 'masuk' && $keterus == null)
-                                                <td style="background-color: rgb(112, 226, 112); text-align: center; font-size: 14px;">M</td>
-                                            @elseif($keterus == 1)
-                                                <td style="background-color: rgb(112, 226, 112); text-align: center; font-size: 14px;">M|K</td>
-                                            @elseif($jadiIzin == 'accept')
-                                                <td style="background-color: rgb(250, 114, 65); text-align: center; font-size: 14px;">I</td>
-                                            @elseif($keterangan == 'telat')
-                                                <td style="background-color:rgb(202, 5, 5); text-align: center; font-size: 14px;">T</td>
-                                            @else
-                                                @if($date->isWeekend() || $isHoliday)
-                                                    <td style="text-align: center; font-size: 14px;">//</td>
-                                                @else
-                                                    <td style="text-align: center; font-size: 14px;">-</td>
-                                                @endif
-                                            @endif
-                                        @endif
-    									
-								@endfor
-								@php
-									$startDate = $user->min('created_at')->startOfMonth();
-									$endDate = $user->max('created_at')->endOfMonth();
-									$hari = $totalHari ;
-									$period = Carbon\CarbonPeriod::create($startDate, $endDate);
-									$numberOfDays = $period->count();
-									
-									$uid = $data->id;
-									
-									
-									$m = $data->absensi->where('keterangan', 'masuk')->count();
-									$z = $hitungIzin->where('approve_status', 'accept')->where('user_id', $uid)->count();
-									$t = $data->absensi->where('keterangan', 'telat')->count();
-									$k = $data->absensi->where('terus', '!=', null)->count();
-									
-									$ms = $data->absensi->where('tukar', '!=', null)->count();
-									$st = $data->absensi->where('tukar_id', $uid)->count();
-									
-									if($kantor){
-									    $lib = $liburCount + $libur;
-									}else{
-									    $lib = $libur;
-									}
-									
-									$total = $m + $z + $t;
-									$hlibur = ($hae - $libur) - $lib;
-									
-									if ($total != 0) {
-                                        if ($hlibur >= 0) {
-                                            $totalPercentage = round($m / ($hari - $lib) * 100);
-                                            if($kantor){
-                                            
-                                                $tesPer = round(($m + $t) / $hae * 100); 
-                                                
-
-                                            }else{
-                                                $tesPer = round(($m + $t + $ms + $k) / ($hari - $lib + 1) * 100); 
-                                            }
-                                            $total = $tesPer >= 100 ? 100 : $tesPer;
-                                        } else {
-                                            $total = "libur";
-                                        }
-                                    } else {
-                                        $total = 0;
-                                    }
-                                    
-                                    if($data->kerjasama_id == 1){
-                                    
-									    $totP = $data->absensi->where('point_id', '!=', null);
-                                        $dataToSendOutsideLoop[] = [
-                                            'nama' => $data->nama_lengkap,
-                                            'tesPersentage' => $tesPer,
-                                            'total' => $total,
-                                            'target' => $data->target_tunjangan,
-                                            'kerjasama' => $data->where('kerjasama_id', 1),
-                                        ];
-                                    }
-                                    
-                                    
-								@endphp
-							
-								
-								<td id="hae" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $kantor ? $hae - $libur : $hari - $libur + 1 }}</td>
-								<td id="masuk" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $kantor ? $m : $m + $k }}</td>
-								<td id="izin" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $z }}</td>
-								<td id="telat" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $t }}</td>
-								<td id="libur" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $lib }}</td>
-								@if(!$kantor)
-								    <td id="ms" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $ms }}</td>
-								    <td id="st" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #7dd3fc; text-align: center; width: 20px; font-size: 14px;">{{ $st }}</td>
-								@endif
-								@if ($total >= 80)
-									<td id="persen" rowspan="{{ $kantor ? '1' : '2' }}" style="text-align: center;">{{ $total }}%</td>
-								@elseif($total == "libur" || $total == 0)
-									<td id="persen" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #f97316; text-align: center;">0%</td>
-								@elseif($total <= 80)
-									<td id="persen" rowspan="{{ $kantor ? '1' : '2' }}" style="background-color: #f97316; text-align: center; font-size: 14px;">{{ $total }}%</td>
-								@else
-								    <td>Kosong</td>
-								@endif
-								    @if($data->kerjasama_id == 1)
-    								    <td style="font-size: 12px;" rowspan="{{ $kantor ? '1' : '2' }}">
-    								        @php
-                                                $totalPoints = 0;
-                                            @endphp
-    								        @foreach($totP as $tesz)
-        								        @php
-                                                    $totalPoints += intval($tesz->point->sac_point);
-                                                @endphp
-    								        @endforeach
-    								        {{toRupiah($totalPoints)  }}
-    								    </td>
-								    @endif
-							</tr>
-							@if(!$kantor)
-							<tr>
-							    @for ($date = $starte->copy(); $date->lte($ende); $date->addDay())
-    									@php
-    									    $isHoliday = in_array($date->format('Y-m-j'), $dailyData);
-    										$absensi = $data->absensi->first(function ($item) use ($date) {
-                                                return $item->created_at->format('Y-m-d') === $date->format('Y-m-d');
-                                            });
-    										$ngizin = $izin->where('user_id', $data->id)->first(function ($item) use ($date) {
-                                                return $item->created_at->format('Y-m-d') === $date->format('Y-m-d');
-                                            });
-                                            
-                                            $isDateInRange = $date->gte($starte) && $date->lte($ende);
-                                            
-    										$keterangan = $absensi ? $absensi->keterangan : '-';
-    										$jadiIzin = $ngizin ? $ngizin->approve_status : '';
-    									@endphp
-    									@if ($isDateInRange)
-                                            @if ($absensi?->tukar)
-                                                <td style="background-color: rgb(112, 226, 112); text-align: center; font-size: 14px;">MS</td>
-                                            @elseif($absensi?->tukar_id == $data->id)
-                                                <td style="background-color: rgb(250, 114, 65); text-align: center; font-size: 14px;">ST</td>
-                                            @else
-                                                @if($date->isWeekend() || $isHoliday)
-                                                    <td style="text-align: center; font-size: 14px;">//</td>
-                                                @else
-                                                    <td style="text-align: center; font-size: 14px;">-</td>
-                                                @endif
-                                            @endif
-                                        @endif
-    									
-								@endfor
-							</tr>
-							@endif
-							@endif
-						@php
-                            // Your PHP code here
+                        
+                        @php
                             $rowCount++;
+                    
+                            $shouldSplit = $rowCount === $noGap || ($rowCount > $noGap && ($rowCount - $noGap) % $noGap2 === 0);
+                    
+                            if ($shouldSplit && !$loop->last) {
+                                echo '</tbody></table></div>';
+                                echo '<div class="table-wrapper"><table class="border" id="myTable"><tbody>';
+                            }
                         @endphp
-						@endif
-					@empty
-						<td colspan="31" class="text-center" style="text-align: center;">Kosong</td>
-					@endforelse
-				</tbody>
+                    @endforeach
+                </tbody>
 			</table>
 		</div>
 		
@@ -394,21 +192,22 @@
             				@php
         				        $no = 1;
         				    @endphp
-        					@foreach ($dataToSendOutsideLoop as $item)
-    	                        @if($item['kerjasama'])    
-            	    			
+        					@foreach ($processedUsers as $item)
+    	                        @if($item['user'])    
+    	                        @php
+    	                            $total = $item['user']->target_tunjangan * ($item['percentage'] / 100);
+    	                        @endphp
             				    <tr style="padding: 2px 0 2px 0;">
-            				        <td style="text-align: center; font-size: 14px;">{{ $no++ }}.</td>
-            				        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ $item['nama'] }}</td>
-            				        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ toRupiah($item['target'] == 0 ? 0 : $item['target']) }}</td>
-            				        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ $item['total'] != 0 ? $item['tesPersentage'] : 0 }}%</td>
-            				        @if($item['total'] != 0)
-                                        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ toRupiah($item['target'] * ( $item['tesPersentage'] / 100 )) }} </td>
+            				        <td style="text-align: center; font-size: 14px;">{{ $loop->iteration }}.</td>
+            				        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ ucwords(strtolower($item['user']->nama_lengkap)) }}</td>
+            				        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ toRupiah($item['user']->target_tunjangan == 0 ? 0 : $item['user']->target_tunjangan) }}</td>
+            				        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ $item['percentage'] != 0 ? $item['percentage'] : 0 }}%</td>
+            				        @if($item['percentage'] != 0)
+                                        <td style="padding-left: 8px; text-align: start; font-size: 14px;">{{ toRupiah($total) }} </td>
                                     @else 
                                         <td style="padding-left: 8px; text-align: start; font-size: 14px;">Rp.0 </td>
                                     @endif
             				    </tr>
-            				    
             				   @endif
                             @endforeach
             				</tbody>
@@ -420,27 +219,30 @@
 
 		<h2 style="padding-top: 10px" class="page-break">Keterangan</h2>
 
-		<ul>
-			<li>
-			    <span>HE </span>
-			    <span>: Hari Efektif</span>
-			</li>
-			<li>M : Hadir</li>
-			<li>I : Izin</li>
-			<li>T : Telat</li>
-			<li>L : Libur</li>
-			@if(!$kantor)
-			<li>MS : Menggantikan Shift</li>
-			<li>ST : Shift Tergantikan</li>
-			<li>K : Meneruskan Shift</li>
-			@endif
-			<li>- : Kosong</li>
-			<li>// : Libur/merah</li>
-		</ul>
+		<table style="border: none; border-collapse: collapse;">
+            <tbody>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>HE</strong></td><td style="border: none;">: Hari Efektif</td></tr>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>M</strong></td><td style="border: none;">: Hadir</td></tr>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>TP</strong></td><td style="border: none;">: Tidak Pulang</td></tr>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>I</strong></td><td style="border: none;">: Izin</td></tr>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>T</strong></td><td style="border: none;">: Telat</td></tr>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>L</strong></td><td style="border: none;">: Libur</td></tr>
+        
+                @if(!$kantor)
+                    <tr style="background: none; border: none;"><td style="border: none;"><strong>MS</strong></td><td style="border: none;">: Menggantikan Shift</td></tr>
+                    <tr style="background: none; border: none;"><td style="border: none;"><strong>ST</strong></td><td style="border: none;">: Shift Tergantikan</td></tr>
+                    <tr style="background: none; border: none;"><td style="border: none;"><strong>N</strong></td><td style="border: none;">: Meneruskan Shift</td></tr>
+                    <tr style="background: none; border: none;"><td style="border: none;"><strong>NT</strong></td><td style="border: none;">: Meneruskan Shift tapi telat</td></tr>
+                @endif
+        
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>-</strong></td><td style="border: none;">: Kosong</td></tr>
+                <tr style="background: none; border: none;"><td style="border: none;"><strong>//</strong></td><td style="border: none;">: Libur/merah</td></tr>
+            </tbody>
+        </table>
 
-		<div style="right: 25px; position:absolute;">
-			<span>Ponorogo, {{ Carbon\Carbon::now()->format('d-m-Y') }}</span>
-			<span style="right: 0; top: 100px; left: 60px; position:absolute;">TTD</span>
+		<div style="right: 25px; bottom: 250px; position:absolute;">
+			<span>Ponorogo, {{ Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</span>
+			<!--<span style="right: 0; top: 100px; left: 60px; position:absolute;">TTD</span>-->
 		</div>
 		<span style="right: 0; bottom: 150px; position:absolute;">PT. Surya Amanah Cendekia</span>
 	</main>

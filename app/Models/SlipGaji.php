@@ -11,4 +11,9 @@ class SlipGaji extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
     protected $connection = 'mysql2';
+    
+    public function User()
+    {
+        return $this->belongsTo(User::class)->latest();
+    }
 }

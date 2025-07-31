@@ -9,7 +9,7 @@
 				</div>
 			</div>
             <div class="flex justify-center overflow-x-auto mx-10 pb-10">
-                <table class="table table-fixed px-5 w-full shadow-md bg-slate-50" id="searchTable">
+                <table class="table table-fixed table-sm px-5 w-full shadow-md bg-slate-50" id="searchTable">
                     <thead>
 						<tr>
 							<th class="bg-slate-300 rounded-tl-2xl">#</th>
@@ -28,18 +28,18 @@
                         @forelse ($lokasi as $i)
                         <tr>
                             <td>{{ $n++ }}</td>
-                            @if ($i->client->logo == 'no-image.jpg')
+                            @if ($i->client?->logo == 'no-image.jpg')
 									<td>
 										<x-no-img />
 									</td>
-								@elseif($i->client->logo != asset('storage/images/' . $i->client->logo))
-									<td ><img src="{{ asset('storage/images/' . $i->client->logo) }}" alt="no image" width="120px"></td>
+								@elseif($i->client?->logo != asset('storage/images/' . $i->client?->logo))
+									<td ><img src="{{ asset('storage/images/' . $i->client?->logo) }}" alt="no image" width="120px"></td>
 								@else
 									<td>
 										<x-no-img />
 									</td>
 								@endif
-                            <td class="break-words whitespace-pre-line">{{ $i->client->name }}</td>
+                            <td class="break-words whitespace-pre-line">{{ $i->client?->name }}</td>
                             <td>{{ $i->latitude }}</td>
                             <td>{{ $i->longtitude }}</td>
                             <td>{{ $i->radius }} Meter</td>

@@ -19,6 +19,7 @@
         "predis/predis": "^2.2",
         "pusher/pusher-php-server": "*",
         "railsware/mailtrap-php": "*",
+        "sadiqsalau/laravel-otp": "^1.0",
         "simplesoftwareio/simple-qrcode": "~4",
         "spatie/pdf-to-image": "^1.2",
         "symfony/asset": "^6.3",

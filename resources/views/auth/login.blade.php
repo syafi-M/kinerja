@@ -1,6 +1,7 @@
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
+    
     <div>
         <form method="POST" action="{{ route('login') }}" id="form-login">
             @csrf
@@ -29,15 +30,15 @@
             </div>
     
             <!-- Remember Me -->
-            <div class="block mt-4">
-                <label for="remember_me" class="inline-flex items-center">
-                    <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                    <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-                </label>
-            </div>
+            <!--<div class="block mt-4">-->
+            <!--    <label for="remember_me" class="inline-flex items-center">-->
+            <!--        <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">-->
+            <!--        <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>-->
+            <!--    </label>-->
+            <!--</div>-->
     
             <div class="flex items-center justify-center mt-4">
-                <button id="btnLogin" type="submit" class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow">Log In</button>
+                <button id="btnLogin" type="submit" class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow font-semibold">Log In</button>
             </div>
         </form>
         
@@ -48,9 +49,7 @@
     <script>
         $(document).ready(function() {
         	$('#btnLogin').click(function(){
-    		    $(this).prop('disabled', true);
-    		    $(this).text('Tunggu...');
-    		    $(this).css('background-color: rgb(96 165 250 / 0.5);');
+    		    $(this).prop('disabled', true).text('Tunggu...').css('background-color: rgb(96 165 250 / 0.5);');
     		    $('#form-login').submit();
     		});
         })

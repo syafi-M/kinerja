@@ -22,11 +22,7 @@ class JadwalUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required',
-            'shift_id' => 'required',
-            'tanggal' => 'required',
-            'area' => 'required',
-            'status' => 'required'
+            
         ];
     }
 }

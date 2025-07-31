@@ -35,11 +35,98 @@
                 background-repeat: no-repeat;
             }
         }
+        
+        @keyframes hanging-wiggle {
+            0% { transform: rotate(-15deg); }
+            50% { transform: rotate(-10deg); }
+            100% { transform: rotate(-15deg); }
+        }
+        
+        @keyframes hanging-wiggle2 {
+            0% { transform: rotate(10deg); }
+            50% { transform: rotate(15deg); }
+            100% { transform: rotate(10deg); }
+        }
+        @keyframes hanging-wiggle3 {
+            0% { transform: rotate(15deg); }
+            50% { transform: rotate(10deg); }
+            100% { transform: rotate(15deg); }
+        }
+        
+        @keyframes hanging-wiggle4 {
+            0% { transform: rotate(-10deg); }
+            50% { transform: rotate(-15deg); }
+            100% { transform: rotate(-10deg); }
+        }
+        
+        @media (min-width: 48rem) {  /* Screens wider than 48rem */
+            .hanging, .hanging2, .hanging3, .hanging4 {
+                width: 5%;
+            }
+        }
+        
+        @media (max-width: 48rem) {  /* Screens smaller than 48rem */
+            .hanging, .hanging2, .hanging3, .hanging4 {
+                width: 10%;
+            }
+        }
+
+        
+        .hanging {
+            position: absolute;
+            top: 0;
+            transform-origin: top center; /* Makes it swing from the top */
+            animation: hanging-wiggle 2s ease-in-out infinite alternate;
+        }
+        
+        .hanging2 {
+            position: absolute;
+            top: 0;
+            transform-origin: top center; /* Makes it swing from the top */
+            animation: hanging-wiggle2 2.5s ease-in-out infinite alternate;
+        }
+        .hanging3 {
+            position: absolute;
+            top: 0;
+            transform: scaleX(-1);
+            transform-origin: top center; /* Makes it swing from the top */
+            animation: hanging-wiggle2 2.5s ease-in-out infinite alternate;
+        }
+        .hanging4 {
+            position: absolute;
+            top: 0;
+            transform: scaleX(-1);
+            transform-origin: top center; /* Makes it swing from the top */
+            animation: hanging-wiggle 2s ease-in-out infinite alternate;
+        }
     </style>
 
-<body class="font-sans text-gray-900 antialiased">
+<body class="font-sans text-gray-900 antialiased overflow-hidden">
 
-	<div class="min-h-screen flex flex-col px-4 pt-6 bg-gradient-to-b from-gray-100 to-gray-500/70 bg-cover items-center justify-center bg-img">
+	<div style="min-height: 100svh; position: relative; z-index: 9001;" class="flex flex-col px-4 bg-gradient-to-b from-gray-100 to-gray-500/70 bg-cover items-center justify-center bg-img overflow-hidden">
+	    
+	    @if(Carbon\Carbon::now()->lessThan(Carbon\Carbon::parse('2025-04-09')))
+	    <div class="overflow-hidden">
+    	    <img src="{{ URL::asset('/logo/ketupat-3.png') }}"
+                class="hanging"
+                style="z-index: 9000; left: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
+            <img src="{{ URL::asset('/logo/ketupat-1.png') }}"
+                class="hanging2"
+                style="z-index: 8999; left: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
+    	    <img src="{{ URL::asset('/logo/ketupat-3.png') }}"
+                class="hanging3"
+                style="z-index: 9000; right: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
+            <img src="{{ URL::asset('/logo/ketupat-1.png') }}"
+                class="hanging4"
+                style="z-index: 8999; right: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
+	    </div>
+	    @endif
+	    
+	    <div style="font-size: 8pt; color: #404040; top: 5pt; left: 5pt; background-color: rgba(254, 243, 199, 0.75); padding: 4px; padding-left: 8px; padding-right: 12px;" class="absolute flex items-center gap-2 rounded-full">
+	        <i style="background-color: rgba(254, 243, 199, 0.85); padding-left: 6px; padding-right: 6px;" class="ri-information-2-line text-xl rounded-full"></i>
+	        <p class="font-semibold">Gunakan Google Chrome untuk pengalaman terbaik.</p>
+	    </div>
+            
 		<div class="sm:flex sm:flex-col justify-center">
 			<a href="{{ url('https://sac-po.com') }}">
 			<div class="flex flex-col justify-center items-center gap-2 sm:p-4 sm:bg-gradient-to-tr sm:from-gray-400/20 sm:to-gray-500/20  sm:rounded-md sm:shadow-inner sm:shadow-gray-400/30">
@@ -64,7 +151,7 @@
 			@auth
 			<div>
 				<div class="flex items-center justify-center mt-4">
-                    <a href="/dashboard" class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow" id="btnDashboard">Klik Disini</a>
+                    <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : '/dashboard' }}" class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow" id="btnDashboard">Klik Disini</a>
                 </div>
 			</div>
 			@endauth

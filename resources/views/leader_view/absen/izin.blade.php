@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-main-div>
         <div class="py-10 sm:mx-10">
-			<p class="text-center text-lg sm:text-2xl uppercase font-bold">Riwayat izin, {{ Auth::user()->kerjasama->client->name }}</p>
+			<p class="text-center text-lg sm:text-2xl uppercase font-bold">Riwayat izin, <br>{{ auth()->user()->id == 175 ? "Semua Mitra" : Auth::user()->kerjasama->client->name }}</p>
             <div class="flex items-center w-full justify-center sm:justify-end my-5">
                 <x-search/>
             </div>
@@ -24,6 +24,9 @@
                                 <th class="bg-slate-300 rounded-tl-xl">#</th>
                                 <th class="bg-slate-300">Nama lengkap</th>
                                 <th class="bg-slate-300">Shift</th>
+                                @if(auth()->user()->id == 175)
+                                <th class="bg-slate-300">Penempatan</th>
+                                @endif
                                 <th class="bg-slate-300 ">alasan izin</th>
                                 <th class="bg-slate-300">status</th>
                                 <th class="bg-slate-300 rounded-tr-xl">action</th>
@@ -38,6 +41,18 @@
                                     <td>{{ $no++ }}</td>
                                     <td>{{ $i->user->nama_lengkap }}</td>
                                     <td>{{ $i->shift->shift_name }}</td>
+                                    @if(auth()->user()->id == 175)
+                                    <td>
+                                        @php
+                                            $words = explode(' ', $i->kerjasama->client->name);
+                                            $initials = '';
+                                            foreach ($words as $word) {
+                                                $initials .= substr($word, 0, 1);
+                                            }
+                                        @endphp
+                                        {{ $initials }}
+                                    </td>
+                                    @endif
                                     <td class="text-start line-clamp-2">{{ $i->alasan_izin }}</td>
                                     <td>
                                         @if ($i->approve_status == 'process')

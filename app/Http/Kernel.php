@@ -58,6 +58,7 @@ class Kernel extends HttpKernel
         'direksi' => \App\Http\Middleware\DireksiMiddleware::class,
         'mitra' => \App\Http\Middleware\MitraMiddleware::class,
         'spv' => \App\Http\Middleware\SuperPusarMiddleware::class,
+        'spv-w' => \App\Http\Middleware\SPVWMiddleware::class,
         'leader' => \App\Http\Middleware\LeaderMiddleware::class,
         'apdt' => \App\Http\Middleware\UpdateAbsenTelat::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,

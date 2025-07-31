@@ -21,7 +21,8 @@ use Creagia\LaravelSignPad\SignaturePosition;
 class User extends Authenticatable implements CanBeSigned
 {
     use HasApiTokens, HasFactory, Notifiable, RequiresSignature;
-
+    protected $connection = 'mysql';
+    protected $table = 'users';
     /**
      * The attributes that are mass assignable.
      *
@@ -36,7 +37,7 @@ class User extends Authenticatable implements CanBeSigned
         'image',
         'devisi_id',
         'jabatan_id',
-        'status_id'.
+        'status_id',
         'temp_ban',
         'nik',
         'no_hp'
@@ -126,6 +127,10 @@ class User extends Authenticatable implements CanBeSigned
     public function Status()
     {
         return $this->belongsTo(Status::class);
+    }
+     public function SlipGaji()
+    {
+        return $this->setConnection("mysql2")->hasMany(SlipGaji::class);
     }
     
 }

@@ -5,22 +5,22 @@
 		</div>
         <span class="flex justify-between items-center w-full">
     		@if (Auth::user()->role_id == 2)
-    			<div class="ml-5 w-full">
+    			<div class="ml-5" style="width: 75%">
     				<form action="{{ route('export.laporans') }}" method="get" class="w-full mb-5">
     					<div class="flex items-center justify-start gap-2 w-full">
     						<div class="flex items-center gap-2 " style="width: 90%">
     							<div style="width: 50%;" class="flex flex-col gap-2">
     								<label for="client_id" class="label">Pilih Mitra & Ruangan (opsional)</label>
     								<span class="flex flex-col gap-2" style="width: 100%;">
-        								<select name="client_id" id="client_id" style="" class="select select-bordered">
+        								<select name="client_id" id="client_id" style="" class="select select-sm text-xs select-bordered">
         									<option selected disabled>~Pilih Mitra~</option>
         									@forelse ($mitra as $i)
-        										<option value="{{ $i->client_id }}">{{ $i->client->name }}</option>
+        										<option value="{{ $i->id }}">{{ $i->client->name }}</option>
         									@empty
         										<option>~Kosong~</option>
         									@endforelse
         								</select>
-        								<select name="ruangan_id" style="" class="select select-bordered">
+        								<select name="ruangan_id" style="" class="select select-sm text-xs select-bordered">
         								    <option selected disabled>~Pilih Ruangan (opsional)~</option>
         								    @forelse($ruangan as $ru)
         								        <option value="{{ $ru->id }}">{{ $ru->nama_ruangan }}</option>
@@ -34,23 +34,23 @@
     							    <label for="str1" class="label">Tanggal</label>
         							<div class="flex flex-col gap-2" style="">
         								<input type="date" name="str1" id="str1" placeholder="Tanggal Mulai"
-        									class="text-md input input-bordered">
+        									class="text-md input input-sm input-bordered">
         								<input type="date" name="end1" id="end1"
-        									class="text-md input input-bordered">
+        									class="text-md input input-sm input-bordered">
         							</div>
     							</span>
     							<div style="width: 20%;" class="">
     							    <label for="nilai" class="label">Nilai</label>
     							    <div class="form-control bg-slate-50 rounded-lg">
-                                      <label class="label cursor-pointer">
+                                      <label class="label cursor-pointer" style="padding-top: 2px; padding-bottom: 2px;">
                                         <span class="label-text">Baik</span> 
                                         <input type="checkbox" name="nilai[]" value="baik" class="checkbox" />
                                       </label>
-                                      <label class="label cursor-pointer">
+                                      <label class="label cursor-pointer" style="padding-top: 2px; padding-bottom: 2px;">
                                         <span class="label-text">Cukup</span> 
                                         <input type="checkbox" name="nilai[]" value="cukup" class="checkbox" />
                                       </label>
-                                      <label class="label cursor-pointer">
+                                      <label class="label cursor-pointer" style="padding-top: 2px; padding-bottom: 2px;">
                                         <span class="label-text">Kurang</span> 
                                         <input type="checkbox" name="nilai[]" value="kurang" class="checkbox" />
                                       </label>
@@ -67,19 +67,38 @@
     		@endif
     
     		<div class="flex justify-end items-center">
-    			<div class="input flex w-fit mx-5 items-center justify-end mb-5 input-bordered text-sm">
-    				<i class="ri-search-2-line"></i>
-    				<input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..." required>
-    			</div>
+    			<x-search/>
     		</div>
         </span>
+        
+        @if(Auth::user()->role_id == 2)
+        <div class="bg-slate-50 rounded-md w-fit p-2 mx-10 mb-5 font-semibold">
+            <p>*Hapus Foto Laporan</p>
+            <form action="{{ route('laporan.hapusFotoLaporan') }}" method="post">
+                @csrf
+                <div class="flex gap-2 items-end">
+                    <span>
+                        <label class="label">Mulai: </label>
+                        <input type="date" min="{{ $min }}" max="{{ $max }}" name="mulai" class="input input-bordered input-sm" />
+                    </span>
+                    <span>
+                        <label class="label">Selesai: </label>
+                        <input type="date" min="{{ $min }}" max="{{ $max }}" name="selesai" class="input input-bordered input-sm" />
+                    </span>
+                    <span>
+                        <button type="submit" class="btn btn-sm btn-warning">Hapus</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+        @endif
 
 		<div class="overflow-x-auto mx-5">
 			<table class="table table-zebra table-xs sm:table-md bg-slate-50 w-full" id="searchTable">
 				<thead>
 					<tr>
 						<th class="bg-slate-300 rounded-tl-2xl">#</th>
-						<th class="bg-slate-300 text-center" colspan="5">Foto Progres</th>
+						<th class="bg-slate-300 text-center">Foto Progres</th>
 
 						@if (Auth::user()->role_id == 2 ||
 								Auth::user()->divisi->jabatan->code_jabatan == 'LEADER' ||
@@ -107,53 +126,42 @@
 					@forelse ($laporan as $i)
 						<tr>
 							<td>{{ $no++ }}</td>
-							@if ($i->image1 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image1)))
-								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image1) }}" alt=""
-										srcset="{{ asset('storage/images/' . $i->image1) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
-								</td>
-							@else
-								<td class="" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><x-no-img /></td>
-							@endif
-							@if ($i->image2 != 'no-image.jpg' && $i->image2 != null && file_exists(public_path('storage/images/' . $i->image2)))
-								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image2) }}" alt=""
-										srcset="{{ asset('storage/images/' . $i->image2) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
-								</td>
-							@else
-								<td class="" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><x-no-img /></td>
-							@endif
-							@if ($i->image3 != 'no-image.jpg' && $i->image3 != null && file_exists(public_path('storage/images/' . $i->image3)))
-								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image3) }}" alt=""
-										srcset="{{ asset('storage/images/' . $i->image3) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
-								</td>
-							@else
-								<td class="" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><x-no-img /></td>
-							@endif
-							@if ($i->image4 != 'no-image.jpg' && $i->image4 != null && file_exists(public_path('storage/images/' . $i->image4)))
-								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image4) }}" alt=""
-										srcset="{{ asset('storage/images/' . $i->image4) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
-								</td>
-							@else
-								<td class="" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><x-no-img /></td>
-							@endif
-							@if ($i->image5 != 'no-image.jpg' && $i->image5 != null && file_exists(public_path('storage/images/' . $i->image5)))
-								<td class="scale-75" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><img src="{{ asset('storage/images/' . $i->image5) }}" alt=""
-										srcset="{{ asset('storage/images/' . $i->image5) }}" width="100px" class="lazy lazy-image" loading="lazy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
-								</td>
-							@else
-								<td class="" style="position: relative; width: 100px; height: calc(133.33px); overflow: hidden;"><x-no-img /></td>
-							@endif
-							
-							<!--@if ($i->image2 == null)-->
-							<!--	<td><x-no-img /></td>-->
-							<!--@else-->
-							<!--	<td class="scale-75"><img src="{{ asset('storage/images/' . $i->image2) }}" alt=""-->
-							<!--			srcset="{{ asset('storage/images/' . $i->image2) }}" width="100px" class="lazy lazy-image" loading="lazy">-->
-							<!--	</td>-->
-							<!--@endif-->
-							
-							<!--<td class="scale-75"><img src="{{ asset('storage/images/' . $i->image3) }}" alt=""-->
-							<!--		srcset="{{ asset('storage/images/' . $i->image3) }}" width="100px" class="lazy lazy-image" loading="lazy">-->
-							<!--</td>-->
+							<td class="scale-75 flex flex-col gap-2" style="overflow: hidden;">
+							    <div class="flex justify-center items-center gap-2">
+        							@if ($i->image1 && $i->image1 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image1)))
+        								    <img src="{{ asset('storage/images/' . $i->image1) }}" alt=""
+        										srcset="{{ asset('storage/images/' . $i->image1) }}" width="100px" class="lazy lazy-image" loading="lazy" style="min-width: 100px; max-width: 100px; height: 100%; object-fit: contain;">
+        							@else
+        								<x-no-img />
+        							@endif
+        							@if ($i->image2 && $i->image2 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image2)))
+        								    <img src="{{ asset('storage/images/' . $i->image2) }}" alt=""
+        										srcset="{{ asset('storage/images/' . $i->image2) }}" width="100px" class="lazy lazy-image" loading="lazy" style="min-width: 100px; max-width: 100px; height: 100%; object-fit: contain;">
+        							@else
+        								<x-no-img />
+        							@endif
+							    </div>
+							    <div class="flex justify-center items-center gap-2">
+        							@if ($i->image3 && $i->image3 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image3)))
+        								    <img src="{{ asset('storage/images/' . $i->image3) }}" alt=""
+        										srcset="{{ asset('storage/images/' . $i->image3) }}" width="100px" class="lazy lazy-image" loading="lazy" style="min-width: 100px; max-width: 100px; height: 100%; object-fit: contain;">
+        							@else
+        								<x-no-img />
+        							@endif
+        							@if ($i->image4 && $i->image4 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image4)))
+        								    <img src="{{ asset('storage/images/' . $i->image4) }}" alt=""
+        										srcset="{{ asset('storage/images/' . $i->image4) }}" width="100px" class="lazy lazy-image" loading="lazy" style="min-width: 100px; max-width: 100px; height: 100%; object-fit: contain;">
+        							@else
+        								<x-no-img />
+        							@endif
+        							@if ($i->image5 && $i->image5 != 'no-image.jpg' && file_exists(public_path('storage/images/' . $i->image5)))
+        								    <img src="{{ asset('storage/images/' . $i->image5) }}" alt=""
+        										srcset="{{ asset('storage/images/' . $i->image5) }}" width="100px" class="lazy lazy-image" loading="lazy" style="min-width: 100px; max-width: 100px; height: 100%; object-fit: contain;">
+        							@else
+        								<x-no-img />
+        							@endif
+							    </div>
+							</td>
 
 							@if (Auth::user()->role_id == 2 ||
 									Auth::user()->divisi->jabatan->code_jabatan == 'LEADER' ||
@@ -189,7 +197,7 @@
 							    @endif
 							</td>
 							<td>{{ $i->keterangan }}</td>
-							<td>{{ $i->created_at->format('Y-m-d') }}</td>
+							<td style="width: 125px;">{{ $i->created_at->format('Y-m-d') }}</td>
 
 							@if (Auth::user()->role_id == 2)
 								<td>

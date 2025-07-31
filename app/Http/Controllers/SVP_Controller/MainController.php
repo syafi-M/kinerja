@@ -7,14 +7,37 @@ use App\Models\Absensi;
 use App\Models\Laporan;
 use App\Models\Lembur;
 use App\Models\User;
+use App\Models\Divisi;
+use App\Models\Kerjasama;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class MainController extends Controller
 {
-    public function indexAbsen()
+    public function indexAbsen(Request $request)
     {
-        $absen = Absensi::paginate(15);
-        return view('spv_view/absen/index', compact('absenn'));
+        $filter = $request->search;
+        $filterMitra = $request->mitra;
+        $filter2 = Carbon::parse($filter);
+        
+        $mitra = Kerjasama::with('client')->get();
+        
+        $tanggalIki = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
+        
+        $kerjasama = Auth::user()->kerjasama_id;
+        $absenQue = Absensi::latest();
+        
+        if ($filter) {
+            $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month);
+            $absen = $absenQ->paginate(50)->appends($request->except('page'));;
+        }else{
+            $mon = Carbon::now()->month;
+            $absen = Absensi::orderBy('tanggal_absen', 'desc')->orderBy('kerjasama_id', 'desc')->whereMonth('tanggal_absen', $mon)->latest()->paginate(31);
+        }
+        
+        return view('spv_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter'));
     }
 
     public function indexLaporan()

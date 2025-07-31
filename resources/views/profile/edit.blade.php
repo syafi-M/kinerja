@@ -13,7 +13,7 @@
 						<div>
 							<x-input-label for="nama_lengkap" :value="__('Nama Lengkap')" />
 							<x-text-input id="nama_lengkap" class="block mt-1 w-full" type="text" name="nama_lengkap"
-								value="{{ $dataUser->nama_lengkap }}" required autofocus autocomplete="nama_lengkap" />
+								value="{{ $dataUser->nama_lengkap }}" required autofocus readonly autocomplete="nama_lengkap" />
 							<x-input-error :messages="$errors->get('nama_lengkap')" class="mt-2" />
 						</div>
 						<!-- Email Address -->
@@ -40,7 +40,7 @@
 						
 						{{-- foto Profile --}}
 						<div class="md:mt-4 p-1">
-                                <x-input-label for="foto Profil" :value="__('foto Profil')" />
+                                <x-input-label for="foto Profil" :value="__('Foto Profil (Rekom rasio 1:1)')" />
                                 <div class="preview hidden w-full">
                                     <span class="flex justify-center items-center">
                                         <label for="img" class="p-1">
