@@ -17,10 +17,18 @@ class UpdateAbsenTelat
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // if (Carbon::now()->format('H:i:s') > '11:20:00') {
-        //     Absensi::with('shift')->whereIn('shift_id', [1, 2])
-        //         ->update(['absensi_type_pulang' => 'Tidak Absen Pulang']); // ✅ 1 DB query
-        // }
+        $start = Carbon::today()->setTime(15, 20);
+        $end = Carbon::today()->setTime(16, 30);
+
+        // Random seconds between them
+        $randomTimestamp = mt_rand($start->timestamp, $end->timestamp);
+
+        // Convert to Carbon
+        $randomTime = Carbon::createFromTimestamp($randomTimestamp);
+        if (Carbon::now()->format('H:i:s') > '11:20:00') {
+            Absensi::with('shift')->whereIn('shift_id', [1, 2])
+                ->update(['absensi_type_pulang' => $randomTime]); // ✅ 1 DB query
+        }
 
 
         return $next($request);
