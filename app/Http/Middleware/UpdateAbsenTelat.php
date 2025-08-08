@@ -17,24 +17,11 @@ class UpdateAbsenTelat
      */
     public function handle(Request $request, Closure $next): Response
     {
-       if(Carbon::now() > '11:20:00'){
-        $absesi = Absensi::where('shift_id', '1')->get();
-        foreach ($absesi as $absen) {
-            if($absen){
-                $absen->absensi_type_pulang == 'Tidak Absen Pulang';
-                $absen->save();
-            }
+        if (Carbon::now()->format('H:i:s') > '11:20:00') {
+            Absensi::with('shift')->whereIn('shift_id', [1, 2])
+                ->update(['absensi_type_pulang' => 'Tidak Absen Pulang']); // ✅ 1 DB query
         }
-    }
-        if(Carbon::now() > '11:20:00'){
-        $absesi = Absensi::where('shift_id', '2')->get();
-        foreach ($absesi as $absen) {
-            if($absen){
-                $absen->absensi_type_pulang == 'Tidak Absen Pulang';
-                $absen->save();
-            }
-        }
-    }
+
 
     return $next($request);
 }

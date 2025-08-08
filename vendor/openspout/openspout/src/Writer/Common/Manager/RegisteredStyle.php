@@ -11,7 +11,7 @@ use OpenSpout\Common\Entity\Style\Style;
  *
  * @internal
  */
-final class RegisteredStyle
+final readonly class RegisteredStyle
 {
     private Style $style;
 

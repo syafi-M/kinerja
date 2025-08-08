@@ -7,7 +7,7 @@ namespace OpenSpout\Reader\XLSX\Manager\SharedStringsCaching;
 /**
  * @internal
  */
-final class MemoryLimit
+final readonly class MemoryLimit
 {
     private string $memoryLimit;
 

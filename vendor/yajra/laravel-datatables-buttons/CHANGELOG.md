@@ -1,5 +1,13 @@
 # Laravel DataTables Buttons Plugin CHANGELOG.
 
+## v10.0.9 - 2024-02-27
+
+- fix: Update composer.json to use Larastan org #184
+
+## v10.0.8 - 2023-11-15
+
+- fix: unnecessary exception thrown #183
+
 ## v10.0.7 - 2023-07-31
 
 - fix: use callback function if exportRender method is set #177

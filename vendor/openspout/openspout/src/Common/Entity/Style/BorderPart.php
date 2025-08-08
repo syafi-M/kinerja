@@ -8,7 +8,7 @@ use OpenSpout\Writer\Exception\Border\InvalidNameException;
 use OpenSpout\Writer\Exception\Border\InvalidStyleException;
 use OpenSpout\Writer\Exception\Border\InvalidWidthException;
 
-final class BorderPart
+final readonly class BorderPart
 {
     public const allowedStyles = [
         Border::STYLE_NONE,

@@ -9,7 +9,7 @@ use OpenSpout\Common\Entity\Style\Style;
 /**
  * @internal
  */
-final class PossiblyUpdatedStyle
+final readonly class PossiblyUpdatedStyle
 {
     private Style $style;
     private bool $isUpdated;

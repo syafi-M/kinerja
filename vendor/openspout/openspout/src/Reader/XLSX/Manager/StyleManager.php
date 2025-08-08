@@ -11,25 +11,26 @@ class StyleManager implements StyleManagerInterface
     /**
      * Nodes used to find relevant information in the styles XML file.
      */
-    public const XML_NODE_NUM_FMTS = 'numFmts';
-    public const XML_NODE_NUM_FMT = 'numFmt';
-    public const XML_NODE_CELL_XFS = 'cellXfs';
-    public const XML_NODE_XF = 'xf';
+    final public const XML_NODE_NUM_FMTS = 'numFmts';
+    final public const XML_NODE_NUM_FMT = 'numFmt';
+    final public const XML_NODE_CELL_XFS = 'cellXfs';
+    final public const XML_NODE_XF = 'xf';
 
     /**
      * Attributes used to find relevant information in the styles XML file.
      */
-    public const XML_ATTRIBUTE_NUM_FMT_ID = 'numFmtId';
-    public const XML_ATTRIBUTE_FORMAT_CODE = 'formatCode';
-    public const XML_ATTRIBUTE_APPLY_NUMBER_FORMAT = 'applyNumberFormat';
-    public const XML_ATTRIBUTE_COUNT = 'count';
+    final public const XML_ATTRIBUTE_NUM_FMT_ID = 'numFmtId';
+    final public const XML_ATTRIBUTE_FORMAT_CODE = 'formatCode';
+    final public const XML_ATTRIBUTE_APPLY_NUMBER_FORMAT = 'applyNumberFormat';
+    final public const XML_ATTRIBUTE_COUNT = 'count';
 
     /**
      * By convention, default style ID is 0.
      */
-    public const DEFAULT_STYLE_ID = 0;
+    final public const DEFAULT_STYLE_ID = 0;
 
-    public const NUMBER_FORMAT_GENERAL = 'General';
+    final public const NUMBER_FORMAT_GENERAL = 'General';
+    final public const NUMBER_FORMAT_SCIENTIFIC = '0.00E+00';
 
     /**
      * Mapping between built-in numFmtId and the associated format - for dates only.
@@ -52,10 +53,10 @@ class StyleManager implements StyleManagerInterface
     ];
 
     /** @var string Path of the XLSX file being read */
-    private string $filePath;
+    private readonly string $filePath;
 
     /** @var null|string Path of the styles XML file */
-    private ?string $stylesXMLFilePath;
+    private readonly ?string $stylesXMLFilePath;
 
     /** @var array<int, string> Array containing a mapping NUM_FMT_ID => FORMAT_CODE */
     private array $customNumberFormats;
@@ -67,8 +68,7 @@ class StyleManager implements StyleManagerInterface
     private array $numFmtIdToIsDateFormatCache = [];
 
     /**
-     * @param string  $filePath          Path of the XLSX file being read
-     * @param ?string $stylesXMLFilePath
+     * @param string $filePath Path of the XLSX file being read
      */
     public function __construct(string $filePath, ?string $stylesXMLFilePath)
     {
@@ -98,16 +98,30 @@ class StyleManager implements StyleManagerInterface
 
     public function getNumberFormatCode(int $styleId): string
     {
+        if (null === $this->stylesXMLFilePath) {
+            return '';
+        }
+
         $stylesAttributes = $this->getStylesAttributes();
+
+        if (!isset($stylesAttributes[$styleId])) {
+            return '';
+        }
+
         $styleAttributes = $stylesAttributes[$styleId];
         $numFmtId = $styleAttributes[self::XML_ATTRIBUTE_NUM_FMT_ID];
+
+        if (null === $numFmtId) {
+            return '';
+        }
+
         \assert(\is_int($numFmtId));
 
         if ($this->isNumFmtIdBuiltInDateFormat($numFmtId)) {
             $numberFormatCode = self::builtinNumFmtIdToNumFormatMapping[$numFmtId];
         } else {
             $customNumberFormats = $this->getCustomNumberFormats();
-            $numberFormatCode = $customNumberFormats[$numFmtId];
+            $numberFormatCode = $customNumberFormats[$numFmtId] ?? '';
         }
 
         return $numberFormatCode;
@@ -166,7 +180,7 @@ class StyleManager implements StyleManagerInterface
      * For simplicity, the styles attributes are kept in memory. This is possible thanks
      * to the reuse of formats. So 1 million cells should not use 1 million formats.
      *
-     * @param \OpenSpout\Reader\Wrapper\XMLReader $xmlReader XML Reader positioned on the "numFmts" node
+     * @param XMLReader $xmlReader XML Reader positioned on the "numFmts" node
      */
     private function extractNumberFormats(XMLReader $xmlReader): void
     {
@@ -188,7 +202,7 @@ class StyleManager implements StyleManagerInterface
      * For simplicity, the styles attributes are kept in memory. This is possible thanks
      * to the reuse of styles. So 1 million cells should not use 1 million styles.
      *
-     * @param \OpenSpout\Reader\Wrapper\XMLReader $xmlReader XML Reader positioned on the "cellXfs" node
+     * @param XMLReader $xmlReader XML Reader positioned on the "cellXfs" node
      */
     private function extractStyleAttributes(XMLReader $xmlReader): void
     {
@@ -262,7 +276,7 @@ class StyleManager implements StyleManagerInterface
         $customNumberFormats = $this->getCustomNumberFormats();
 
         // Using isset here because it is way faster than array_key_exists...
-        return (isset($customNumberFormats[$numFmtId])) ? $customNumberFormats[$numFmtId] : null;
+        return $customNumberFormats[$numFmtId] ?? null;
     }
 
     /**
@@ -291,6 +305,11 @@ class StyleManager implements StyleManagerInterface
      */
     private function isFormatCodeMatchingDateFormatPattern(string $formatCode): bool
     {
+        // Scientific notation format containts "E", and will therefore be incorrectly considered as a date
+        if (self::NUMBER_FORMAT_SCIENTIFIC === $formatCode) {
+            return false;
+        }
+
         // Remove extra formatting (what's between [ ], the brackets should not be preceded by a "\")
         $pattern = '((?<!\\\)\[.+?(?<!\\\)\])';
         $formatCode = preg_replace($pattern, '', $formatCode);

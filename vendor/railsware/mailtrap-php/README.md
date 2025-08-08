@@ -1,11 +1,42 @@
-Official Mailtrap PHP client
-===============
+# Mailtrap PHP client - Official
+
 ![GitHub Actions](https://github.com/railsware/mailtrap-php/actions/workflows/ci-phpunit.yml/badge.svg)
 ![GitHub Actions](https://github.com/railsware/mailtrap-php/actions/workflows/ci-psalm.yaml/badge.svg)
 
 [![PHP version support](https://img.shields.io/packagist/dependency-v/railsware/mailtrap-php/php?style=flat)](https://packagist.org/packages/railsware/mailtrap-php)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/railsware/mailtrap-php.svg?style=flat)](https://packagist.org/packages/railsware/mailtrap-php)
 [![Total Downloads](https://img.shields.io/packagist/dt/railsware/mailtrap-php.svg?style=flat)](https://packagist.org/packages/railsware/mailtrap-php)
+
+## Prerequisites
+
+To get the most of this official Mailtrap.io PHP SDK:
+- [Create a Mailtrap account](https://mailtrap.io/signup)
+- [Verify your domain](https://mailtrap.io/sending/domains)
+
+## Supported functionality
+
+It supports Symphony and Laravel integrations. 
+
+Currently with this SDK you can:
+- Email API/SMTP
+  - Send an email (Transactional and Bulk streams)
+  - Send an email with a Template
+  - Send a batch of emails (Transactional and Bulk streams)
+- Email Sandbox
+  - Send an email
+  - Send an email with a template
+  - Send a batch of emails
+  - Message management
+  - Inbox management
+  - Project management
+- Contact management
+  - Fields CRUD
+  - Contacts CRUD
+  - Lists CRUD
+  - Import
+- General
+  - Templates CRUD
+  - Suppressions management (find and delete)
 
 
 ## Installation
@@ -33,22 +64,21 @@ Here's how to send a message using the SDK:
 ```php
 <?php
 
-use Mailtrap\Config;
-use Mailtrap\EmailHeader\CategoryHeader;
-use Mailtrap\EmailHeader\CustomVariableHeader;
 use Mailtrap\Helper\ResponseHelper;
 use Mailtrap\MailtrapClient;
+use Mailtrap\Mime\MailtrapEmail;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Header\UnstructuredHeader;
 
 require __DIR__ . '/vendor/autoload.php';
 
-// your API token from here https://mailtrap.io/api-tokens
-$apiKey = getenv('MAILTRAP_API_KEY');
-$mailtrap = new MailtrapClient(new Config($apiKey));
+// Mailtrap SENDING client (real) for transactional emails
+$mailtrap = MailtrapClient::initSendingEmails(
+    apiKey: getenv('MAILTRAP_API_KEY') # your API token from here https://mailtrap.io/api-tokens
+);
 
-$email = (new Email())
+$email = (new MailtrapEmail())
     ->from(new Address('example@your-domain-here.com', 'Mailtrap Test'))
     ->replyTo(new Address('reply@your-domain-here.com'))
     ->to(new Address('email@example.com', 'Jon'))
@@ -57,62 +87,77 @@ $email = (new Email())
     ->addCc('staging@example.com')
     ->bcc('mailtrapdev@example.com')
     ->subject('Best practices of building HTML emails')
-    ->text('Hey! Learn the best practices of building HTML emails and play with ready-to-go templates. Mailtrap’s Guide on How to Build HTML Email is live on our blog')
+    ->text('Hey! Learn the best practices of building HTML emails and play with ready-to-go templates. Mailtrap's Guide on How to Build HTML Email is live on our blog')
     ->html(
         '<html>
         <body>
         <p><br>Hey</br>
         Learn the best practices of building HTML emails and play with ready-to-go templates.</p>
-        <p><a href="https://mailtrap.io/blog/build-html-email/">Mailtrap’s Guide on How to Build HTML Email</a> is live on our blog</p>
+        <p><a href="https://mailtrap.io/blog/build-html-email/">Mailtrap's Guide on How to Build HTML Email</a> is live on our blog</p>
         <img src="cid:logo">
         </body>
     </html>'
     )
     ->embed(fopen('https://mailtrap.io/wp-content/uploads/2021/04/mailtrap-new-logo.svg', 'r'), 'logo', 'image/svg+xml')
-    ;
-    
-    // Headers
-    $email->getHeaders()
+    ->category('Integration Test')
+    ->customVariables([
+        'user_id' => '45982',
+        'batch_id' => 'PSJ-12'
+    ])
+;
+
+// Custom email headers (optional)
+$email->getHeaders()
     ->addTextHeader('X-Message-Source', 'domain.com')
     ->add(new UnstructuredHeader('X-Mailer', 'Mailtrap PHP Client')) // the same as addTextHeader
-    ;
-    
-    // Custom Variables
-    $email->getHeaders()
-    ->add(new CustomVariableHeader('user_id', '45982'))
-    ->add(new CustomVariableHeader('batch_id', 'PSJ-12'))
-    ;
-    
-    // Category (should be only one)
-    $email->getHeaders()
-    ->add(new CategoryHeader('Integration Test'))
-    ;
-    
+;
+
 try {
-    $response = $mailtrap->sending()->emails()->send($email); // Email sending API (real)
-    
+    $response = $mailtrap->send($email);
+
     var_dump(ResponseHelper::toArray($response)); // body (array)
 } catch (Exception $e) {
     echo 'Caught exception: ',  $e->getMessage(), "\n";
 }
 
-// OR send email to the Mailtrap SANDBOX
 
+// OR -> Mailtrap BULK SENDING client (real)
 try {
-    $response = $mailtrap->sandbox()->emails()->send($email, 1000001); // Required second param -> inbox_id
+    $mailtrapBulkSending = MailtrapClient::initSendingEmails(
+        apiKey: getenv('MAILTRAP_API_KEY'), # your API token from here https://mailtrap.io/api-tokens
+        isBulk: true # Bulk sending (@see https://help.mailtrap.io/article/113-sending-streams)
+    );
+
+    $response = $mailtrapBulkSending->send($email);
 
     var_dump(ResponseHelper::toArray($response)); // body (array)
 } catch (Exception $e) {
     echo 'Caught exception: ',  $e->getMessage(), "\n";
 }
+
+// OR -> Mailtrap Testing client (sandbox)
+try {
+    $mailtrapTesting = MailtrapClient::initSendingEmails(
+        apiKey: getenv('MAILTRAP_API_KEY'), # your API token from here https://mailtrap.io/api-tokens
+        isSandbox: true, # Sandbox sending (@see https://help.mailtrap.io/article/109-getting-started-with-mailtrap-email-testing)
+        inboxId: getenv('MAILTRAP_INBOX_ID') # required param for sandbox sending
+    );
+
+    $response = $mailtrapTesting->send($email);
+
+    var_dump(ResponseHelper::toArray($response)); // body (array)
+} catch (Exception $e) {
+    echo 'Caught exception: ',  $e->getMessage(), "\n";
+}
+
 ```
 
 ### All usage examples
 
 You can find more examples [here](examples).
 * [General examples](examples/general)
+* [Testing examples](examples/testing)
 * [Sending examples](examples/sending)
-* [Sandbox examples](examples/sandbox)
 
 
 ## Framework integration

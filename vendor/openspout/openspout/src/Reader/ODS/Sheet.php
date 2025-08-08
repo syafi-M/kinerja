@@ -9,7 +9,7 @@ use OpenSpout\Reader\SheetWithVisibilityInterface;
 /**
  * @implements SheetWithVisibilityInterface<RowIterator>
  */
-final class Sheet implements SheetWithVisibilityInterface
+final readonly class Sheet implements SheetWithVisibilityInterface
 {
     /** @var RowIterator To iterate over sheet's rows */
     private RowIterator $rowIterator;

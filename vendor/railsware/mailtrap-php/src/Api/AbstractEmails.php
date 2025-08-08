@@ -13,18 +13,24 @@ use Mailtrap\EmailHeader\Template\TemplateVariableHeader;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Header\Headers;
+use Symfony\Component\Mime\Header\MailboxListHeader;
 
 /**
  * Class AbstractEmails
  */
-abstract class AbstractEmails extends AbstractApi
+abstract class AbstractEmails extends AbstractApi implements EmailsSendApiInterface
 {
     protected function getPayload(Email $email): array
     {
-        $payload = [
-            'from' => $this->getStringifierAddress($this->getSender($email->getHeaders())),
-            'to' => array_map([$this, 'getStringifierAddress'], $this->getRecipients($email->getHeaders(), $email)),
-        ];
+        $payload = [];
+
+        if (null !== $this->getSender($email->getHeaders())) {
+            $payload['from'] = $this->getStringifierAddress($this->getSender($email->getHeaders()));
+        }
+
+        if (!empty($this->getRecipients($email->getHeaders(), $email))) {
+            $payload['to'] = array_map([$this, 'getStringifierAddress'], $this->getRecipients($email->getHeaders(), $email));
+        }
 
         if (null !== $email->getSubject()) {
             $payload['subject'] = $email->getSubject();
@@ -58,10 +64,10 @@ abstract class AbstractEmails extends AbstractApi
 
             switch(true) {
                 case $header instanceof CustomVariableHeader:
-                    $payload[CustomVariableHeader::VAR_NAME][$header->getName()] = $header->getBodyAsString();
+                    $payload[CustomVariableHeader::VAR_NAME][$header->getNameWithoutPrefix()] = $header->getValue();
                     break;
                 case $header instanceof TemplateVariableHeader:
-                    $payload[TemplateVariableHeader::VAR_NAME][$header->getName()] = $header->getBodyAsString();
+                    $payload[TemplateVariableHeader::VAR_NAME][$header->getNameWithoutPrefix()] = $header->getValue();
                     break;
                 case $header instanceof CategoryHeader:
                     if (!empty($payload[CategoryHeader::VAR_NAME])) {
@@ -70,7 +76,7 @@ abstract class AbstractEmails extends AbstractApi
                         );
                     }
 
-                    $payload[CategoryHeader::VAR_NAME] = $header->getBodyAsString();
+                    $payload[CategoryHeader::VAR_NAME] = $header->getValue();
                     break;
                 case $header instanceof TemplateUuidHeader:
                     if (!empty($payload[TemplateUuidHeader::VAR_NAME])) {
@@ -79,7 +85,7 @@ abstract class AbstractEmails extends AbstractApi
                         );
                     }
 
-                    $payload[TemplateUuidHeader::VAR_NAME] = $header->getBodyAsString();
+                    $payload[TemplateUuidHeader::VAR_NAME] = $header->getValue();
                     break;
                 default:
                     $payload['headers'][$header->getName()] = $header->getBodyAsString();
@@ -87,6 +93,39 @@ abstract class AbstractEmails extends AbstractApi
         }
 
         return $payload;
+    }
+
+    protected function getBatchBasePayload(Email $email): array
+    {
+        $payload = $this->getPayload($email);
+        if (!empty($payload['to']) || !empty($payload['cc']) || !empty($payload['bcc'])) {
+            throw new LogicException(
+                "Batch base email does not support 'to', 'cc', or 'bcc' fields. Please use individual batch email requests to specify recipients."
+            );
+        }
+
+        if (!empty($this->getFirstReplyTo($email->getHeaders()))) {
+            $payload['reply_to'] = $this->getStringifierAddress(
+                $this->getFirstReplyTo($email->getHeaders())
+            );
+        }
+
+        return $payload;
+    }
+
+    protected function getBatchBody(array $recipientEmails, ?Email $baseEmail = null): array
+    {
+        $body = [];
+        if ($baseEmail !== null) {
+            $body['base'] = $this->getBatchBasePayload($baseEmail);
+        }
+
+        $body['requests'] = array_map(
+            fn(Email $email) => $this->getPayload($email),
+            $recipientEmails
+        );
+
+        return $body;
     }
 
     private function getAttachments(Email $email): array
@@ -125,7 +164,7 @@ abstract class AbstractEmails extends AbstractApi
         return $res;
     }
 
-    private function getSender(Headers $headers): Address
+    private function getSender(Headers $headers): ?Address
     {
         if ($sender = $headers->get('Sender')) {
             return $sender->getAddress();
@@ -137,7 +176,7 @@ abstract class AbstractEmails extends AbstractApi
             return $from->getAddresses()[0];
         }
 
-        throw new LogicException('Unable to determine the sender of the message.');
+        return null;
     }
 
     /**
@@ -161,5 +200,24 @@ abstract class AbstractEmails extends AbstractApi
             $recipients,
             static fn (Address $address) => false === in_array($address, array_merge($email->getCc(), $email->getBcc()), true)
         );
+    }
+
+    /**
+     * Returns the first address from the 'Reply-To' header, if it exists.
+     *
+     * @param Headers $headers
+     *
+     * @return Address|null
+     */
+    private function getFirstReplyTo(Headers $headers): ?Address
+    {
+        /** @var MailboxListHeader|null $replyToHeader */
+        $replyToHeader = $headers->get('Reply-To');
+
+        if (empty($replyToHeader) || empty($replyToHeader->getAddresses())) {
+            return null;
+        }
+
+        return $replyToHeader->getAddresses()[0];
     }
 }

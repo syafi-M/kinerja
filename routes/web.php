@@ -98,19 +98,19 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::resource('checkpoint-user', CheckPointController::class);
     Route::get('editBukti-checkpoint-user', [CheckPointController::class, 'editBukti'])->name('editBukti-checkpoint-user');
     Route::post('uploadBukti-checkpoint-user', [CheckPointController::class, 'uploadBukti'])->name('uploadBukti-checkpoint-user');
-    
+
     Route::get('/riwayat-kerja/{id}', [RatingController::class, 'rateKerja'])->name('rate.kerja');
     Route::get('/getJadwal/{id}', [JadwalUserController::class, 'getJadwal'])->name('get-jadwal');
-    
+
     Route::get('/absensi-private', [AbsensiController::class, 'indexPrivate']);
     Route::post('/absensi-private-store', [AbsensiController::class, 'storePrivate']);
-    
+
     Route::put('/subuh/{id}', [AbsensiController::class, 'updateSubuh'])->name('updateSubuh');
     Route::put('/dhuhur/{id}', [AbsensiController::class, 'updateDzuhur'])->name('updateDzuhur');
     Route::put('/asar/{id}', [AbsensiController::class, 'updateAsar'])->name('updateAsar');
     Route::put('/magrib/{id}', [AbsensiController::class, 'updateMaghrib'])->name('updateMagrib');
     Route::put('/isya/{id}', [AbsensiController::class, 'updateIsya'])->name('updateIsya');
-    
+
     Route::get('/get-shifts/{cli}/{jab}', [AbsensiController::class, 'getShift'])->name('olehShift');
     // laporan Mitra
     Route::get('/laporanMitra', [LaporanController::class, 'indexLaporanMitra'])->name('laporanMitra.index');
@@ -119,12 +119,12 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('/laporanMitra/{id}', [LaporanController::class, 'editLaporanMitra'])->name('laporanMitra.edit');
     Route::put('/laporanMitra/{id}/update', [LaporanController::class, 'updateLaporanMitra'])->name('laporanMitra.update');
     Route::delete('/laporanMitra/{id}', [LaporanController::class, 'deleteLaporanMitra'])->name('laporanMitra.delete');
-    
+
     Route::get('/slip-gaji', [SlipGajiController::class, 'index'])->name('slip-gaji.index');
     Route::get('/slip-gaji/export', [SlipGajiController::class, 'exportWith'])->name('slip-gaji.export');
-    
+
     Route::get('/slip-gaji-karyawan', [SlipGajiController::class, 'leaderIndex'])->name('slip-karyawan');
-    
+
     Route::get('/form-kontrak/index', [ProfileController::class, 'indexKontrak'])->name('form-kontrak-index');
     Route::get('/form-kontrak/pengajuan', [ProfileController::class, 'requestKontrak'])->name('form-kontrak-request');
     Route::post('/form-kontrak/kirimPengajuan', [ProfileController::class, 'kirimRequest'])->name('form-kontrak-kirimPengajuan');
@@ -148,7 +148,7 @@ Route::middleware(['auth', 'direksi'])->group(function () {
     // Route::patch('/direksi-approve-cp/{id}', [AdminController::class, 'approveCheck'])->name('direksi.approveCP');
     // Route::patch('/direksi-denied-cp/{id}', [AdminController::class, 'deniedCheck'])->name('direksi.deniedCP');
     Route::get('/direksi-check-koordinat/{id}', [CheckPointController::class, "show"])->name('direksi-lihatMap');
-    
+
     Route::get('/direksi-kontrak/check-kontrak', [ProfileController::class, 'cekKontrak'])->name('direksi-cekKontrak');
     Route::put('/direksi-kontrak/acc-kontrak', [ProfileController::class, 'accKontrak'])->name('direksi-accKontrak');
 });
@@ -164,7 +164,7 @@ Route::middleware(['auth', 'mitra'])->group(function () {
     Route::get('/mitra-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('mitra-lihatMap');
     Route::get('/mitra-jadwal', [JadwalUserController::class, 'index'])->name('mitra_jadwal');
     Route::get('/mitra-user', [LeaderController::class, 'indexUser'])->name('mitra_user');
-    
+
     Route::get('/mitra-laporan-bulanan', [LaporanController::class, 'indexLaporanMitra'])->name('mitra-laporan-bulanan.index');
 });
 
@@ -186,32 +186,32 @@ Route::middleware(['auth', 'apdt'])->group(function () {
 
 // SPV W
 Route::middleware(['auth', 'spv-w', 'apdt'])->group(function () {
-   Route::view('spvView','leader_view/leaderView')->name('SPVWiew'); 
-   
-   Route::resource('/SPVW/spvw-rating', RatingController::class);
-   Route::get('/SPVW/spvw-user', [LeaderController::class, 'indexUser'])->name('spvw_user');
-   Route::get('/SPVW/spvw-absensi', [LeaderController::class, 'indexAbsen'])->name('spvw_absensi');
-   Route::get('/SPVW/spvw-laporan', [LeaderController::class, 'indexLaporan'])->name('spvw_laporan');
-   Route::get('/SPVW/spvw-lembur', [LeaderController::class, 'indexLembur'])->name('spvw_lembur');
-   
-   Route::resource('/SPVW/spvw-jadwal', JadwalUserController::class);
-   Route::post('/SPVW/jadwal-store', [JadwalUserController::class, 'storeJadwal'])->name("storeJadwalSPVW");
-   Route::get('/SPVW/spvw-jadwal-new', [JadwalUserController::class, 'processDate'])->name('store.processDate.SPVW');
-   Route::get('/SPVW/spvw-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('SPVW_jadwal_export');
-   
-   Route::get('/SPVW/spvw-absensi-izin', [IzinController::class, 'indexLead'])->name('spvw_izin');
-   Route::patch('/SPVW/spvw-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('spvw_acc');
-   Route::patch('/SPVW/spvw-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('spvw_denied');
-    
-   Route::resource('/spvw-checklist', ChecklistController::class);
-   Route::post('/spvw-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('spvw-checklist.ajx');
-   Route::resource('/absensi-karyawan-spvw', AbsensiController::class);
-    
-   Route::get('/spvw-absenSholat', [LeaderController::class, 'indexAbsenSholat'])->name('spvw-absenSholat');
-   Route::post('/spvw-absenSholat-store', [LeaderController::class, 'storeAbsenSholat'])->name('spvw-absenSholat-store');
-   Route::get('/spvw-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('spvw-slip');
-   
-   Route::resource('/spvw-monev', MonevController::class);
+    Route::view('spvView', 'leader_view/leaderView')->name('SPVWiew');
+
+    Route::resource('/SPVW/spvw-rating', RatingController::class);
+    Route::get('/SPVW/spvw-user', [LeaderController::class, 'indexUser'])->name('spvw_user');
+    Route::get('/SPVW/spvw-absensi', [LeaderController::class, 'indexAbsen'])->name('spvw_absensi');
+    Route::get('/SPVW/spvw-laporan', [LeaderController::class, 'indexLaporan'])->name('spvw_laporan');
+    Route::get('/SPVW/spvw-lembur', [LeaderController::class, 'indexLembur'])->name('spvw_lembur');
+
+    Route::resource('/SPVW/spvw-jadwal', JadwalUserController::class);
+    Route::post('/SPVW/jadwal-store', [JadwalUserController::class, 'storeJadwal'])->name("storeJadwalSPVW");
+    Route::get('/SPVW/spvw-jadwal-new', [JadwalUserController::class, 'processDate'])->name('store.processDate.SPVW');
+    Route::get('/SPVW/spvw-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('SPVW_jadwal_export');
+
+    Route::get('/SPVW/spvw-absensi-izin', [IzinController::class, 'indexLead'])->name('spvw_izin');
+    Route::patch('/SPVW/spvw-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('spvw_acc');
+    Route::patch('/SPVW/spvw-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('spvw_denied');
+
+    Route::resource('/spvw-checklist', ChecklistController::class);
+    Route::post('/spvw-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('spvw-checklist.ajx');
+    Route::resource('/absensi-karyawan-spvw', AbsensiController::class);
+
+    Route::get('/spvw-absenSholat', [LeaderController::class, 'indexAbsenSholat'])->name('spvw-absenSholat');
+    Route::post('/spvw-absenSholat-store', [LeaderController::class, 'storeAbsenSholat'])->name('spvw-absenSholat-store');
+    Route::get('/spvw-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('spvw-slip');
+
+    Route::resource('/spvw-monev', MonevController::class);
 });
 
 // leader
@@ -230,16 +230,16 @@ Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     Route::get('/LEADER/leader-absensi-izin', [IzinController::class, 'indexLead'])->name('lead_izin');
     Route::patch('/LEADER/leader-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('lead_acc');
     Route::patch('/LEADER/leader-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('lead_denied');
-    Route::view('leaderView','leader_view/leaderView')->name('leaderView');
-    
+    Route::view('leaderView', 'leader_view/leaderView')->name('leaderView');
+
     Route::resource('/leader-checklist', ChecklistController::class);
     Route::post('/leader-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('leader-checklist.ajx');
     Route::resource('/absensi-karyawan-co-cs', AbsensiController::class);
-    
+
     Route::get('/leader-absenSholat', [LeaderController::class, 'indexAbsenSholat'])->name('leader-absenSholat');
     Route::post('/leader-absenSholat-store', [LeaderController::class, 'storeAbsenSholat'])->name('leader-absenSholat-store');
     Route::get('/leader-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('leader-slip');
-   
+
 });
 // danru
 Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
@@ -257,9 +257,9 @@ Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
     Route::get('/DANRU/danru-absensi-izin', [IzinController::class, 'indexLead'])->name('danru_izin');
     Route::patch('/DANRU/danru-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('danru_acc');
     Route::patch('/DANRU/danru-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('danru_denied');
-    Route::view('danruView','leader_view/leaderView')->name('danruView');
+    Route::view('danruView', 'leader_view/leaderView')->name('danruView');
     Route::resource('/absensi-karyawan-co-scr', AbsensiController::class);
-   
+
     Route::get('/danru-absenSholat', [LeaderController::class, 'indexAbsenSholat'])->name('danru-absenSholat');
     Route::post('/danru-absenSholat-store', [LeaderController::class, 'storeAbsenSholat'])->name('danru-absenSholat-store');
     Route::get('/danru-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('danru-slip');
@@ -271,8 +271,8 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('/report/sholat/by-admin', [ReportSholatController::class, 'index'])->name('reportSholat.index');
     Route::get('/report/sholat/download-as-admin', [ReportSholatController::class, 'download'])->name('reportSholat.download');
     Route::resource('/admin/qrcode', QrCodeController::class);
-    Route::POST('/admin/qrcode/export', [QrCodeController::class, 'exportPDF'])->name('qrcode.export');    
-    
+    Route::POST('/admin/qrcode/export', [QrCodeController::class, 'exportPDF'])->name('qrcode.export');
+
     Route::get('/admin/data-absen', [AdminController::class, 'absen'])->name('admin.absen');
     Route::get('/admin/export', [AdminController::class, 'export'])->name('admin.export');
     Route::get('/admin/exportV2', [AdminController::class, 'exportWith'])->name('admin.exportV2');
@@ -283,30 +283,30 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::resource('/kerjasamas', KerjasamaController::class);
     Route::resource('/devisi', DivisiController::class);
     Route::resource('/perlengkapan', PerlengkapanController::class);
-    
+
     Route::get('/divisi/{divisiId}/add-equipment', [DivisiController::class, 'editEquipment'])->name('editRquipment');
-    Route::post('/divisi/{divisiId}/add-equipment', [DivisiController::class,'addEquipment'])->name('addEquipment');
-    
-    
+    Route::post('/divisi/{divisiId}/add-equipment', [DivisiController::class, 'addEquipment'])->name('addEquipment');
+
+
     Route::get('/area/{areaId}/add-subarea', [SubareaController::class, 'editSubarea'])->name('edit.subarea');
-    Route::post('/area/{areaId}/add-subarea', [SubareaController::class,'addSub'])->name('add.subarea');
-    
+    Route::post('/area/{areaId}/add-subarea', [SubareaController::class, 'addSub'])->name('add.subarea');
+
     Route::resource('/data-lembur', LemburController::class);
     Route::get('/data-lembur-saat-ini', [LemburController::class, 'lemburIndexAdmin'])->name('lemburList');
     Route::resource('/shift', ShiftController::class);
     Route::resource('/jabatan', JabatanController::class);
-    
+
     Route::delete('/laporans/{id}', [LaporanController::class, 'destroy']);
     Route::get('/export/laporans', [LaporanController::class, 'exportWith'])->name('export.laporans');
     Route::post('/admin-laporan-hapus-foto', [LaporanController::class, 'hapusFotoLaporan'])->name('laporan.hapusFotoLaporan');
-    
+
     Route::resource('/ruangan', RuanganController::class);
     Route::resource('/point', PointController::class);
     Route::patch('/claim-point/{id}', [AbsensiController::class, 'claimPoint'])->name('claim.point');
     Route::resource('holiday', HolidayController::class);
     Route::resource('/lokasi', LokasiController::class);
     Route::resource('/area', AreaController::class);
-    
+
     Route::get('/admin-check-koordinat/{id}', [CheckPointController::class, "show"])->name('admin-lihatMap');
 
     Route::get('/admin-checkpoint', [AdminController::class, 'checkPoint'])->name('admin.cp.index');
@@ -321,14 +321,14 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('admin-jadwal-new', [JadwalUserController::class, 'processDate'])->name('store.processDate.admin');
     Route::get('admin-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('jadwal_export.admin');
     Route::get('admin-cp-export', [CheckPointController::class, 'exportWith'])->name('cp_export.admin');
-    
+
     Route::post('admin-ruangan-import', [RuanganController::class, 'import'])->name('ruangan.import');
-    
+
     Route::get('/data-izin', [IzinController::class, 'indexAdmin'])->name('data-izin.admin');
     Route::patch('/absensi-izin/admin-accept/{id}', [IzinController::class, 'updateSuccess'])->name('admin_acc');
     Route::patch('/absensi-izin/admin-denied/{id}', [IzinController::class, 'updateDenied'])->name('admin_denied');
     Route::delete('/absensi-izin/{id}/deleted', [IzinController::class, 'deleteAdmin'])->name('admin.deletedIzin');
-    
+
     Route::post('/pekerjaanCp-import', [PekerjaanCpController::class, 'import'])->name('import-pekerjaan');
     Route::resource('/pekerjaanCp', PekerjaanCpController::class);
     Route::resource('/admin-rating', RatingController::class);
@@ -337,23 +337,23 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::resource('/admin-checklist', ChecklistController::class);
     Route::post('/admin-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('admin-checklist.ajx');
     Route::get('/admin-finalisasi/{start_date}/{end_date}', [FinalisasiController::class, 'exportPDF'])->name('finalisasi.export');
-    
+
     Route::resource('/listPekerjaan', ListPekerjaanController::class);
     Route::post('/listPekerjaan-import', [ListPekerjaanController::class, 'importExcel'])->name('listPekerjaan-excell');
-    
+
     Route::post('/admin-user-massUpdate', [UserController::class, 'massUpdate'])->name('user.massUpdate');
     Route::post('/admin-absen-hapus-foto', [AdminController::class, 'hapusFotoAbsen'])->name('absen.hapusFotoAbsen');
-    
+
     Route::get('/admin-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('admin-lihatMap');
-    
+
     Route::get('/admin-monev', [MonevController::class, "indexAdmin"])->name('admin-monev-index');
     Route::get('/admin-monev/create', [MonevController::class, "createAdmin"])->name('admin-monev-create');
-    
+
     Route::get('/admin-slip-gaji', [AdminController::class, 'indexSlip'])->name('admin-slip');
-    
+
     Route::get('/admin-addKaryawan/index', [UserController::class, 'addKaryawanAdminIndex'])->name('addKaryawanAdminIndex');
     Route::put('/admin-addKaryawan/{id}', [UserController::class, 'addKaryawanStatus'])->name('addKaryawanStatus');
 });
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

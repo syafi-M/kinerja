@@ -7,12 +7,9 @@ A Laravel package to sign documents and optionally generate
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/creagia/laravel-sign-pad/run-tests.yml?label=tests)](https://github.com/creagia/laravel-sign-pad/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/creagia/laravel-sign-pad.svg?style=flat-square)](https://packagist.org/packages/creagia/laravel-sign-pad)
 
-## Support us
-[<img width="570" alt="Laradir banner" src="https://user-images.githubusercontent.com/240932/189903723-2c015907-b8c9-4ff7-b6e6-2c8cf10aea16.png">](https://laradir.com/?utm_campaign=github&utm_medium=banner&utm_term=laravel-sign-pad)
-
 ## Requirements
 
-Laravel pad signature requires **PHP 8.0, 8.1 or 8.2** and **Laravel 8, 9 or 10**.
+Laravel pad signature requires **PHP 8.0 - 8.4** and **Laravel 8 - 12**.
 
 ## Installation
 
@@ -113,7 +110,7 @@ A `$model` object will be automatically injected into the Blade template, so you
 
 ## Usage
 
-At this point, all you need is to create the form with the sign pad canvas in your template. For the route of the form, you have to call the method getSignatureUrl() from the instance of the model you prepared before:
+At this point, all you need is to create the form with the sign pad canvas in your template. For the route of the form, you have to call the method getSignatureRoute() from the instance of the model you prepared before:
 
 ```html
 @if (!$myModel->hasBeenSigned())

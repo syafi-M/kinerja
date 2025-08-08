@@ -31,7 +31,7 @@ final class SharedStringsManager
     private int $numSharedStrings = 0;
 
     /** @var Escaper\XLSX Strings escaper */
-    private Escaper\XLSX $stringsEscaper;
+    private readonly Escaper\XLSX $stringsEscaper;
 
     /**
      * @param string       $xlFolder       Path to the "xl" folder
@@ -79,7 +79,7 @@ final class SharedStringsManager
 
         // Adding 1 to take into account the space between the last xml attribute and "count"
         fseek($this->sharedStringsFilePointer, $firstPartHeaderLength + 1);
-        fwrite($this->sharedStringsFilePointer, sprintf("%-{$defaultStringsCountPartLength}s", 'count="'.$this->numSharedStrings.'" uniqueCount="'.$this->numSharedStrings.'"'));
+        fwrite($this->sharedStringsFilePointer, \sprintf("%-{$defaultStringsCountPartLength}s", 'count="'.$this->numSharedStrings.'" uniqueCount="'.$this->numSharedStrings.'"'));
 
         fclose($this->sharedStringsFilePointer);
     }

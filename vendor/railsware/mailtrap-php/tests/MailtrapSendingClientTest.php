@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Mailtrap\Tests;
 
+use Mailtrap\Api\Sending\Emails as TransactionSendingEmails;
 use Mailtrap\Api\Sending\SendingInterface;
+use Mailtrap\MailtrapClient;
 use Mailtrap\MailtrapSendingClient;
 
 /**
@@ -26,8 +28,19 @@ class MailtrapSendingClientTest extends MailtrapClientTestCase
 
     public function mapInstancesProvider(): iterable
     {
-        foreach (MailtrapSendingClient::API_MAPPING as $item) {
-            yield [new $item($this->getConfigMock())];
+        foreach (MailtrapSendingClient::API_MAPPING as $key => $item) {
+            yield match ($key) {
+                'suppressions' => [new $item($this->getConfigMock(), self::FAKE_ACCOUNT_ID)],
+                default => [new $item($this->getConfigMock())],
+            };
         }
+    }
+
+    public function testValidInitTransactionSendingEmails(): void
+    {
+        $this->assertInstanceOf(
+            TransactionSendingEmails::class,
+            MailtrapClient::initSendingEmails(apiKey: self::DEFAULT_API_KEY)
+        );
     }
 }
