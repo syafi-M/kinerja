@@ -1037,17 +1037,17 @@ class AbsensiController extends Controller
         if (!$isFiltered) {
             $startDate = Carbon::now()->subDays(31)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
-            $absen = $baseQuery->whereBetween('created_at', [$startDate, $endDate])
+            $absen = (clone $baseQuery)->whereBetween('created_at', [$startDate, $endDate])
                 ->orderBy('tanggal_absen', 'desc')->paginate(50);
-            $point = $baseQuery->clone()->whereNotNull('point_id')
+            $point = (clone $baseQuery)->whereNotNull('point_id')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->get();
-            $absenTiga = $baseQuery->clone()
+            $absenTiga = (clone $baseQuery)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->whereNotNull('absensi_type_masuk')
                 ->whereNotNull('absensi_type_pulang')
                 ->get();
-            $telat = $baseQuery->clone()
+            $telat = (clone $baseQuery)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->where('keterangan', 'telat')
                 ->paginate(50);
@@ -1066,21 +1066,21 @@ class AbsensiController extends Controller
             $startDate = Carbon::create($year, $month, 1)->startOfMonth()->startOfWeek();
             $endDate = Carbon::create($year, $month, 1)->endOfMonth()->endOfWeek();
 
-            $absen = $baseQuery
+            $absen = (clone $baseQuery)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->orderBy('tanggal_absen', 'desc')
                 ->paginate(50);
-            $point = $baseQuery->clone()->whereNotNull('point_id')
+            $point = (clone $baseQuery)->whereNotNull('point_id')
                 ->whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->get();
-            $absenTiga = $baseQuery->clone()
+            $absenTiga = (clone $baseQuery)
                 ->whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->whereNotNull('absensi_type_masuk')
                 ->whereNotNull('absensi_type_pulang')
                 ->get();
-            $telat = $baseQuery->clone()
+            $telat = (clone $baseQuery)
                 ->whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
                 ->where('keterangan', 'telat')
