@@ -20,14 +20,18 @@ class UpdateAbsenTelat
         $start = Carbon::today()->setTime(15, 20);
         $end = Carbon::today()->setTime(16, 30);
 
-        // Random seconds between them
-        $randomTimestamp = mt_rand($start->timestamp, $end->timestamp);
-
-        // Convert to Carbon
-        $randomTime = Carbon::createFromTimestamp($randomTimestamp);
         if (Carbon::now()->format('H:i:s') > '11:20:00') {
-            Absensi::with('shift')->whereIn('shift_id', [1, 2])
-                ->update(['absensi_type_pulang' => $randomTime]); // ✅ 1 DB query
+            $absensis = Absensi::with('shift')
+                ->whereIn('shift_id', [1, 2])
+                ->get();
+
+            foreach ($absensis as $absen) {
+                $randomTimestamp = mt_rand($start->timestamp, $end->timestamp);
+                $randomTime = Carbon::createFromTimestamp($randomTimestamp)->format('H:i:s');
+
+                $absen->absensi_type_pulang = $randomTime;
+                $absen->save();
+            }
         }
 
 
