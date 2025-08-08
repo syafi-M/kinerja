@@ -8,7 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     # Pastikan job tidak berjalan lebih dari 10 menit agar tidak hang
-    timeout-minutes: 10
+    timeout-minutes: 60
 
     steps:
       - name: 🚚 Get latest code
