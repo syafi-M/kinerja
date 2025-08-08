@@ -30,16 +30,16 @@ class DashboardController extends Controller
         // $lembur = Lembur::latest('jam_selesai')->get();
 
         // Buat dasar query absensi untuk user
-        $absenQuery = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+        $absenQueryBase = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
             ->where('user_id', $user->id);
 
         // Ambil data absensi yang belum melakukan absensi pulang
-        $absen = $absenQuery
+        $absen = (clone $absenQueryBase)
             ->whereNull('absensi_type_pulang')
             ->get();
 
-        // Ambil absensi pada rentang waktu dari kemarin hingga hari ini
-        $absenP = $absenQuery
+        // Ambil data absensi pada rentang waktu dari kemarin hingga hari ini
+        $absenP = (clone $absenQueryBase)
             ->whereBetween('created_at', [
                 Carbon::yesterday()->startOfDay(),
                 Carbon::today()->endOfDay()
@@ -60,8 +60,8 @@ class DashboardController extends Controller
                 && $item->tanggal_absen->month === $currentMonth;
         });
 
-        // Ambil absensi hari ini untuk kondisi sholat (misal belum melakukan absensi pulang)
-        $sholat = (clone $absenQuery)
+        // Ambil absensi hari ini untuk kondisi sholat
+        $sholat = (clone $absenQueryBase)
             ->where('tanggal_absen', $today)
             ->whereNull('absensi_type_pulang')
             ->first();
@@ -161,6 +161,8 @@ class DashboardController extends Controller
             $luweh1Dino = Carbon::createFromFormat('Y-m-d, H:i:s', $absenP->created_at->format('Y-m-d, H:i:s'))
                 ->diffInHours(Carbon::now()) <= 20;
         }
+
+        // dd((clone $absenQueryBase)->latest()->first());
 
         return view('dashboard', compact(
             'absen',
