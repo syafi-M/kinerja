@@ -19,32 +19,56 @@ class CheckPointController extends Controller
 {
     public function index(Request $request)
     {
-        $filter = $request->search;
         $type = $request->get('type');
-        $filter2 = Carbon::parse($filter);
 
-        // Menghitung tanggal awal dua minggu yang lalu
-        $tanggalAwal = Carbon::now()->subMonth()->startOfMonth();
+        $tanggalAwal = now()->subMonth()->startOfMonth();
+        $tanggalAkhir = now()->endOfWeek();
 
-        // Menghitung tanggal akhir minggu sekarang
-        $tanggalAkhir = Carbon::now()->endOfWeek();
-
-        $check_point = CheckPoint::where('user_id', Auth::user()->id);
-        $pcp = PekerjaanCp::where('kerjasama_id', Auth::user()->kerjasama_id)->get();
-
-        $currentMonth = Carbon::now()->month;
+        // Base query with casts so pekerjaan_cp_id becomes array automatically
+        $checkPointQuery = CheckPoint::query()
+            ->where('user_id', Auth::id())
+            ->latest();
 
         if ($type) {
-            if ($type == 'rencana') {
-                $cek2 = $check_point->where('type_check', $type)->whereBetween('created_at', [Carbon::now()->subWeek(), $tanggalAkhir])->latest()->get();
+            if ($type === 'rencana') {
+                $checkPointQuery->where('type_check', $type)
+                    ->whereBetween('created_at', [now()->subWeek(), $tanggalAkhir]);
             } else {
-                $cek2 = $check_point->where('type_check', $type)->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir])->latest()->get();
+                $checkPointQuery->where('type_check', $type)
+                    ->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir]);
             }
-        } else {
-            $cek2 = $check_point->latest()->paginate(90);
         }
-        return view('check.index', compact('cek2', 'pcp', 'type'));
+
+        // Fetch checkpoints
+        $cek2 = $checkPointQuery->get();
+
+        // Collect ALL pekerjaan_cp_id values from all checkpoints
+        $allIds = $cek2->flatMap(function ($c) {
+            $ids = is_array($c->pekerjaan_cp_id) ? $c->pekerjaan_cp_id : json_decode($c->pekerjaan_cp_id, true);
+            return $ids ?? [];
+        })->unique()->filter()->values();
+
+        // Fetch all pekerjaan_cps in one query
+        $pcpList = PekerjaanCp::whereIn('id', $allIds)
+            ->where('kerjasama_id', Auth::user()->kerjasama_id)
+            ->get()
+            ->keyBy('id'); // for quick lookup
+
+        // Attach pekerjaan data to each checkpoint
+        $cek2->each(function ($c) use ($pcpList) {
+            $ids = is_array($c->pekerjaan_cp_id) ? $c->pekerjaan_cp_id : json_decode($c->pekerjaan_cp_id, true);
+            $c->related_pcp = collect($ids)->map(function ($id) use ($pcpList) {
+                return $pcpList->get($id);
+            })->filter()->values();
+        });
+
+        return view('check.index', [
+            'cek2' => $cek2,
+            'type' => $type
+        ]);
     }
+
+
 
     public function create()
     {
@@ -85,7 +109,7 @@ class CheckPointController extends Controller
         if ($request->hasFile('img')) {
             foreach ($request->file('img') as $image) {
 
-                $file = $request->file('img');
+                $file = $image;
                 if ($file != null && $file->isValid()) {
 
                     $extensions = $file->getClientOriginalExtension();

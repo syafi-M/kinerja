@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CheckPoint extends Model
 {
     use HasFactory;
-    
+
     protected $casts = [
         'pekerjaan_cp_id' => 'array',
         'img' => 'array',
@@ -18,7 +18,7 @@ class CheckPoint extends Model
         'latitude' => 'array',
         'longtitude' => 'array',
         'tanggal' => 'array',
-        ];
+    ];
 
     protected $fillable = [
         'user_id',
@@ -43,7 +43,7 @@ class CheckPoint extends Model
     {
         return $this->belongsTo(Divisi::class);
     }
-    
+
     public function PekerjaanCp()
     {
         return $this->belongsTo(PekerjaanCp::class);
