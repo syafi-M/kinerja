@@ -154,8 +154,17 @@ class AdminController extends Controller
                 ->latest()
                 ->first();
         } else {
-            $cex2 = (clone $check_points_query)->where('type_check', 'dikerjakan')->latest()->first();
+            $cex2 = (clone $check_points_query)
+                ->where('type_check', 'dikerjakan')
+                ->latest()
+                ->first();
         }
+
+        // If pekerjaan_cp_id is stored as JSON, decode it to array
+        if ($cex2 && is_string($cex2->pekerjaan_cp_id)) {
+            $cex2->pekerjaan_cp_id = json_decode($cex2->pekerjaan_cp_id, true);
+        }
+
 
         $pcp = (clone $pekerjaan_cp_query)->get();
         // dd($cex2);
