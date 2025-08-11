@@ -107,7 +107,7 @@ class AdminController extends Controller
             $cek = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
                 ->paginate(80);
         } else {
-            if (Auth::user()->name == 'DIREKTUR') {
+            if (Auth::user()->devisi_id == 18) {
                 # code...
                 $user = User::orderBy('kerjasama_id', 'asc')->where('kerjasama_id', 1)->get();
             } else {
