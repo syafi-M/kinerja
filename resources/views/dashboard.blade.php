@@ -407,7 +407,7 @@
                                     'lembur' => 'direksi_lembur',
                                     'laporan' => 'direksi_laporan',
                                     'rating' => 'direksi-rating.index',
-                                    'rencana kerja' => 'direksi.cp.index',
+                                    'kinerja' => 'direksi.cp.index',
                                     'kontrak' => 'direksi-cekKontrak',
                                 ],
                             ];
@@ -420,7 +420,7 @@
                                 'laporan' => 'ri-image-add-line',
                                 'laporan bulanan' => 'ri-image-add-line',
                                 'rating' => 'ri-sparkling-line',
-                                'rencana kerja' => 'ri-sparkling-line',
+                                'kinerja' => 'ri-sparkling-line',
                                 'kontrak' => 'ri-pass-pending-line',
                             ];
                         @endphp
@@ -484,14 +484,14 @@
                                 @endif
 
                                 <div
-                                    class="mt-5 sm:grid sm:grid-cols-3 sm:gap-2 sm:space-y-0 space-y-2 overflow-hidden w-full">
+                                    class="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2 space-y-0 overflow-hidden w-full">
                                     @foreach ($routes[$jabatan] as $key => $route)
-                                        <div class="w-full space-y-4 overflow-hidden rounded-lg {{ $key == 'rating' && $jabatan == 'DIREKSI' ? 'hidden' : '' }}"
+                                        <div class="w-full md:space-y-4 overflow-hidden rounded-lg {{ $key == 'rating' && $jabatan == 'DIREKSI' ? 'hidden' : '' }}"
                                             id="L{{ $key }}">
                                             <a href="{{ route($route) }}"
                                                 class="btn btn-info w-full flex justify-center items-center relative">
                                                 <i class="{{ $icons[$key] }} text-xl"></i>{{ ucfirst($key) }}
-                                                @if ($jabatan == 'DIREKSI' && $key == 'rencana kerja')
+                                                @if ($jabatan == 'DIREKSI' && $key == 'kinerja')
                                                     <span class="bg-yellow-500 text-center absolute"
                                                         style="padding: 20px 25px 5px 35px; right: -20px; top: -18px; transform: rotate(35deg);">
                                                         <p style="transform: rotate(-35deg);">
