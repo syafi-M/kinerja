@@ -61,7 +61,7 @@
                                                             data-pcp_id="{{ $p->id }}"
                                                             class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
                                                             type="file" name="img[]" value="null" autofocus
-                                                            accept="image/*" multiple />
+                                                            accept="image/*" capture="environment" />
                                                     </span>
                                                 </label>
                                                 <div class="hidden too_big_{{ $p->id }}">
