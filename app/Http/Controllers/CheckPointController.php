@@ -333,48 +333,45 @@ class CheckPointController extends Controller
     }
     public function uploadNilai(Request $request, $id)
     {
-        $awalMinggu = Carbon::now()->startOfWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
-        $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-            ->where('id', $id)
-            ->latest()
-            ->first();
+        $cex2 = CheckPoint::findOrFail($id);
 
-        $arrKe = $request->arrKe;
+        $arrKe = (int) $request->arrKe;
 
-        // $cex2->approve_status = array_merge($cex2->approve_status ?? [], $request->approve_status);
-        // $cex2->note = array_merge($cex2->note ?? [], $request->note);
-        // Retrieve the existing approve_status and note arrays
-        $approveStatus = $cex2->approve_status ?? [];
-        $note = $cex2->note ?? [];
+        // dd($cex2, $request->all());
 
-        // Update the values at the specified index
-        if (isset($request->approve_status)) {
+        // Ensure we get arrays from DB (decode JSON if not casted)
+        $approveStatus = is_array($cex2->approve_status)
+            ? $cex2->approve_status
+            : json_decode($cex2->approve_status ?? '[]', true);
+
+        $note = is_array($cex2->note)
+            ? $cex2->note
+            : json_decode($cex2->note ?? '[]', true);
+
+        // Fill missing indexes if arrays are shorter
+        $approveStatus = array_pad($approveStatus, max($arrKe + 1, count($approveStatus)), null);
+        $note = array_pad($note, max($arrKe + 1, count($note)), null);
+
+        // Update at the given index
+        if ($request->filled('approve_status')) {
             $approveStatus[$arrKe] = $request->approve_status[0];
         }
 
-        if (isset($request->note)) {
-            $note[$arrKe] = $request->note[0];
-        }
+        // Note can be null, so we just assign directly
+        $note[$arrKe] = $request->note[0] ?? null;
 
-        // Assign the modified arrays back to the properties
+        // Save back to model
         $cex2->approve_status = $approveStatus;
         $cex2->note = $note;
 
-        // dd($request->all(),$cex2);
-
         try {
-
             $cex2->save();
             toastr()->success('Data berhasil diedit', 'success');
-            return redirect()->back();
-            // return to_route('checkpoint-user.index', 'type=dikerjakan');
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            dd($e);
-            toastr()->error('Data Tidak Ada', 'error');
-            return redirect()->back();
+        } catch (\Throwable $e) {
+            toastr()->error('Gagal menyimpan data', 'error');
         }
+
+        return redirect()->back();
     }
 
 

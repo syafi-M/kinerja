@@ -94,6 +94,8 @@ class AdminController extends Controller
 
     public function checkPoint(Request $request)
     {
+        $type = $request->type ?? 'dikerjakan';
+        $inMonth = Carbon::now()->month;
         $filter = $request->filterKerjasama;
 
         $kerjasama = Kerjasama::all();
@@ -101,6 +103,32 @@ class AdminController extends Controller
         $awalMinggu = Carbon::now()->startOfWeek();
         $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
 
+        // Ambil data berdasarkan user_id dan bulan
+        $check_points_query = CheckPoint::whereMonth('created_at', $inMonth);
+
+        // Lakukan paginasi
+        $cek = (clone $check_points_query)->orderBy('created_at', 'asc')->paginate(15);
+
+        // Ambil data berdasarkan tipe
+        $typeHarian = (clone $check_points_query)->where('type_check', 'harian')->get();
+        $typeMingguan = (clone $check_points_query)->where('type_check', 'mingguan')->get();
+        $typeBulanan = (clone $check_points_query)->where('type_check', 'bulanan')->get();
+        $typeIsi = (clone $check_points_query)->where('type_check', 'isidental')->get();
+
+        $pkHarian = PekerjaanCP::where('type_check', 'harian')->get();
+        $pkMingguan = PekerjaanCP::where('type_check', 'mingguan')->get();
+        $pkBulanan = PekerjaanCP::where('type_check', 'bulanan')->get();
+        $pkIsi = PekerjaanCP::where('type_check', 'isidental')->get();
+
+        $awalMinggu = Carbon::now()->startOfMonth()->subMonth();
+        $akhirMinggu = Carbon::now()->endOfMonth(); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+
+        $cex2 = (clone $check_points_query)
+            ->where('type_check', $type)
+            ->latest()
+            ->get();
+
+        $pcp = PekerjaanCp::get();
 
         if ($filter) {
             $user = User::orderBy('kerjasama_id', 'asc')->where('kerjasama_id', $filter)->get();
@@ -119,7 +147,7 @@ class AdminController extends Controller
                 ->paginate(80);
         }
 
-        return view('admin.check.index', compact('cek', 'user', 'kerjasama', 'filter'));
+        return view('admin.check.index', compact('cek', 'cex2', 'pcp', 'typeHarian', 'typeMingguan', 'typeBulanan', 'typeIsi', 'pkHarian', 'pkMingguan', 'pkBulanan', 'pkIsi', 'user', 'type', 'kerjasama', 'filter'));
     }
     public function lihatCheck(Request $request, $id)
     {
@@ -128,47 +156,42 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
 
         // Ambil data berdasarkan user_id dan bulan
-        $check_points_query = CheckPoint::where('user_id', $id)
-            ->whereMonth('created_at', $inMonth);
-        $pekerjaan_cp_query = PekerjaanCP::where('user_id', $id);
+        // $check_points_query = CheckPoint::where('user_id', $id)
+        //     ->whereMonth('created_at', $inMonth);
+        // $pekerjaan_cp_query = PekerjaanCP::where('user_id', $id);
 
         // Lakukan paginasi
-        $cek = (clone $check_points_query)->orderBy('created_at', 'asc')->paginate(15);
+        // $cek = (clone $check_points_query)->orderBy('created_at', 'asc')->paginate(15);
 
         // Ambil data berdasarkan tipe
-        $typeHarian = (clone $check_points_query)->where('type_check', 'harian')->get();
-        $typeMingguan = (clone $check_points_query)->where('type_check', 'mingguan')->get();
-        $typeBulanan = (clone $check_points_query)->where('type_check', 'bulanan')->get();
-        $typeIsi = (clone $check_points_query)->where('type_check', 'isidental')->get();
+        // $typeHarian = (clone $check_points_query)->where('type_check', 'harian')->get();
+        // $typeMingguan = (clone $check_points_query)->where('type_check', 'mingguan')->get();
+        // $typeBulanan = (clone $check_points_query)->where('type_check', 'bulanan')->get();
+        // $typeIsi = (clone $check_points_query)->where('type_check', 'isidental')->get();
 
-        $pkHarian = (clone $pekerjaan_cp_query)->where('type_check', 'harian')->get();
-        $pkMingguan = (clone $pekerjaan_cp_query)->where('type_check', 'mingguan')->get();
-        $pkBulanan = (clone $pekerjaan_cp_query)->where('type_check', 'bulanan')->get();
-        $pkIsi = (clone $pekerjaan_cp_query)->where('type_check', 'isidental')->get();
+        // $pkHarian = (clone $pekerjaan_cp_query)->where('type_check', 'harian')->get();
+        // $pkMingguan = (clone $pekerjaan_cp_query)->where('type_check', 'mingguan')->get();
+        // $pkBulanan = (clone $pekerjaan_cp_query)->where('type_check', 'bulanan')->get();
+        // $pkIsi = (clone $pekerjaan_cp_query)->where('type_check', 'isidental')->get();
 
-        $awalMinggu = Carbon::now()->startOfMonth()->subMonth();
-        $akhirMinggu = Carbon::now()->endOfMonth(); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
-        if ($type == 'rencana') {
-            $cex2 = (clone $check_points_query)
-                ->where('type_check', 'rencana')
-                ->latest()
-                ->first();
-        } else {
-            $cex2 = (clone $check_points_query)
-                ->where('type_check', 'dikerjakan')
-                ->latest()
-                ->first();
-        }
+        // $awalMinggu = Carbon::now()->startOfMonth()->subMonth();
+        // $akhirMinggu = Carbon::now()->endOfMonth(); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        // if ($type == 'rencana') {
+        //     $cex2 = (clone $check_points_query)
+        //         ->where('type_check', 'rencana')
+        //         ->latest()
+        //         ->first();
+        // } else {
+        //     $cex2 = (clone $check_points_query)
+        //         ->where('type_check', 'dikerjakan')
+        //         ->latest()
+        //         ->first();
+        // }
 
-        // If pekerjaan_cp_id is stored as JSON, decode it to array
-        if ($cex2 && is_string($cex2->pekerjaan_cp_id)) {
-            $cex2->pekerjaan_cp_id = json_decode($cex2->pekerjaan_cp_id, true);
-        }
-
-
-        $pcp = (clone $pekerjaan_cp_query)->get();
+        // $pcp = (clone $pekerjaan_cp_query)->get();
         // dd($cex2);
 
+        // dd($cex2);
 
         return view('admin.check.lihatCP', compact('user', 'type', 'cek', 'cex2', 'pcp', 'typeHarian', 'typeMingguan', 'typeBulanan', 'typeIsi', 'pkHarian', 'pkMingguan', 'pkBulanan', 'pkIsi'));
     }
