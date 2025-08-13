@@ -21,7 +21,8 @@
                     </div>
 
                     <div class="flex flex-row gap-1" style="max-width: 65%;">
-                        <p class="font-semibold text-white text-sm line-clamp-1 break-words">{{ $user->nama_lengkap }}</p>
+                        <p class="font-semibold text-white text-sm line-clamp-1 break-words">
+                            {{ ucwords(strtolower($user->nama_lengkap)) }}</p>
                     </div>
                 </div>
             </a>

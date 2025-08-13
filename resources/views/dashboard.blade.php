@@ -438,11 +438,11 @@
                                         $hariIni = Carbon\Carbon::now()->format('N');
                                         $tampilkanAbsensi =
                                             !in_array($hariIni, [6, 7]) || Auth::user()->kerjasama_id != 1;
-                                        $codeJabatan = Auth::user()->divisi->jabatan->code_jabatan;
+                                        $codeJabatan = Auth::user()?->divisi?->jabatan?->code_jabatan;
                                         $absensiRoute = match ($codeJabatan) {
                                             'CO-CS' => 'absensi-karyawan-co-cs.index',
                                             'CO-SCR' => 'absensi-karyawan-co-scr.index',
-                                            default => '',
+                                            default => null,
                                         };
                                     @endphp
                                     <div class="flex flex-col gap-2 mt-2">
@@ -451,7 +451,7 @@
                                             <a href="{{ $tampilkanAbsensi ? route('absensi.index') : 'javascript:void(0);' }}"
                                                 class="btn btn-info w-full">{{ $tampilkanAbsensi ? 'Kehadiran' : 'Tidak Ada Jadwal' }}</a>
                                         </div>
-                                        @if (!empty($absensiRoute))
+                                        @if ($absensiRoute)
                                             <div class="hidden w-full space-y-4 px-2 sm:px-16 overflow-hidden"
                                                 id="ngabsenK">
                                                 <a href="{{ route($absensiRoute) }}"
