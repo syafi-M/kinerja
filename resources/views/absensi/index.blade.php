@@ -40,7 +40,7 @@
 <body class="font-sans antialiased  bg-slate-400">
     <div class="min-h-screen" style="padding-bottom: 6rem;">
         @include('../layouts/navbar')
-        <div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
+        <div class="md:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
             <main>
                 <div class="px-5 py-5">
                     {{-- @if ($errors->any())
@@ -60,11 +60,12 @@
                         @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
                             <div class="flex flex-col  sm:m-0 items-center  justify-center">
                                 <div class="relative">
-                                    <video id="video" style="scale: 70%;"
-                                        class="bg-slate-200 p-5 rounded-md square-video" autoplay playsinline></video>
+                                    <video id="video"
+                                        class="bg-slate-200 p-2.5 rounded-md square-video max-w-[60vw]" autoplay
+                                        playsinline></video>
                                 </div>
                                 <canvas id="canvas" style="display:none;"></canvas>
-                                <div id="results" class=" sm:mt-0 rounded mb-3"></div>
+                                <div id="results" class=" sm:mt-0 rounded my-3"></div>
 
                                 @if ($errors->image)
                                     <!--<p class=" font-bold bg-white text-start p-1 rounded-lg" style="color: red">Foto Tidak Boleh Kosong</p>-->
