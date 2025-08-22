@@ -234,7 +234,10 @@
                         @endphp
                         <div class="flex items-start mx-4 {{ $isComplain ? 'justify-between' : 'justify-center' }}"
                             style="padding: 20px 0 10px 0;">
-                            @if ($bulan == $carbon->subMonth()->format('Y-m') && $isComplain)
+                            @if (
+                                $slip->bulan_tahun == $carbon->subMonth()->format('Y-m') &&
+                                    $bulan == $carbon->subMonth()->format('Y-m') &&
+                                    $isComplain)
                                 <div class="flex flex-col justify-center items-center">
                                     <a href="https://docs.google.com/forms/d/e/1FAIpQLScboxEKmSbdSYQtGathLGiwuoBesmye41v5u1vacMLsGZM8rQ/viewform?usp=header"
                                         target="_blank" class="btn btn-sm btn-warning">Ajukan Komplain?</a>
