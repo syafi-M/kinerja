@@ -291,6 +291,7 @@ class AbsensiController extends Controller
 
         if ($agent == 'android' || $agent == 'unknow') {
             $sebuahPengukur = 22;
+            // $sebuahPengukur = 220;
 
         } elseif ($agent == 'iphone') {
             $sebuahPengukur = 36;

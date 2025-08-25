@@ -120,10 +120,17 @@
                             </div>
                             <div class="flex flex-col  justify-between">
                                 <label for="kerjasama" class="text-white">Penempatan: </label>
-                                @if (Auth::user()->id == 7 || Auth::user()->id == 10)
+                                @if (Auth::user()->id == 10)
                                     <select class="selectMitra select select-bordered" name="kerjasama_id">
 
                                     </select>
+                                @elseif(Auth::user()->id == 7)
+                                    <input type="text" name="kerjasama_id" id="kerjasama_id" hidden
+                                        value="{{ Auth::user()->kerjasama_id }}">
+                                    <input type="text" id="kerjasama"
+                                        name="{{ Auth::user()->kerjasama->client->name }}"
+                                        value="{{ Auth::user()->id == 7 ? '' : Auth::user()->kerjasama->client->name }}"
+                                        disabled class="input input-bordered viewKerjasama">
                                 @else
                                     <input type="text" name="kerjasama_id" id="kerjasama_id" hidden
                                         value="{{ Auth::user()->kerjasama_id }}">
@@ -202,6 +209,8 @@
                                 <input type="hidden" name="shift_id" value="145" />
                             @elseif(Auth::user()->jabatan->code_jabatan == 'SPV-W')
                                 <input type="hidden" name="shift_id" value="195" />
+                            @elseif(Auth::user()->devisi_id == 12)
+                                <input type="hidden" name="shift_id" value="200" />
                             @else
                                 <div class="flex flex-col  justify-between">
                                     <label class="required text-white" for="shift_id">Shift: </label>
@@ -821,7 +830,7 @@
                 // Clear existing options
                 selectMitra.html('');
 
-                if (@json(Auth::user()->id) == 7 || @json(Auth::user()->id) == 10) {
+                if (@json(Auth::user()->id) == 10) {
                     // Add the default location to the select dropdown
                     loc.forEach(function(location) {
                         if (location.id == defaultLocationId) {
@@ -916,7 +925,7 @@
                                 .openOn(map);
                         }
                     })
-                } else if (@json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
+                } else if (@json(Auth::user()->id) == 7 || @json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
                     closestLocations.forEach(function(location) {
                         $('#lat_mitra').val(location.latitude);
                         $('#long_mitra').val(location.longtitude);
@@ -925,6 +934,8 @@
                         var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
                         $('#kerjasama_id').val(selectMitra.id);
                         $('.viewKerjasama').val(selectMitra.client.name);
+                        console.log(selectMitra, $('#kerjasama_id').val());
+
 
                         L.circle([location.latitude, location.longtitude], {
                             color: 'crimson',
