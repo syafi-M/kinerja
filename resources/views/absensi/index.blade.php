@@ -717,7 +717,8 @@
                     var distanceFromCenter = userLatLng.distanceTo(circleLatLng); // in meters
                     var distanceFromBorder = distanceFromCenter - $('#radius_mitra').val();
 
-                    if (@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" && markerLocation.lat.toString().length <=
+                    if ((@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" || @json(Auth::user()->devisi_id == 12)) && markerLocation.lat
+                        .toString().length <=
                         latlngLength) {
                         $('#form-absen').attr('action', '{{ route('absensi.store') }}');
                         $('#btnAbsen').text('Absen').prop('disabled', false).removeClass('btn-disabled').addClass(
