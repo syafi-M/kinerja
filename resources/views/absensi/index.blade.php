@@ -10,9 +10,7 @@
 
     <link rel="preload" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="{{ URL::asset('src/js/jquery-min.js') }}"></script>
+    {{-- <script src="{{ URL::asset(path: 'src/js/jquery-min.js') }}"></script> --}}
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -38,21 +36,21 @@
 </head>
 
 <body class="font-sans antialiased  bg-slate-400">
-    <div class="min-h-screen" style="padding-bottom: 6rem;">
-        @include('../layouts/navbar')
+    <div class="min-h-screen pb-24">
+        @include('layouts.navbar')
         <div class="md:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
             <main>
                 <div class="px-5 py-5">
-                    {{-- @if ($errors->any())
-                    <div class="text-red-500 bg-slate-200 rounded-md">
-                        <p>{{ $errors->shift_id }}</p>
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li> - {{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif --}}
+                    @if ($errors->any())
+                        <div class="text-red-500 bg-slate-200 rounded-md p-2">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data"
                         id="form-absen">
                         @method('POST')
@@ -87,9 +85,8 @@
                             </span>
                             <div id="map" class="rounded"></div>
                             <span id="tutor"
-                                class="text-white hidden text-center flex flex-col justify-center text-sm capitalize"
-                                style="font-style: italic;">
-                                <p id="latlongLabel" style="font-size: 8px;"></p>
+                                class="text-white italic hidden text-center flex flex-col justify-center text-sm capitalize">
+                                <p id="latlongLabel" class="text-[8px]"></p>
                                 <p>Pastikan tanda biru berada dilingkaran</p>
                             </span>
                         </div>
@@ -194,7 +191,7 @@
                                         style="{{ $errors->any() && $errors->pengganti ? 'border: 2px solid red;' : '' }}"
                                         class="select select-bordered font-thin w-full">
                                         @if ($errors->any() && $errors->pengganti)
-                                            <option selected disabled class="p-1 my-1 font-bold" style="color: red">
+                                            <option selected disabled class="p-1 my-1 font-bold text-red-600">
                                                 Pengganti Tidak Boleh Kosong</option>
                                         @endif
                                         <option disabled {{ $errors->any() && $errors->pengganti ? '' : 'selected' }}>
@@ -219,7 +216,7 @@
                                         style="{{ $errors->any() && $errors->shift_id ? 'border: 2px solid red;' : '' }}"
                                         class="select select-bordered font-thin ">
                                         @if ($errors->any() && $errors->shift_id)
-                                            <option selected disabled class="p-1 my-1 font-bold" style="color: red">
+                                            <option selected disabled class="p-1 my-1 font-bold text-red-600">
                                                 Shift Tidak Boleh Kosong</option>
                                         @endif
                                         <option disabled {{ $errors->any() && $errors->shift_id ? '' : 'selected' }}>--
@@ -251,7 +248,7 @@
                                 <div class="p-2 bg-white rounded-lg "
                                     style="{{ $errors->any() && $errors->shift_id ? 'border: 2px solid red;' : '' }}">
                                     @if ($errors->any() && $errors->perlengkapan)
-                                        <p class="p-1 my-1 font-bold" style="color: red">Perlengkapan Tidak Boleh
+                                        <p class="p-1 my-1 font-bold text-red-600">Perlengkapan Tidak Boleh
                                             Kosong</p>
                                     @endif
                                     <div id="divPerlengkapan" class="grid grid-cols-1">
@@ -934,8 +931,6 @@
                         var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
                         $('#kerjasama_id').val(selectMitra.id);
                         $('.viewKerjasama').val(selectMitra.client.name);
-                        console.log(selectMitra, $('#kerjasama_id').val());
-
 
                         L.circle([location.latitude, location.longtitude], {
                             color: 'crimson',
@@ -961,119 +956,66 @@
     </script>
     <!--Waktu-->
     <script defer>
-        $(document).ready(function() {
-            var dataUserId = $("#dataUser").attr('data-userId');
-            var debounceTimer;
-            var keterangan = $('#keterangan');
+        $(function() {
+            const dataUserId = $("#dataUser").data('userid');
+            const keterangan = $('#keterangan');
+            const kerId = {{ Auth::user()->kerjasama_id }};
+            let debounceTimer;
 
             function calculatedJamStart() {
-                // get jam
-                var currentDate = new Date();
-                var jamSaiki = currentDate.getHours();
-                var menitSaiki = currentDate.getMinutes();
-                var detikSaiki = currentDate.getSeconds();
+                const now = new Date();
+                const jamSaiki = now.getHours();
+                const menitSaiki = now.getMinutes();
+                const detikSaiki = now.getSeconds();
 
-                // fungsi
-                var selectedOption = $('#shift_id').find(":selected");
-                var shiftStart = selectedOption.data('shift');
+                const selectedOption = $('#shift_id').find(":selected");
+                const shiftStart = selectedOption.data('shift');
+                if (!shiftStart) return;
 
-                if (typeof shiftStart != 'undefined' && shiftStart != '') {
-                    var startTimeParts = shiftStart.split(':');
-                    var startHours = parseInt(startTimeParts[0]);
-                    var startMinutes = parseInt(startTimeParts[1]);
+                const [startHours, startMinutes] = shiftStart.split(':').map(Number);
+                const startDiffMinutes = startHours * 60 + startMinutes;
+                const nowDiffMinutes = jamSaiki * 60 + menitSaiki;
+                const jadi = startDiffMinutes - nowDiffMinutes;
 
-                    var startDiffMinutes = startHours * 60 + startMinutes;
-                    var nowDiffMinutes = jamSaiki * 60 + menitSaiki;
+                const {
+                    h: kesimH,
+                    m: kesimM,
+                    s: kesimS
+                } = formatCountdown(jadi, detikSaiki);
+                const {
+                    h: kesimH2,
+                    m: kesimM2
+                } = formatCountdown(jadi - 30, detikSaiki);
 
-                    var jadi = startDiffMinutes - nowDiffMinutes;
+                // set keterangan
+                const absenKantor = $('#absen-kantor').data('absen-kantor');
+                const authName = keterangan.data('authname');
+                setKeterangan(jadi, absenKantor, kerId, authName);
 
-                    var kesimH = Math.floor(jadi / 60);
-                    var kesimM = Math.abs(jadi % 60);
-                    var kesimH2 = Math.floor(jadi / 60 - 1);
-                    var kesimM2 = Math.abs(jadi % 60 - 30);
-                    var kesimS = Math.abs(60 - detikSaiki);
-
-                    if (kesimM < 0) {
-                        kesimH--;
-                        kesimM += 60;
-                    }
-                };
-
-                // kantor
-                var absenKantor = $('#absen-kantor').data('absen-kantor');
-                var authName = keterangan.data('authname');
-                const kerId = {{ Auth::user()->kerjasama_id }};
-
-                // 	keterangan
-                if (absenKantor == 1) {
-                    if (jadi < -32 && authName != 'DIREKSI') {
-                        // console.log('telat');
-                        $('#keterangan').val('telat');
-                    } else {
-                        // console.log('masuk');
-                        $('#keterangan').val('masuk');
-                    }
+                // tombol absen
+                if (['MCS', 'SPV'].includes(dataUserId)) {
+                    setBtnAbsen(true);
+                } else if (jadi <= 90) {
+                    setBtnAbsen(true, "Absen");
                 } else {
-                    if (kerId == 11) {
-                        if (jadi < -15) {
-                            $('#keterangan').val('telat');
-                        } else {
-                            $('#keterangan').val('masuk');
-                        }
-                    } else {
-                        if (jadi < 0) {
-                            $('#keterangan').val('telat');
-                        } else {
-                            $('#keterangan').val('masuk');
-                        }
-                    }
-                }
-
-                if (dataUserId == 'MCS' || dataUserId == 'SPV') {
-                    $('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-                    $('#btnAbsen').prop('disabled', false);
-                    $('#labelWaktuStart').addClass('hidden');
-                } else {
-                    if (jadi <= 90) {
-                        $('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-                        $('#btnAbsen').prop('disabled', false);
-                        $('#labelWaktuStart').addClass('hidden');
-                        $('.btnAbsen').html('Absen');
-                    } else if (jadi >= 90) {
-                        $('.btnAbsen').addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-                        $('#labelWaktuStart').removeClass('hidden');
-                        $('.btnAbsen').prop('disabled', true);
-                        $('.btnAbsen').html('Tunggu');
-                        $('#labelWaktuStart').html(
-                            `shift anda dimulai ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi, harap tunggu ${kesimH2} jam ${kesimM2} menit ${kesimS} detik lagi`
-                        );
-                    }
+                    setBtnAbsen(false, "Tunggu");
+                    $('#labelWaktuStart').html(
+                        `Shift anda dimulai ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi,
+                 harap tunggu ${kesimH2} jam ${kesimM2} menit ${kesimS} detik lagi`
+                    );
                 }
 
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(calculatedJamStart, 1000);
-            };
-            $('#shift_id').change(function() {
-                //   console.log("shift id changed", calculatedJamStart());
-                calculatedJamStart();
-            });
+            }
+
+            $('#shift_id').change(calculatedJamStart);
 
             toastr.options = {
-                "closeButton": true,
-                "debug": false,
-                "newestOnTop": false,
-                "progressBar": true,
-                "positionClass": "toast-top-right",
-                "preventDuplicates": false,
-                "onclick": null,
-                "showDuration": "300",
-                "hideDuration": "1000",
-                "timeOut": "3500",
-                "extendedTimeOut": "1000",
-                "showEasing": "swing",
-                "hideEasing": "linear",
-                "showMethod": "fadeIn",
-                "hideMethod": "fadeOut"
+                closeButton: true,
+                progressBar: true,
+                positionClass: "toast-top-right",
+                timeOut: 3500
             };
 
             $('#btnAbsen').click(function() {
@@ -1081,11 +1023,172 @@
                     .text('Tunggu...')
                     .addClass('btn-disabled')
                     .css('background-color', 'rgba(96, 165, 250, 0.5)');
-
                 $('#form-absen').submit();
-            })
-            var value = $('.lat_user').val();
+            });
         });
+
+        function setBtnAbsen(enabled, label = "Absen") {
+            const btn = $('#btnAbsen');
+            if (enabled) {
+                btn.removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50')
+                    .prop('disabled', false)
+                    .text(label);
+                $('#labelWaktuStart').addClass('hidden');
+            } else {
+                btn.addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50')
+                    .prop('disabled', true)
+                    .text(label);
+                $('#labelWaktuStart').removeClass('hidden');
+            }
+        }
+
+        function formatCountdown(minutesDiff, seconds) {
+            return {
+                h: Math.floor(minutesDiff / 60),
+                m: Math.abs(minutesDiff % 60),
+                s: Math.abs(60 - seconds)
+            };
+        }
+
+        function setKeterangan(jadi, absenKantor, kerId, authName) {
+            let value = "masuk";
+            if (absenKantor == 1) {
+                if (jadi < -32 && !['DIREKTUR', 'DIRUT', 'WAHYUDI'].includes(authName)) {
+                    value = "telat";
+                }
+            } else if (kerId == 11) {
+                value = jadi < -15 ? "telat" : "masuk";
+            } else {
+                value = jadi < 0 ? "telat" : "masuk";
+            }
+            $('#keterangan').val(value);
+        }
+
+        // $(document).ready(function() {
+        //     var dataUserId = $("#dataUser").attr('data-userId');
+        //     var debounceTimer;
+        //     var keterangan = $('#keterangan');
+
+        //     function calculatedJamStart() {
+        //         // get jam
+        //         var currentDate = new Date();
+        //         var jamSaiki = currentDate.getHours();
+        //         var menitSaiki = currentDate.getMinutes();
+        //         var detikSaiki = currentDate.getSeconds();
+
+        //         // fungsi
+        //         var selectedOption = $('#shift_id').find(":selected");
+        //         var shiftStart = selectedOption.data('shift');
+
+        //         if (typeof shiftStart != 'undefined' && shiftStart != '') {
+        //             var startTimeParts = shiftStart.split(':');
+        //             var startHours = parseInt(startTimeParts[0]);
+        //             var startMinutes = parseInt(startTimeParts[1]);
+
+        //             var startDiffMinutes = startHours * 60 + startMinutes;
+        //             var nowDiffMinutes = jamSaiki * 60 + menitSaiki;
+
+        //             var jadi = startDiffMinutes - nowDiffMinutes;
+
+        //             var kesimH = Math.floor(jadi / 60);
+        //             var kesimM = Math.abs(jadi % 60);
+        //             var kesimH2 = Math.floor(jadi / 60 - 1);
+        //             var kesimM2 = Math.abs(jadi % 60 - 30);
+        //             var kesimS = Math.abs(60 - detikSaiki);
+
+        //             if (kesimM < 0) {
+        //                 kesimH--;
+        //                 kesimM += 60;
+        //             }
+        //         };
+
+        //         // kantor
+        //         var absenKantor = $('#absen-kantor').data('absen-kantor');
+        //         var authName = keterangan.data('authname');
+        //         const kerId = {{ Auth::user()->kerjasama_id }};
+
+        //         // 	keterangan
+        //         if (absenKantor == 1) {
+        //             if (jadi < -32 && (authName != 'DIREKTUR' || authName != 'DIRUT' || authName != 'WAHYUDI')) {
+        //                 // console.log('telat');
+        //                 $('#keterangan').val('telat');
+        //             } else {
+        //                 // console.log('masuk');
+        //                 $('#keterangan').val('masuk');
+        //             }
+        //         } else {
+        //             if (kerId == 11) {
+        //                 if (jadi < -15) {
+        //                     $('#keterangan').val('telat');
+        //                 } else {
+        //                     $('#keterangan').val('masuk');
+        //                 }
+        //             } else {
+        //                 if (jadi < 0) {
+        //                     $('#keterangan').val('telat');
+        //                 } else {
+        //                     $('#keterangan').val('masuk');
+        //                 }
+        //             }
+        //         }
+
+        //         if (dataUserId == 'MCS' || dataUserId == 'SPV') {
+        //             $('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+        //             $('#btnAbsen').prop('disabled', false);
+        //             $('#labelWaktuStart').addClass('hidden');
+        //         } else {
+        //             if (jadi <= 90) {
+        //                 $('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+        //                 $('#btnAbsen').prop('disabled', false);
+        //                 $('#labelWaktuStart').addClass('hidden');
+        //                 $('.btnAbsen').html('Absen');
+        //             } else if (jadi >= 90) {
+        //                 $('.btnAbsen').addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
+        //                 $('#labelWaktuStart').removeClass('hidden');
+        //                 $('.btnAbsen').prop('disabled', true);
+        //                 $('.btnAbsen').html('Tunggu');
+        //                 $('#labelWaktuStart').html(
+        //                     `shift anda dimulai ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi, harap tunggu ${kesimH2} jam ${kesimM2} menit ${kesimS} detik lagi`
+        //                 );
+        //             }
+        //         }
+
+        //         clearTimeout(debounceTimer);
+        //         debounceTimer = setTimeout(calculatedJamStart, 1000);
+        //     };
+        //     $('#shift_id').change(function() {
+        //         //   console.log("shift id changed", calculatedJamStart());
+        //         calculatedJamStart();
+        //     });
+
+        //     toastr.options = {
+        //         "closeButton": true,
+        //         "debug": false,
+        //         "newestOnTop": false,
+        //         "progressBar": true,
+        //         "positionClass": "toast-top-right",
+        //         "preventDuplicates": false,
+        //         "onclick": null,
+        //         "showDuration": "300",
+        //         "hideDuration": "1000",
+        //         "timeOut": "3500",
+        //         "extendedTimeOut": "1000",
+        //         "showEasing": "swing",
+        //         "hideEasing": "linear",
+        //         "showMethod": "fadeIn",
+        //         "hideMethod": "fadeOut"
+        //     };
+
+        //     $('#btnAbsen').click(function() {
+        //         $(this).prop('disabled', true)
+        //             .text('Tunggu...')
+        //             .addClass('btn-disabled')
+        //             .css('background-color', 'rgba(96, 165, 250, 0.5)');
+
+        //         $('#form-absen').submit();
+        //     })
+        //     var value = $('.lat_user').val();
+        // });
 
         // function checkDevTools() {
         //     const _0x50807b = (function() {
