@@ -60,7 +60,8 @@
                                                         <input id="img_{{ $p->id }}"
                                                             data-pcp_id="{{ $p->id }}"
                                                             class="input_img_{{ $p->id }} hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-                                                            type="file" name="img[]" multiple accept="image/*" />
+                                                            type="file" name="img[]"
+                                                            accept=".gif,.tif,.tiff,.png,.crw,.cr2,.dng,.raf,.nef,.nrw,.orf,.rw2,.pef,.arw,.sr2,.raw,.psd,.svg,.webp,.heic" />
                                                     </span>
                                                 </label>
                                                 <div class="hidden too_big_{{ $p->id }}">
