@@ -570,7 +570,7 @@
                                                         <p class="text-center text-lg font-semibold">Apakah Anda Yakin
                                                             Ingin Pulang Sekarang?</p>
                                                         <span id="labelWaktu"></span>
-                                                        @if (Auth::user()->name != 'DIREKSI' || Auth::user()->jabatan->code_jabatan == 'SPV-W')
+                                                        @if (Auth::user()->name != 'DIREKSI' || Auth::user()->jabatan->code_jabatan == 'SPV-W' || Auth::user()->devisi_id == 12)
                                                             <span class="flex justify-center">
                                                                 <span id="jam2"
                                                                     class="badge badge-info underline font-semibold text-slate-800 text-sm"></span>
@@ -983,7 +983,8 @@
         window.onload = function() {
             jam();
             startTime;
-            if (startTime || njay.name == "DIREKSI" || @json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
+            if (startTime || njay.name == "DIREKSI" || @json(Auth::user()->jabatan->code_jabatan) == "SPV-W" ||
+                @json(Auth::user()->devisi_id) == 12) {
                 jam2();
             }
         }
@@ -1026,7 +1027,7 @@
             var dir = {!! json_encode(Auth::user()) !!};
             var getStartFromCreated_at = @json($absenP?->created_at->format('H:i:s'));
 
-            if (@json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
+            if (@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" || @json(Auth::user()->devisi_id) == 12) {
                 // Parse getStartFromCreated_at into a Date object for today's date
                 var startDate2 = new Date();
                 var timeParts2 = getStartFromCreated_at.split(':');
@@ -1081,7 +1082,7 @@
             var usName = {!! json_encode(Auth::user()->name) !!};
 
 
-            if (@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" && bedaCreatedAt >= 420) {
+            if ((@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" || @json(Auth::user()->devisi_id) == 12) && bedaCreatedAt >= 390) {
                 // console.log(@json(Auth::user()->jabatan->code_jabatan));
                 btnPulang.removeClass('hidden').addClass('flex');
             } else if (jadiMenit <= 120 || usName == "DIREKSI") {
