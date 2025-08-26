@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::defaultView('vendor.pagination.custom-cuy');
-        
+
         $startTime = Cache::get('app_start_time');
 
         if (!$startTime) {
