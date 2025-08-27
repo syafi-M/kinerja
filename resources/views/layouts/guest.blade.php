@@ -1,297 +1,193 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!doctype html>
+<html lang="id">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ 'Login - ' . config('app.name', 'Kinerja SAC-PO') }}</title>
 
-    <title>{{ 'Login - ' . env('APP_NAME', 'Login - Kinerja SAC-PO') }}</title>
-    <link rel="shortcut icon" href="{{ URL::asset('favicon.ico') }}" type="image/x-icon">
+    {{-- <!-- Quick test: Tailwind CDN (ganti ke @vite di production) --> --}}
+    {{-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script> --}}
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Fonts -->
-    {{-- <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" /> --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .glass {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.55));
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+        }
+
+        .blob {
+            filter: blur(10px);
+            opacity: .6;
+        }
+    </style>
 </head>
 
-<style>
-    body {
-        font-family: 'Inter', sans-serif;
-    }
+<body
+    class="min-h-screen max-h-screen bg-gradient-to-b from-amber-50 via-amber-100 to-amber-200 font-sans text-stone-800">
 
-    @media screen and (min-height: 576px) {
-        .bg-img {
-            background-image: url('{{ URL::asset('/logo/bg-versi-ramdhan.jpg') }}');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-    }
-
-    @media screen and (max-height: 576px) {
-        .bg-img {
-            background-image: url('{{ URL::asset('/logo/bg-versi-ramdhan.jpg') }}');
-            background-size: cover;
-            background-position: left;
-            background-repeat: no-repeat;
-        }
-    }
-
-    @keyframes hanging-wiggle {
-        0% {
-            transform: rotate(-15deg);
-        }
-
-        50% {
-            transform: rotate(-10deg);
-        }
-
-        100% {
-            transform: rotate(-15deg);
-        }
-    }
-
-    @keyframes hanging-wiggle2 {
-        0% {
-            transform: rotate(10deg);
-        }
-
-        50% {
-            transform: rotate(15deg);
-        }
-
-        100% {
-            transform: rotate(10deg);
-        }
-    }
-
-    @keyframes hanging-wiggle3 {
-        0% {
-            transform: rotate(15deg);
-        }
-
-        50% {
-            transform: rotate(10deg);
-        }
-
-        100% {
-            transform: rotate(15deg);
-        }
-    }
-
-    @keyframes hanging-wiggle4 {
-        0% {
-            transform: rotate(-10deg);
-        }
-
-        50% {
-            transform: rotate(-15deg);
-        }
-
-        100% {
-            transform: rotate(-10deg);
-        }
-    }
-
-    @media (min-width: 48rem) {
-
-        /* Screens wider than 48rem */
-        .hanging,
-        .hanging2,
-        .hanging3,
-        .hanging4 {
-            width: 5%;
-        }
-    }
-
-    @media (max-width: 48rem) {
-
-        /* Screens smaller than 48rem */
-        .hanging,
-        .hanging2,
-        .hanging3,
-        .hanging4 {
-            width: 10%;
-        }
-    }
-
-
-    .hanging {
-        position: absolute;
-        top: 0;
-        transform-origin: top center;
-        /* Makes it swing from the top */
-        animation: hanging-wiggle 2s ease-in-out infinite alternate;
-    }
-
-    .hanging2 {
-        position: absolute;
-        top: 0;
-        transform-origin: top center;
-        /* Makes it swing from the top */
-        animation: hanging-wiggle2 2.5s ease-in-out infinite alternate;
-    }
-
-    .hanging3 {
-        position: absolute;
-        top: 0;
-        transform: scaleX(-1);
-        transform-origin: top center;
-        /* Makes it swing from the top */
-        animation: hanging-wiggle2 2.5s ease-in-out infinite alternate;
-    }
-
-    .hanging4 {
-        position: absolute;
-        top: 0;
-        transform: scaleX(-1);
-        transform-origin: top center;
-        /* Makes it swing from the top */
-        animation: hanging-wiggle 2s ease-in-out infinite alternate;
-    }
-</style>
-
-<body class="text-gray-900 antialiased max-h-svh overflow-hidden transition-colors duration-300">
-
-    <div class="min-h-screen flex items-center justify-center p-4 bg-cover bg-img overflow-hidden relative">
-
-        @if (Carbon\Carbon::now()->lessThan(Carbon\Carbon::parse('2025-04-09')))
-            <div class="overflow-hidden">
-                <img src="{{ URL::asset('/logo/ketupat-3.png') }}" class="hanging"
-                    style="z-index: 9000; left: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
-                <img src="{{ URL::asset('/logo/ketupat-1.png') }}" class="hanging2"
-                    style="z-index: 8999; left: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
-                <img src="{{ URL::asset('/logo/ketupat-3.png') }}" class="hanging3"
-                    style="z-index: 9000; right: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
-                <img src="{{ URL::asset('/logo/ketupat-1.png') }}" class="hanging4"
-                    style="z-index: 8999; right: 0px; padding: 0px; border-radius: 100%; filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.15));" />
+    <!-- top browser alert (only if not chrome) -->
+    <div x-data="{ open: false }" x-init="(() => {
+        const ua = navigator.userAgent;
+        const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua) && !/OPR/.test(ua);
+        if (!isChrome) open = true;
+    })()" x-show="open" x-transition class="fixed inset-x-4 top-4 z-50">
+        <div class="glass border border-amber-200 px-4 py-2 rounded-full flex items-center justify-between shadow">
+            <div class="flex items-center gap-3 text-sm text-amber-900">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-200">
+                    <!-- info icon -->
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+                            d="M13 16h-1v-4h-1M12 8h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </span>
+                <div class="leading-tight">Gunakan <strong>Google Chrome</strong> untuk pengalaman terbaik.</div>
             </div>
-        @endif
-
-        <div id="browser-alert"
-            class="hidden absolute top-0 left-0 right-0 z-20 flex items-center justify-between
-         bg-orange-100 border-b border-orange-300 text-orange-800
-         px-3 py-2 text-sm">
-            <div class="flex items-center gap-2">
-                <i class="ri-information-2-line text-lg"></i>
-                <span>Gunakan <strong>Google Chrome</strong> untuk pengalaman terbaik.</span>
-            </div>
-            <button onclick="document.getElementById('browser-alert').remove()"
-                class="text-orange-600 hover:text-orange-800">
-                ✕
-            </button>
-        </div>
-
-        <div class="absolute z-[2] min-h-full min-w-full bg-gradient-to-br from-transparent to-amber-500/50 "></div>
-
-        <div
-            class="relative z-10 w-full max-w-sm bg-white/90 rounded-3xl shadow-2xl p-8 space-y-4 transition-transform duration-300 hover:scale-[1.01] backdrop-blur-sm overflow-hidden">
-            <!-- Logo & Company Name -->
-            <div class="flex flex-col items-center">
-                <!-- Placeholder for Logo -->
-                <a href="{{ url('https://sac-po.com') }}">
-                    <img src="{{ URL::asset('/logo/sac.png') }}" alt="SAC Logo"
-                        class="w-24 h-24 rounded-full drop-shadow-md p-1">
-                </a>
-                <h1 class="mt-4 text-2xl md:text-3xl font-bold text-gray-800 text-center">
-                    Kinerja - SAC
-                </h1>
-            </div>
-            <!-- Page Content -->
-            @auth
-                <div>
-                    <div class="flex flex-col items-center justify-center mt-4 space-y-4">
-                        <div class="text-center">
-                            <h2 class="text-lg md:text-2xl font-semibold text-gray-700">
-                                Masuk ke Sistem Kinerja
-                            </h2>
-                        </div>
-                        <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : '/dashboard' }}"
-                            class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow font-semibold"
-                            id="btnDashboard">Klik
-                            Disini</a>
-                    </div>
-                </div>
-            @endauth
-            @guest
-                <div>
-                    {{ $slot }}
-                </div>
-            @endguest
+            <button @click="open=false" class="text-amber-700 hover:text-amber-900 ml-4">✕</button>
         </div>
     </div>
 
+    <!-- decorative blobs -->
+    <svg class="absolute -top-24 -left-24 w-80 h-80 blob" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+        aria-hidden>
+        <defs>
+            <linearGradient id="a" x1="0" x2="1">
+                <stop offset="0" stop-color="#fff7ed" />
+                <stop offset="1" stop-color="#fff3c4" />
+            </linearGradient>
+        </defs>
+        <path fill="url(#a)"
+            d="M43.3,-70.4C56.9,-62.8,68.9,-56,74.1,-45.5C79.3,-35,77.8,-20.9,79.1,-7.4C80.4,6.2,84.6,19.6,80,32.3C75.4,45,62,57,47,64.6C31.9,72.3,16,75.6,1.6,73.4C-12.9,71.2,-25.8,63.6,-39.4,55.1C-53,46.6,-67.4,37.2,-74.5,23.7C-81.6,10.3,-81.3,-8.3,-73.8,-23.6C-66.3,-38.9,-51.5,-50.9,-36.2,-58.3C-21,-65.8,-5.3,-68.7,9.8,-74C24.9,-79.3,39.7,-87.9,43.3,-70.4Z"
+            transform="translate(100 100)" />
+    </svg>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const alertBar = document.getElementById("browser-alert");
-            const ua = navigator.userAgent;
+    <main class="xl:min-h-screen flex items-center justify-center px-4 py-10">
+        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 items-start justify-center">
 
-            // Deteksi Chrome (pastikan bukan Edge/Opera)
-            const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua) && !/OPR/.test(ua);
+            <!-- LEFT (only visible on md+): company info, socials, maps, kontak -->
+            <aside class="hidden lg:flex flex-col gap-2">
+                <div class="glass rounded-2xl p-4 shadow-lg border border-amber-100">
+                    <div class="flex items-start gap-4">
+                        <img src="{{ asset('logo/sac.png') }}" alt="SAC Logo"
+                            class="w-20 h-20 object-contain rounded-lg">
+                        <div>
+                            <h2 class="text-lg font-extrabold text-amber-900">PT. Surya Amanah Cendikia (SAC)</h2>
+                            <p class="mt-2 text-sm text-stone-700">Penyedia layanan outsourcing profesional yang
+                                bergerak di bidang cleaning service, security, dan pengembangan SDM. Fokus kami:
+                                kualitas, ketepatan, dan dokumentasi tugas lapangan yang rapi.</p>
+                        </div>
+                    </div>
 
-            if (!isChrome) {
-                alertBar.classList.remove("hidden");
-            }
-        });
-        // console.log("---", navigator.userAgentData.brands.length == 2)
-        // console.log("---", navigator, "---")
-        var OtherBrowser = navigator.userAgentData.brands[2] === undefined
-        var ResLength = navigator.userAgentData.brands.length == 3
+                    <hr class="my-2 border-amber-100">
 
-        if (ResLength) {
-            var Chrome = navigator.userAgentData.brands[0].brand == 'Chromium'
-            var ChromePC = navigator.userAgentData.brands[2].brand == 'Google Chrome'
-            var EdgePC = navigator.userAgentData.brands[2].brand == 'Microsoft Edge'
+                    <!-- Quick facts -->
+                    <div class="grid grid-cols-1 gap-4 text-sm text-stone-700">
+                        <div class="flex items-center gap-3">
+                            <i class="ri-star-line text-[20px] text-amber-500"></i>
+                            <span><strong>Bidang:</strong> Cleaning Service, Security, SDM</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="ri-map-2-line text-[20px] text-amber-500"></i>
+                            <span><strong>Wilayah layanan:</strong> Nasional</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="ri-map-pin-line text-[20px] text-amber-500"></i>
+                            <span><strong>Head Office:</strong> Jl. Budi Utomo No.10, Ronowijayan, Kec. Siman, Kabupaten
+                                Ponorogo, Jawa Timur 63471 — <a href="https://maps.app.goo.gl/4UZmBZG4sahM2VWP6"
+                                    target="_blank" rel="noopener" class="text-amber-600 hover:underline">Buka di
+                                    Maps</a></span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="ri-time-line text-[20px] text-amber-500"></i>
+                            <span><strong>Jam Operasional (Office):</strong> Senin - Jum'at, 08:00 - 15:30 WIB</span>
+                        </div>
+                    </div>
 
+                    <hr class="my-4 border-amber-100">
 
-            var MobileChrome = navigator.userAgentData.brands[1].brand == 'Google Chrome'
-            var MobileChromium = navigator.userAgentData.brands[2].brand == 'Chromium'
-        }
+                    <!-- Socials -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-700 mb-2">Akun Media Sosial</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="https://www.instagram.com/ptsacponorogo/" target="_blank" rel="noopener"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 border border-amber-100 text-sm hover:shadow">
+                                <i class="ri-instagram-line text-[18px]"></i>
+                                <span>@ptsacponorogo</span>
+                            </a>
 
-        // alert(Chrome == false || MobileChromium == false ||  MobileChrome == false || e == false && c == false)
-        // console.log(MobileChromium, MobileChrome)
+                            <a href="https://www.facebook.com/profile.php?id=61571512059418" target="_blank"
+                                rel="noopener"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 border border-amber-100 text-sm hover:shadow">
+                                <i class="ri-facebook-line text-[18px]"></i>
+                                <span>Sac Ponorogo</span>
+                            </a>
 
-        if (!ResLength) {
-            alert('Gunakan Google Chrome Dan Update Ke Versi Terbaru !!');
-            window.location.reload();
-        } else if (!MobileChrome && EdgePC && ChromePC) {
-            alert('Browser Tidak Support Atau Bukan Google Chrome !!');
-            window.location.reload();
-        }
+                            <a href="https://youtube.com/@sacponorogo9355?si=UjkQtK5IHPZjfaPk" target="_blank"
+                                rel="noopener"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 border border-amber-100 text-sm hover:shadow">
+                                <i class="ri-youtube-line text-[18px]"></i>
+                                <span>SAC Ponorogo</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-        // Preview Script
-        $(document).ready(function() {
-            $('#img').change(function() {
-                const input = $(this)[0];
-                const preview = $('.preview');
+                <!-- contact card -->
+                <div class="rounded-xl px-4 py-2 bg-white/80 shadow border border-amber-100 text-sm">
+                    <h4 class="font-semibold text-slate-700">Kontak</h4>
+                    <div class="mt-2 space-y-2 text-slate-700 font-medium">
+                        <div class="flex items-center gap-2">
+                            <i class="ri-whatsapp-line text-[18px] text-amber-500"></i>
+                            <span>WhatsApp: <a href="https://wa.me/6282134360007"
+                                    class="text-amber-600 hover:underline">+62
+                                    821-3436-0007</a></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="ri-mail-send-line text-[18px] text-amber-500"></i>
+                            <span>Email: <a href="mailto:sacponorogo@gmail.com"
+                                    class="text-amber-600 hover:underline">sacponorogo@gmail.com</a></span>
+                        </div>
 
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
+                        <div class="mt-2 relative inline-block">
+                            <a href="https://maps.app.goo.gl/4UZmBZG4sahM2VWP6" target="_blank" rel="noopener"
+                                class="relative inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 text-amber-800
+            overflow-hidden group">
 
-                    reader.onload = function(e) {
-                        preview.show();
-                        preview.find('img').attr('src', e.target.result).removeClass('hidden').addClass(
-                            'rounded-md shadow-md my-4');
-                    };
+                                <!-- Border gradient berputar -->
+                                <span
+                                    class="absolute -inset-[4px] rounded-lg p-[2px]
+                  bg-gradient-to-r from-pink-500 via-yellow-500 to-purple-500
+                  opacity-0 group-hover:opacity-100 animate-rotate-border transition-all duration-300"></span>
 
-                    reader.readAsDataURL(input.files[0]);
-                }
-            });
+                                <!-- Background solid biar isi tetap jelas -->
+                                <span class="absolute inset-[2px] rounded-lg bg-amber-50"></span>
 
-            $('#btnDashboard').click(function() {
-                $(this).prop('disabled', true).text('Tunggu...').css('background-color',
-                    'rgba(96, 165, 250, 0.5)');
-            });
-        });
-    </script>
+                                <!-- Konten -->
+                                <span class="relative flex items-center gap-2">
+                                    <i class="ri-map-pin-fill text-[18px] text-amber-500"></i>
+                                    <span>Lihat lokasi di Google Maps</span>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right: login card -->
+            <section class="mx-auto w-full max-w-md">
+                {{ $slot }}
+            </section>
+        </div>
+    </main>
+
+    <footer class="text-center text-xs text-stone-500 absolute bottom-4 w-full">
+        © {{ date('Y') }} {{ config('app.name', 'Kinerja SAC-PO') }}
+    </footer>
 </body>
 
 </html>

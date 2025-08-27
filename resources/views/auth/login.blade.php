@@ -1,76 +1,71 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <div>
-        <!-- Login Heading -->
-        <div class="text-center">
-            <h2 class="text-lg md:text-2xl font-semibold text-gray-700">
-                Masuk ke Sistem Kinerja
-            </h2>
+    <div class="bg-white/80 glass border border-amber-100 rounded-2xl p-6 shadow-xl">
+        <div class="flex flex-col items-center gap-3">
+            <img src="{{ asset('logo/sac.png') }}" alt="SAC" class="w-24">
+            <h2 class="text-lg font-extrabold text-amber-900">Kinerja - SAC</h2>
+            <p class="text-sm text-stone-700 font-medium">Masuk ke Sistem Kinerja</p>
         </div>
-        {{-- login form --}}
-        <form method="POST" action="{{ route('login') }}" id="form-login" class="space-y-4">
+
+        <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-4" novalidate>
             @csrf
 
-            <!-- Nama Pengguna Field -->
             <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Pengguna</label>
-                <div class="relative">
-                    <!-- Nama Pengguna Icon -->
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </span>
-                    <input type="text" id="name" name="name" placeholder="Masukkan nama pengguna Anda"
-                        required
-                        class="block w-full rounded-xl border-2 border-orange-300 pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 shadow-sm">
+                <label class="block text-xs font-semibold text-stone-700">Nama Pengguna</label>
+                <div class="mt-1">
+                    <input name="name" value="{{ old('name') }}" type="text" required autofocus
+                        class="w-full rounded-lg border border-amber-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
+                        placeholder="wahyudi" />
                 </div>
-                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                @error('name')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <!-- Kata Sandi Field -->
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Kata Sandi</label>
-                <div class="relative">
-                    <!-- Kata Sandi Icon -->
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 15a2 2 0 110-4 2 2 0 010 4z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9a7 7 0 017 7v2a1 1 0 01-1 1H6a1 1 0 01-1-1v-2a7 7 0 017-7z" />
-                        </svg>
-                    </span>
-                    <input type="password" id="password" name="password" placeholder="Masukkan kata sandi Anda"
-                        required
-                        class="block w-full rounded-xl border-2 border-orange-300 pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 shadow-sm">
+            <div x-data="{ show: false }">
+                <label class="block text-xs font-semibold text-stone-700">Kata Sandi</label>
+                <div class="mt-1 relative">
+                    <input name="password" :type="show ? 'text' : 'password'" required
+                        class="w-full rounded-lg border border-amber-200 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
+                        placeholder="••••••••" />
+                    <button type="button" @click="show = !show"
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-amber-700 hover:text-amber-900">
+                        <span x-text="show ? 'Hide' : 'Show'"></span>
+                    </button>
                 </div>
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                @error('password')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <!-- Login Button -->
-            <div class="flex items-center justify-center mt-4">
-                <button id="btnLogin" type="submit"
-                    class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow font-semibold transition-all duration-300">Log
-                    In</button>
+            <div class="flex items-center justify-between text-sm">
+                <label class="inline-flex items-center gap-2">
+                    <input type="checkbox" name="remember" class="rounded text-amber-500 focus:ring-0" />
+                    <span class="text-stone-700">Remember me</span>
+                </label>
+            </div>
+
+            <div>
+                <button type="button"
+                    class="w-full btnLogin bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg shadow">
+                    Log In
+                </button>
             </div>
         </form>
 
-        <!-- "Not Chrome" message, hidden by default -->
-        <div id="divNotChrome" class="hidden text-center mt-4">
-            <p class="text-red-500 font-medium">Gunakan Chrome Untuk Menggunakan Website Ini</p>
+        <div class="mt-4 text-center text-xs text-stone-600">
+            Belum punya akun? <a href="https://www.absensi-sac.sac-po.com/kontrak-baru" target="_blank" rel="noopener"
+                class="text-amber-600 hover:underline">Buat Akun</a>
         </div>
     </div>
     <script>
         $(document).ready(function() {
-            $('#btnLogin').click(function() {
-                $(this).prop('disabled', true).text('Tunggu...').css(
-                    'background-color: rgb(96 165 250 / 0.5);');
-                $('#form-login').submit();
+            $('.btnLogin').on('click', function() {
+                $(this).html(
+                    '<div class="animate-pulse flex justify-center items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Tunggu...</div>'
+                );
+                $(this).attr('disabled', true);
+                $(this).closest('form').submit();
             });
-        })
+        });
     </script>
 </x-guest-layout>
