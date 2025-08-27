@@ -14,7 +14,7 @@
                 <div class="mt-1">
                     <input name="name" value="{{ old('name') }}" type="text" required autofocus
                         class="w-full rounded-lg border border-amber-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
-                        placeholder="wahyudi" />
+                        placeholder="Nama user" />
                 </div>
                 @error('name')
                     <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
@@ -26,7 +26,7 @@
                 <div class="mt-1 relative">
                     <input name="password" :type="show ? 'text' : 'password'" required
                         class="w-full rounded-lg border border-amber-200 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
-                        placeholder="••••••••" />
+                        placeholder="password" />
                     <button type="button" @click="show = !show"
                         class="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-amber-700 hover:text-amber-900">
                         <span x-text="show ? 'Hide' : 'Show'"></span>
