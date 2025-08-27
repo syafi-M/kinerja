@@ -194,16 +194,16 @@
         <div
             class="relative z-10 w-full max-w-sm bg-white/90 rounded-3xl shadow-2xl p-8 space-y-4 transition-transform duration-300 hover:scale-[1.01] backdrop-blur-sm overflow-hidden">
             <!-- Logo & Company Name -->
-            <a href="{{ url('https://sac-po.com') }}">
-                <div class="flex flex-col items-center">
-                    <!-- Placeholder for Logo -->
+            <div class="flex flex-col items-center">
+                <!-- Placeholder for Logo -->
+                <a href="{{ url('https://sac-po.com') }}">
                     <img src="{{ URL::asset('/logo/sac.png') }}" alt="SAC Logo"
                         class="w-24 h-24 rounded-full drop-shadow-md p-1">
-                    <h1 class="mt-4 text-2xl md:text-3xl font-bold text-gray-800 text-center">
-                        Kinerja - SAC
-                    </h1>
-                </div>
-            </a>
+                </a>
+                <h1 class="mt-4 text-2xl md:text-3xl font-bold text-gray-800 text-center">
+                    Kinerja - SAC
+                </h1>
+            </div>
             <!-- Page Content -->
             @auth
                 <div>
