@@ -1,57 +1,76 @@
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
-    
+
     <div>
-        <form method="POST" action="{{ route('login') }}" id="form-login">
+        <!-- Login Heading -->
+        <div class="text-center">
+            <h2 class="text-lg md:text-2xl font-semibold text-gray-700">
+                Masuk ke Sistem Kinerja
+            </h2>
+        </div>
+        {{-- login form --}}
+        <form method="POST" action="{{ route('login') }}" id="form-login" class="space-y-4">
             @csrf
-            
-            <div class="mt-4">
-                <x-input-label for="name" :value="__('Name')" />
-    
-                <x-text-input id="name" class="block mt-1 w-full"
-                                type="text"
-                                name="name" 
-                                required autocomplete="name" />
-    
+
+            <!-- Nama Pengguna Field -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Pengguna</label>
+                <div class="relative">
+                    <!-- Nama Pengguna Icon -->
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </span>
+                    <input type="text" id="name" name="name" placeholder="Masukkan nama pengguna Anda"
+                        required
+                        class="block w-full rounded-xl border-2 border-orange-300 pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 shadow-sm">
+                </div>
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
-    
-            <!-- Password -->
-            <div class="mt-4">
-                <x-input-label for="password" :value="__('Password')" />
-    
-                <x-text-input id="password" class="block mt-1 w-full"
-                                type="password"
-                                name="password"
-                                required autocomplete="current-password" />
-    
+
+            <!-- Kata Sandi Field -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Kata Sandi</label>
+                <div class="relative">
+                    <!-- Kata Sandi Icon -->
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15a2 2 0 110-4 2 2 0 010 4z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9a7 7 0 017 7v2a1 1 0 01-1 1H6a1 1 0 01-1-1v-2a7 7 0 017-7z" />
+                        </svg>
+                    </span>
+                    <input type="password" id="password" name="password" placeholder="Masukkan kata sandi Anda"
+                        required
+                        class="block w-full rounded-xl border-2 border-orange-300 pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 shadow-sm">
+                </div>
                 <x-input-error :messages="$errors->get('password')" class="mt-2" />
             </div>
-    
-            <!-- Remember Me -->
-            <!--<div class="block mt-4">-->
-            <!--    <label for="remember_me" class="inline-flex items-center">-->
-            <!--        <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">-->
-            <!--        <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>-->
-            <!--    </label>-->
-            <!--</div>-->
-    
+
+            <!-- Login Button -->
             <div class="flex items-center justify-center mt-4">
-                <button id="btnLogin" type="submit" class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow font-semibold">Log In</button>
+                <button id="btnLogin" type="submit"
+                    class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow font-semibold transition-all duration-300">Log
+                    In</button>
             </div>
         </form>
-        
-        <div id="divNotChrome" class="hidden">
-            <p>Gunakan Chrome Untuk Menggunakan Website Ini</p>
+
+        <!-- "Not Chrome" message, hidden by default -->
+        <div id="divNotChrome" class="hidden text-center mt-4">
+            <p class="text-red-500 font-medium">Gunakan Chrome Untuk Menggunakan Website Ini</p>
         </div>
     </div>
     <script>
         $(document).ready(function() {
-        	$('#btnLogin').click(function(){
-    		    $(this).prop('disabled', true).text('Tunggu...').css('background-color: rgb(96 165 250 / 0.5);');
-    		    $('#form-login').submit();
-    		});
+            $('#btnLogin').click(function() {
+                $(this).prop('disabled', true).text('Tunggu...').css(
+                    'background-color: rgb(96 165 250 / 0.5);');
+                $('#form-login').submit();
+            });
         })
     </script>
 </x-guest-layout>

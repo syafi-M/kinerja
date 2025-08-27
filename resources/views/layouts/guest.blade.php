@@ -6,19 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ env('APP_NAME', 'Kinerja SAC-PO') }}</title>
+    <title>{{ 'Login - ' . env('APP_NAME', 'Login - Kinerja SAC-PO') }}</title>
     <link rel="shortcut icon" href="{{ URL::asset('favicon.ico') }}" type="image/x-icon">
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    {{-- <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" /> --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
     @media screen and (min-height: 576px) {
         .bg-img {
             background-image: url('{{ URL::asset('/logo/bg-versi-ramdhan.jpg') }}');
@@ -151,10 +158,9 @@
     }
 </style>
 
-<body class="font-sans text-gray-900 antialiased overflow-hidden">
+<body class="text-gray-900 antialiased max-h-svh overflow-hidden transition-colors duration-300">
 
-    <div style="min-height: 100svh; position: relative; z-index: 9001;"
-        class="flex flex-col px-4 bg-gradient-to-b from-gray-100 to-gray-500/70 bg-cover items-center justify-center bg-img overflow-hidden">
+    <div class="min-h-screen flex items-center justify-center p-4 bg-cover bg-img overflow-hidden relative">
 
         @if (Carbon\Carbon::now()->lessThan(Carbon\Carbon::parse('2025-04-09')))
             <div class="overflow-hidden">
@@ -169,41 +175,47 @@
             </div>
         @endif
 
-        <div style="font-size: 8pt; color: #404040; top: 5pt; left: 5pt; background-color: rgba(254, 243, 199, 0.75); padding: 4px; padding-left: 8px; padding-right: 12px;"
-            class="absolute flex items-center gap-2 rounded-full">
-            <i style="background-color: rgba(254, 243, 199, 0.85); padding-left: 6px; padding-right: 6px;"
-                class="ri-information-2-line text-xl rounded-full"></i>
-            <p class="font-semibold">Gunakan Google Chrome untuk pengalaman terbaik. rill cuy</p>
+        <div id="browser-alert"
+            class="hidden absolute top-0 left-0 right-0 z-20 flex items-center justify-between
+         bg-orange-100 border-b border-orange-300 text-orange-800
+         px-3 py-2 text-sm">
+            <div class="flex items-center gap-2">
+                <i class="ri-information-2-line text-lg"></i>
+                <span>Gunakan <strong>Google Chrome</strong> untuk pengalaman terbaik.</span>
+            </div>
+            <button onclick="document.getElementById('browser-alert').remove()"
+                class="text-orange-600 hover:text-orange-800">
+                ✕
+            </button>
         </div>
 
-        <div class="sm:flex sm:flex-col justify-center">
+        <div class="absolute z-[2] min-h-full min-w-full bg-gradient-to-br from-transparent to-amber-500/50 "></div>
+
+        <div
+            class="relative z-10 w-full max-w-sm bg-white/90 rounded-3xl shadow-2xl p-8 space-y-4 transition-transform duration-300 hover:scale-[1.01] backdrop-blur-sm overflow-hidden">
+            <!-- Logo & Company Name -->
             <a href="{{ url('https://sac-po.com') }}">
-                <div
-                    class="flex flex-col justify-center items-center gap-2 sm:p-4 sm:bg-gradient-to-tr sm:from-gray-400/20 sm:to-gray-500/20  sm:rounded-md sm:shadow-inner sm:shadow-gray-400/30">
-                    <img src="{{ URL::asset('/logo/sac.png') }}"
-                        class="w-20  -right-2 bg-white p-3 rounded-full shadow" alt="..." width="100%"
-                        height="100%">
-                    <p
-                        class="text-slate-800 font-black text-lg p-2 rounded-md shadow sm:shadow-lg sm:pl-4 text-center sm:pr-2  bg-white">
-                        PT. Surya Amanah Cendikia</p>
+                <div class="flex flex-col items-center">
+                    <!-- Placeholder for Logo -->
+                    <img src="{{ URL::asset('/logo/sac.png') }}" alt="SAC Logo"
+                        class="w-24 h-24 rounded-full drop-shadow-md p-1">
+                    <h1 class="mt-4 text-2xl md:text-3xl font-bold text-gray-800 text-center">
+                        Kinerja - SAC
+                    </h1>
                 </div>
             </a>
-        </div>
-        <div
-            class="w-full drop-shadow-2xl sm:max-w-md mt-6 px-6 py-4 bg-gradient-to-br from-yellow-400 to-amber-500 shadow-lg overflow-hidden rounded-lg h-fit mx-4 sm:mx-0 ">
-            <div class="mt-4">
-                @auth
-                    <p class="text-center font-black text-xl text-slate-800">Anda Sudah Login</p>
-                @endauth
-                @guest
-                    <p class="text-center sm:hidden font-black text-xl text-slate-800">Silahkan Login<br>Terlebih Dahulu</p>
-                @endguest
-            </div>
+            <!-- Page Content -->
             @auth
                 <div>
-                    <div class="flex items-center justify-center mt-4">
+                    <div class="flex flex-col items-center justify-center mt-4 space-y-4">
+                        <div class="text-center">
+                            <h2 class="text-lg md:text-2xl font-semibold text-gray-700">
+                                Masuk ke Sistem Kinerja
+                            </h2>
+                        </div>
                         <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : '/dashboard' }}"
-                            class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow" id="btnDashboard">Klik
+                            class="bg-teal-400 hover:bg-teal-500 rounded-lg py-2 px-10 shadow font-semibold"
+                            id="btnDashboard">Klik
                             Disini</a>
                     </div>
                 </div>
@@ -218,6 +230,17 @@
 
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const alertBar = document.getElementById("browser-alert");
+            const ua = navigator.userAgent;
+
+            // Deteksi Chrome (pastikan bukan Edge/Opera)
+            const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua) && !/OPR/.test(ua);
+
+            if (!isChrome) {
+                alertBar.classList.remove("hidden");
+            }
+        });
         // console.log("---", navigator.userAgentData.brands.length == 2)
         // console.log("---", navigator, "---")
         var OtherBrowser = navigator.userAgentData.brands[2] === undefined
