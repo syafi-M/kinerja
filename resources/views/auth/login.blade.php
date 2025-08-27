@@ -29,7 +29,11 @@
                         placeholder="Masukkan Password..." />
                     <button type="button" @click="show = !show"
                         class="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-amber-700 hover:text-amber-900">
-                        <span x-text="show ? 'Hide' : 'Show'"></span>
+                        <!-- Eye (when hidden) -->
+                        <i class="ri-eye-line text-xl" x-show="!show"></i>
+
+                        <!-- Eye Off (when shown) -->
+                        <i class="ri-eye-off-line text-xl" x-show="show"></i>
                     </button>
                 </div>
                 @error('password')

@@ -66,7 +66,7 @@
             transform="translate(100 100)" />
     </svg>
 
-    <main class="xl:min-h-screen flex items-center justify-center px-4 py-10">
+    <main class="min-h-screen lg:min-h-full xl:min-h-screen flex items-center justify-center px-4 py-10">
         <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 items-start justify-center">
 
             <!-- LEFT (only visible on md+): company info, socials, maps, kontak -->
