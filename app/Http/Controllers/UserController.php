@@ -211,7 +211,7 @@ class UserController extends Controller
 
     public function addKaryawanIndex()
     {
-        $kerjasama = Kerjasama::all();
+        $kerjasama = Kerjasama::whereNotIn('id', [1])->get();
         $devisi = Divisi::whereNotIn('id', [2, 3, 4, 7, 8, 9, 10, 11, 12, 14, 18, 20, 24, 26])->get();
         // sendOtpReg('syafimq00@gmail.com');
         return view('admin.user.addKaryawan.index', compact('kerjasama', 'devisi'));
