@@ -162,7 +162,7 @@ class DashboardController extends Controller
                 ->diffInHours(Carbon::now()) <= 20;
         }
 
-        // dd((clone $absenQueryBase)->latest()->first());
+        // dd($sholat, $sholatSaatIni, $rillSholat);
 
         return view('dashboard', compact(
             'absen',

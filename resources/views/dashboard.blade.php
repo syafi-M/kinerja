@@ -125,48 +125,46 @@
         @endif
 
         <div class="flex justify-center items-center">
-            @if ($sholat)
-                @if ($rillSholat)
-                    <div style="margin-top: 6pt; margin-bottom: 6pt; font-size: 10pt;"
-                        class="text-center rounded-tr-lg rounded-bl-lg sm:w-fit font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0 capitalize">
-                        <p>Sedang memasuki waktu {{ ucfirst($sholatSaatIni) }}</p>
-                        @if (Auth::user()->kerjasama_id == 1)
-                            <form action="{{ route('update' . ucfirst($sholatSaatIni), $sholat->id) }}" method="POST"
-                                class="flex justify-center items-center">
-                                @csrf
-                                @method('PUT')
-                                <div class="flex justify-center flex-col">
-                                    <div class="flex justify-center items-center">
-                                        <input id="lat" name="lat_user" value="" class="hidden lat" />
-                                        <input id="long" name="long_user" value="" class="hidden long" />
-                                        <button type="submit"
-                                            class="bg-yellow-600 flex justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 rounded-md transition all ease-out duration-100 mr-0 sm:mr-2 capitalize items-center"
-                                            style="margin-top: 4pt; font-size: 12pt;">
-                                            <i class="ri-sun-foggy-line"></i><span class="font-bold">Oke Siap</span>
-                                        </button>
-                                    </div>
+            @if ($rillSholat)
+                <div style="margin-top: 6pt; margin-bottom: 6pt; font-size: 10pt;"
+                    class="text-center rounded-tr-lg rounded-bl-lg sm:w-fit font-semibold bg-slate-100 py-2 px-4 shadow-md mx-10 inset-0 capitalize">
+                    <p>Sedang memasuki waktu {{ ucfirst($sholatSaatIni) }}</p>
+                    @if (Auth::user()->kerjasama_id == 1)
+                        <form action="{{ route('update' . ucfirst($sholatSaatIni), $sholat->id) }}" method="POST"
+                            class="flex justify-center items-center">
+                            @csrf
+                            @method('PUT')
+                            <div class="flex justify-center flex-col">
+                                <div class="flex justify-center items-center">
+                                    <input id="lat" name="lat_user" value="" class="hidden lat" />
+                                    <input id="long" name="long_user" value="" class="hidden long" />
+                                    <button type="submit"
+                                        class="bg-yellow-600 flex justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 rounded-md transition all ease-out duration-100 mr-0 sm:mr-2 capitalize items-center"
+                                        style="margin-top: 4pt; font-size: 12pt;">
+                                        <i class="ri-sun-foggy-line"></i><span class="font-bold">Oke Siap</span>
+                                    </button>
                                 </div>
-                            </form>
-                        @else
-                            <a href="{{ route(Auth::user()->divisi->jabatan->code_jabatan == 'CO-CS' ? 'leader-absenSholat' : 'danru-absenSholat') }}"
-                                class="flex justify-center items-center">
-                                @csrf
-                                @method('PUT')
-                                <div class="flex justify-center flex-col">
-                                    <div class="flex justify-center items-center">
-                                        <input id="lat" name="lat_user" value="" class="hidden lat" />
-                                        <input id="long" name="long_user" value="" class="hidden long" />
-                                        <button type="submit"
-                                            class="bg-yellow-600 flex justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 rounded-md transition all ease-out duration-100 mr-0 sm:mr-2 uppercase items-center"
-                                            style="margin-top: 4pt; font-size: 12pt;">
-                                            <i class="ri-sun-foggy-line"></i><span class="font-bold">Oke</span>
-                                        </button>
-                                    </div>
+                            </div>
+                        </form>
+                    @else
+                        <a href="{{ route(Auth::user()->divisi->jabatan->code_jabatan == 'CO-CS' ? 'leader-absenSholat' : 'danru-absenSholat') }}"
+                            class="flex justify-center items-center">
+                            @csrf
+                            @method('PUT')
+                            <div class="flex justify-center flex-col">
+                                <div class="flex justify-center items-center">
+                                    <input id="lat" name="lat_user" value="" class="hidden lat" />
+                                    <input id="long" name="long_user" value="" class="hidden long" />
+                                    <button type="submit"
+                                        class="bg-yellow-600 flex justify-center shadow-md hover:bg-yellow-700 text-white hover:shadow-none px-3 py-1 rounded-md transition all ease-out duration-100 mr-0 sm:mr-2 uppercase items-center"
+                                        style="margin-top: 4pt; font-size: 12pt;">
+                                        <i class="ri-sun-foggy-line"></i><span class="font-bold">Oke</span>
+                                    </button>
                                 </div>
-                            </a>
-                        @endif
-                    </div>
-                @endif
+                            </div>
+                        </a>
+                    @endif
+                </div>
             @endif
         </div>
         <div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
