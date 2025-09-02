@@ -129,7 +129,7 @@ class DashboardController extends Controller
             if ($user->kerjasama_id == 1) {
                 foreach ($waktuSholat as $namaSholat => $waktu) {
                     if (
-                        $waktu['status'] === 0 &&
+                        $waktu['status'] === "0" &&
                         $waktuSekarang >= $waktu['start'] &&
                         $waktuSekarang <= $waktu['end']
                     ) {
@@ -140,7 +140,7 @@ class DashboardController extends Controller
             } else {
                 foreach ($waktuSholat2 as $namaSholat => $waktu) {
                     if (
-                        $waktu['status'] === 0 &&
+                        $waktu['status'] === "0" &&
                         $waktuSekarang >= $waktu['start'] &&
                         $waktuSekarang <= $waktu['end']
                     ) {
