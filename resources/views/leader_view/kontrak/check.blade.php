@@ -129,7 +129,8 @@
                                                 @elseif($i->send_to_atasan == 0 && !$i->ttd_atasan && $i->ttd)
                                                     <p class="badge badge-error overflow-hidden">Tolak</p>
                                                 @else
-                                                    <p class="badge badge-warning overflow-hidden">Proses</p>
+                                                    <p class="badge badge-warning overflow-hidden">
+                                                        {{ $i->ttd ? 'Menunggu acc' : 'Proses' }}</p>
                                                 @endif
                                             </td>
                                         </tr>
