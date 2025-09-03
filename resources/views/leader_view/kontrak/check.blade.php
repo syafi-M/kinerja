@@ -84,7 +84,8 @@
                                 <thead>
                                     <tr class="text-center">
                                         <th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">
-                                            <template x-if="allIds.length > 0" class="flex items-center gap-2">
+                                            <template x-if="allIds.length > 0"
+                                                class="flex flex-col justify-center items-center gap-2">
                                                 <label for="pilih" class="label label-text text-xs">Pilih:</label>
                                                 <input type="checkbox" x-model="selectAll" @change="toggleAll()"
                                                     class="checkbox checkbox-sm">
