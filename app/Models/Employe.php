@@ -11,7 +11,7 @@ class Employe extends Model
     use HasApiTokens;
     protected $connection = 'mysql2';
     protected $table = 'employes';
-    
+
     protected $fillable = [
         'name',
         'ttl',
@@ -22,5 +22,6 @@ class Employe extends Model
         'numbers',
         'initials',
         'date_real',
+        'alamat',
     ];
 }

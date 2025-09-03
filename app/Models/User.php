@@ -40,7 +40,8 @@ class User extends Authenticatable implements CanBeSigned
         'status_id',
         'temp_ban',
         'nik',
-        'no_hp'
+        'no_hp',
+        'alamat'
     ];
 
     /**
@@ -62,7 +63,7 @@ class User extends Authenticatable implements CanBeSigned
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-    
+
     public function getSignatureDocumentTemplate(): SignatureDocumentTemplate
     {
         return new SignatureDocumentTemplate(
@@ -70,21 +71,21 @@ class User extends Authenticatable implements CanBeSigned
             // template: new BladeDocumentTemplate('pdf/my-pdf-blade-template'), // Uncomment for Blade template
             template: new PdfDocumentTemplate(storage_path('pdf/template.pdf')), // Uncomment for PDF template
             signaturePositions: [
-                 new SignaturePosition(
-                     signaturePage: 1,
-                     signatureX: 20,
-                     signatureY: 25,
-                 ),
-                 new SignaturePosition(
-                     signaturePage: 2,
-                     signatureX: 25,
-                     signatureY: 50,
-                 ),
-            ]               
+                new SignaturePosition(
+                    signaturePage: 1,
+                    signatureX: 20,
+                    signatureY: 25,
+                ),
+                new SignaturePosition(
+                    signaturePage: 2,
+                    signatureX: 25,
+                    signatureY: 50,
+                ),
+            ]
         );
     }
-    
-     public function hasReceivedNotificationToday()
+
+    public function hasReceivedNotificationToday()
     {
         return $this->last_notification_date === Carbon::today()->toDateString();
     }
@@ -128,9 +129,9 @@ class User extends Authenticatable implements CanBeSigned
     {
         return $this->belongsTo(Status::class);
     }
-     public function SlipGaji()
+    public function SlipGaji()
     {
         return $this->setConnection("mysql2")->hasMany(SlipGaji::class);
     }
-    
+
 }

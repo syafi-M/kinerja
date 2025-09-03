@@ -25,13 +25,14 @@ class UserRequest extends FormRequest
             'kerjasama_id' => 'required',
             'devisi_id' => 'required',
             'jabatan_id' => 'required',
-            'name'      => 'required',
+            'name' => 'required',
             'nama_lengkap' => 'required',
-            'email'     => 'email:rfc',
-            'password'  => 'required',
-            'image'     => 'required|image|mimes:jpg,jpeg,png,svg|max:10240',
-            'nik'       => 'nullable',
-            'no_hp'     => 'nullable|max:20'
+            'email' => 'email:rfc',
+            'password' => 'required',
+            'image' => 'required|image|mimes:jpg,jpeg,png,svg|max:10240',
+            'nik' => 'nullable',
+            'no_hp' => 'nullable|max:20',
+            'alamat' => 'nullable'
         ];
     }
 }
