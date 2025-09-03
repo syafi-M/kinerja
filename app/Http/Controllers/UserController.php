@@ -243,6 +243,7 @@ class UserController extends Controller
             'jabatan_id' => Divisi::find($request->devisi_id)->value('jabatan_id'),
             'name' => $newUsername,
             'email' => $request->email,
+            'alamat' => $request->alamat,
             'password' => Hash::make($request->password),
             'image' => $image,
             'nama_lengkap' => $request->nama_lengkap,
@@ -262,6 +263,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'pw' => $request->password,
             'email' => $request->email,
+            'alamat' => $request->alamat,
             'image' => $image,
             'img_ktp_dpn' => $image2,
             'ttl' => $request->tpt . ', ' . $request->tgl,
@@ -270,6 +272,7 @@ class UserController extends Controller
             'no_hp' => normalizePhone($request->no_hp),
             'client_id' => $request->client_id,
             'devisi_id' => $request->devisi_id,
+            'jabatan_id' => Divisi::find($request->devisi_id)->value('jabatan_id'),
         ];
 
         if ($request->hasFile('image')) {

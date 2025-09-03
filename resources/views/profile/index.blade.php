@@ -24,10 +24,10 @@
                 display: block;
             }
         </style>
-        <div>
+        <div class="md:flex flex-col justify-center items-center">
             <p class="text-center text-2xl font-bold pt-5 uppercase grid justify-center items-center">Profile</p>
-            <div class="bg-slate-100 mx-5 my-5 rounded-md shadow">
-                <div>
+            <div class="bg-slate-100 mx-5 my-5 rounded-md shadow max-w-sm w-full">
+                <div class="">
                     <span class="flex justify-end mt-5 mx-5">
                         <a href="{{ route('profile.edit', Auth::user()->id) }}"
                             class="bg-amber-400 py-1.5 px-2 text-xs rounded-full">
@@ -69,23 +69,23 @@
                                         <td style="vertical-align: top;">
                                             Fullname
                                         </td>
-                                        <td style="padding-left: 8px;" class="break-words whitespace-pre-wrap">:
+                                        <td style="padding-left: 8px;">:
                                             {{ ucwords(strtolower(Auth::user()->nama_lengkap)) }}</td>
                                     </tr>
                                     <tr>
                                         <td>Email</td>
-                                        <td style="padding-left: 8px;" class="break-words whitespace-pre-line">:
+                                        <td style="padding-left: 8px;">:
                                             {{ Auth::user()->email }}</td>
                                     </tr>
                                     <tr>
                                         <td>NIK</td>
-                                        <td style="padding-left: 8px;" class="break-words whitespace-pre-line">:
+                                        <td style="padding-left: 8px;">:
                                             {{ Auth::user()->nik ? \Illuminate\Support\Facades\Crypt::decryptString(Auth::user()->nik) : '-' }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>No. Hp</td>
-                                        <td style="padding-left: 8px;" class="break-words whitespace-pre-line">:
+                                        <td style="padding-left: 8px;">:
                                             {{ Auth::user()->no_hp ? Auth::user()->no_hp : '-' }}</td>
                                     </tr>
                                     <tr>

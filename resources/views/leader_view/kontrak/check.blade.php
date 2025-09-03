@@ -83,13 +83,13 @@
                                 class="table table-xs table-zebra sm:table-md text-xs bg-slate-50 font-semibold sm:text-md">
                                 <thead>
                                     <tr class="text-center">
-                                        <th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">
-                                            <template x-if="allIds.length > 0"
-                                                class="flex flex-col justify-center items-center gap-2">
-                                                <label for="pilih" class="label label-text text-xs">Pilih:</label>
+                                        <th
+                                            class="p-1 py-2 bg-slate-300 rounded-tl-2xl flex justify-center items-center gap-1">
+                                            <template x-if="allIds.length > 0">
                                                 <input type="checkbox" x-model="selectAll" @change="toggleAll()"
                                                     class="checkbox checkbox-sm">
                                             </template>
+                                            <label>Pilih</label>
                                         </th>
                                         <th class="p-1 py-2 bg-slate-300">Nama</th>
                                         <th class="p-1 py-2 bg-slate-300">Jabatan</th>
@@ -130,8 +130,8 @@
                                                 @elseif($i->send_to_atasan == 0 && !$i->ttd_atasan && $i->ttd)
                                                     <p class="badge badge-error overflow-hidden">Tolak</p>
                                                 @else
-                                                    <p class="badge badge-warning overflow-hidden">
-                                                        {{ $i->ttd ? 'Menunggu acc' : 'Proses' }}</p>
+                                                    <p class="badge badge-warning overflow-hidden w-[80px] py-3">
+                                                        {{ $i->ttd ? 'Proses P1' : 'Proses' }}</p>
                                                 @endif
                                             </td>
                                         </tr>
