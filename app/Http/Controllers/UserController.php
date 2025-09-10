@@ -238,7 +238,7 @@ class UserController extends Controller
         // absen
         $userAbsen = new User();
         $userAbsen = [
-            'kerjasama_id' => Kerjasama::where('client_id', $request->client_id)->value('id'),
+            'kerjasama_id' => Kerjasama::firstWhere('client_id', $request->client_id)->id,
             'devisi_id' => $request->devisi_id,
             'jabatan_id' => Divisi::find($request->devisi_id)->jabatan_id,
             'name' => $newUsername,
