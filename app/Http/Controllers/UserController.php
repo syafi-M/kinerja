@@ -240,7 +240,7 @@ class UserController extends Controller
         $userAbsen = [
             'kerjasama_id' => Kerjasama::where('client_id', $request->client_id)->value('id'),
             'devisi_id' => $request->devisi_id,
-            'jabatan_id' => Divisi::find($request->devisi_id)->value('jabatan_id'),
+            'jabatan_id' => Divisi::find($request->devisi_id)->jabatan_id,
             'name' => $newUsername,
             'email' => $request->email,
             'alamat' => $request->alamat,
@@ -272,7 +272,7 @@ class UserController extends Controller
             'no_hp' => normalizePhone($request->no_hp),
             'client_id' => $request->client_id,
             'devisi_id' => $request->devisi_id,
-            'jabatan_id' => Divisi::find($request->devisi_id)->value('jabatan_id'),
+            'jabatan_id' => Divisi::find($request->devisi_id)->jabatan_id,
         ];
 
         if ($request->hasFile('image')) {
