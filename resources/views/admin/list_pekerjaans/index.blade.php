@@ -59,7 +59,8 @@
                     @forelse($listPekerjaans as $li)
                         <tr>
                             <td style="max-width: 4px;">{{ $no++ }}</td>
-                            <td style="max-width: 100px;">{{ $li->ruangan ? $li->ruangan->nama_ruangan : 'Kosong' }}
+                            <td style="max-width: 100px;" class="{{ $li->ruangan ? '' : 'text-red-500' }}">
+                                {{ $li->ruangan ? $li->ruangan->nama_ruangan : 'Kosong' }}
                             </td>
                             <td style="max-width: 200px;">
                                 @php
