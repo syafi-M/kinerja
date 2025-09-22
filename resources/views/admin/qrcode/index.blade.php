@@ -10,8 +10,12 @@
 			</div>
 			
 			<!--Form Export-->
-			<form action="{{ route('qrcode.export')}}" id="exportForm" method="POST">
+			<form action="{{ route('qrcode.export')}}" id="exportForm" method="POST" class="flex justify-between items-center">
 			    @csrf
+				<div class="flex justify-end gap-2 mx-16 py-3">
+					<a href="{{ route('admin.index') }}" class="btn btn-error">Kembali</a>
+					<a href="{{ url('admin/qrcode/create') }}" class="btn btn-primary">+ NEW QR</a>
+				</div>
 				<div class="flex items-end justify-end mx-10 mb-2 gap-x-3">
     			    <div class="flex flex-col gap-2">
     			        <span class="text-white text-sm font-semibold">Filter Mitra</span>
@@ -89,10 +93,7 @@
 				<div class="mt-5 mx-10">
 					{{ $qr->links() }}
 				</div>
-			<div class="flex justify-end gap-2 mx-16 py-3">
-				<a href="{{ route('admin.index') }}" class="btn btn-error">Back</a>
-				<a href="{{ url('admin/qrcode/create') }}" class="btn btn-primary">+ NEW QR</a>
-			</div>
+			
 		</div>
 	</x-main-div>
     	<script>
