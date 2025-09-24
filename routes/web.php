@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\Admin\HandlingAttendanceToExcelPage;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\CheckPointController;
@@ -239,7 +240,6 @@ Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     Route::get('/leader-absenSholat', [LeaderController::class, 'indexAbsenSholat'])->name('leader-absenSholat');
     Route::post('/leader-absenSholat-store', [LeaderController::class, 'storeAbsenSholat'])->name('leader-absenSholat-store');
     Route::get('/leader-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('leader-slip');
-
 });
 // danru
 Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
@@ -353,6 +353,10 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
 
     Route::get('/admin-addKaryawan/index', [UserController::class, 'addKaryawanAdminIndex'])->name('addKaryawanAdminIndex');
     Route::put('/admin-addKaryawan/{id}', [UserController::class, 'addKaryawanStatus'])->name('addKaryawanStatus');
+
+    // Routing Handling EDIT EXCELLL
+    Route::get('/admin-report-attendance', [HandlingAttendanceToExcelPage::class, 'index'])->name('attendanceReport');
+    Route::post('/admin/attendance/update', [HandlingAttendanceToExcelPage::class, 'update'])->name('admin.attendance.update');
 });
 
 

@@ -89,7 +89,6 @@ class AdminController extends Controller
         $formattedUptime = sprintf('%d %s %02d:%02d:%02d', $days, $daysLabel, $hours, $minutes, $seconds);
 
         return response()->json(['uptime' => $formattedUptime]);
-
     }
 
     public function checkPoint(Request $request)
@@ -239,7 +238,6 @@ class AdminController extends Controller
             toastr()->error('Data Tidak Ditemukan', 'error');
             return redirect()->back();
         }
-
     }
 
     public function absen(Request $request)
@@ -269,7 +267,7 @@ class AdminController extends Controller
         }
 
         // Paginate and include the filter values in the pagination links
-        $absen = $absenQuery->paginate(200);
+        $absen = $absenQuery->paginate(50);
         $absen->appends(['filterKerjasama' => $filter, 'filterDevisi' => $filterDivisi]);
 
         // Other data retrieval
@@ -607,7 +605,6 @@ class AdminController extends Controller
             return response($output, 200)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
-
         } else {
             toastr()->error('Mohon Masukkan Filter Export', 'error');
             return redirect()->back();
@@ -707,9 +704,7 @@ class AdminController extends Controller
                     ->header('Content-Type', 'application/pdf')
                     ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
             }
-
         }
-
     }
 
     public function hapusFotoAbsen(Request $request)
@@ -750,8 +745,4 @@ class AdminController extends Controller
 
         return view('admin.slip.index', compact('slip', 'bulan', 'mitra', 'penempatan'));
     }
-
-
-
-
 }
