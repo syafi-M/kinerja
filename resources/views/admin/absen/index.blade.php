@@ -59,7 +59,7 @@
 
             {{-- Export to Pdf / Edit to Excel --}}
             <form method="GET">
-                <div class="flex items-center justify-center mx-10 w-screen">
+                <div class="flex items-center justify-center mx-10 w-full">
                     <div class="flex items-center gap-2">
                         <div class="mr-5">
                             <select name="kerjasama_id" id="selectInput" style="width: 10rem;"
@@ -101,7 +101,7 @@
                                     class="input input-bordered w-fit text-xs" placeholder="Masukkan hari libur.." />
                             </div>
                             {{-- + Jadwal --}}
-                            <div class="flex justify-center items-center px-2 py-1 bg-slate-100 rounded mx-2">
+                            <div class="flex justify-center items-center px-2 py-1 bg-slate-100 rounded ml-2">
                                 <input type="checkbox" name="jadwal" id="jadwal" value="1" class="checkbox ">
                                 <label for="jadwal" class="label label-text font-semibold text-xs text-slate-500">+
                                     Jadwal</label>
