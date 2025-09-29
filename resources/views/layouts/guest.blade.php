@@ -76,7 +76,7 @@
                         <img src="{{ asset('logo/sac.png') }}" alt="SAC Logo"
                             class="w-20 h-20 object-contain rounded-lg">
                         <div>
-                            <h2 class="text-lg font-extrabold text-amber-900">PT. Surya Amanah Cendikia (SAC)</h2>
+                            <h2 class="text-lg font-extrabold text-amber-900">PT. Surya Amanah Cendekia (SAC)</h2>
                             <p class="mt-2 text-sm text-stone-700">Penyedia layanan outsourcing profesional yang
                                 bergerak di bidang cleaning service, security, dan pengembangan SDM. Fokus kami:
                                 kualitas, ketepatan, dan dokumentasi tugas lapangan yang rapi.</p>

@@ -9,7 +9,6 @@ use App\Models\Kerjasama;
 use App\Models\Shift;
 use App\Models\User;
 use Carbon\Carbon;
-use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -80,16 +79,15 @@ class HandlingAttendanceToExcelPage extends Controller
                     'jadwalUser' => function ($query) use ($str1, $end1) {
                         $query->whereBetween('created_at', [$str1, $end1]);
                     },
-                    'jabatan'
+                    'jabatan',
                 ])
                 ->whereHas('absensi', function ($query) use ($str1, $end1) {
                     $query->whereBetween('tanggal_absen', [$str1, $end1]);
                 })
-                ->when($mitra, fn($q) => $q->where('kerjasama_id', $mitra))
-                ->when($divisiId, fn($q) => $q->where('devisi_id', $divisiId))
+                ->when($mitra, fn ($q) => $q->where('kerjasama_id', $mitra))
+                ->when($divisiId, fn ($q) => $q->where('devisi_id', $divisiId))
                 ->orderBy('nama_lengkap', 'asc')
                 ->get();
-
 
             $kerjasama = Kerjasama::find($mitra);
             $kantor = optional($kerjasama)->id === 1;
@@ -108,12 +106,13 @@ class HandlingAttendanceToExcelPage extends Controller
                     $liburCount++;
                 }
 
-                if (!$current->isWeekend() && !$isHoliday) {
+                if (! $current->isWeekend() && ! $isHoliday) {
                     $hae++;
                 }
 
                 $calendarHeaders[] = [
                     'day' => $current->format('d'),
+                    'name' => $current->format('D'),
                     'isHoliday' => in_array($current->format('Y-m-j'), $dailyData),
                     'isWeekend' => $current->isWeekend(),
                 ];
@@ -133,8 +132,8 @@ class HandlingAttendanceToExcelPage extends Controller
                 $uid = $user->id;
 
                 // Preload user's absensi and izin
-                $userAbsensi = $user->absensi->groupBy(fn($absen) => $absen->created_at->format('Y-m-d'));
-                $userIzin = $izin->where('user_id', $uid)->keyBy(fn($izin) => $izin->created_at->format('Y-m-d'));
+                $userAbsensi = $user->absensi->groupBy(fn ($absen) => $absen->created_at->format('Y-m-d'));
+                $userIzin = $izin->where('user_id', $uid)->keyBy(fn ($izin) => $izin->created_at->format('Y-m-d'));
 
                 $rows = [];
                 $totalMasuk = 0;
@@ -154,7 +153,6 @@ class HandlingAttendanceToExcelPage extends Controller
                     $absensiList = $userAbsensi->get($dateKey) ?? collect();
                     $izinItem = $userIzin->get($dateKey);
 
-
                     // Default status
                     $symbol = '-';
                     $alterSymbol = '-';
@@ -162,7 +160,7 @@ class HandlingAttendanceToExcelPage extends Controller
                     $mainMarked = false;
 
                     foreach ($absensiList as $absen) {
-                        if (!$mainMarked) {
+                        if (! $mainMarked) {
                             if ($absen->keterangan === 'masuk' && $absen->terus == null) {
                                 $symbol = 'M';
                                 $totalMasuk++;
@@ -198,19 +196,20 @@ class HandlingAttendanceToExcelPage extends Controller
                         }
                     }
 
-                    if (!$mainMarked && $izinItem && $izinItem->approve_status === 'accept') {
+                    if (! $mainMarked && $izinItem && $izinItem->approve_status === 'accept') {
                         $symbol = 'I';
                         $totalIzin++;
                         $mainMarked = true;
                     }
 
-                    if (!$mainMarked && ($isHoliday || $isWeekend)) {
+                    if (! $mainMarked && ($isHoliday || $isWeekend)) {
                         $symbol = '//';
                         $alterSymbol = '//';
                     }
 
-                    if ($hasTerus)
+                    if ($hasTerus) {
                         $totalTerus++;
+                    }
 
                     $rows[] = [
                         'date' => $dateKey,
@@ -223,7 +222,6 @@ class HandlingAttendanceToExcelPage extends Controller
                     $current->addDay();
                     // $dummy[] = $absen;
                 }
-
 
                 $totalHariKerja = $kantor ? $hae - $libur : $totalHari - $libur + 1;
 
@@ -248,11 +246,12 @@ class HandlingAttendanceToExcelPage extends Controller
                     'st' => $totalST,
                     'percentage' => $tesPer,
                     'totalHariKerja' => $totalHariKerja,
-                    'totalPoints' => $user->absensi->whereNotNull('point_id')->sum(fn($p) => (int) optional($p->point)->sac_point),
+                    'totalPoints' => $user->absensi->whereNotNull('point_id')->sum(fn ($p) => (int) optional($p->point)->sac_point),
                 ];
 
                 // dd($processedUsers);
             }
+
             // dd($dummy);
             // return view('admin.absen.report', compact('absen', 'all', 'base64', 'user', 'dataUser', 'totalHari', 'dataAbsen', 'currentMonth', 'currentYear', 'libur'));
             return view('admin.absen.report', [
@@ -263,17 +262,17 @@ class HandlingAttendanceToExcelPage extends Controller
                 'totalHari' => $totalHari,
                 'calendarHeaders' => $calendarHeaders,
                 'ended' => $end1,
-                'str' =>  $str1,
+                'str' => $str1,
                 'libur' => $libur,
                 'mitra' => $mitra,
                 'divisi_id' => $divisiId,
             ]);
 
-
             $logoPath = public_path('logo/sac.png');
-            $base64 = 'data:image/' . pathinfo($logoPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($logoPath));
+            $base64 = 'data:image/'.pathinfo($logoPath, PATHINFO_EXTENSION).';base64,'.base64_encode(file_get_contents($logoPath));
         } else {
             toastr()->error('Mohon Masukkan Filter Export', 'error');
+
             return redirect()->back();
         }
     }
@@ -300,20 +299,19 @@ class HandlingAttendanceToExcelPage extends Controller
                 $valueParsed = '-';
         }
 
-
         // dd(Absensi::where('user_id', $userId)->where('tanggal_absen', $date)->first());
         $dataAbsensi = Absensi::where('user_id', $userId)
             ->where('tanggal_absen', $date)
             ->first()
             ?? Absensi::where('user_id', $userId)
-            ->where('tanggal_absen', '<=', $date)
-            ->orderBy('tanggal_absen', 'desc')
-            ->first();
+                ->where('tanggal_absen', '<=', $date)
+                ->orderBy('tanggal_absen', 'desc')
+                ->first();
 
-        if (!$dataAbsensi) {
+        if (! $dataAbsensi) {
             return response()->json([
                 'success' => false,
-                'message' => "Absensi not found for user $userId on date $date"
+                'message' => "Absensi not found for user $userId on date $date",
             ], 404);
         }
         // Search Shift
@@ -323,11 +321,11 @@ class HandlingAttendanceToExcelPage extends Controller
             'tanggal_absen' => $date,
             'keterangan' => $valueParsed,
             'absensi_type_masuk' => $getShift->jam_start,
-            'created_at' => Carbon::parse($date . ' ' . $getShift->jam_start)->format('Y-m-d H:i:s')
+            'created_at' => Carbon::parse($date.' '.$getShift->jam_start)->format('Y-m-d H:i:s'),
         ];
 
         try {
-            if ($valueParsed !== '-' || !$valueParsed) {
+            if ($valueParsed !== '-' || ! $valueParsed) {
                 if ($dataAbsensi->tanggal_absen == $date) {
                     // ✅ Update existing record
                     $dataAbsensi->update($data);
@@ -342,6 +340,7 @@ class HandlingAttendanceToExcelPage extends Controller
             } else {
                 $dataAbsensi->delete();
             }
+
             return response()->json(['success' => true]);
         } catch (\Exception $th) {
             throw $th;
@@ -406,16 +405,15 @@ class HandlingAttendanceToExcelPage extends Controller
                     'jadwalUser' => function ($query) use ($str1, $end1) {
                         $query->whereBetween('created_at', [$str1, $end1]);
                     },
-                    'jabatan'
+                    'jabatan',
                 ])
                 ->whereHas('absensi', function ($query) use ($str1, $end1) {
                     $query->whereBetween('tanggal_absen', [$str1, $end1]);
                 })
-                ->when($mitra, fn($q) => $q->where('kerjasama_id', $mitra))
-                ->when($divisiId, fn($q) => $q->where('devisi_id', $divisiId))
+                ->when($mitra, fn ($q) => $q->where('kerjasama_id', $mitra))
+                ->when($divisiId, fn ($q) => $q->where('devisi_id', $divisiId))
                 ->orderBy('nama_lengkap', 'asc')
                 ->get();
-
 
             $kerjasama = Kerjasama::find($mitra);
             $kantor = optional($kerjasama)->id === 1;
@@ -434,7 +432,7 @@ class HandlingAttendanceToExcelPage extends Controller
                     $liburCount++;
                 }
 
-                if (!$current->isWeekend() && !$isHoliday) {
+                if (! $current->isWeekend() && ! $isHoliday) {
                     $hae++;
                 }
 
@@ -459,8 +457,8 @@ class HandlingAttendanceToExcelPage extends Controller
                 $uid = $user->id;
 
                 // Preload user's absensi and izin
-                $userAbsensi = $user->absensi->groupBy(fn($absen) => $absen->created_at->format('Y-m-d'));
-                $userIzin = $izin->where('user_id', $uid)->keyBy(fn($izin) => $izin->created_at->format('Y-m-d'));
+                $userAbsensi = $user->absensi->groupBy(fn ($absen) => $absen->created_at->format('Y-m-d'));
+                $userIzin = $izin->where('user_id', $uid)->keyBy(fn ($izin) => $izin->created_at->format('Y-m-d'));
 
                 $rows = [];
                 $totalMasuk = 0;
@@ -480,7 +478,6 @@ class HandlingAttendanceToExcelPage extends Controller
                     $absensiList = $userAbsensi->get($dateKey) ?? collect();
                     $izinItem = $userIzin->get($dateKey);
 
-
                     // Default status
                     $symbol = '-';
                     $alterSymbol = '-';
@@ -488,7 +485,7 @@ class HandlingAttendanceToExcelPage extends Controller
                     $mainMarked = false;
 
                     foreach ($absensiList as $absen) {
-                        if (!$mainMarked) {
+                        if (! $mainMarked) {
                             if ($absen->keterangan === 'masuk' && $absen->terus == null) {
                                 $symbol = 'M';
                                 $totalMasuk++;
@@ -524,19 +521,20 @@ class HandlingAttendanceToExcelPage extends Controller
                         }
                     }
 
-                    if (!$mainMarked && $izinItem && $izinItem->approve_status === 'accept') {
+                    if (! $mainMarked && $izinItem && $izinItem->approve_status === 'accept') {
                         $symbol = 'I';
                         $totalIzin++;
                         $mainMarked = true;
                     }
 
-                    if (!$mainMarked && ($isHoliday || $isWeekend)) {
+                    if (! $mainMarked && ($isHoliday || $isWeekend)) {
                         $symbol = '//';
                         $alterSymbol = '//';
                     }
 
-                    if ($hasTerus)
+                    if ($hasTerus) {
                         $totalTerus++;
+                    }
 
                     $rows[] = [
                         'date' => $dateKey,
@@ -549,7 +547,6 @@ class HandlingAttendanceToExcelPage extends Controller
                     $current->addDay();
                     // $dummy[] = $absen;
                 }
-
 
                 $totalHariKerja = $kantor ? $hae - $libur : $totalHari - $libur + 1;
 
@@ -574,7 +571,7 @@ class HandlingAttendanceToExcelPage extends Controller
                     'st' => $totalST,
                     'percentage' => $tesPer,
                     'totalHariKerja' => $totalHariKerja,
-                    'totalPoints' => $user->absensi->whereNotNull('point_id')->sum(fn($p) => (int) optional($p->point)->sac_point),
+                    'totalPoints' => $user->absensi->whereNotNull('point_id')->sum(fn ($p) => (int) optional($p->point)->sac_point),
                 ];
 
                 // dd($processedUsers);

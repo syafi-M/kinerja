@@ -103,20 +103,22 @@
                             {{-- + Jadwal --}}
                             <div class="flex justify-center items-center px-2 py-1 bg-slate-100 rounded ml-2">
                                 <input type="checkbox" name="jadwal" id="jadwal" value="1" class="checkbox ">
-                                <label for="jadwal" class="label label-text font-semibold text-xs text-slate-500">+
+                                <label for="jadwal" class="label label-text font-semibold text-xs text-slate-500">
                                     Jadwal</label>
                             </div>
                             <div class="flex mx-10 mb-2 gap-x-3 p-5">
                                 {{-- To PDF --}}
                                 <button type="submit" formaction="{{ route('admin.exportV2') }}"
-                                    class="bg-yellow-400/80 text-yellow-900 btn border-0 px-3 py-2 overflow-hidden shadow rounded-md text-2xl hover:bg-yellow-500 hover:scale-105 hover:text-yellow-800">
+                                    class="h-auto flex-col gap-0 bg-yellow-400/80 text-yellow-900 btn border-0 px-3 py-2 overflow-hidden shadow rounded-md text-2xl hover:bg-yellow-500 hover:scale-105 hover:text-yellow-800">
                                     <i class="ri-file-pdf-2-fill"></i>
+                                    <p class="text-sm">pdf</p>
                                 </button>
 
                                 {{-- To Excel Edit Page --}}
                                 <button type="submit" formaction="{{ route('attendanceReport') }}"
-                                    class="bg-emerald-400/80 text-emerald-900 btn border-0 px-3 py-2 shadow rounded-md text-2xl hover:bg-emerald-500 hover:scale-105 hover:text-emerald-800">
+                                    class="h-auto flex-col gap-0 bg-emerald-400/80 text-emerald-900 btn border-0 px-3 py-2 shadow rounded-md text-2xl hover:bg-emerald-500 hover:scale-105 hover:text-emerald-800">
                                     <i class="ri-file-excel-fill"></i>
+                                    <p class="text-sm">exc</p>
                                 </button>
                             </div>
                         </div>

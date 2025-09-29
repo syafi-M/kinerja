@@ -38,6 +38,8 @@
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -47,6 +49,7 @@
             min-height: 100vh;
             color: var(--gray-700);
             line-height: 1.6;
+            background-color: var(--gray-50);
         }
 
         .main-container {
@@ -75,6 +78,7 @@
             left: 0;
             right: 0;
             height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
         }
 
         .header-section h1 {
@@ -213,7 +217,7 @@
         .controls-section {
             display: flex;
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -223,6 +227,7 @@
             color: white;
             border: none;
             padding: 15px 30px;
+            margin: 15px 0 25px 0;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
@@ -267,7 +272,7 @@
         }
 
         .jexcel>thead>tr>td {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            background: oklch(90% 0 0) !important;
             font-weight: 600 !important;
             color: #495057 !important;
             border-bottom: 2px solid #dee2e6 !important;
@@ -277,10 +282,8 @@
 
         .jexcel>tbody>tr>td {
             padding: 10px 8px !important;
-            text-align: center !important;
+            text-align: center;
             font-weight: 500 !important;
-            border-right: 1px solid #e9ecef !important;
-            border-bottom: 1px solid #f1f3f4 !important;
             transition: all 0.2s ease !important;
         }
 
@@ -293,13 +296,17 @@
             border-right: 2px solid #dee2e6 !important;
         }
 
+        .jexcel>tbody>tr>td:nth-child(2) {
+            text-align: left !important;
+        }
+
         .jexcel>tbody>tr:hover>td {
-            background: rgba(102, 126, 234, 0.05) !important;
+            background: rgba(102, 126, 234, 0.10) !important;
         }
 
         .jexcel>tbody>tr>td:hover {
-            background: rgba(102, 126, 234, 0.1) !important;
-            transform: scale(1.05);
+            background: rgba(102, 126, 234, 0.15) !important;
+            transform: scale(1.02);
         }
 
         .jexcel>tbody>tr>td.cell-updating {
@@ -368,11 +375,11 @@
             transform: translateX(100%);
             transition: transform 0.3s ease;
             display: hidden;
+            z-index: 1000;
         }
 
         .notification.show {
             transform: translateX(0);
-            z-index: 1000;
             display: inline;
         }
 
@@ -382,6 +389,10 @@
 
         .notification.error {
             background: linear-gradient(135deg, #e74c3c, #fd79a8);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
         }
 
         @media (max-width: 768px) {
@@ -412,11 +423,6 @@
 
 <body>
     <x-app-layout>
-        <script src="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.js"></script>
-        <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.css" type="text/css" />
-        <script src="https://jsuites.net/v5/jsuites.js"></script>
-        <link rel="stylesheet" href="https://jsuites.net/v5/jsuites.css" type="text/css" />
-
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <x-main-div>
             <div class="main-container">
@@ -430,7 +436,7 @@
                         <i class="fas fa-info-circle"></i>
                         Attendance Legend
                     </h3>
-                    <div class="legend-grid">
+                    <div class="legend-grid md:grid-cols-3">
                         <div class="legend-item masuk">
                             <div class="legend-symbol symbol-m">M</div>
                             <span><strong>Masuk</strong> - Present/Working</span>
@@ -448,7 +454,7 @@
                             <span><strong>Libur</strong> - Leave/Holiday</span>
                         </div>
                         <div class="legend-item weekend">
-                            <div class="legend-symbol symbol-weekend">W</div>
+                            <div class="legend-symbol symbol-weekend">//</div>
                             <span><strong>Weekend</strong> - Saturday/Sunday</span>
                         </div>
                         <div class="legend-item holiday">
@@ -459,11 +465,11 @@
                 </div>
 
                 <div class="spreadsheet-wrapper">
+                    <div id="spreadsheet"></div>
+
                     <div class="controls-section">
                         <button class="download-btn" id="download">Download PDF Report</button>
                     </div>
-
-                    <div id="spreadsheet"></div>
                 </div>
 
                 <div class="footer-section">
@@ -475,159 +481,204 @@
     <div class="notification" id="notification"></div>
 
     <script>
+        // Initialize variables - Changed to let where reassignment is needed
         let rawData = @json($processedUsers);
         let totalHari = @json($totalHari);
         let calendarHeaders = @json($calendarHeaders);
-        let days = new Set()
-        let isFetching = false;
+        let pendingChanges = [];
+        let isProcessingBatch = false;
+        let batchTimeout = null;
+        let sheet = null;
+        let originalNames = [];
 
-        let columns = [{
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const mitraId = params.get('kerjasama_id');
+
+        // Utility functions
+        const utils = {
+            // Capitalize name for display only
+            capitalizeName: (name) => {
+                if (!name) return '';
+
+                return name.toLowerCase()
+                    .split(' ')
+                    .map(word => {
+                        if (word.startsWith("mc") && word.length > 2) {
+                            return "Mc" + word.charAt(2).toUpperCase() + word.slice(3);
+                        } else if (word.startsWith("o'") && word.length > 2) {
+                            return "O'" + word.charAt(2).toUpperCase() + word.slice(3);
+                        }
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    })
+                    .join(' ');
+            },
+
+            // Show notification
+            showNotification: (message, type = 'success') => {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            },
+
+            // Check if a day is a weekend or holiday based on mitraId
+            isWeekendOrHoliday: (header) => {
+                if (mitraId == 1) {
+                    return header.isWeekend || header.isHoliday;
+                } else {
+                    return header.name == 'Sun' || header.isHoliday;
+                }
+            }
+        };
+
+        // Create columns configuration
+        function createColumns() {
+            const columns = [{
+                    type: 'numeric',
+                    title: '#',
+                    width: 40
+                },
+                {
+                    type: 'text',
+                    title: 'Nama',
+                    width: 200,
+                    align: 'left'
+                },
+                {
+                    type: 'text',
+                    title: 'Jab.',
+                    width: 100
+                }
+            ];
+
+            // Add day columns
+            calendarHeaders.forEach(h => {
+                columns.push({
+                    type: 'text',
+                    title: h.day,
+                    width: 40
+                });
+            });
+
+            // Add summary columns
+            columns.push({
                 type: 'numeric',
-                title: '#',
-                width: 40
-            },
-            {
-                type: 'text',
-                title: 'Nama',
-                width: 200
-            },
-            {
-                type: 'text',
-                title: 'Jab.',
+                title: 'M',
+                width: 50
+            }, {
+                type: 'numeric',
+                title: 'I',
+                width: 50
+            }, {
+                type: 'numeric',
+                title: 'T',
+                width: 50
+            }, {
+                type: 'numeric',
+                title: 'L',
+                width: 50
+            }, {
+                type: 'numeric',
+                title: 'Persentase',
                 width: 100
-            },
-        ];
+            });
 
-        for (let d = 0; d < rawData.length; d++) {
-            let data = rawData[d];
-            for (let i = 0; i < data.rows.length; i++) {
-                days.add(data.rows[i].date);
-                let dayOnly = new Date(data.rows[i].date).getDate();
-                if (totalHari + 1 === dayOnly) {
-                    break;
+            return columns;
+        }
+
+        // Process data for spreadsheet
+        function processData() {
+            // Store original names
+            originalNames = rawData.map(u => u.user.nama_lengkap);
+
+            return rawData.map((u, idx) => {
+                const row = [
+                    idx + 1,
+                    utils.capitalizeName(u.user.nama_lengkap), // Display capitalized name
+                    u.user.jabatan?.code_jabatan ?? ''
+                ];
+
+                // Add attendance symbols
+                row.push(...u.rows.map(r => r.symbol));
+
+                // Add summary data
+                row.push(u.m, u.z, u.t, u.terus, u.percentage);
+
+                return row;
+            });
+        }
+
+        // Update table cell styling
+        function updateCellStyling(instance, cell, col, row, val) {
+            // Apply weekend/holiday styling
+            if (col > 2 && col <= calendarHeaders.length + 2) {
+                const header = calendarHeaders[col - 3];
+
+                if (utils.isWeekendOrHoliday(header)) {
+                    cell.style.backgroundColor = "#fee2e2";
+                    cell.style.color = "#b91c1c";
+                    return; // Exit early to avoid applying additional styles
+                }
+            }
+
+            // Apply attendance status styling
+            if (col > 2 && col <= calendarHeaders.length + 2) {
+                switch (val) {
+                    case 'M':
+                        cell.style.backgroundColor = "#bbf7d0";
+                        break;
+                    case 'I':
+                        cell.style.backgroundColor = "#fde68a";
+                        break;
+                    case 'T':
+                        cell.style.backgroundColor = "#fca5a5";
+                        break;
+                    case '//':
+                        cell.style.backgroundColor = "#e5e7eb";
+                        break;
                 }
             }
         }
 
-        calendarHeaders.forEach(h => {
-            columns.push({
-                type: 'text',
-                title: h.day,
-                width: 40
+        // Process batch changes
+        function processBatchChanges() {
+            if (isProcessingBatch || pendingChanges.length === 0) return;
+
+            isProcessingBatch = true;
+            const changes = [...pendingChanges];
+            pendingChanges = [];
+
+            // Show updating state for all affected cells
+            changes.forEach(change => {
+                change.cell.classList.add('cell-updating');
             });
-        });
+            document.getElementById('download').disabled = true;
 
-        columns.push({
-            type: 'numeric',
-            title: 'M',
-            width: 50
-        });
-        columns.push({
-            type: 'numeric',
-            title: 'I',
-            width: 50
-        });
-        columns.push({
-            type: 'numeric',
-            title: 'T',
-            width: 50
-        });
-        columns.push({
-            type: 'numeric',
-            title: 'L',
-            width: 50
-        });
-        columns.push({
-            type: 'numeric',
-            title: 'Persentase',
-            width: 100
-        });
+            // Process each change sequentially
+            let currentChangeIndex = 0;
 
-        let data = rawData.map((u, idx) => {
-            console.log(u.user);
-
-            let row = [
-                idx + 1,
-                u.user.nama_lengkap,
-                u.user.jabatan.code_jabatan ?? ''
-            ];
-
-            row.push(...u.rows.map(r => r.symbol));
-
-            row.push(u.m, u.z, u.t, u.terus, u.percentage);
-
-            return row;
-        });
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        let isReloading = false;
-
-        let sheet = jspreadsheet(document.getElementById('spreadsheet'), {
-            data: data,
-            columns: columns,
-            tableOverflow: true,
-            tableWidth: "100%",
-            updateTable: function(instance, cell, col, row, val, id) {
-                if (col > 0 && col <= calendarHeaders.length) {
-                    let header = calendarHeaders[col - 1];
-                    if (header.isWeekend || header.isHoliday) {
-                        cell.style.backgroundColor = "#fee2e2";
-                        cell.style.color = "#b91c1c";
-                    }
-                }
-
-                if (row >= 0 && col > 0 && col <= calendarHeaders.length) {
-                    let header = calendarHeaders[col - 1];
-                    if (header.isWeekend || header.isHoliday) {
-                        cell.style.backgroundColor = "#fee2e2";
-                        cell.style.color = "#b91c1c";
-                    }
-                }
-
-                if (row >= 0 && col > 0 && col <= calendarHeaders.length) {
-                    switch (val) {
-                        case 'M':
-                            cell.style.backgroundColor = "#bbf7d0";
-                            break;
-                        case 'I':
-                            cell.style.backgroundColor = "#fde68a";
-                            break;
-                        case 'T':
-                            cell.style.backgroundColor = "#fca5a5";
-                            break;
-                        case '//':
-                            cell.style.backgroundColor = "#e5e7eb";
-                            break;
-                    }
-                }
-            },
-            onchange: function(instance, cell, x, y, value) {
-                let allData = sheet.getData();
-                let rowData = allData[y];
-
-                getDate = rawData[y].rows[x - 3].date;
-
-                let userId = rawData[y].user.id;
-                if (isFetching) {
-                    showNotification("⏳ Data is still updating, please wait...", 'error');
-                    sheet.setValueFromCoords(x, y, rawData[y].rows[x - 3].symbol, true);
+            function processNextChange() {
+                if (currentChangeIndex >= changes.length) {
+                    // All changes processed, fetch updated data
+                    fetchUpdatedData(changes);
                     return;
                 }
 
-                isFetching = true;
-                cell.classList.add('cell-updating');
-                document.getElementById('download').disabled = true;
+                const change = changes[currentChangeIndex];
+                const userId = rawData[change.y].user.id;
+                const getDate = rawData[change.y].rows[change.x - 3].date;
 
+                // Get row data with original name
+                let rowData = [...sheet.getData()[change.y]];
+                // Replace the displayed name with the original name
+                rowData[1] = originalNames[change.y];
+
+                // Send update for this single change
                 fetch("{{ route('admin.attendance.update') }}", {
                         method: "POST",
                         headers: {
@@ -636,167 +687,269 @@
                         },
                         body: JSON.stringify({
                             user_id: userId,
-                            col_index: x,
-                            value: value,
+                            col_index: change.x,
+                            value: change.value,
                             row_data: rowData,
                             get_date: getDate
                         })
                     })
                     .then(res => {
-                        if (res.status == 200) {
-                            fetch("{{ route('admin.attendance.fetch') }}", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "X-CSRF-TOKEN": document.querySelector(
-                                            'meta[name="csrf-token"]').content
-                                    },
-                                    body: JSON.stringify({
-                                        str1: "{{ $str }}",
-                                        end1: "{{ $ended }}",
-                                        libur: "{{ $libur }}",
-                                        mitra: "{{ $mitra }}",
-                                        divisi_id: "{{ $divisi_id }}"
-                                    })
-                                })
-                                .then(r => r.json())
-                                .then(newRes => {
-                                    rawData = newRes.processedUsers;
-                                    totalHari = newRes.totalHari;
-                                    calendarHeaders = newRes.calendarHeaders;
-
-                                    let newData = rawData.map((u, idx) => {
-                                        let row = [
-                                            idx + 1,
-                                            u.user.nama_lengkap,
-                                            u.user.jabatan.code_jabatan ?? ''
-                                        ];
-                                        row.push(...u.rows.map(r => r.symbol));
-                                        row.push(u.m, u.z, u.t, u.terus, u.percentage);
-                                        return row;
-                                    });
-
-                                    sheet.setData(newData);
-                                });
-
-                            showNotification("✅ Attendance updated successfully!", 'success');
+                        if (res.status === 200) {
+                            currentChangeIndex++;
+                            processNextChange(); // Process next change
                         } else {
                             throw new Error('Update failed');
                         }
                     })
-                    .finally(() => {
-                        isFetching = false;
-                        cell.classList.remove('cell-updating');
-                        document.getElementById('download').disabled = false;
-                    })
                     .catch(err => {
                         console.error("Save error:", err);
-                        showNotification("❌ Failed to update attendance", 'error');
-                        sheet.setValueFromCoords(x, y, rawData[y].rows[x - 3].symbol, true);
-                    });
-            },
-            contextMenu: () => false
-        });
+                        utils.showNotification(`❌ Failed to update cell at row ${change.y + 1}, column ${change.x}`,
+                            'error');
 
-        // Enable clipboard functionality
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+C for copy
-            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-                let selectedRange = sheet.getSelected();
-                if (selectedRange) {
-                    let copyData = [];
-                    for (let row = selectedRange[1]; row <= selectedRange[3]; row++) {
-                        let rowData = [];
-                        for (let col = selectedRange[0]; col <= selectedRange[2]; col++) {
-                            rowData.push(sheet.getValueFromCoords(col, row) || '');
-                        }
-                        copyData.push(rowData.join('\t'));
-                    }
+                        // Revert this change
+                        sheet.setValueFromCoords(change.x, change.y, rawData[change.y].rows[change.x - 3].symbol, true);
 
-                    // Copy to clipboard
-                    navigator.clipboard.writeText(copyData.join('\n')).then(() => {
-                        showNotification('Data copied to clipboard!', 'success');
-                    }).catch(() => {
-                        // Fallback for older browsers
-                        let textArea = document.createElement('textarea');
-                        textArea.value = copyData.join('\n');
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        showNotification('Data copied to clipboard!', 'success');
+                        // Continue with next changes
+                        currentChangeIndex++;
+                        processNextChange();
                     });
-                }
-                e.preventDefault();
             }
 
-            // Ctrl+V for paste
-            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-                let selectedRange = sheet.getSelected();
-                if (selectedRange) {
-                    navigator.clipboard.readText().then(text => {
-                        let rows = text.split('\n');
-                        let startRow = selectedRange[1];
-                        let startCol = selectedRange[0];
+            // Start processing the first change
+            processNextChange();
+        }
 
-                        for (let i = 0; i < rows.length; i++) {
-                            if (rows[i].trim()) {
-                                let cols = rows[i].split('\t');
-                                for (let j = 0; j < cols.length; j++) {
-                                    let targetRow = startRow + i;
-                                    let targetCol = startCol + j;
+        // Fetch updated data
+        function fetchUpdatedData(changes) {
+            utils.showNotification("🔄 Updating data...", 'info');
 
-                                    // Only paste in attendance columns (not name, position, etc.)
-                                    if (targetCol >= 3 && targetCol < 3 + calendarHeaders.length) {
-                                        sheet.setValueFromCoords(targetCol, targetRow, cols[j].trim(),
-                                            true);
+            fetch("{{ route('admin.attendance.fetch') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        str1: "{{ $str }}",
+                        end1: "{{ $ended }}",
+                        libur: "{{ $libur }}",
+                        mitra: "{{ $mitra }}",
+                        divisi_id: "{{ $divisi_id }}"
+                    })
+                })
+                .then(r => r.json())
+                .then(newRes => {
+                    // Update all data at once
+                    rawData = newRes.processedUsers;
+                    totalHari = newRes.totalHari;
+                    calendarHeaders = newRes.calendarHeaders;
+
+                    const newData = processData();
+                    sheet.setData(newData);
+                    utils.showNotification(`✅ Successfully updated ${changes.length} cells!`, 'success');
+                })
+                .catch(err => {
+                    console.error("Data fetch error:", err);
+                    utils.showNotification("❌ Failed to refresh data", 'error');
+                })
+                .finally(() => {
+                    // Remove updating state from all cells
+                    changes.forEach(change => {
+                        change.cell.classList.remove('cell-updating');
+                    });
+                    document.getElementById('download').disabled = false;
+                    isProcessingBatch = false;
+                });
+        }
+
+        // Initialize spreadsheet
+        function initSpreadsheet() {
+            const columns = createColumns();
+            const data = processData();
+
+            sheet = jspreadsheet(document.getElementById('spreadsheet'), {
+                data: data,
+                columns: columns,
+                tableOverflow: true,
+                tableWidth: "100%",
+                tableHeight: "400px",
+                minDimensions: [columns.length, rawData.length],
+                updateTable: updateCellStyling,
+                contextMenu: () => false,
+                onchange: function(instance, cell, x, y, value) {
+                    // Only process attendance columns (not name, position, etc.)
+                    if (x >= 3 && x < 3 + calendarHeaders.length) {
+                        // Add to pending changes
+                        pendingChanges.push({
+                            x,
+                            y,
+                            value,
+                            cell
+                        });
+
+                        // Clear any existing timeout
+                        if (batchTimeout) {
+                            clearTimeout(batchTimeout);
+                        }
+
+                        // Set a timeout to process batch changes
+                        batchTimeout = setTimeout(() => {
+                            processBatchChanges();
+                        }, 300); // 300ms delay to collect all changes in the batch
+                    }
+
+                    // If name column is changed, update the original name and display capitalized version
+                    if (x === 1) {
+                        // Store the original name
+                        originalNames[y] = value;
+                        // Display the capitalized version
+                        const capitalizedValue = utils.capitalizeName(value);
+                        if (capitalizedValue !== value) {
+                            // Update the cell with capitalized value
+                            setTimeout(() => {
+                                sheet.setValueFromCoords(x, y, capitalizedValue, true);
+                            }, 0);
+                        }
+                    }
+                }
+            });
+
+            // Hide the built-in index column
+            if (sheet && typeof sheet.hideIndex === 'function') {
+                sheet.hideIndex();
+            }
+        }
+
+        // Enable clipboard functionality
+        function setupClipboardHandlers() {
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+C for copy
+                if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                    const selectedRange = sheet.getSelected();
+                    if (selectedRange) {
+                        let copyData = [];
+                        for (let row = selectedRange[1]; row <= selectedRange[3]; row++) {
+                            let rowData = [];
+                            for (let col = selectedRange[0]; col <= selectedRange[2]; col++) {
+                                // If copying the name column, use the capitalized version
+                                if (col === 1) {
+                                    rowData.push(utils.capitalizeName(sheet.getValueFromCoords(col, row) || ''));
+                                } else {
+                                    rowData.push(sheet.getValueFromCoords(col, row) || '');
+                                }
+                            }
+                            copyData.push(rowData.join('\t'));
+                        }
+
+                        // Copy to clipboard
+                        navigator.clipboard.writeText(copyData.join('\n')).then(() => {
+                            utils.showNotification('Data copied to clipboard!', 'success');
+                        }).catch(() => {
+                            // Fallback for older browsers
+                            const textArea = document.createElement('textarea');
+                            textArea.value = copyData.join('\n');
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            utils.showNotification('Data copied to clipboard!', 'success');
+                        });
+                    }
+                    e.preventDefault();
+                }
+
+                // Ctrl+V for paste
+                if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                    const selectedRange = sheet.getSelected();
+                    if (selectedRange) {
+                        navigator.clipboard.readText().then(text => {
+                            const rows = text.split('\n');
+                            const startRow = selectedRange[1];
+                            const startCol = selectedRange[0];
+
+                            for (let i = 0; i < rows.length; i++) {
+                                if (rows[i].trim()) {
+                                    const cols = rows[i].split('\t');
+                                    for (let j = 0; j < cols.length; j++) {
+                                        const targetRow = startRow + i;
+                                        const targetCol = startCol + j;
+
+                                        // Only paste in attendance columns (not name, position, etc.)
+                                        if (targetCol >= 3 && targetCol < 3 + calendarHeaders.length) {
+                                            sheet.setValueFromCoords(targetCol, targetRow, cols[j].trim(),
+                                                true);
+                                        }
+
+                                        // If pasting into name column, store original and display capitalized
+                                        if (targetCol === 1) {
+                                            const originalValue = cols[j].trim();
+                                            originalNames[targetRow] = originalValue;
+                                            const capitalizedValue = utils.capitalizeName(originalValue);
+                                            sheet.setValueFromCoords(targetCol, targetRow, capitalizedValue,
+                                                true);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        showNotification('Data pasted successfully!', 'success');
-                    }).catch(() => {
-                        showNotification('Paste failed - please try again', 'error');
-                    });
-                }
-                e.preventDefault();
-            }
-        });
-
-        // Auto-fill functionality
-        document.addEventListener('mousedown', function(e) {
-            if (e.target.closest('.jexcel')) {
-                let isAutoFillHandle = e.target.classList.contains('jexcel-autofill');
-                if (isAutoFillHandle) {
-                    e.preventDefault();
-                    let selectedRange = sheet.getSelected();
-                    if (selectedRange && selectedRange[0] >= 3 && selectedRange[0] < 3 + calendarHeaders.length) {
-                        // Get the value from the selected cell
-                        let sourceValue = sheet.getValueFromCoords(selectedRange[0], selectedRange[1]);
-
-                        document.addEventListener('mousemove', function fillMove(e) {
-                            // This would handle the auto-fill drag operation
-                        });
-
-                        document.addEventListener('mouseup', function fillEnd(e) {
-                            document.removeEventListener('mousemove', fillMove);
-                            document.removeEventListener('mouseup', fillEnd);
-                            showNotification('Auto-fill completed!', 'success');
-                        }, {
-                            once: true
+                            utils.showNotification('Data pasted successfully!', 'success');
+                        }).catch(() => {
+                            utils.showNotification('Paste failed - please try again', 'error');
                         });
                     }
+                    e.preventDefault();
                 }
-            }
-        });
+            });
+        }
 
-        document.getElementById('download').addEventListener('click', () => {
-            let updatedData = sheet.getData();
-            console.log(updatedData);
-            showNotification("📄 Download PDF feature coming soon!", 'success');
-        });
+        // Setup auto-fill functionality
+        function setupAutoFillHandlers() {
+            document.addEventListener('mousedown', function(e) {
+                if (e.target.closest('.jexcel')) {
+                    const isAutoFillHandle = e.target.classList.contains('jexcel-autofill');
+                    if (isAutoFillHandle) {
+                        e.preventDefault();
+                        const selectedRange = sheet.getSelected();
+                        if (selectedRange && selectedRange[0] >= 3 && selectedRange[0] < 3 + calendarHeaders
+                            .length) {
+                            // Get the value from the selected cell
+                            const sourceValue = sheet.getValueFromCoords(selectedRange[0], selectedRange[1]);
 
-        document.getElementById('currentTime').textContent = new Date().toLocaleString('id-ID');
+                            document.addEventListener('mousemove', function fillMove(e) {
+                                // This would handle the auto-fill drag operation
+                            });
+
+                            document.addEventListener('mouseup', function fillEnd(e) {
+                                document.removeEventListener('mousemove', fillMove);
+                                document.removeEventListener('mouseup', fillEnd);
+                                utils.showNotification('Auto-fill completed!', 'success');
+                            }, {
+                                once: true
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize spreadsheet
+            initSpreadsheet();
+
+            // Setup clipboard handlers
+            setupClipboardHandlers();
+
+            // Setup auto-fill handlers
+            setupAutoFillHandlers();
+
+            // Setup download button
+            document.getElementById('download').addEventListener('click', () => {
+                utils.showNotification("📄 Download PDF feature coming soon!", 'info');
+            });
+
+            // Update current time
+            document.getElementById('currentTime').textContent = new Date().toLocaleString('id-ID');
+        });
     </script>
 </body>
 
