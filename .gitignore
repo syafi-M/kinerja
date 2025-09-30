@@ -6,8 +6,6 @@
 /storage/*.key
 /vendor
 .env
-.env.*
-.env*
 .env.backup
 .env.production
 .phpunit.result.cache
@@ -21,3 +19,4 @@ yarn-error.log
 /.vscode
 node_modules
 vite.config.js
+keybackup.text

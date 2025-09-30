@@ -359,6 +359,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::post('/admin/attendance/update', [HandlingAttendanceToExcelPage::class, 'update'])->name('admin.attendance.update');
 
     Route::post('/admin/attendance/fetch', [HandlingAttendanceToExcelPage::class, 'fetch'])->name('admin.attendance.fetch');
+    Route::get('/admin/attendance/to-pdf', [HandlingAttendanceToExcelPage::class, 'reportToPDF'])->name('admin.attendance.reportToPDF');
 });
 
 

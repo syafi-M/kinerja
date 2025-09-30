@@ -944,7 +944,8 @@
 
             // Setup download button
             document.getElementById('download').addEventListener('click', () => {
-                utils.showNotification("📄 Download PDF feature coming soon!", 'info');
+                window.location.href =
+                    `{{ route('admin.attendance.reportToPDF') }}?str1={{ $str }}&end1={{ $ended }}&libur={{ $libur }}&mitra={{ $mitra }}&divisi_id={{ $divisi_id }}`;
             });
 
             // Update current time
