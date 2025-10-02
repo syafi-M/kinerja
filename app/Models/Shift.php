@@ -15,6 +15,7 @@ class Shift extends Model
         'shift_name',
         'jam_start',
         'jam_end',
+        'hari',
     ];
 
     public function Jabatan()

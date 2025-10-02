@@ -8,7 +8,7 @@
     <title>{{ env('APP_NAME', 'KINERJA SAC-PONOROGO') }}</title>
     <link rel="shortcut icon" href="{{ URL::asset('favicon.ico') }}" type="image/x-icon">
 
-    <link rel="preload" href="https://fonts.bunny.net">
+    {{-- <link rel="preload" as="style" href="https://fonts.bunny.net"> --}}
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     {{-- <script src="{{ URL::asset(path: 'src/js/jquery-min.js') }}"></script> --}}
     <!-- Scripts -->
@@ -104,7 +104,8 @@
                                             <option value="{{ $us->id }}" class="op"
                                                 data-divisi="{{ $us->devisi_id }}"
                                                 data-clien="{{ $us->kerjasama->client_id }}"
-                                                data-jab="{{ $us->divisi?->jabatan_id }}">{{ $us->nama_lengkap }}
+                                                data-jab="{{ $us->divisi?->jabatan_id }}">
+                                                {{ ucwords(strtolower($us->nama_lengkap)) }}
                                             </option>
                                         @endforeach
                                     </select>

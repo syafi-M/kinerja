@@ -22,11 +22,12 @@ class ShiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'jabatan_id'    => 'required',
-            'client_id'     => 'required',
-            'shift_name'    => 'required',
-            'jam_start'     => 'required',
-            'jam_end'       => 'required',
+            'jabatan_id' => 'required',
+            'client_id' => 'required',
+            'shift_name' => 'required',
+            'jam_start' => 'required',
+            'jam_end' => 'required',
+            'hari' => 'required',
         ];
     }
 }

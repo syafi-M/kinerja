@@ -1,13 +1,9 @@
 <x-app-layout>
     <x-main-div>
         <div class="py-10 px-5">
-            <p class="text-center text-2xl font-bold  uppercase">Index Shift</p>
-            <div class="flex justify-end ">
-                <div class="input flex items-center w-fit input-bordered my-10">
-                    <i class="ri-search-2-line"></i>
-                    <input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..."
-                        required>
-                </div>
+            <p class="text-center text-2xl font-bold  uppercase">Data Shift</p>
+            <div class="flex justify-end mr-10">
+                <x-search />
             </div>
             <div class="flex justify-end gap-2 mx-16 py-3">
                 <a href="{{ route('admin.index') }}" class="btn btn-error">Kembali</a>
@@ -23,6 +19,7 @@
                             <th class="bg-slate-300 ">Nama Shift</th>
                             <th class="bg-slate-300 ">Jam Mulai</th>
                             <th class="bg-slate-300 ">Jam Selesai</th>
+                            <th class="bg-slate-300 text-center">Hari</th>
                             <th class="bg-slate-300 rounded-tr-2xl">Action</th>
                         </tr>
                     </thead>
@@ -42,6 +39,53 @@
                                 <td>{{ $i->shift_name }}</td>
                                 <td>{{ $i->jam_start }}</td>
                                 <td>{{ $i->jam_end }}</td>
+                                <td class="grid grid-cols-3 gap-1 text-center">
+                                    {{-- menampilkan hari dalam bentuk badge --}}
+                                    @php
+                                        $days = '';
+                                        if ($i->hari != null) {
+                                            $daysArray = json_decode($i->hari, true);
+
+                                            if (count($daysArray) == 7) {
+                                                $days =
+                                                    '<span class="px-2 py-1 col-span-3 mx-auto bg-green-500 text-white rounded text-sm">Setiap Hari</span>';
+                                            } else {
+                                                $dayMap = [
+                                                    'Senin' => 'Sen',
+                                                    'Selasa' => 'Sel',
+                                                    'Rabu' => 'Rab',
+                                                    'Kamis' => 'Kam',
+                                                    'Jumat' => 'Jum',
+                                                    'Sabtu' => 'Sab',
+                                                    'Minggu' => 'Min',
+                                                ];
+
+                                                $colors = [
+                                                    'Senin' => 'bg-blue-500',
+                                                    'Selasa' => 'bg-indigo-500',
+                                                    'Rabu' => 'bg-purple-500',
+                                                    'Kamis' => 'bg-pink-500',
+                                                    'Jumat' => 'bg-yellow-500',
+                                                    'Sabtu' => 'bg-orange-500',
+                                                    'Minggu' => 'bg-red-500',
+                                                ];
+
+                                                $badges = array_map(function ($d) use ($dayMap, $colors) {
+                                                    $short = $dayMap[$d] ?? $d;
+                                                    $color = $colors[$d] ?? 'bg-gray-500';
+                                                    return "<span class='px-2 py-1 {$color} text-white rounded text-xs font-semibold'>$short</span>";
+                                                }, $daysArray);
+
+                                                $days = implode(' ', $badges);
+                                            }
+                                        } else {
+                                            $days =
+                                                '<span class="px-2 py-1 col-span-3 mx-auto bg-gray-400 text-white rounded text-sm">Kosong</span>';
+                                        }
+                                    @endphp
+                                    {!! $days !!}
+                                </td>
+
                                 <td class="space-y-2">
                                     <x-btn-edit>{{ route('shift.edit', [$i->id]) }}</x-btn-edit>
                                     @if (Auth::user()->role_id == 2)
