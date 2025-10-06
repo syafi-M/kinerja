@@ -121,15 +121,19 @@ class AbsensiController extends Controller
         $lokLok = Lokasi::with('Client')->get();
         $penempatan = Kerjasama::with('Client')->get();
 
-        $matchedShifts = $shift->filter(function ($s) use ($todayName) {
-            if (empty($s->hari)) {
-                return false;
-            }
+        $matchedShifts = collect(); // default kosong
 
-            $daysFromDb = json_decode($s->hari, true);
+        if (!is_string($shift)) {
+            $matchedShifts = $shift->filter(function ($s) use ($todayName) {
+                if (empty($s->hari)) {
+                    return false;
+                }
 
-            return in_array($todayName, $daysFromDb);
-        });
+                $daysFromDb = json_decode($s->hari, true);
+
+                return in_array($todayName, $daysFromDb);
+            });
+        }
 
         $shift = $matchedShifts->isNotEmpty() ? $matchedShifts : $shift;
 
@@ -166,15 +170,19 @@ class AbsensiController extends Controller
             $shift = $shift3;
         }
 
-        $matchedShifts = $shift->filter(function ($s) use ($todayName) {
-            if (empty($s->hari)) {
-                return false;
-            }
+        $matchedShifts = collect(); // default kosong
 
-            $daysFromDb = json_decode($s->hari, true);
+        if (!is_string($shift)) {
+            $matchedShifts = $shift->filter(function ($s) use ($todayName) {
+                if (empty($s->hari)) {
+                    return false;
+                }
 
-            return in_array($todayName, $daysFromDb);
-        });
+                $daysFromDb = json_decode($s->hari, true);
+
+                return in_array($todayName, $daysFromDb);
+            });
+        }
 
         $shift = $matchedShifts->isNotEmpty() ? $matchedShifts : $shift;
 
@@ -193,7 +201,7 @@ class AbsensiController extends Controller
             'keterangan' => 'required',
             'absensi_type_masuk' => 'required',
             'absensi_type_pulang' => 'nullable',
-            'image' => Auth::user()->kerjasama_id != 1 || ! in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]) ? 'required' : 'nullable',
+            'image' => Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]) ? 'required' : 'nullable',
             'deskripsi' => 'nullable',
             'point_id' => 'nullable',
             'subuh' => 'nullable',
@@ -233,7 +241,7 @@ class AbsensiController extends Controller
         }
         $user = Auth::user()->id;
         $absensi = Absensi::latest()->where('user_id', $user)->whereNotNull('absensi_type_pulang')->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
-        if (Auth::user()->kerjasama_id != 1 || ! in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18])) {
+        if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18])) {
             // Get Data Image With base64
             $img = $request->image;
 
@@ -241,7 +249,7 @@ class AbsensiController extends Controller
             $image_parts = explode(';base64,', $img);
             $image_type_aux = explode('image/', $image_parts[0]);
             $image_type = $image_type_aux[1];
-            $formatName = uniqid().'-data';
+            $formatName = uniqid() . '-data';
             $image_base64 = base64_decode($image_parts[1]);
 
             // Simpan sementara untuk pemeriksaan
@@ -272,8 +280,8 @@ class AbsensiController extends Controller
                 return back()->with('error', 'Foto terlalu gelap. Brightness minimal harus -50.');
             }
 
-            $fileName = $formatName.'.png';
-            $file = $folderPath.$fileName;
+            $fileName = $formatName . '.png';
+            $file = $folderPath . $fileName;
             Storage::put($file, $image_base64);
             // Hapus file sementara
             unlink($temporaryFile);
@@ -398,7 +406,7 @@ class AbsensiController extends Controller
                 } catch (\Exception $e) {
                     // dd($request->all(), $e);
                     DB::rollBack();
-                    \Log::error('Error storing data Absensi: '.$e->getMessage());
+                    \Log::error('Error storing data Absensi: ' . $e->getMessage());
                     toastr()->error('Gagal Absen Cek Signal Dan Coba Lagi', 'error');
 
                     return redirect()->back();
@@ -451,10 +459,10 @@ class AbsensiController extends Controller
             $image_parts = explode(';base64,', $img);
             $image_type_aux = explode('image/', $image_parts[0]);
             $image_type = $image_type_aux[1];
-            $formatName = uniqid().'-data';
+            $formatName = uniqid() . '-data';
             $image_base64 = base64_decode($image_parts[1]);
-            $fileName = $formatName.'.png';
-            $file = $folderPath.$fileName;
+            $fileName = $formatName . '.png';
+            $file = $folderPath . $fileName;
             Storage::put($file, $image_base64);
             // End Get Data Image With base64
         } else {
@@ -571,10 +579,10 @@ class AbsensiController extends Controller
         $image_parts = explode(';base64,', $img);
         $image_type_aux = explode('image/', $image_parts[0]);
         $image_type = $image_type_aux[1];
-        $formatName = uniqid().'-data';
+        $formatName = uniqid() . '-data';
         $image_base64 = base64_decode($image_parts[1]);
-        $fileName = $formatName.'.png';
-        $file = $folderPath.$fileName;
+        $fileName = $formatName . '.png';
+        $file = $folderPath . $fileName;
         Storage::put($file, $image_base64);
         // End Get Data Image With base64
 
@@ -915,7 +923,7 @@ class AbsensiController extends Controller
             $clock = Carbon::now()->format('H:i:s');
             $absensi->absensi_type_siang = $clock;
             $absensi->save();
-            toastr()->success('Berhasil Absen Siang Jam : '.$clock, 'succes');
+            toastr()->success('Berhasil Absen Siang Jam : ' . $clock, 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
@@ -938,7 +946,7 @@ class AbsensiController extends Controller
 
             $absensi->subuh = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : '.$clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
@@ -980,7 +988,7 @@ class AbsensiController extends Controller
                     $absensi->sig_long = $request->long_user;
 
                     $absensi->save();
-                    toastr()->success('Berhasil Absen Shalat Jam : '.$clock, 'succes');
+                    toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
 
                     return redirect()->back();
                 } catch (\Throwable $th) {
@@ -1013,7 +1021,7 @@ class AbsensiController extends Controller
 
             $absensi->asar = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : '.$clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
@@ -1036,7 +1044,7 @@ class AbsensiController extends Controller
 
             $absensi->maghrib = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : '.$clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
@@ -1059,7 +1067,7 @@ class AbsensiController extends Controller
 
             $absensi->isya = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : '.$clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
@@ -1087,7 +1095,7 @@ class AbsensiController extends Controller
         $baseQuery = Absensi::with(['point', 'shift', 'user'])->where('user_id', $userId);
 
         // Use 30-day range when no filter is given
-        if (! $isFiltered) {
+        if (!$isFiltered) {
             $startDate = Carbon::now()->subDays(31)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
             $absen = (clone $baseQuery)->whereBetween('created_at', [$startDate, $endDate])
@@ -1109,7 +1117,7 @@ class AbsensiController extends Controller
             $hariEfektif = 0;
             $period = CarbonPeriod::create($startDate, $endDate);
             foreach ($period as $d) {
-                if ($kerjasamaId == 1 && ! $d->isWeekend()) {
+                if ($kerjasamaId == 1 && !$d->isWeekend()) {
                     $hariEfektif++;
                 } elseif ($kerjasamaId != 1) {
                     $hariEfektif++;
@@ -1147,7 +1155,7 @@ class AbsensiController extends Controller
             $hariEfektif = 0;
             $period = CarbonPeriod::create($date->startOfMonth(), $endOfMonth);
             foreach ($period as $d) {
-                if ($kerjasamaId == 1 && ! $d->isWeekend()) {
+                if ($kerjasamaId == 1 && !$d->isWeekend()) {
                     $hariEfektif++;
                 } elseif ($kerjasamaId != 1) {
                     $hariEfektif++;
@@ -1164,8 +1172,8 @@ class AbsensiController extends Controller
 
         // API data
         $client = new HTTP;
-        $apiEndpoint = 'https://dayoffapi.vercel.app/api?year='.$year;
-        $apiEndpointMonth = 'https://dayoffapi.vercel.app/api?month='.$month.'&year='.$year;
+        $apiEndpoint = 'https://dayoffapi.vercel.app/api?year=' . $year;
+        $apiEndpointMonth = 'https://dayoffapi.vercel.app/api?month=' . $month . '&year=' . $year;
 
         $data = json_decode($client->get($apiEndpoint)->getBody(), true);
         $dataMonth = json_decode($client->get($apiEndpointMonth)->getBody(), true);
