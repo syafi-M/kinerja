@@ -17,8 +17,8 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Webcam CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ URL::asset('js/webcam.min.js') }}"></script>
+    <script src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
 
 
     <style>
@@ -38,7 +38,7 @@
         <!-- Page Heading -->
         @if (isset($header))
             <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>
             </header>
@@ -57,10 +57,9 @@
             <x-menu-mobile />
         </div>
     </div>
-    <!--<script src="{{ URL::asset('src/js/jquery-min.js') }}"></script>-->
     <!-- cdnjs -->
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.9/jquery.lazy.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.9/jquery.lazy.plugins.min.js">
+    <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.min.js') }}"></script>
+    <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}">
     </script>
     <script>
         $(document).ready(function() {
@@ -91,7 +90,7 @@
             var count = 1
             $('#add').click(function() {
                 var input = $(
-                    '<input class="input input-bordered my-2" placeholder="Add Name ...." name="name[]" type="text"/>'
+                    '<input class="my-2 input input-bordered" placeholder="Add Name ...." name="name[]" type="text"/>'
                 );
                 $('#inputContainer').append(input);
 
@@ -100,7 +99,7 @@
         });
 
 
-        //End input ++ 
+        //End input ++
 
         // Preview Script
         $(document).ready(function() {

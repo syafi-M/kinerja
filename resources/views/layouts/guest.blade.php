@@ -12,7 +12,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
 
     <style>
         .glass {
@@ -29,15 +29,15 @@
 </head>
 
 <body
-    class="min-h-screen max-h-screen bg-gradient-to-b from-amber-50 via-amber-100 to-amber-200 font-sans text-stone-800">
+    class="max-h-screen min-h-screen font-sans bg-gradient-to-b from-amber-50 via-amber-100 to-amber-200 text-stone-800">
 
     <!-- top browser alert (only if not chrome) -->
     <div x-data="{ open: false }" x-init="(() => {
         const ua = navigator.userAgent;
         const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua) && !/OPR/.test(ua);
         if (!isChrome) open = true;
-    })()" x-show="open" x-transition class="fixed inset-x-4 top-4 z-50">
-        <div class="glass border border-amber-200 px-4 py-2 rounded-full flex items-center justify-between shadow">
+    })()" x-show="open" x-transition class="fixed z-50 inset-x-4 top-4">
+        <div class="flex items-center justify-between px-4 py-2 border rounded-full shadow glass border-amber-200">
             <div class="flex items-center gap-3 text-sm text-amber-900">
                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-200">
                     <!-- info icon -->
@@ -48,7 +48,7 @@
                 </span>
                 <div class="leading-tight">Gunakan <strong>Google Chrome</strong> untuk pengalaman terbaik.</div>
             </div>
-            <button @click="open=false" class="text-amber-700 hover:text-amber-900 ml-4">✕</button>
+            <button @click="open=false" class="ml-4 text-amber-700 hover:text-amber-900">✕</button>
         </div>
     </div>
 
@@ -66,15 +66,15 @@
             transform="translate(100 100)" />
     </svg>
 
-    <main class="min-h-screen lg:min-h-full xl:min-h-screen flex items-center justify-center px-4 py-10">
-        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 items-start justify-center">
+    <main class="flex items-center justify-center min-h-screen px-4 py-10 lg:min-h-full xl:min-h-screen">
+        <div class="grid items-start justify-center w-full max-w-6xl grid-cols-1 lg:grid-cols-2">
 
             <!-- LEFT (only visible on md+): company info, socials, maps, kontak -->
-            <aside class="hidden lg:flex flex-col gap-2">
-                <div class="glass rounded-2xl p-4 shadow-lg border border-amber-100">
+            <aside class="flex-col hidden gap-2 lg:flex">
+                <div class="p-4 border shadow-lg glass rounded-2xl border-amber-100">
                     <div class="flex items-start gap-4">
                         <img src="{{ asset('logo/sac.png') }}" alt="SAC Logo"
-                            class="w-20 h-20 object-contain rounded-lg">
+                            class="object-contain w-20 h-20 rounded-lg">
                         <div>
                             <h2 class="text-lg font-extrabold text-amber-900">PT. Surya Amanah Cendekia (SAC)</h2>
                             <p class="mt-2 text-sm text-stone-700">Penyedia layanan outsourcing profesional yang
@@ -112,7 +112,7 @@
 
                     <!-- Socials -->
                     <div>
-                        <h3 class="text-sm font-semibold text-slate-700 mb-2">Akun Media Sosial</h3>
+                        <h3 class="mb-2 text-sm font-semibold text-slate-700">Akun Media Sosial</h3>
                         <div class="flex flex-wrap gap-3">
                             <a href="https://www.instagram.com/ptsacponorogo/" target="_blank" rel="noopener"
                                 class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 border border-amber-100 text-sm hover:shadow">
@@ -138,9 +138,9 @@
                 </div>
 
                 <!-- contact card -->
-                <div class="rounded-xl px-4 py-2 bg-white/80 shadow border border-amber-100 text-sm">
+                <div class="px-4 py-2 text-sm border shadow rounded-xl bg-white/80 border-amber-100">
                     <h4 class="font-semibold text-slate-700">Kontak</h4>
-                    <div class="mt-2 space-y-2 text-slate-700 font-medium">
+                    <div class="mt-2 space-y-2 font-medium text-slate-700">
                         <div class="flex items-center gap-2">
                             <i class="ri-whatsapp-line text-[18px] text-amber-500"></i>
                             <span>WhatsApp: <a href="https://wa.me/6282134360007"
@@ -153,10 +153,9 @@
                                     class="text-amber-600 hover:underline">sacponorogo@gmail.com</a></span>
                         </div>
 
-                        <div class="mt-2 relative inline-block">
+                        <div class="relative inline-block mt-2">
                             <a href="https://maps.app.goo.gl/4UZmBZG4sahM2VWP6" target="_blank" rel="noopener"
-                                class="relative inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 text-amber-800
-            overflow-hidden group">
+                                class="relative inline-flex items-center gap-2 px-3 py-2 overflow-hidden rounded-lg bg-amber-50 text-amber-800 group">
 
                                 <!-- Border gradient berputar -->
                                 <span
@@ -179,13 +178,13 @@
             </aside>
 
             <!-- Right: login card -->
-            <section class="mx-auto w-full max-w-md">
+            <section class="w-full max-w-md mx-auto">
                 {{ $slot }}
             </section>
         </div>
     </main>
 
-    <footer class="text-center text-xs text-stone-500 absolute bottom-4 w-full">
+    <footer class="absolute w-full text-xs text-center text-stone-500 bottom-4">
         © {{ date('Y') }} {{ config('app.name', 'Kinerja SAC-PO') }}
     </footer>
 </body>

@@ -19,8 +19,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ URL::asset('css/toastr.min.css') }}">
     <style>
         #map {
             height: 180px;
@@ -35,14 +34,14 @@
     </style>
 </head>
 
-<body class="font-sans antialiased  bg-slate-400">
+<body class="font-sans antialiased bg-slate-400">
     <div class="min-h-screen pb-24">
         @include('layouts.navbar')
-        <div class="md:mx-10 mx-5 bg-slate-500 rounded-md shadow-md">
+        <div class="mx-5 rounded-md shadow-md md:mx-10 bg-slate-500">
             <main>
                 <div class="px-5 py-5">
                     @if ($errors->any())
-                        <div class="text-red-500 bg-slate-200 rounded-md p-2">
+                        <div class="p-2 text-red-500 rounded-md bg-slate-200">
                             <ul class="list-disc list-inside">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -56,36 +55,36 @@
                         @method('POST')
                         @csrf
                         @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
-                            <div class="flex flex-col  sm:m-0 items-center  justify-center">
+                            <div class="flex flex-col items-center justify-center sm:m-0">
                                 <div class="relative">
                                     <video id="video"
                                         class="bg-slate-200 p-2.5 rounded-md square-video max-w-[60vw]" autoplay
                                         playsinline></video>
                                 </div>
                                 <canvas id="canvas" style="display:none;"></canvas>
-                                <div id="results" class=" sm:mt-0 rounded my-3"></div>
+                                <div id="results" class="my-3 rounded sm:mt-0"></div>
 
                                 @if ($errors->image)
-                                    <!--<p class=" font-bold bg-white text-start p-1 rounded-lg" style="color: red">Foto Tidak Boleh Kosong</p>-->
+                                    <!--<p class="p-1 font-bold bg-white rounded-lg text-start" style="color: red">Foto Tidak Boleh Kosong</p>-->
                                 @endif
                             </div>
                             <div class="flex justify-center">
                                 <button type=button id="snapButton"
-                                    class="p-2 my-2 px-3 mb-5 text-white bg-blue-400 rounded-full"><i
+                                    class="p-2 px-3 my-2 mb-5 text-white bg-blue-400 rounded-full"><i
                                         class="ri-camera-fill"></i></button>
                             </div>
 
                         @endif
 
-                        <div class="p-1 rounded my-3 ">
-                            <label class="required text-white">Map : </label>
-                            <span id="labelMap" class="text-white text-center flex flex-col justify-center">
+                        <div class="p-1 my-3 rounded ">
+                            <label class="text-white required">Map : </label>
+                            <span id="labelMap" class="flex flex-col justify-center text-center text-white">
                                 <p>Pastikan map sudah muncul !!</p>
                                 <p id="resolver">coba refresh browser beberapa kali jika map belum muncul</p>
                             </span>
                             <div id="map" class="rounded"></div>
                             <span id="tutor"
-                                class="text-white italic hidden text-center flex flex-col justify-center text-sm capitalize">
+                                class="flex flex-col justify-center hidden text-sm italic text-center text-white capitalize">
                                 <p id="latlongLabel" class="text-[8px]"></p>
                                 <p>Pastikan tanda biru berada dilingkaran</p>
                             </span>
@@ -116,7 +115,7 @@
                                         value="{{ Auth::user()->nama_lengkap }}" disabled class="input input-bordered">
                                 @endif
                             </div>
-                            <div class="flex flex-col  justify-between">
+                            <div class="flex flex-col justify-between">
                                 <label for="kerjasama" class="text-white">Penempatan: </label>
                                 @if (Auth::user()->id == 10)
                                     <select class="selectMitra select select-bordered" name="kerjasama_id">
@@ -150,34 +149,34 @@
                                         $absensi[0]->masuk;
                                 @endphp
                                 <div class="flex flex-col justify-start">
-                                    <x-input-label for="jenis_abs" class="text-white text-lg" :value="__('Jenis Absen: ')" />
-                                    <div class="flex flex-col justify-start bg-slate-50 rounded-lg">
-                                        <div>
+                                    <x-input-label for="jenis_abs" class="text-lg text-white" :value="__('Jenis Absen: ')" />
+                                    <div class="flex flex-col justify-start rounded-lg bg-slate-50">
+                                        <div class="flex items-center">
                                             <input type="radio" id="type_absen" data-pilih="masuk"
-                                                name="jenis_abs" value="1" class="radio radio-sm m-2"
+                                                name="jenis_abs" value="1" class="m-2 radio radio-sm"
                                                 {{ $lanjutShift ? 'disabled' : 'checked' }}>
                                             <label for="masuk" class="overflow-hidden"
                                                 {{ $lanjutShift ? 'disabled' : '' }}>Masuk</label>
                                         </div>
                                         @if ($lanjutShift)
-                                            <div>
+                                            <div class="flex items-center">
                                                 <input type="radio" id="type_absen" data-pilih="terus"
                                                     name="jenis_abs" value="1"
-                                                    class="radio radio-sm m-2 disabled" checked>
+                                                    class="m-2 radio radio-sm disabled" checked>
                                                 <label for="tukar" class="overflow-hidden" disabled>Meneruskan
                                                     Shift</label>
                                             </div>
                                         @endif
-                                        <div>
+                                        <div class="flex items-center">
                                             <input type="radio" id="type_absen" data-pilih="tukar"
-                                                name="jenis_abs" value="1" class="radio radio-sm m-2 disabled"
+                                                name="jenis_abs" value="1" class="m-2 radio radio-sm disabled"
                                                 disabled>
                                             <label for="tukar" class="overflow-hidden" disabled>Tukar Shift
                                                 (maintenance)</label>
                                         </div>
-                                        <div>
+                                        <div class="flex items-center">
                                             <input type="radio" id="type_absen" data-pilih="lembur"
-                                                name="jenis_abs" value="1" class="radio radio-sm m-2" disabled>
+                                                name="jenis_abs" value="1" class="m-2 radio radio-sm" disabled>
                                             <label for="lembur" class="overflow-hidden">Lembur (maintenance)</label>
                                         </div>
 
@@ -187,10 +186,10 @@
                                     </div>
                                 </div>
                                 <div class="w-full" id="divPengganti" style="display: none;">
-                                    <x-input-label for="pengganti" class="text-white text-lg" :value="__('Pengganti: ')" />
+                                    <x-input-label for="pengganti" class="text-lg text-white" :value="__('Pengganti: ')" />
                                     <select name="pengganti" id="pengganti" required
                                         style="{{ $errors->any() && $errors->pengganti ? 'border: 2px solid red;' : '' }}"
-                                        class="select select-bordered font-thin w-full">
+                                        class="w-full font-thin select select-bordered">
                                         @if ($errors->any() && $errors->pengganti)
                                             <option selected disabled class="p-1 my-1 font-bold text-red-600">
                                                 Pengganti Tidak Boleh Kosong</option>
@@ -210,12 +209,12 @@
                             @elseif(Auth::user()->devisi_id == 12)
                                 <input type="hidden" name="shift_id" value="200" />
                             @else
-                                <div class="flex flex-col  justify-between">
-                                    <label class="required text-white" for="shift_id">Shift: </label>
+                                <div class="flex flex-col justify-between">
+                                    <label class="text-white required" for="shift_id">Shift: </label>
                                     <select name="shift_id" id="shift_id"
                                         {{ Auth::user()->name == 'DIREKSI' ? '' : 'required' }}
                                         style="{{ $errors->any() && $errors->shift_id ? 'border: 2px solid red;' : '' }}"
-                                        class="select select-bordered font-thin ">
+                                        class="font-thin select select-bordered ">
                                         @if ($errors->any() && $errors->shift_id)
                                             <option selected disabled class="p-1 my-1 font-bold text-red-600">
                                                 Shift Tidak Boleh Kosong</option>
@@ -228,7 +227,7 @@
                                                 $endA = Carbon\Carbon::parse($i->jam_end)->subHour(1)->format('H:i');
                                             @endphp
                                             <option value="{{ $i->id }}" data-shift="{{ $i?->jam_start }}">
-                                                {{ $i?->shift_name }} | {{ $i?->jam_start }} - {{ $endA }}
+                                                {{ ucwords(strtolower($i?->shift_name)) }} | {{ $i?->jam_start }} - {{ $endA }}
                                             </option>
                                         @empty
                                             <option readonly disabled>~ Tidak ada Shift ! ~</option>
@@ -244,7 +243,7 @@
 
                             <div>
                                 <div>
-                                    <label class="required text-white">Perlengkapan: </label>
+                                    <label class="text-white required">Perlengkapan: </label>
                                 </div>
                                 <div class="p-2 bg-white rounded-lg "
                                     style="{{ $errors->any() && $errors->shift_id ? 'border: 2px solid red;' : '' }}">
@@ -259,7 +258,7 @@
                                                     <input type="checkbox" name="perlengkapan[]"
                                                         id="perlengkapan {{ $i->id }}"
                                                         value="{{ $i->name }}"
-                                                        class="checkbox checkbox-sm m-2 perle">
+                                                        class="m-2 checkbox checkbox-sm perle">
                                                     <label
                                                         for="perlengkapan {{ $i->id }}">{{ $i->name }}</label>
                                                 </div>
@@ -290,7 +289,7 @@
                                 Route::currentRouteName() == 'absensi-karyawan-co-cs.index' ||
                                 Route::currentRouteName() == 'absensi-karyawan-co-scr.index';
                         @endphp
-                        <div class="flex flex-col justify-center sm:justify-end gap-3 mt-2 mr-2">
+                        <div class="flex flex-col justify-center gap-3 mt-2 mr-2 sm:justify-end">
                             <span id="labelWaktuStart"
                                 class="text-center text-[10px] capitalize font-semibold hidden py-2 px-4 rounded-md bg-slate-50"></span>
                             <span class="flex justify-center gap-3">
@@ -366,9 +365,9 @@
             <x-menu-mobile />
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
+    <script src="{{ URL::asset('js/toastr.min.js') }}"></script>
+    <script src="{{ URL::asset('js/moment.min.js') }}"></script>
 
     @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
         <!-- Configure a few settings and attach camera -->
@@ -625,7 +624,7 @@
                                             '<div><input type="checkbox" name="perlengkapan[]" id="perlengkapan ' +
                                             perle.id + '" value="' + perle
                                             .name +
-                                            '" class="checkbox checkbox-sm m-2 perle"><label for="perlengkapan ' +
+                                            '" class="m-2 checkbox checkbox-sm perle"><label for="perlengkapan ' +
                                             perle.id + '">' + perle.name +
                                             '</label></div>';
                                         // console.log(htmlP);

@@ -29,12 +29,12 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $cekUser = User::where('name', $request->name)->where('status_id', 6)->first();
-        
+
         if($cekUser) {
             toastr()->error('Akun Anda Belum Di Verifikasi', 'error');
             return redirect()->back();
         }
-        
+
         $request->authenticate();
         $this_auth = Auth::user();
         if (!$request->session()->has('is_modal')) {
@@ -42,7 +42,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         $request->session()->regenerate();
-        
+
         if($this_auth->role_id == 2) {
             // dd($data);
             return redirect()->intended(RouteServiceProvider::ADMIN);
