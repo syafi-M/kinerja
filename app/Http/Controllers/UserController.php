@@ -235,27 +235,6 @@ class UserController extends Controller
         // Format jadi 3 digit, misalnya SAC001, SAC099
         $newUsername = 'SAC' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
-        // absen
-        $userAbsen = new User();
-        $userAbsen = [
-            'kerjasama_id' => Kerjasama::firstWhere('client_id', $request->client_id)->id,
-            'devisi_id' => $request->devisi_id,
-            'jabatan_id' => Divisi::find($request->devisi_id)->jabatan_id,
-            'name' => $newUsername,
-            'email' => $request->email,
-            'alamat' => $request->alamat,
-            'password' => Hash::make($request->password),
-            'image' => $image,
-            'nama_lengkap' => $request->nama_lengkap,
-            'nik' => Crypt::encryptString($request->nik),
-            'no_hp' => normalizePhone($request->no_hp),
-            'status_id' => '6'
-        ];
-
-        if ($request->hasFile('image')) {
-            $userAbsen['image'] = UploadImageUser($request, 'image');
-        }
-
         // data center
         $user = [
             'username' => $newUsername,
@@ -291,7 +270,6 @@ class UserController extends Controller
         ];
 
         try {
-            User::create($userAbsen);
             TempUser::create($tUser);
 
             Notification::route('mail', $request->email)
