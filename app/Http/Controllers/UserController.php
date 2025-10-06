@@ -127,6 +127,10 @@ class UserController extends Controller
             'no_hp' => normalizePhone($request->no_hp)
         ];
 
+        if ($request->password == null) {
+            unset($user['password']);
+        }
+
         if ($request->hasFile('image')) {
             if ($request->oldimage) {
                 Storage::disk('public')->delete('images/' . $request->oldimage);
