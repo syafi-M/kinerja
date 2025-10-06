@@ -188,6 +188,8 @@
     <footer class="text-center text-xs text-stone-500 absolute bottom-4 w-full">
         © {{ date('Y') }} {{ config('app.name', 'Kinerja SAC-PO') }}
     </footer>
+    <x-analytic-component />
+
 </body>
 
 </html>
