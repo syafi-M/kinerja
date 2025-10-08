@@ -52,6 +52,8 @@ class DashboardController extends Controller
             ? Lokasi::with('client')->firstWhere('client_id', $absenP->kerjasama->client_id)
             : null;
 
+        $lokasiMitra = Lokasi::with('client')->get();
+
         // Filter absensi untuk mengambil yang memiliki tipe "Tidak Absen Pulang"
         // dan terjadi di bulan berjalan. Jika memungkinkan, filter ini juga bisa dilakukan di query.
         $currentMonth = $now->month;
@@ -176,6 +178,7 @@ class DashboardController extends Controller
             'cex2',
             'totcex',
             'lok',
+            'lokasiMitra',
             'warn',
             'sholatSaatIni',
             'rillSholat',
