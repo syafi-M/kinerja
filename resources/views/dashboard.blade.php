@@ -567,8 +567,8 @@
                                                     <div class="flex flex-col gap-2">
                                                         <p class="text-lg font-semibold text-center">Apakah Anda Yakin
                                                             Ingin Pulang Sekarang?</p>
-                                                        <span id="labelWaktu"></span>
                                                         @if (Auth::user()->name != 'DIREKSI' && Auth::user()->jabatan_id != 35)
+                                                            <span id="labelWaktu"></span>
                                                             <span class="flex justify-center">
                                                                 <span id="jam2"
                                                                     class="text-sm font-semibold underline badge badge-info text-slate-800"></span>
