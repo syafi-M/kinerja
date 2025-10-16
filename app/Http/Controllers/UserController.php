@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use SadiqSalau\LaravelOtp\Facades\Otp;
 
 class UserController extends Controller
@@ -37,9 +38,7 @@ class UserController extends Controller
             return $query->where('kerjasama_id', '=', $request->filterKerjasama . '%');
         });
 
-        // dd(User::whereRaw("name REGEXP '^[a-zA-Z]{3}[0-9]{3}$'")->latest()->first());
-
-        return view('admin.user.index', ['user' => $user->paginate(5000), 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev, 'filterKerjasama' => $request->filterKerjasama]);
+        return view('admin.user.index', ['user' => $user->paginate(100), 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev, 'filterKerjasama' => $request->filterKerjasama]);
     }
 
     /**
@@ -69,9 +68,9 @@ class UserController extends Controller
             'jabatan_id' => $request->jabatan_id,
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
             'image' => $request->image,
             'nama_lengkap' => $request->nama_lengkap,
+            'password' => Hash::make($request->password),
             'nik' => Crypt::encryptString($request->nik),
             'no_hp' => normalizePhone($request->no_hp)
         ];
@@ -88,7 +87,6 @@ class UserController extends Controller
         }
         toastr()->success('User Berhasil Ditambahkan', 'succes');
         return redirect()->back();
-
     }
 
     /**
@@ -175,10 +173,7 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    public function show($id)
-    {
-
-    }
+    public function show($id) {}
 
     /**
      * Remove the specified resource from storage.
@@ -210,7 +205,6 @@ class UserController extends Controller
             toastr()->error('Data Tidak Ditemukan', 'error');
             return redirect()->back();
         }
-
     }
 
     public function addKaryawanIndex()
@@ -228,15 +222,12 @@ class UserController extends Controller
 
         // dd($request->all(), Kerjasama::where('client_id', $request->client_id)->value('id'), Divisi::find($request->devisi_id)->value('jabatan_id'));
 
-        // Ambil angka terbesar dari username dengan format 'SACXXX'
         $lastNumber = User::where('name', 'LIKE', 'SAC%')
             ->select(DB::raw('MAX(CAST(SUBSTRING(name, 4) AS UNSIGNED)) AS max_number'))
             ->value('max_number');
 
-        // Jika belum ada, mulai dari 1
         $nextNumber = $lastNumber ? $lastNumber + 1 : 1;
 
-        // Format jadi 3 digit, misalnya SAC001, SAC099
         $newUsername = 'SAC' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
         // data center
@@ -280,14 +271,12 @@ class UserController extends Controller
                 ->notify(new RegSukses($newUsername, $request->password));
             Cache::forget("otp_{$request->email}");
 
-            // dd($request->all(), $user, $tUser);
             return view('admin.user.addKaryawan.wait');
         } catch (\Illuminate\Database\QueryException $e) {
-            dd($e);
+            Log::error($e);
             toastr()->error('Ada Kesalahan Input Data', 'error');
             return redirect()->back();
         }
-
     }
 
     public function addKaryawanAdminIndex()

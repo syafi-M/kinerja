@@ -13,6 +13,7 @@ use App\Models\Shift;
 use App\Models\User;
 use App\Models\Izin;
 use App\Models\SlipGaji;
+use App\Models\TempUser;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -661,49 +662,74 @@ class AdminController extends Controller
         $exportType = $request->input('export_type');
 
         // dd($request->all());
+        $temps = TempUser::all();
+        $users = User::whereIn('id', $check)->get(); // fetch all needed users at once
+        $results = [];
 
-        if ($check != null || $checkAll != null) {
-            $data = [];
-            foreach ($check as $id) {
-                $arr = User::where('id', $id)->get();
-                $data[] = $arr;
+        foreach ($temps as $temp) {
+            // Clean JSON
+            $json = trim($temp->data, "\" \n\r\t");
+            $json = preg_replace('/^"+\s*{/', '{', $json);
+            $json = preg_replace('/}\s*"+$/', '}', $json);
+
+            $decoded = json_decode($json, true);
+            if (!is_array($decoded)) {
+                continue;
             }
 
-            if ($exportType == 'delete') {
-                // dd($check, $request->all());
-                User::destroy($check);
+            $username = $decoded['username'] ?? null;
 
-                toastr()->success('User berhasil dihapus', 'success');
-                return redirect()->back();
-            } else {
-                $options = new Options();
-                $options->setIsHtml5ParserEnabled(true);
-                $options->set('isRemoteEnabled', true);
-                $options->set('defaultFont', 'Arial');
+            if ($username) {
+                // Find matching user by name
+                $user = $users->firstWhere('name', $username);
 
-                $pdf = new Dompdf($options);
-                if ($exportType === 'data') {
-                    // Logic for exporting data
-                    $html = view('admin.user.export-user', compact(['data', 'exportType']))->render();
-                } elseif ($exportType === 'id_card') {
-                    // Logic for exporting ID cards
-                    $html = view('admin.user.export-card', compact(['data', 'exportType']))->render();
+                if ($user) {
+                    $results[] = $decoded;
                 }
-                $pdf->loadHtml($html);
-                $pdf->setPaper('A4', 'landscape');
-                $pdf->render();
-
-                $output = $pdf->output();
-                $filename = 'user.pdf';
-
-                if ($request->input('action') == 'download') {
-                    return response()->download($output, $filename);
-                }
-
-                return response($output, 200)
-                    ->header('Content-Type', 'application/pdf')
-                    ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
             }
+        }
+
+        if ($exportType == 'delete') {
+            // dd($check, $request->all());
+            User::destroy($check);
+
+            toastr()->success('User berhasil dihapus', 'success');
+            return redirect()->back();
+        } else {
+            $options = new Options();
+            $options->setIsHtml5ParserEnabled(true);
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Arial');
+
+            $pdf = new Dompdf($options);
+            if ($exportType === 'data') {
+                // Logic for exporting data
+                $html = view('admin.user.export-user', [
+                    'data' => $users,
+                    'exportType' => $exportType,
+                    'results' => $results
+                ])->render();
+            } elseif ($exportType === 'id_card') {
+                // Logic for exporting ID cards
+                $html = view('admin.user.export-card', [
+                    'data' => $users,
+                    'exportType' => $exportType,
+                ])->render();
+            }
+            $pdf->loadHtml($html);
+            $pdf->setPaper('A4', 'landscape');
+            $pdf->render();
+
+            $output = $pdf->output();
+            $filename = 'user.pdf';
+
+            if ($request->input('action') == 'download') {
+                return response()->download($output, $filename);
+            }
+
+            return response($output, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
         }
     }
 
