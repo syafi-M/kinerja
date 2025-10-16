@@ -76,7 +76,8 @@
                                     <span
                                         style="background-color: rgba(255,0,0,0.7); padding-x: 2px; border-radius: 5px;">{{ $items->kerjasama_id == 1 ? '12345678' : $dat['pw'] }}</span>
                                 @empty
-                                    <span>12345678</span>
+                                    <span
+                                        style="background-color: rgba(255,0,0,0.7); padding-x: 2px; border-radius: 5px;">{{ $items->kerjasama_id == 1 ? '12345678' : '123456' }}</span>
                                 @endforelse
                             </td>
                         </tr>

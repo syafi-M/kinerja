@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-main-div>
-        <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+        <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 opacity-70">
 
             <!-- Modern Header Bar -->
             <div class="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-gray-200/50 shadow-sm mb-6">
