@@ -3,6 +3,105 @@
 @tailwind utilities;
 
 .required::after {
-    content: "*";
+    content: " *";
     color: red;
+}
+
+#map {
+    height: 180px;
+}
+
+.leaflet-popup-content {
+    font-size: 9px;
+    font-weight: 600;
+    max-width: 100px;
+    text-align: center;
+}
+
+@media (min-width: 640px) {
+    #akuImage {
+        max-width: 300px;
+        aspect-ratio: 1/1;
+    }
+}
+
+.divImage {
+    scroll-snap-type: x var(--tw-scroll-snap-strictness);
+}
+
+.clicked {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+}
+
+@keyframes hanging-wiggle {
+
+    0%,
+    100% {
+        transform: rotate(-15deg);
+    }
+
+    50% {
+        transform: rotate(-10deg);
+    }
+}
+
+@keyframes hanging-wiggle2 {
+
+    0%,
+    100% {
+        transform: rotate(10deg);
+    }
+
+    50% {
+        transform: rotate(15deg);
+    }
+}
+
+.hanging {
+    position: absolute;
+    top: 0;
+    transform-origin: top center;
+    animation: hanging-wiggle 2s ease-in-out infinite alternate;
+}
+
+.hanging2 {
+    position: absolute;
+    top: 0;
+    transform-origin: top center;
+    animation: hanging-wiggle2 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.menu-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.menu-button:active {
+    transform: translateY(0);
+}
+
+.glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
 }

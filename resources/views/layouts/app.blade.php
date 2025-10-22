@@ -12,14 +12,19 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ URL::asset('css/toastr.min.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <!-- Webcam CDN -->
     <script src="{{ URL::asset('js/webcam.min.js') }}"></script>
     <script src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
-
 
     <style>
         *,
@@ -32,9 +37,9 @@
 </head>
 
 <body class="font-sans antialiased bg-slate-400">
-    <div class="min-h-screen">
-        @include('layouts.navbar')
+    @include('layouts.navbar')
 
+    <div class="min-h-screen mt-32">
         <!-- Page Heading -->
         @if (isset($header))
             <header class="bg-white shadow">
@@ -50,17 +55,11 @@
             {{ $slot }}
 
         </main>
-
-    </div>
-    <div class="flex justify-center">
-        <div class="fixed bottom-0 z-[999]">
-            <x-menu-mobile />
-        </div>
     </div>
     <!-- cdnjs -->
+    @stack('scripts')
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}">
-    </script>
+    <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}"></script>
     <x-analytic-component />
     <script>
         $(document).ready(function() {
