@@ -58,7 +58,7 @@
         @endif
     </div>
     @include('partials.dashboard-menu')
-    @if (count($warn) >= 3)
+    @if ($warn && count($warn) >= 3)
         <div class="flex justify-center pt-10 mx-10 sm:justify-start">
             <div
                 class="inset-0 flex flex-col justify-start px-4 py-2 mb-5 font-semibold text-white bg-red-500 rounded-lg shadow-md w-fit text-md sm:text-xl">

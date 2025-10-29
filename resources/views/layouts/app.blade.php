@@ -12,22 +12,18 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900&display=swap" rel="stylesheet" />
+
+    {{-- css --}}
     <link rel="stylesheet" href="{{ URL::asset('css/toastr.min.css') }}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Webcam CDN -->
     <script src="{{ URL::asset('js/webcam.min.js') }}"></script>
     <script src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
 
     <style>
-        *,
         body,
         html {
             overflow-x: hidden;
@@ -36,10 +32,10 @@
 
 </head>
 
-<body class="font-sans antialiased bg-slate-400">
+<body class="font-sans antialiased bg-slate-400 min-h-svh">
     @include('layouts.navbar')
 
-    <div class="min-h-screen mt-32">
+    <div class="mt-32">
         <!-- Page Heading -->
         @if (isset($header))
             <header class="bg-white shadow">
@@ -51,9 +47,7 @@
 
         <!-- Page Content -->
         <main>
-
             {{ $slot }}
-
         </main>
     </div>
     <!-- cdnjs -->
@@ -69,11 +63,6 @@
                     $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
                 });
             });
-            $('#nav-btn').click(function() {
-                $('#mobile-menu').addClass('absolute');
-                $('#mobile-menu').toggle();
-            });
-
             $('.lazy').lazy({
                 // your configuration goes here
                 scrollDirection: 'vertical',

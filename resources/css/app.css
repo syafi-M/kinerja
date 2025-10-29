@@ -8,7 +8,12 @@
 }
 
 #map {
-    height: 180px;
+    width: 100%;
+}
+
+.leaflet-pane {
+    height: 400px;
+    width: 100%;
 }
 
 .leaflet-popup-content {
@@ -35,7 +40,6 @@
 }
 
 @keyframes hanging-wiggle {
-
     0%,
     100% {
         transform: rotate(-15deg);
@@ -47,7 +51,6 @@
 }
 
 @keyframes hanging-wiggle2 {
-
     0%,
     100% {
         transform: rotate(10deg);

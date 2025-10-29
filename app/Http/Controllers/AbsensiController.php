@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http as httped;
+use Illuminate\Support\Facades\Route;
 // use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -137,6 +138,10 @@ class AbsensiController extends Controller
 
         $shift = $matchedShifts->isNotEmpty() ? $matchedShifts : $shift;
 
+        $cekRoute =
+                    Route::currentRouteName() == 'absensi-karyawan-co-cs.index' ||
+                    Route::currentRouteName() == 'absensi-karyawan-co-scr.index';
+
         // dd($shift); // Collection of matched shifts
 
         return view('absensi.index', compact(
@@ -149,7 +154,8 @@ class AbsensiController extends Controller
             'dev',
             'absensi',
             'harLok',
-            'dirShift'
+            'dirShift',
+            'cekRoute'
         ));
     }
 
