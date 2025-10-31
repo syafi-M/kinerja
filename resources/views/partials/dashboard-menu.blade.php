@@ -16,8 +16,8 @@
             <div class="mx-5 rounded-md sm:mx-10 bg-slate-500 ">
                 <div class="py-5">
                     <div class="flex items-end justify-end mr-3">
-                        <span style="max-width: 250px; background-color: #0C642F"
-                            class="flex justify-center gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
+                        <span style="max-width: 235px; background-color: #0C642F"
+                            class="flex justify-start min-w-[225px] gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md text-start sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
                             <span id="jam"></span>
                         </span>
                     </div>
@@ -325,76 +325,87 @@
                     @endif
 
                     @if ($absenP)
-                        {{-- handle Pulang --}}
-                        <div class="flex flex-col items-center justify-center sm:justify-end">
-                            @php
-                                $luweh1Dino = Carbon\Carbon::createFromFormat(
-                                    'Y-m-d, H:i:s',
-                                    $absenP?->created_at->format('Y-m-d, H:i:s'),
-                                )->diffInHours(Carbon\Carbon::now());
-                            @endphp
-                            @if (Auth::user()->id == $absenP?->user_id && $absenP?->absensi_type_pulang == null)
-                                @php
-                                    $now = now();
-                                    $shiftEnd = \Carbon\Carbon::parse($absenP->shift?->jam_end);
-                                    $timeDifference = $now->diffInMinutes($shiftEnd, false);
-                                @endphp
+    {{-- Handle Pulang --}}
+    <div class="flex flex-col items-center justify-center sm:justify-end">
+        @php
+            $luweh1Dino = Carbon\Carbon::createFromFormat(
+                'Y-m-d, H:i:s',
+                $absenP?->created_at->format('Y-m-d, H:i:s'),
+            )->diffInHours(Carbon\Carbon::now());
+        @endphp
 
-                                <span class="hidden">
-                                    <span id="userId" data-user-id="{{ $absenP->user_id }}"
-                                        data-auth-user="{{ Auth::user()->id }}"></span>
-                                    <span id="endTime" endTimer="{{ $absenP->shift?->jam_end }}"></span>
-                                    <span id="startTime" startTimer="{{ $absenP->shift?->jam_start }}"></span>
-                                </span>
+        @if (Auth::user()->id == $absenP?->user_id && $absenP?->absensi_type_pulang == null)
+            @php
+                $now = now();
+                $shiftEnd = \Carbon\Carbon::parse($absenP->shift?->jam_end);
+                $timeDifference = $now->diffInMinutes($shiftEnd, false);
+            @endphp
 
-                                <div>
-                                    <button id="modalPulangBtn" data-absen="{{ $absenP }}"
-                                        class="items-center justify-center hidden px-3 py-1 mt-5 mr-0 text-xl text-white uppercase transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all sm:mr-2">
-                                        <i class="font-sans text-3xl ri-run-line"></i>
-                                        <span class="font-bold">Pulang</span>
-                                    </button>
-                                </div>
-                                <div
-                                    class="fixed inset-0 hidden transition-all duration-300 ease-in-out modalp bg-slate-500/10 backdrop-blur-sm">
-                                    <div class="p-5 mx-2 rounded-md shadow bg-slate-200 w-fit">
-                                        <div class="flex justify-end mb-3">
-                                            <button class="scale-90 btn btn-error close">&times;</button>
-                                        </div>
-                                        <form action="{{ route('data.update', $absenP->id) }}" method="POST"
-                                            class="flex items-center justify-center">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="flex flex-col justify-center">
-                                                <div class="flex flex-col gap-2">
-                                                    <p class="text-lg font-semibold text-center">Apakah Anda Yakin
-                                                        Ingin Pulang Sekarang?</p>
-                                                    @if (Auth::user()->name != 'DIREKSI' && Auth::user()->jabatan_id != 35)
-                                                        <span id="labelWaktu"></span>
-                                                        <span class="flex justify-center">
-                                                            <span id="jam2"
-                                                                class="text-sm font-semibold underline badge badge-info text-slate-800"></span>
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                <div class="flex items-center justify-center">
-                                                    <button type="submit"
-                                                        class="flex items-center justify-center px-3 py-1 mt-5 mr-0 text-xl text-white uppercase transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all sm:mr-2">
-                                                        <i class="font-sans text-3xl ri-run-line"></i>
-                                                        <span class="font-bold">Pulang Sekarang</span>
-                                                    </button>
-                                                    <input id="lat" name="lat_user" value=""
-                                                        class="hidden lat" />
-                                                    <input id="long" name="long_user" value=""
-                                                        class="hidden long" />
-                                                    <div id="map" class="hidden"></div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            @endif
+            {{-- Hidden data elements --}}
+            <div class="hidden">
+                <span id="userId" data-user-id="{{ $absenP->user_id }}" data-auth-user="{{ Auth::user()->id }}"></span>
+                <span id="endTime" endTimer="{{ $absenP->shift?->jam_end }}"></span>
+                <span id="startTime" startTimer="{{ $absenP->shift?->jam_start }}"></span>
+            </div>
+
+            {{-- Checkout Button --}}
+            <button id="modalPulangBtn" data-absen="{{ $absenP }}"
+                class="flex items-center justify-center gap-2 px-4 py-2 mt-4 text-white transition-all duration-200 bg-yellow-600 rounded-lg shadow-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50">
+                <i class="text-xl ri-run-line"></i>
+                <span class="font-semibold">Pulang</span>
+            </button>
+
+            {{-- Modal --}}
+            <div id="checkoutModal" class="fixed inset-0 z-50 items-center justify-center hidden p-4 transition-opacity duration-300 bg-black/50 backdrop-blur-sm">
+                <div class="w-full max-w-md p-6 transition-all duration-300 transform scale-95 bg-white shadow-xl opacity-0 rounded-xl">
+                    {{-- Modal Header --}}
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Konfirmasi Pulang</h3>
+                        <button class="p-1 text-gray-500 rounded-full hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 close-modal">
+                            <i class="text-xl ri-close-line"></i>
+                        </button>
+                    </div>
+
+                    {{-- Modal Body --}}
+                    <div class="mb-6">
+                        <p class="mb-4 text-center text-gray-700">Apakah Anda yakin ingin pulang sekarang?</p>
+
+                        @if (Auth::user()->name != 'DIREKSI' && Auth::user()->jabatan_id != 35)
+                            <div class="flex flex-col items-center justify-center p-3 mb-4 rounded-lg bg-blue-50">
+                                <p class="text-sm font-medium text-blue-800">Waktu saat ini:</p>
+                                <span id="jam2" class="text-lg font-bold text-blue-600"></span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Modal Footer --}}
+                    <form action="{{ route('data.update', $absenP->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="flex flex-col gap-3 sm:flex-row">
+                            <button type="button"
+                                class="flex-1 px-4 py-2 font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 close-modal">
+                                Batal
+                            </button>
+
+                            <button type="submit"
+                                class="flex items-center justify-center flex-1 gap-2 px-4 py-2 font-medium text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50">
+                                <i class="ri-run-line"></i>
+                                <span>Ya, Pulang Sekarang</span>
+                            </button>
                         </div>
-                    @endif
+
+                        {{-- Hidden inputs for location --}}
+                        <input id="lat" name="lat_user" value="" class="hidden lat" />
+                        <input id="long" name="long_user" value="" class="hidden long" />
+                        <div id="map" class="hidden"></div>
+                    </form>
+                </div>
+            </div>
+        @endif
+    </div>
+@endif
                 </div>
             </div>
 
@@ -403,7 +414,7 @@
                     @if (session()->has('is_modal'))
                         <!-- Display your modal here -->
                         <div class="modalNews">
-                            <div style="z-index: 9000;"
+                            <div style="z-index: 99999;"
                                 class="fixed inset-0 flex items-center justify-center w-full h-screen transition-all duration-300 ease-in-out bg-slate-500/10 backdrop-blur-sm">
                                 <div class="flex items-center justify-center">
                                     <div style="z-index: 9001;"

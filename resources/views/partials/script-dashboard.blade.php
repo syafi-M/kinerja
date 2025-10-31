@@ -195,14 +195,42 @@
         });
 
         // === Modal Handlers ===
-        $(document).on('click', '#modalPulangBtn', function() {
-            $('.modalp').removeClass('hidden').addClass('flex justify-center items-center opacity-100');
+         $(document).on('click', '#modalPulangBtn', function() {
+            const modal = $('#checkoutModal');
+            // First make the modal visible
+            modal.removeClass('hidden').addClass('flex');
+            // Force a reflow to ensure the transition works
+            modal[0].offsetHeight;
+            // Then animate the modal content
+            modal.find('.bg-white').removeClass('opacity-0 scale-95').addClass('opacity-100 scale-100');
         });
 
-        $(document).on('click', '.close', function() {
-            $('.modalp')
-                .removeClass('flex justify-center items-center opacity-100')
-                .addClass('opacity-0 hidden');
+        $(document).on('click', '.close-modal', function() {
+            const modal = $('#checkoutModal');
+            const modalContent = modal.find('.bg-white');
+            // Start the closing animation
+            modalContent.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
+            // Wait for the animation to complete before hiding the modal
+            setTimeout(() => {
+                modal.addClass('hidden').removeClass('flex');
+            }, 300); // Match the CSS transition duration
+        });
+
+        // Close modal when clicking outside the content
+        $(document).on('click', '#checkoutModal', function(e) {
+            if (e.target.id === 'checkoutModal') {
+                const modal = $(this);
+                const modalContent = modal.find('.bg-white');
+                modalContent.removeClass('opacity-100 scale-100').addClass('opacity-0 scale-95');
+                setTimeout(() => {
+                    modal.addClass('hidden').removeClass('flex');
+                }, 300);
+            }
+        });
+
+        // Prevent clicks inside modal content from closing the modal
+        $(document).on('click', '#checkoutModal .bg-white', function(e) {
+            e.stopPropagation();
         });
 
         $(document).on('click', '.closeNews', function() {

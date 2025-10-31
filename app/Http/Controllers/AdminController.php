@@ -555,7 +555,7 @@ class AdminController extends Controller
                 $totalHariKerja = $kantor ? $hae - $libur : $totalHari - $libur + 1;
 
                 $totalMasukAdjusted = $kantor ? $totalMasuk : $totalMasuk + $totalTerus;
-                $tesPer = $totalHariKerja > 0 ? round(($totalMasukAdjusted + $totalTelat + $totalMasukTidakPulang) / $totalHariKerja * 100) : 0;
+                $tesPer = $totalHariKerja > 0 ? round(($totalMasukAdjusted + $totalMasukTidakPulang) / $totalHariKerja * 100) : 0;
 
                 // $totalMasukAdjusted = $kantor ? $totalMasuk : $totalMasuk + $totalTerus;
                 // $totalMinusAdjusted = $totalHariKerja > 0 ? ((($totalTelat + $totalMasukTidakPulang) / $totalHariKerja * 100) / 2) : 0;

@@ -162,7 +162,7 @@
 
                             @forelse ($shift as $i)
                                 <option value="{{ $i->id }}" data-shift="{{ $i?->jam_start }}">
-                                    {{ ucwords(strtolower($i?->shift_name)) }} | {{ $i?->jam_start }} - {{ Carbon\Carbon::parse($i->jam_end)->subHour()->format('H:i') }}
+                                    ({{ Carbon\Carbon::parse($i?->jam_start)->format('H:i') }} - {{ Carbon\Carbon::parse($i?->jam_end)->subHour()->format('H:i') }}) {{ ucwords(strtolower($i?->shift_name)) }}
                                 </option>
                             @empty
                                 <option readonly disabled>~ Tidak ada Shift ! ~</option>
@@ -188,7 +188,7 @@
                                 @foreach ($arr->perlengkapan as $i)
                                     <div class="flex items-center">
                                         <input type="checkbox" name="perlengkapan[]" id="perlengkapan{{ $i->id }}" value="{{ $i->name }}" class="m-2 checkbox checkbox-sm perle">
-                                        <label for="perlengkapan{{ $i->id }}">{{ $i->name }}</label>
+                                        <label for="perlengkapan{{ $i->id }}">{{ ucwords(strtolower($i->name)) }}</label>
                                     </div>
                                 @endforeach
                             @empty
