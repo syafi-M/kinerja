@@ -47,9 +47,9 @@
             </div>
 
             {{-- Desktop Navigation --}}
-            <div class="items-center hidden gap-2 py-2 mr-5 md:flex">
+            <div class="items-center hidden gap-2 py-2 mr-10 md:flex">
                 <x-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard.index')"
-                    class="px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg hover:bg-slate-600/40">
+                    class="px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg translate-0 hover:bg-slate-600/60">
                     {{ __('Dashboard') }}
                 </x-nav-link>
 
@@ -62,7 +62,7 @@
                 @endif
 
                 {{-- Logout --}}
-                <form action="{{ route('logout') }}" method="post" class="py-1">
+                <form action="{{ route('logout') }}" method="post" class="">
                     @csrf
                     <button type="submit"
                         class="inline-flex items-center gap-2 px-4 py-2 font-semibold text-sm rounded-md text-slate-800 bg-yellow-400 hover:bg-yellow-500 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out">

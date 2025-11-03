@@ -4,258 +4,278 @@
         <script src="{{ URL::asset('js/moment.min.js') }}"></script>
     @endpush
 
-    <div class="px-5 py-5 -mt-[50pt]">
-        @if ($errors->any())
-            <div class="p-2 text-red-500 rounded-md bg-slate-200">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <p class="text-xl font-semibold text-center text-base-100">Form Kehadiran</p>
-
-        <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" id="form-absen">
-            @csrf
-            @method('POST')
-
-            @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
-                <div class="flex flex-col items-center justify-center sm:m-0">
-                    <div class="relative">
-                        <video id="video" class="bg-slate-200 p-2.5 rounded-md square-video max-w-[60vw]" autoplay playsinline></video>
+    <x-main-div>
+        <div class="max-w-4xl px-4 py-6 mx-auto">
+            <!-- Error Messages -->
+            @if ($errors->any())
+                <div class="p-4 mb-6 text-red-700 bg-red-100 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="mt-0.5 mr-2 text-red-500 ri-error-warning-line"></i>
+                        <div>
+                            <p class="font-semibold">Terjadi kesalahan:</p>
+                            <ul class="mt-1 ml-4 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
-                    <canvas id="canvas" style="display:none;"></canvas>
-                    <div id="results" class="my-3 rounded sm:mt-0"></div>
-                </div>
-                <div class="flex justify-center">
-                    <button type="button" id="snapButton" class="p-2 px-3 my-2 mb-5 text-white bg-blue-400 rounded-full">
-                        <i class="ri-camera-fill"></i>
-                    </button>
                 </div>
             @endif
 
-            <div class="p-1 my-3 rounded">
-                <label class="text-white required">Map: </label>
-                <span id="labelMap" class="flex flex-col justify-center text-center text-white">
-                    <p>Pastikan map sudah muncul !!</p>
-                    <p id="resolver">coba refresh browser beberapa kali jika map belum muncul</p>
-                </span>
-                <div id="map" class="overflow-auto rounded-md h-[125pt] md:h-[300pt]"></div>
-                <div id="map-loading" class="flex items-center justify-center h-full text-white">
-                    <span>Loading map...</span>
-                </div>
-                <span id="tutor" class="flex flex-col justify-center hidden text-sm italic text-center text-white capitalize">
-                    <p id="latlongLabel" class="text-[8px]"></p>
-                    <p>Pastikan tanda biru berada dilingkaran</p>
-                </span>
+            <!-- Page Header -->
+            <div class="mb-8 text-center">
+                <h1 class="text-2xl font-bold tracking-wide uppercase sm:text-3xl text-slate-800">Form Kehadiran</h1>
+                <div class="w-24 h-1 mx-auto mt-2 rounded-full bg-amber-500"></div>
             </div>
 
-            <div class="flex flex-col gap-2">
-                <!-- Name Field -->
-                <div class="flex flex-col justify-between">
-                    <label for="name" class="text-white">
-                        {{ Route::currentRouteName() == 'absensi-karyawan-co-cs.index' || Route::currentRouteName() == 'absensi-karyawan-co-scr.index' ? 'Pilih Nama: ' : 'Nama: ' }}
-                    </label>
+            <!-- Form Container -->
+            <div class="overflow-hidden bg-white shadow-lg rounded-xl">
+                <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" id="form-absen" class="p-6">
+                    @csrf
+                    @method('POST')
 
-                    @if (Route::currentRouteName() == 'absensi-karyawan-co-cs.index' || Route::currentRouteName() == 'absensi-karyawan-co-scr.index')
-                        <select name="user_id" id="selectUser" class="select select-bordered">
-                            <option selected value="{{ Auth::user()->id }}" data-client="{{ Auth::user()->kerjasama->client_id }}">
-                                {{ Auth::user()->nama_lengkap }}
-                            </option>
-                            @foreach ($userL as $us)
-                                <option value="{{ $us->id }}" data-divisi="{{ $us->devisi_id }}" data-client="{{ $us->kerjasama->client_id }}" data-jab="{{ $us->divisi?->jabatan_id }}">
-                                    {{ ucwords(strtolower($us->nama_lengkap)) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    @else
-                        <input type="text" id="user_id" name="user_id" value="{{ Auth::user()->id }}" hidden>
-                        <input type="text" id="name" value="{{ Auth::user()->nama_lengkap }}" disabled class="input input-bordered">
-                    @endif
-                </div>
-
-                <!-- Penempatan Field -->
-                <div class="flex flex-col justify-between">
-                    <label for="kerjasama" class="text-white">Penempatan: </label>
-
-                    @if (Auth::user()->id == 10)
-                        <select class="selectMitra select select-bordered" name="kerjasama_id"></select>
-                    @else
-                        <input type="text" name="kerjasama_id" id="kerjasama_id" hidden value="{{ Auth::user()->kerjasama_id }}">
-                        <input type="text" id="kerjasama" value="{{ Auth::user()->kerjasama->client->panggilan ? Auth::user()->kerjasama->client->panggilan : Auth::user()->kerjasama->client->name }}" disabled class="input input-bordered viewKerjasama">
-                    @endif
-                </div>
-
-                <!-- Jenis Absen -->
-                @if (Auth::user()->kerjasama_id != 1)
-                    @php
-                        $lanjutShift = isset($absensi[0]) &&
-                                       $absensi[0]->absensi_type_pulang &&
-                                       $absensi[0]->tanggal_absen == now()->format('Y-m-d') &&
-                                       $absensi[0]->masuk;
-                    @endphp
-
-                    <div class="flex flex-col justify-start">
-                        <x-input-label for="jenis_abs" class="text-lg text-white" :value="__('Jenis Absen: ')" />
-                        <div class="flex flex-col justify-start rounded-lg bg-slate-50">
-                            <div class="flex items-center">
-                                <input type="radio" name="jenis_abs" value="1" class="m-2 radio radio-sm" {{ $lanjutShift ? 'disabled' : 'checked' }}>
-                                <label>Masuk</label>
-                            </div>
-
-                            @if ($lanjutShift)
-                                <div class="flex items-center">
-                                    <input type="radio" name="jenis_abs" value="1" class="m-2 radio radio-sm disabled" checked>
-                                    <label disabled>Meneruskan Shift</label>
+                    <!-- Camera Section -->
+                    @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
+                        <div class="mb-6">
+                            <h2 class="mb-3 text-lg font-semibold text-gray-800">Ambil Foto</h2>
+                            <div class="flex flex-col items-center justify-center p-4 bg-gray-100 rounded-lg">
+                                <div class="relative">
+                                    <video id="video" class="bg-gray-200 rounded-md max-w-[60vw]" autoplay playsinline></video>
                                 </div>
-                            @endif
-
-                            <div class="flex items-center">
-                                <input type="radio" name="jenis_abs" value="1" class="m-2 radio radio-sm" disabled>
-                                <label disabled>Tukar Shift (maintenance)</label>
+                                <canvas id="canvas" style="display:none;"></canvas>
+                                <div id="results" class="my-3"></div>
+                                <button type="button" id="snapButton" class="flex items-center justify-center w-12 h-12 text-white bg-blue-500 rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    <i class="text-xl ri-camera-fill"></i>
+                                </button>
                             </div>
+                        </div>
+                    @endif
 
-                            <div class="flex items-center">
-                                <input type="radio" name="jenis_abs" value="1" class="m-2 radio radio-sm" disabled>
-                                <label>Lembur (maintenance)</label>
+                    <!-- Map Section -->
+                    <div class="mb-6">
+                        <h2 class="mb-3 text-lg font-semibold text-gray-800">Lokasi Absen</h2>
+                        <div class="p-1 bg-gray-800 rounded-lg">
+                            <div id="map-loading" class="flex items-center justify-center h-64 text-white">
+                                <span class="flex items-center">
+                                    <i class="mr-2 ri-loader-4-line animate-spin"></i>
+                                    Loading map...
+                                </span>
+                            </div>
+                            <div id="map" class="overflow-auto rounded-md"></div>
+                            <div id="tutor" class="hidden p-3 text-sm italic text-center text-gray-300">
+                                <p id="latlongLabel" class="text-xs"></p>
+                                <p>Pastikan tanda biru berada dilingkaran</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="w-full" id="divPengganti" style="display: none;">
-                        <x-input-label for="pengganti" class="text-lg text-white" :value="__('Pengganti: ')" />
-                        <select name="pengganti" id="pengganti" required class="w-full font-thin select select-bordered">
-                            @if ($errors->any() && $errors->pengganti)
-                                <option selected disabled class="p-1 my-1 font-bold text-red-600">
-                                    Pengganti Tidak Boleh Kosong
-                                </option>
-                            @endif
-                            <option disabled {{ $errors->any() && $errors->pengganti ? '' : 'selected' }}>
-                                -- Pilih Pengganti --
-                            </option>
-                            <option>Belum Ada Karyawan</option>
-                        </select>
-                    </div>
-                @endif
+                    <!-- Form Fields -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <!-- Name Field -->
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-700">
+                                {{ Route::currentRouteName() == 'absensi-karyawan-co-cs.index' || Route::currentRouteName() == 'absensi-karyawan-co-scr.index' ? 'Pilih Nama' : 'Nama' }}
+                            </label>
 
-                <!-- Shift Selection -->
-                @if (Auth::user()->divisi->jabatan->name_jabatan == 'DIREKSI')
-                    <input type="hidden" name="shift_id" value="145" />
-                @elseif(Auth::user()->jabatan->code_jabatan == 'SPV-W')
-                    <input type="hidden" name="shift_id" value="195" />
-                @elseif(Auth::user()->devisi_id == 12)
-                    <input type="hidden" name="shift_id" value="200" />
-                @else
-                    <div class="flex flex-col justify-between">
-                        <label class="text-white required" for="shift_id">Shift: </label>
-                        <select name="shift_id" id="shift_id" required class="font-thin select select-bordered">
-                            @if ($errors->any() && $errors->shift_id)
-                                <option selected disabled class="p-1 my-1 font-bold text-red-600">
-                                    Shift Tidak Boleh Kosong
-                                </option>
-                            @endif
-                            <option disabled {{ $errors->any() && $errors->shift_id ? '' : 'selected' }}>
-                                -- Pilih Shift --
-                            </option>
-
-                            @forelse ($shift as $i)
-                                <option value="{{ $i->id }}" data-shift="{{ $i?->jam_start }}">
-                                    ({{ Carbon\Carbon::parse($i?->jam_start)->format('H:i') }} - {{ Carbon\Carbon::parse($i?->jam_end)->subHour()->format('H:i') }}) {{ ucwords(strtolower($i?->shift_name)) }}
-                                </option>
-                            @empty
-                                <option readonly disabled>~ Tidak ada Shift ! ~</option>
-                            @endforelse
-                        </select>
-
-                        @if (Auth::user()->kerjasama->client_id == 1)
-                            <span id="absen-kantor" data-absen-kantor="{{ Auth::user()->kerjasama->client_id }}" hidden></span>
-                        @endif
-                    </div>
-                @endif
-
-                <!-- Perlengkapan -->
-                <div>
-                    <label class="text-white required">Perlengkapan: </label>
-                    <div class="p-2 bg-white rounded-lg">
-                        @if ($errors->any() && $errors->perlengkapan)
-                            <p class="p-1 my-1 font-bold text-red-600">Perlengkapan Tidak Boleh Kosong</p>
-                        @endif
-
-                        <div id="divPerlengkapan" class="grid grid-cols-1">
-                            @forelse ($dev as $arr)
-                                @foreach ($arr->perlengkapan as $i)
-                                    <div class="flex items-center">
-                                        <input type="checkbox" name="perlengkapan[]" id="perlengkapan{{ $i->id }}" value="{{ $i->name }}" class="m-2 checkbox checkbox-sm perle">
-                                        <label for="perlengkapan{{ $i->id }}">{{ ucwords(strtolower($i->name)) }}</label>
-                                    </div>
-                                @endforeach
-                            @empty
-                                <p>~ Kosong ~</p>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Deskripsi -->
-                <div>
-                    <label class="text-white" for="deskripsi">Deskripsi (opsional): </label>
-                    <textarea name="deskripsi" id="deskripsi" placeholder="deskripsi..." class="w-full textarea textarea-bordered"></textarea>
-                </div>
-
-                <!-- Hidden Fields -->
-                @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
-                    <input type="text" id="image" name="image" class="image-tag" hidden>
-                @endif
-
-                <input type="text" id="keterangan" name="keterangan" value="masuk" hidden>
-                <input type="text" name="absensi_type_masuk" value="1" hidden>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-col justify-center gap-3 mt-2 mr-2 sm:justify-end">
-                    <span id="labelWaktuStart" class="text-center text-[10px] capitalize font-semibold hidden py-2 px-4 rounded-md bg-slate-50"></span>
-
-                    <span class="flex justify-center gap-3">
-                        @forelse ($absensi as $abs)
-                            @if (!$cekRoute &&
-                                  $abs->tanggal_absen == now()->format('Y-m-d') &&
-                                  $abs->absensi_type_pulang == null &&
-                                  $abs->tukar == null &&
-                                  !$afaLib)
-                                <button class="p-2 px-4 my-2 bg-blue-300 rounded cursor-not-allowed text-slate-100" disabled>Sudah Absen</button>
-                            @elseif($afaLib && Auth::user()->divisi->jabatan_id != 35)
-                                <button class="p-2 px-4 my-2 bg-blue-300 rounded cursor-not-allowed text-slate-100" disabled>Jadwal Tidak Ada</button>
-                            @elseif(!$cekRoute && $abs->tanggal_absen == now()->format('Y-m-d') && $abs->terus)
-                                <button class="p-2 px-4 my-2 bg-blue-300 rounded cursor-not-allowed text-slate-100" disabled>Sudah Absen 2x</button>
+                            @if (Route::currentRouteName() == 'absensi-karyawan-co-cs.index' || Route::currentRouteName() == 'absensi-karyawan-co-scr.index')
+                                <select name="user_id" id="selectUser" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option selected value="{{ Auth::user()->id }}" data-client="{{ Auth::user()->kerjasama->client_id }}">
+                                        {{ Auth::user()->nama_lengkap }}
+                                    </option>
+                                    @foreach ($userL as $us)
+                                        <option value="{{ $us->id }}" data-divisi="{{ $us->devisi_id }}" data-client="{{ $us->kerjasama->client_id }}" data-jab="{{ $us->divisi?->jabatan_id }}">
+                                            {{ ucwords(strtolower($us->nama_lengkap)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             @else
-                                <button type="button" class="p-2 px-4 my-2 text-white transition-all bg-blue-500 rounded btnAbsen hover:bg-blue-600" id="btnAbsen">Absen</button>
+                                <input type="text" id="user_id" name="user_id" value="{{ Auth::user()->id }}" hidden>
+                                <input type="text" id="name" value="{{ Auth::user()->nama_lengkap }}" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
                             @endif
-                        @break
-                        @empty
-                            <button type="button" class="p-2 px-4 my-2 text-white transition-all bg-blue-500 rounded btnAbsen hover:bg-blue-600" id="btnAbsen">Absen</button>
-                        @endforelse
+                        </div>
 
-                        <a href="{{ route('dashboard.index') }}" class="p-2 px-4 my-2 text-white transition-all bg-red-500 rounded hover:bg-red-600">
-                            Kembali
-                        </a>
-                    </span>
-                </div>
+                        <!-- Penempatan Field -->
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-700">Penempatan</label>
 
-                <!-- Hidden Location Data -->
-                <div id="HiddenOnes" class="hidden">
-                    <input type="hidden" id="lat" name="lat_user" value="" class="lat_user" />
-                    <input type="hidden" id="long" name="long_user" value="" class="long_user" />
-                    <input type="hidden" id="lat_mitra" name="lat_mitra" value="{{ $harLok->latitude }}" />
-                    <input type="hidden" id="long_mitra" name="long_mitra" value="{{ $harLok->longtitude }}" />
-                    <input type="hidden" id="radius_mitra" name="radius_mitra" value="{{ $harLok->radius }}" />
-                </div>
+                            @if (Auth::user()->id == 10)
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 selectMitra" name="kerjasama_id"></select>
+                            @else
+                                <input type="text" name="kerjasama_id" id="kerjasama_id" hidden value="{{ Auth::user()->kerjasama_id }}">
+                                <input type="text" id="kerjasama" value="{{ Auth::user()->kerjasama->client->panggilan ? Auth::user()->kerjasama->client->panggilan : Auth::user()->kerjasama->client->name }}" disabled class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg viewKerjasama">
+                            @endif
+                        </div>
 
-                <span id="dataUser" data-userId="{{ Auth::user()->divisi->jabatan->code_jabatan }}" hidden></span>
+                        <!-- Jenis Absen -->
+                        @if (Auth::user()->kerjasama_id != 1)
+                            @php
+                                $lanjutShift = isset($absensi[0]) &&
+                                            $absensi[0]->absensi_type_pulang &&
+                                            $absensi[0]->tanggal_absen == now()->format('Y-m-d') &&
+                                            $absensi[0]->masuk;
+                            @endphp
+
+                            <div class="md:col-span-2">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">Jenis Absen</label>
+                                <div class="p-4 rounded-lg bg-gray-50">
+                                    <div class="flex items-center mb-2">
+                                        <input type="radio" name="jenis_abs" value="1" class="mr-2 text-blue-600 focus:ring-blue-500" {{ $lanjutShift ? 'disabled' : 'checked' }}>
+                                        <label class="text-gray-700">Masuk</label>
+                                    </div>
+
+                                    @if ($lanjutShift)
+                                        <div class="flex items-center mb-2">
+                                            <input type="radio" name="jenis_abs" value="1" class="mr-2 text-blue-600 focus:ring-blue-500 disabled" checked>
+                                            <label class="text-gray-700">Meneruskan Shift</label>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex items-center mb-2">
+                                        <input type="radio" name="jenis_abs" value="1" class="mr-2 text-blue-600 focus:ring-blue-500" disabled>
+                                        <label class="text-gray-400">Tukar Shift (maintenance)</label>
+                                    </div>
+
+                                    <div class="flex items-center">
+                                        <input type="radio" name="jenis_abs" value="1" class="mr-2 text-blue-600 focus:ring-blue-500" disabled>
+                                        <label class="text-gray-400">Lembur (maintenance)</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="hidden md:col-span-2" id="divPengganti">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">Pengganti</label>
+                                <select name="pengganti" id="pengganti" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @if ($errors->any() && $errors->pengganti)
+                                        <option selected disabled class="font-bold text-red-600">
+                                            Pengganti Tidak Boleh Kosong
+                                        </option>
+                                    @endif
+                                    <option disabled {{ $errors->any() && $errors->pengganti ? '' : 'selected' }}>
+                                        -- Pilih Pengganti --
+                                    </option>
+                                    <option>Belum Ada Karyawan</option>
+                                </select>
+                            </div>
+                        @endif
+
+                        <!-- Shift Selection -->
+                        @if (Auth::user()->divisi->jabatan->name_jabatan == 'DIREKSI')
+                            <input type="hidden" name="shift_id" value="145" />
+                        @elseif(Auth::user()->jabatan->code_jabatan == 'SPV-W')
+                            <input type="hidden" name="shift_id" value="195" />
+                        @elseif(Auth::user()->devisi_id == 12)
+                            <input type="hidden" name="shift_id" value="200" />
+                        @else
+                            <div class="md:col-span-2">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">Shift</label>
+                                <select name="shift_id" id="shift_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @if ($errors->any() && $errors->shift_id)
+                                        <option selected disabled class="font-bold text-red-600">
+                                            Shift Tidak Boleh Kosong
+                                        </option>
+                                    @endif
+                                    <option disabled {{ $errors->any() && $errors->shift_id ? '' : 'selected' }}>
+                                        -- Pilih Shift --
+                                    </option>
+
+                                    @forelse ($shift as $i)
+                                        <option value="{{ $i->id }}" data-shift="{{ $i?->jam_start }}">
+                                            ({{ Carbon\Carbon::parse($i?->jam_start)->format('H:i') }} - {{ Carbon\Carbon::parse($i?->jam_end)->subHour()->format('H:i') }}) {{ ucwords(strtolower($i?->shift_name)) }}
+                                        </option>
+                                    @empty
+                                        <option readonly disabled>~ Tidak ada Shift ! ~</option>
+                                    @endforelse
+                                </select>
+
+                                @if (Auth::user()->kerjasama->client_id == 1)
+                                    <span id="absen-kantor" data-absen-kantor="{{ Auth::user()->kerjasama->client_id }}" hidden></span>
+                                @endif
+                            </div>
+                        @endif
+
+                        <!-- Perlengkapan -->
+                        <div class="md:col-span-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-700">Perlengkapan</label>
+                            <div class="p-4 rounded-lg bg-gray-50">
+                                @if ($errors->any() && $errors->perlengkapan)
+                                    <p class="mb-2 font-bold text-red-600">Perlengkapan Tidak Boleh Kosong</p>
+                                @endif
+
+                                <div id="divPerlengkapan" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+                                    @forelse ($dev as $arr)
+                                        @foreach ($arr->perlengkapan as $i)
+                                            <div class="flex items-center">
+                                                <input type="checkbox" name="perlengkapan[]" id="perlengkapan{{ $i->id }}" value="{{ $i->name }}" class="mr-2 text-blue-600 focus:ring-blue-500 perle">
+                                                <label for="perlengkapan{{ $i->id }}" class="text-gray-700">{{ ucwords(strtolower($i->name)) }}</label>
+                                            </div>
+                                        @endforeach
+                                    @empty
+                                        <p class="text-gray-500">~ Kosong ~</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deskripsi -->
+                        <div class="md:col-span-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-700">Deskripsi (opsional)</label>
+                            <textarea name="deskripsi" id="deskripsi" placeholder="deskripsi..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Fields -->
+                    @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
+                        <input type="text" id="image" name="image" class="image-tag" hidden>
+                    @endif
+
+                    <input type="text" id="keterangan" name="keterangan" value="masuk" hidden>
+                    <input type="text" name="absensi_type_masuk" value="1" hidden>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col items-center justify-center gap-4 mt-8">
+                        <span id="labelWaktuStart" class="hidden px-4 py-2 text-xs font-semibold text-center text-gray-700 bg-gray-100 rounded-md"></span>
+
+                        <div class="flex flex-col justify-center w-full gap-3 sm:flex-row">
+                            @forelse ($absensi as $abs)
+                                @if (!$cekRoute &&
+                                    $abs->tanggal_absen == now()->format('Y-m-d') &&
+                                    $abs->absensi_type_pulang == null &&
+                                    $abs->tukar == null &&
+                                    !$afaLib)
+                                    <button class="w-full px-4 py-2 text-gray-500 bg-gray-200 rounded-lg cursor-not-allowed" disabled>Sudah Absen</button>
+                                @elseif($afaLib && Auth::user()->divisi->jabatan_id != 35)
+                                    <button class="w-full px-4 py-2 text-gray-500 bg-gray-200 rounded-lg cursor-not-allowed" disabled>Jadwal Tidak Ada</button>
+                                @elseif(!$cekRoute && $abs->tanggal_absen == now()->format('Y-m-d') && $abs->terus)
+                                    <button class="w-full px-4 py-2 text-gray-500 bg-gray-200 rounded-lg cursor-not-allowed" disabled>Sudah Absen 2x</button>
+                                @else
+                                    <button type="button" class="w-full px-4 py-2 text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 btnAbsen" id="btnAbsen">Absen</button>
+                                @endif
+                            @break
+                            @empty
+                                <button type="button" class="w-full px-4 py-2 text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 btnAbsen" id="btnAbsen">Absen</button>
+                            @endforelse
+
+                            <a href="{{ route('dashboard.index') }}" class="w-full px-4 py-2 text-center text-white transition-colors bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                Kembali
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Location Data -->
+                    <div id="HiddenOnes" class="hidden">
+                        <input type="hidden" id="lat" name="lat_user" value="" class="lat_user" />
+                        <input type="hidden" id="long" name="long_user" value="" class="long_user" />
+                        <input type="hidden" id="lat_mitra" name="lat_mitra" value="{{ $harLok->latitude }}" />
+                        <input type="hidden" id="long_mitra" name="long_mitra" value="{{ $harLok->longtitude }}" />
+                        <input type="hidden" id="radius_mitra" name="radius_mitra" value="{{ $harLok->radius }}" />
+                    </div>
+
+                    <span id="dataUser" data-userId="{{ Auth::user()->divisi->jabatan->code_jabatan }}" hidden></span>
+                </form>
             </div>
-        </form>
-    </div>
-
+        </div>
+    </x-main-div>
     <!-- Camera Script -->
     @if (auth()->user()->kerjasama_id != 1 || !in_array(auth()->user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
         <script>

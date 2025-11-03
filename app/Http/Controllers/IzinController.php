@@ -22,10 +22,10 @@ class IzinController extends Controller
     {
         $user = Auth::user()->kerjasama_id;
         if(auth()->user()->id == 175) {
-            
+
         $izin = Izin::latest()->orderBy('kerjasama_id', 'asc')->paginate(40);
         }else {
-            
+
         $izin = Izin::where('kerjasama_id', $user)->paginate(30);
         }
 
@@ -65,7 +65,7 @@ class IzinController extends Controller
         ];
 
         if ($request->hasFile('img')) {
-            $izin['img'] = UploadImage($request, 'img');
+            $izin['img'] = UploadImageNew($request, 'img');
         }else{
             toastr()->error('Image harus ditambahkan', 'error');
         }

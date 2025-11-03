@@ -1,3 +1,5 @@
-<div class="sm:mx-10 mx-5 bg-slate-500 rounded-md shadow-md mb-[12.5rem]">
-	{{ $slot }}
+<div class="mx-5 mb-16 overflow-hidden shadow-lg bg-base-100 sm:mx-10 rounded-xl">
+    <div class="p-2">
+        {{ $slot }}
+    </div>
 </div>

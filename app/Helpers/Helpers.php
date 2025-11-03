@@ -7,28 +7,30 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\OtpNotif;
 use App\Otp\BasicOtp;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 function UploadImage($request, $NameFile)
 {
     Image::configure(['driver' => 'imagick']);
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
-        
+
     $img = Image::make($file);
     $imageSize = $img->filesize();
-    
+
             $image = Image::make($file);
             $extensions = $file->getClientOriginalExtension();
             $randomNumber = mt_rand(1, 999999);
             $rename = 'data' . $randomNumber . '.' . $extensions;
-            
+
             $path = public_path('storage/images/' . $rename);
             $img = Image::make($file->getRealPath());
             $img->resize(450, 450);
             $img->save($path, 13);
-        
+
             return $rename;
-      
+
     }
 }
 
@@ -37,21 +39,21 @@ function UploadImageV2($request, $NameFile)
 
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
-        
+
     $img = Image::make($file);
     $imageSize = $img->filesize();
-    
+
             $image = Image::make($file);
             $extensions = $file->getClientOriginalExtension();
             $randomNumber = mt_rand(1, 999999);
             $rename = 'data' . $randomNumber . '.' . $extensions;
-            
+
             $path = public_path('storage/images/' . $rename);
             $img = Image::make($file->getRealPath());
             $img->save($path, 85);
-        
+
             return $rename;
-      
+
     }
 }
 
@@ -60,22 +62,59 @@ function UploadImageUser($request, $NameFile)
 
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
-        
+
     $img = Image::make($file);
     $imageSize = $img->filesize();
-    
+
             $image = Image::make($file);
             $extensions = $file->getClientOriginalExtension();
             $randomNumber = mt_rand(1, 999999);
             $rename = 'data' . $randomNumber . '.' . $extensions;
-            
+
             $path = public_path('storage/user/' . $rename);
             $img = Image::make($file->getRealPath());
             $img->save($path, 85);
-        
+
             return $rename;
-      
+
     }
+}
+
+function UploadImageNew($request, $NameFile)
+{
+    $file = $request->file($NameFile);
+    if ($file != null && $file->isValid()) {
+        $randomNumber = mt_rand(1, 999999);
+        $rename = 'data' . $randomNumber . '.webp'; // Always use .webp extension
+
+        try {
+            // Store the original image temporarily
+            $tempPath = $file->storeAs('temp', $rename, 'public');
+            $fullTempPath = public_path('storage/temp/' . $rename);
+
+            // Initialize ImageManager with GD driver
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($fullTempPath);
+
+            // Convert to WebP with 90% quality
+            $webpPath = public_path('storage/images/' . $rename);
+            $image->toWebp(1)->save($webpPath);
+
+            // Delete the temporary file
+            unlink($fullTempPath);
+
+            return $rename;
+        } catch (\Exception $e) {
+            // Log error but continue with original upload
+            \Log::error('Image optimization failed: ' . $e->getMessage());
+
+            // Fallback: Store original image if conversion fails
+            $path = $file->storeAs('images', $rename, 'public');
+            return $rename;
+        }
+    }
+
+    return null;
 }
 
 function UploadFile($request, $NameFile)
@@ -154,7 +193,7 @@ function toRupiah($angka)
 function normalizePhone($phone)
 {
     $phone = preg_replace('/[^0-9]/', '', $phone); // remove non-digit characters
-    
+
     if ($phone === '') {
         return null;
     }
