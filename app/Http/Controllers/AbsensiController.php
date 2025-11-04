@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class AbsensiController extends Controller
 {
@@ -36,9 +38,9 @@ class AbsensiController extends Controller
         $todayName = Carbon::now()->translatedFormat('l'); // Nama hari dalam bahasa lokal
 
         // Eager load only necessary fields
-        $dev = Divisi::with([
-            'Perlengkapan:id,name',
-        ])->where('id', $user->devisi_id)->get(['id']);
+        $dev = Divisi::with(['Perlengkapan:id,name'])
+            ->where('id', $user->devisi_id)
+            ->get(['id']);
 
         // $client = Client::all();
 
@@ -50,11 +52,7 @@ class AbsensiController extends Controller
                 default => '16:00',
             };
 
-            $shift = Shift::orderBy('jam_start', 'asc')
-                ->where('jam_start', '>=', $startTime)
-                ->where('client_id', $user->kerjasama->client_id)
-                ->where('jabatan_id', $user->divisi->jabatan_id)
-                ->get();
+            $shift = Shift::orderBy('jam_start', 'asc')->where('jam_start', '>=', $startTime)->where('client_id', $user->kerjasama->client_id)->where('jabatan_id', $user->divisi->jabatan_id)->get();
         } else {
             $shift = $now->format('H:i');
         }
@@ -74,8 +72,7 @@ class AbsensiController extends Controller
         $dirShift = Shift::firstWhere('shift_name', 'DIREKSI');
 
         // Users belum absen hari ini
-        $aID = Absensi::where('tanggal_absen', $today)
-            ->pluck('user_id');
+        $aID = Absensi::where('tanggal_absen', $today)->pluck('user_id');
 
         $userL = User::where('kerjasama_id', $user->kerjasama_id)
             ->whereNotIn('id', $aID)
@@ -84,15 +81,10 @@ class AbsensiController extends Controller
             ->get();
 
         // Cek pulang terakhir
-        $cekPulang = Absensi::where('user_id', $user->id)
-            ->where('tanggal_absen', $today)
-            ->latest()
-            ->first();
+        $cekPulang = Absensi::where('user_id', $user->id)->where('tanggal_absen', $today)->latest()->first();
 
         // Cek jika ada tukar shift
-        $cekTukar = Absensi::where('tukar_id', $user->id)
-            ->where('tanggal_absen', $today)
-            ->first();
+        $cekTukar = Absensi::where('tukar_id', $user->id)->where('tanggal_absen', $today)->first();
 
         // Cek hari libur (khusus kerjasama_id == 1)
         $tesLib = '';
@@ -103,9 +95,7 @@ class AbsensiController extends Controller
             $liburNasional = false;
 
             try {
-                $loginResponse = httped::timeout(30)->get(
-                    'https://raw.githubusercontent.com/guangrei/APIHariLibur_V2/main/holidays.json'
-                );
+                $loginResponse = httped::timeout(30)->get('https://raw.githubusercontent.com/guangrei/APIHariLibur_V2/main/holidays.json');
 
                 $holidayDates = collect($loginResponse->json())->keys();
                 $liburNasional = $holidayDates->contains($today);
@@ -138,25 +128,11 @@ class AbsensiController extends Controller
 
         $shift = $matchedShifts->isNotEmpty() ? $matchedShifts : $shift;
 
-        $cekRoute =
-                    Route::currentRouteName() == 'absensi-karyawan-co-cs.index' ||
-                    Route::currentRouteName() == 'absensi-karyawan-co-scr.index';
+        $cekRoute = Route::currentRouteName() == 'absensi-karyawan-co-cs.index' || Route::currentRouteName() == 'absensi-karyawan-co-scr.index';
 
         // dd($shift); // Collection of matched shifts
 
-        return view('absensi.index', compact(
-            'penempatan',
-            'lokLok',
-            'userL',
-            'tesLib',
-            'afaLib',
-            'shift',
-            'dev',
-            'absensi',
-            'harLok',
-            'dirShift',
-            'cekRoute'
-        ));
+        return view('absensi.index', compact('penempatan', 'lokLok', 'userL', 'tesLib', 'afaLib', 'shift', 'dev', 'absensi', 'harLok', 'dirShift', 'cekRoute'));
     }
 
     public function getShift($cli, $jab)
@@ -233,215 +209,158 @@ class AbsensiController extends Controller
         ];
 
         if (Auth::user()->id == 506) {
-            // dd($request->all());
+            // Debugging code for specific user
         }
 
-        // Melakukan validasi
         $validator = Validator::make($request->all(), $rules, $customMessages);
 
-        // dd($request->all());
         if ($validator->fails()) {
             toastr()->error('Formulir tidak lengkap. Mohon isi semua kolom.', 'error');
-
             return redirect()->back()->withErrors($validator)->withInput();
         }
+
         $user = Auth::user()->id;
-        $absensi = Absensi::latest()->where('user_id', $user)->whereNotNull('absensi_type_pulang')->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
+        $fileName = 'no-image.jpg';
+
+       // Process image if required
         if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18])) {
-            // Get Data Image With base64
-            $img = $request->image;
+            try {
+                $img = $request->image;
+                $image_parts = explode(';base64,', $img);
+                $image_type_aux = explode('image/', $image_parts[0]);
+                $image_type = $image_type_aux[1];
+                $image_base64 = base64_decode($image_parts[1]);
 
-            $folderPath = 'public/images/';
-            $image_parts = explode(';base64,', $img);
-            $image_type_aux = explode('image/', $image_parts[0]);
-            $image_type = $image_type_aux[1];
-            $formatName = uniqid() . '-data';
-            $image_base64 = base64_decode($image_parts[1]);
+                // Create temporary file for processing
+                $tempFilePath = tempnam(sys_get_temp_dir(), 'img');
+                file_put_contents($tempFilePath, $image_base64);
 
-            // Simpan sementara untuk pemeriksaan
-            $temporaryFile = tempnam(sys_get_temp_dir(), 'img');
-            file_put_contents($temporaryFile, $image_base64);
+                // Use ImageManager with GD driver (Intervention Image v3)
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($tempFilePath);
 
-            // Buat gambar dari file sementara
-            $image = Image::make($temporaryFile);
+                // Calculate brightness using sampling for efficiency
+                $sampleSize = min(100, $image->width() * $image->height());
+                $totalBrightness = 0;
 
-            // Hitung brightness rata-rata
-            $totalBrightness = 0;
-            $pixelCount = 0;
-
-            for ($x = 0; $x < $image->width(); $x++) {
-                for ($y = 0; $y < $image->height(); $y++) {
+                for ($i = 0; $i < $sampleSize; $i++) {
+                    $x = rand(0, $image->width() - 1);
+                    $y = rand(0, $image->height() - 1);
                     $pixel = $image->pickColor($x, $y);
-                    $brightness = ($pixel[0] + $pixel[1] + $pixel[2]) / 3;
-                    $totalBrightness += $brightness;
-                    $pixelCount++;
+
+                    // Extract integer values from channel objects
+                    $red = $pixel->red()->toInt();
+                    $green = $pixel->green()->toInt();
+                    $blue = $pixel->blue()->toInt();
+
+                    $totalBrightness += ($red + $green + $blue) / 3;
                 }
+
+                $averageBrightness = $totalBrightness / $sampleSize;
+                $normalizedBrightness = ($averageBrightness / 255) * 200 - 100;
+
+                // Clean up temporary file
+                unlink($tempFilePath);
+
+                if ($normalizedBrightness < -50) {
+                    return back()->with('error', 'Foto terlalu gelap. Brightness minimal harus -50.');
+                }
+
+                // Save image
+                $folderPath = 'public/images/';
+                $formatName = uniqid() . '-data';
+                $fileName = $formatName . '.png';
+                $file = $folderPath . $fileName;
+                Storage::put($file, $image_base64);
+
+            } catch (\Exception $e) {
+                \Log::error('Image processing error: ' . $e->getMessage());
+                return back()->with('error', 'Gagal memproses gambar. Silakan coba lagi.');
             }
-
-            $averageBrightness = $totalBrightness / $pixelCount;
-            $normalizedBrightness = ($averageBrightness / 255) * 200 - 100;
-
-            // Periksa apakah brightness kurang dari -75
-            if ($normalizedBrightness < -50) {
-                return back()->with('error', 'Foto terlalu gelap. Brightness minimal harus -50.');
-            }
-
-            $fileName = $formatName . '.png';
-            $file = $folderPath . $fileName;
-            Storage::put($file, $image_base64);
-            // Hapus file sementara
-            unlink($temporaryFile);
-            // End Get Data Image With base64
-        } else {
-            $fileName = 'no-image.jpg';
         }
-        $latUser = $request->lat_user;
-        $longUser = $request->long_user; // 125950.0
-        // $latUser = -7.864453554822072;
-        // $longUser = 111.49581153034036; //13316.0
 
-        // Sementara
-        $user_id = $request->user_id;
-        $kerjasama_id = $request->kerjasama_id;
-        $shift_id = $request->shift_id;
-        $perlengkapan = json_encode($request->perlengkapan);
-        $keterangan = $request->keterangan;
-        $absensi_type_masuk = $request->absensi_type_masuk;
-        $deskripsi = $request->deskripsi;
-        $masuk = $request->masuk;
-        $tukar = $request->tukar;
-        $lembur = $request->lembur;
-        $terus = $request->terus;
-        $tukar_id = $request->pengganti;
+        // Prepare attendance data
+        $absensiData = [
+            'user_id' => $request->user_id,
+            'kerjasama_id' => $request->kerjasama_id,
+            'shift_id' => $request->shift_id,
+            'perlengkapan' => json_encode($request->perlengkapan),
+            'keterangan' => $request->keterangan,
+            'absensi_type_masuk' => Carbon::now()->format('H:i:s'),
+            'tanggal_absen' => Carbon::now()->format('Y-m-d'),
+            'image' => $fileName,
+            'deskripsi' => $request->deskripsi,
+            'tipe_id' => '1',
+            'msk_lat' => $request->lat_user,
+            'msk_long' => $request->long_user,
+            'masuk' => $request->masuk,
+            'tukar' => $request->tukar,
+            'lembur' => $request->lembur,
+            'terus' => $request->terus,
+            'tukar_id' => $request->pengganti,
+        ];
 
-        // end Sementara
-
+        // Validate location
         $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
-        // dd($harLok);
         $latMitra = (float) $request->lat_mitra;
         $longMitra = (float) $request->long_mitra;
-        $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
+        $jarak = $this->distance($latMitra, $longMitra, $request->lat_user, $request->long_user);
         $radius = round($jarak['meters']);
 
-        // dd($jarak, $latMitra, $longMitra, $latUser, $longUser, $request->all());
-        $panjangLat = strlen($latUser);
-        $panjangLong = strlen($longUser);
-
         $agent = $this->detectDevice($request->header('User-Agent'));
+        $panjangLat = strlen($request->lat_user);
+        $panjangLong = strlen($request->long_user);
         $ukuran = $panjangLat + $panjangLong;
+        $sebuahPengukur = $agent == 'android' || $agent == 'unknow' ? 22 : 36;
 
-        if ($agent == 'android' || $agent == 'unknow') {
-            $sebuahPengukur = 22;
-            // $sebuahPengukur = 220;
-
-        } elseif ($agent == 'iphone') {
-            $sebuahPengukur = 36;
-        }
-
-        if ($ukuran <= $sebuahPengukur) {
-            if ($radius <= $request->radius_mitra) {
-                try {
-                    DB::beginTransaction();
-                    if ($absensi) {
-                        if (count($absensi) <= 2) {
-                            $absensi = new Absensi;
-
-                            $absensiData = [
-                                'user_id' => $user_id,
-                                'kerjasama_id' => $kerjasama_id,
-                                'shift_id' => $shift_id,
-                                'perlengkapan' => $perlengkapan,
-                                'keterangan' => $keterangan,
-                                'absensi_type_masuk' => Carbon::now()->format('H:i:s'),
-                                'tanggal_absen' => Carbon::now()->format('Y-m-d'),
-                                'image' => $fileName,
-                                'deskripsi' => $deskripsi,
-                                'tipe_id' => '1',
-                                'msk_lat' => $latUser,
-                                'msk_long' => $longUser,
-                                'masuk' => $masuk,
-                                'tukar' => $tukar,
-                                'lembur' => $lembur,
-                                'terus' => $terus,
-                                'tukar_id' => $tukar_id,
-                            ];
-                            $absensi->create($absensiData);
-                            DB::commit();
-                            toastr()->success('Berhasil Absen Hari Ini', 'succes');
-
-                            $users = Auth::user();
-
-                            return redirect()->to(route('dashboard.index'));
-                        } else {
-                            toastr()->error('Tidak Dapat Absensi Lebih 2x', 'Error');
-
-                            return redirect()->back();
-                        }
-
-                    } else {
-                        $absensi = new Absensi;
-
-                        $absensiData = [
-                            'user_id' => $user_id,
-                            'kerjasama_id' => $kerjasama_id,
-                            'shift_id' => $shift_id,
-                            'perlengkapan' => $perlengkapan,
-                            'keterangan' => $keterangan,
-                            'absensi_type_masuk' => Carbon::now()->format('H:i:s'),
-                            'tanggal_absen' => Carbon::now()->format('Y-m-d'),
-                            'image' => $fileName,
-                            'deskripsi' => $deskripsi,
-                            'tipe_id' => '1',
-                            'msk_lat' => $latUser,
-                            'msk_long' => $longUser,
-                            'masuk' => $masuk,
-                            'tukar' => $tukar,
-                            'lembur' => $lembur,
-                            'terus' => $terus,
-                            'tukar_id' => $tukar_id,
-                        ];
-
-                        $absensi->create($absensiData);
-                        DB::commit();
-                        toastr()->success('Berhasil Absen Hari Ini', 'succes');
-
-                        $users = Auth::user();
-
-                        return redirect()->to(route('dashboard.index'));
-                    }
-                } catch (\Exception $e) {
-                    // dd($request->all(), $e);
-                    DB::rollBack();
-                    \Log::error('Error storing data Absensi: ' . $e->getMessage());
-                    toastr()->error('Gagal Absen Cek Signal Dan Coba Lagi', 'error');
-
-                    return redirect()->back();
-                }
-
-            } else {
-                // dd($radius <= $request->radius_mitra, $jarak, $radius, $request->radius_mitra, $request->all());
-                toastr()->error('Kamu Diluar Radius', 'Error');
-
-                return redirect()->back();
-            }
-        } else {
+        if ($ukuran > $sebuahPengukur) {
             toastr()->error('Harap Matikan Extension Fake GPS !', 'Error');
-
             return redirect()->back();
         }
 
+        if ($radius > $request->radius_mitra) {
+            toastr()->error('Kamu Diluar Radius', 'Error');
+            return redirect()->back();
+        }
+
+        // Check existing attendances
+        $existingAttendances = Absensi::where('user_id', $user)->whereNotNull('absensi_type_pulang')->whereDate('created_at', Carbon::today())->get();
+
+        if (count($existingAttendances) > 2) {
+            toastr()->error('Tidak Dapat Absensi Lebih 2x', 'Error');
+            return redirect()->back();
+        }
+
+        // Create attendance record
+        try {
+            DB::beginTransaction();
+            Absensi::create($absensiData);
+            DB::commit();
+
+            toastr()->success('Berhasil Absen Hari Ini', 'success');
+            return redirect()->route('dashboard.index');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error storing attendance: ' . $e->getMessage());
+            toastr()->error('Gagal Absen Cek Signal Dan Coba Lagi', 'error');
+            return redirect()->back();
+        }
     }
 
     public function edit($id)
     {
         $absensi = Absensi::findOrFail($id);
-        $cekAbsen = Absensi::where('user_id', Auth::user()->id)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->get();
+        $cekAbsen = Absensi::where('user_id', Auth::user()->id)
+            ->where('tanggal_absen', Carbon::now()->format('Y-m-d'))
+            ->get();
         $user = Auth::user()->id;
         $dev = Divisi::all();
         $client = Client::all();
         $shift = Shift::orderBy('jam_start', 'asc')->get();
         $jadwal = JadwalUser::where('user_id', $user)->latest()->get();
-        $cekAbsen = Absensi::where('user_id', $user)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->get();
+        $cekAbsen = Absensi::where('user_id', $user)
+            ->where('tanggal_absen', Carbon::now()->format('Y-m-d'))
+            ->get();
         // dd(count($cekAbsen));
         $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
         if ($absensi != null) {
@@ -454,7 +373,6 @@ class AbsensiController extends Controller
 
     public function update(Request $request, $id)
     {
-
         $user = Auth::user()->id;
         $absensi = Absensi::latest()->where('user_id', $user)->first();
         if (Auth::user()->kerjasama_id != 1) {
@@ -502,7 +420,6 @@ class AbsensiController extends Controller
         if ($radius <= $harLok->radius) {
             if ($absensi) {
                 if (Carbon::now()->format('Y-m-d') == $absensi->tanggal_absen) {
-
                     $absensi = [
                         'user_id' => $user_id,
                         'kerjasama_id' => $kerjasama_id,
@@ -528,9 +445,7 @@ class AbsensiController extends Controller
 
                     return redirect()->back();
                 }
-
             } else {
-
                 $absensi = [
                     'user_id' => $user_id,
                     'kerjasama_id' => $kerjasama_id,
@@ -556,7 +471,6 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     public function indexPrivate(Request $request)
@@ -575,7 +489,6 @@ class AbsensiController extends Controller
 
     public function storePrivate(AbsensiRequest $request)
     {
-
         $user = Auth::user()->id;
         $absensi = Absensi::latest()->where('user_id', $user)->first();
         // Get Data Image With base64
@@ -608,7 +521,7 @@ class AbsensiController extends Controller
         // dd($radius);
         if ($absensi) {
             if (Carbon::now()->format('Y-m-d') != $absensi->tanggal_absen) {
-                $absensi = new Absensi;
+                $absensi = new Absensi();
 
                 $absensi = [
                     'user_id' => $user_id,
@@ -637,9 +550,8 @@ class AbsensiController extends Controller
 
                 return redirect()->back();
             }
-
         } else {
-            $absensi = new Absensi;
+            $absensi = new Absensi();
 
             $absensi = [
                 'user_id' => $user_id,
@@ -664,7 +576,6 @@ class AbsensiController extends Controller
 
             return redirect()->to(route('dashboard.index'));
         }
-
     }
 
     public function updatePulang(Request $request, $id)
@@ -708,7 +619,6 @@ class AbsensiController extends Controller
                     $absensi->plg_long = $longUser;
                     $point = 'Point Di Klaim !';
                 } else {
-
                     if ($latUser != null && $longUser != null) {
                         $panjangLat = strlen($latUser);
                         $panjangLong = strlen($longUser);
@@ -717,11 +627,9 @@ class AbsensiController extends Controller
 
                         if ($agent == 'android' || $agent == 'unknow') {
                             $sebuahPengukur = 24;
-
                         } elseif ($agent == 'iphone') {
                             $sebuahPengukur = 35;
                         }
-
                     } else {
                         toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
 
@@ -757,7 +665,9 @@ class AbsensiController extends Controller
 
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
 
-                return redirect()->to(route('dashboard.index'))->with(['point' => $point]);
+                return redirect()
+                    ->to(route('dashboard.index'))
+                    ->with(['point' => $point]);
 
                 // This diferent but same action to update data
             } elseif ($absensi && Auth::user()->kerjasama_id != 1) {
@@ -770,11 +680,9 @@ class AbsensiController extends Controller
 
                     if ($agent == 'android' || $agent == 'unknow') {
                         $sebuahPengukur = 24;
-
                     } elseif ($agent == 'iphone') {
                         $sebuahPengukur = 35;
                     }
-
                 } else {
                     toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
 
@@ -809,7 +717,6 @@ class AbsensiController extends Controller
                     $absensi->plg_long = $longUser;
                     $point = 'Point Di Klaim !';
                 } else {
-
                     $latitud = $request->lat_user;
                     $long = $request->long_user;
 
@@ -822,11 +729,9 @@ class AbsensiController extends Controller
 
                         if ($agent == 'android' || $agent == 'unknow') {
                             $sebuahPengukur = 24;
-
                         } elseif ($agent == 'iphone') {
                             $sebuahPengukur = 35;
                         }
-
                     } else {
                         toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
 
@@ -862,11 +767,12 @@ class AbsensiController extends Controller
 
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'success');
 
-                return redirect()->to(route('dashboard.index'))->with(['point' => $point]);
+                return redirect()
+                    ->to(route('dashboard.index'))
+                    ->with(['point' => $point]);
 
                 // This diferent but same action to update data
             } elseif ($absensi && Auth::user()->kerjasama_id != 1) {
-
                 $latitud = $request->lat_user;
                 $long = $request->long_user;
 
@@ -879,11 +785,9 @@ class AbsensiController extends Controller
 
                     if ($agent == 'android' || $agent == 'unknow') {
                         $sebuahPengukur = 24;
-
                     } elseif ($agent == 'iphone') {
                         $sebuahPengukur = 35;
                     }
-
                 } else {
                     toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
 
@@ -896,14 +800,12 @@ class AbsensiController extends Controller
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
 
                 return redirect()->to(route('dashboard.index'));
-
             } else {
                 toastr()->error('Gagal Absen Pulang', 'errorr');
 
                 return redirect()->back();
             }
         }
-
     }
 
     public function updateAbsenPulang($id)
@@ -937,7 +839,6 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     // Subuh
@@ -960,13 +861,11 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     // dzuhur
     public function updateDzuhur(Request $request, $id)
     {
-
         $latitud = $request->lat_user;
         $long = $request->long_user;
 
@@ -981,7 +880,6 @@ class AbsensiController extends Controller
 
             if ($agent == 'android' || $agent == 'unknow') {
                 $sebuahPengukur = 24;
-
             } elseif ($agent == 'iphone') {
                 $sebuahPengukur = 35;
             }
@@ -1012,7 +910,6 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     // asar
@@ -1035,7 +932,6 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     // maghrib
@@ -1058,7 +954,6 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     // isya
@@ -1081,7 +976,6 @@ class AbsensiController extends Controller
 
             return redirect()->back();
         }
-
     }
 
     public function historyAbsensi(Request $request)
@@ -1104,9 +998,12 @@ class AbsensiController extends Controller
         if (!$isFiltered) {
             $startDate = Carbon::now()->subDays(31)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
-            $absen = (clone $baseQuery)->whereBetween('created_at', [$startDate, $endDate])
-                ->orderBy('tanggal_absen', 'desc')->paginate(50);
-            $point = (clone $baseQuery)->whereNotNull('point_id')
+            $absen = (clone $baseQuery)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('tanggal_absen', 'desc')
+                ->paginate(50);
+            $point = (clone $baseQuery)
+                ->whereNotNull('point_id')
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->get();
             $absenTiga = (clone $baseQuery)
@@ -1137,21 +1034,9 @@ class AbsensiController extends Controller
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->orderBy('tanggal_absen', 'desc')
                 ->paginate(50);
-            $point = (clone $baseQuery)->whereNotNull('point_id')
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->get();
-            $absenTiga = (clone $baseQuery)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->whereNotNull('absensi_type_masuk')
-                ->whereNotNull('absensi_type_pulang')
-                ->get();
-            $telat = (clone $baseQuery)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->where('keterangan', 'telat')
-                ->paginate(50);
+            $point = (clone $baseQuery)->whereNotNull('point_id')->whereMonth('created_at', $month)->whereYear('created_at', $year)->get();
+            $absenTiga = (clone $baseQuery)->whereMonth('created_at', $month)->whereYear('created_at', $year)->whereNotNull('absensi_type_masuk')->whereNotNull('absensi_type_pulang')->get();
+            $telat = (clone $baseQuery)->whereMonth('created_at', $month)->whereYear('created_at', $year)->where('keterangan', 'telat')->paginate(50);
 
             // Effective days for filtered month
             $date = Carbon::createFromDate($year, $month, 1);
@@ -1177,7 +1062,7 @@ class AbsensiController extends Controller
         $startOfMonth = $date->copy()->startOfMonth()->dayOfWeek;
 
         // API data
-        $client = new HTTP;
+        $client = new HTTP();
         $apiEndpoint = 'https://dayoffapi.vercel.app/api?year=' . $year;
         $apiEndpointMonth = 'https://dayoffapi.vercel.app/api?month=' . $month . '&year=' . $year;
 
@@ -1188,13 +1073,13 @@ class AbsensiController extends Controller
         $countTelat = $telat->total();
         $countAbsenLengkap = $absenTiga->count();
 
-        $persentaseHariMasuk = $hariEfektif ? (100 / $hariEfektif) : 0;
+        $persentaseHariMasuk = $hariEfektif ? 100 / $hariEfektif : 0;
         $persentaseKehadiran = ($countAbsenLengkap - $countTelat) * $persentaseHariMasuk;
 
         $status = match (true) {
             $persentaseKehadiran >= 80 => 'BAIK',
             $persentaseKehadiran >= 60 => 'CUKUP',
-            default => 'KURANG'
+            default => 'KURANG',
         };
 
         return view('absensi.history', [
@@ -1262,7 +1147,6 @@ class AbsensiController extends Controller
 
     public function showLocation(Request $request, $id)
     {
-
         $tgl = $request->tgl;
         $us = $request->user;
 
