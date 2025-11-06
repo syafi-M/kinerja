@@ -69,7 +69,7 @@
                                 @endif
                             </div>
                             <div class="flex justify-center">
-                                <button type=button id="snapButton"
+                                <button type="button" id="snapButton"
                                     class="p-2 px-3 my-2 mb-5 text-white bg-blue-400 rounded-full"><i
                                         class="ri-camera-fill"></i></button>
                             </div>
@@ -227,7 +227,8 @@
                                                 $endA = Carbon\Carbon::parse($i->jam_end)->subHour(1)->format('H:i');
                                             @endphp
                                             <option value="{{ $i->id }}" data-shift="{{ $i?->jam_start }}">
-                                                {{ ucwords(strtolower($i?->shift_name)) }} | {{ $i?->jam_start }} - {{ $endA }}
+                                                {{ ucwords(strtolower($i?->shift_name)) }} | {{ $i?->jam_start }} -
+                                                {{ $endA }}
                                             </option>
                                         @empty
                                             <option readonly disabled>~ Tidak ada Shift ! ~</option>
@@ -277,7 +278,8 @@
                             </div>
 
                             @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
-                                <input type="text" id="image" name="image" class="image-tag" hidden>
+                                <input type="file" id="image" name="image" class="image-tag"
+                                    accept="image/*" hidden>
                             @endif
                             <input type="text" id="keterangan" name="keterangan" value="masuk"
                                 data-authName="{{ Auth::user()->name }}" hidden>
@@ -416,7 +418,7 @@
                             // Memeriksa status video setiap beberapa detik
                             setInterval(function() {
                                 checkVideoStatus();
-                            }, 1); // Memeriksa setiap 2 detik, sesuaikan jika diperlukan
+                            }, 1000); // Memeriksa setiap 2 detik, sesuaikan jika diperlukan
                         };
 
                     })
@@ -439,9 +441,30 @@
                     return colorPixels;
                 }
 
+                function detectImageQuality(data) {
+                    let darkPixels = 0;
+                    let brightPixels = 0;
+                    let totalPixels = data.length / 4;
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Menghitung kecerahan
+                        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+
+                        if (brightness < 40) { // Ambang batas gelap
+                            darkPixels++;
+                        } else if (brightness > 220) { // Ambang batas terang
+                            brightPixels++;
+                        }
+                    }
+
+                    return {
+                        darkPercentage: darkPixels / totalPixels,
+                        brightPercentage: brightPixels / totalPixels
+                    };
+                }
+
                 // Fungsi untuk mengambil snapshot
                 function takeSnapshot() {
-
                     // Menggunakan ukuran yang sama dengan elemen video
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
@@ -453,6 +476,10 @@
                     var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                     var data = imageData.data;
 
+                    // Check image quality
+                    const quality = detectImageQuality(data);
+
+                    // Apply adjustments based on image quality
                     if (isDarkEnvironment) {
                         // Apply manual brightness/contrast enhancement
                         let brightnessFactor = 40; // increase brightness by +40
@@ -465,23 +492,47 @@
                             data[i + 2] = Math.min(data[i + 2] + brightnessFactor, 255); // Blue
 
                             // Contrast
-                            data[i] = ((data[i] - 128) * contrastFactor + 128);
-                            data[i + 1] = ((data[i + 1] - 128) * contrastFactor + 128);
-                            data[i + 2] = ((data[i + 2] - 128) * contrastFactor + 128);
+                            data[i] = Math.min(Math.max(((data[i] - 128) * contrastFactor + 128), 0), 255);
+                            data[i + 1] = Math.min(Math.max(((data[i + 1] - 128) * contrastFactor + 128), 0), 255);
+                            data[i + 2] = Math.min(Math.max(((data[i + 2] - 128) * contrastFactor + 128), 0), 255);
                         }
 
                         // Put enhanced data back
                         context.putImageData(imageData, 0, 0);
+                    } else if (isBrightEnvironment) {
+                        // Reduce brightness for overexposed images
+                        let brightnessReduction = 50; // Reduce brightness by -50
+
+                        for (let i = 0; i < data.length; i += 4) {
+                            // Reduce brightness
+                            data[i] = Math.max(data[i] - brightnessReduction, 0); // Red
+                            data[i + 1] = Math.max(data[i + 1] - brightnessReduction, 0); // Green
+                            data[i + 2] = Math.max(data[i + 2] - brightnessReduction, 0); // Blue
+                        }
+
+                        // Put adjusted data back
+                        context.putImageData(imageData, 0, 0);
                     }
 
-                    // Mengubah gambar menjadi URL data
-                    var dataURL = canvas.toDataURL('image/jpeg', 0.9);
-                    $('.image-tag').val(dataURL)
+                    // Alternative File creation
+                    canvas.toBlob(function(blob) {
+                        // Create a File object with explicit extension in filename
+                        var filename = "attendance_" + Date.now() + ".png";
+                        var file = new File([blob], filename, { type: "image/png" });
 
-                    // Mengirim dataURL ke backend atau melakukan hal lain sesuai kebutuhan Anda
-                    //console.log(dataURL);
-                    document.getElementById('results').innerHTML =
-                        '<img id="imgprev" width="200" height="200" class="rounded-md" src="' + dataURL + '"/>';
+                        // Create a DataTransfer object to simulate file selection
+                        var dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+
+                        // Set the file input's files
+                        var fileInput = document.getElementById('image');
+                        fileInput.files = dataTransfer.files;
+
+                        // Display preview
+                        var imageUrl = URL.createObjectURL(blob);
+                        document.getElementById('results').innerHTML =
+                            '<img id="imgprev" width="200" height="200" class="rounded-md" src="' + imageUrl + '"/>';
+                    }, 'image/jpeg', 0.9);
                 }
 
                 $('#snapButton').click(function() {
@@ -492,35 +543,22 @@
                 // Fungsi untuk memeriksa status video
                 function checkVideoStatus() {
                     // Membuat elemen canvas untuk memproses gambar dari video
-
-                    // canvas.width = video.videoWidth;
-                    // canvas.height = video.videoHeight;
-
                     canvas.width = 450;
                     canvas.height = 450;
 
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                    // console.log(video);
-
                     // Mengambil data piksel dari gambar
                     var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                     var data = imageData.data;
 
-                    // Menghitung jumlah piksel yang berwarna hitam (gelap)
-                    var blackPixels = 0;
-                    var redPixels = 0;
-                    var purplePixels = 0;
-                    var darkBluePixels = 0;
-                    for (var i = 0; i < data.length; i += 4) {
-                        // Mengecek apakah nilai rata-rata warna piksel cukup rendah (mungkin warna hitam)
-                        var avgColor = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                        if (avgColor < 20) { // Sesuaikan nilai ambang batas sesuai kebutuhan
-                            blackPixels++;
-                        }
-                    }
+                    // Check image quality
+                    const quality = detectImageQuality(data);
 
-                    isDarkEnvironment = blackPixels > (canvas.width * canvas.height * 0.7); // 80% black
+                    // Update environment flags
+                    isDarkEnvironment = quality.darkPercentage > 0.7; // 70% dark
+                    isBrightEnvironment = quality.brightPercentage > 0.5; // 50% bright
+
                     var redPixels = 0;
                     var purplePixels = 0;
                     var darkBluePixels = 0;
@@ -555,22 +593,16 @@
                         darkBluePixels / (canvas.width * canvas.height) > 0.2) {
                         alert('Terlalu banyak warna terdeteksi!\nTolong agak menjauh dari kamera');
                         $('#snapButton').hide()
-                    } else {
-                        $('#snapButton').show()
-                    }
-                    // Jika sebagian besar piksel adalah hitam, mungkin output kamera hitam
-                    if (blackPixels > (canvas.width * canvas.height *
-                            0.9)) { // 90% piksel hitam, sesuaikan jika diperlukan
-                        alert('Output kamera hitam!\nTolong pindah ke tempat yang lebih terang');
+                    } else if (isBrightEnvironment) {
+                        alert(
+                            'Gambar terlalu terang (flooded)!\nTolong pindah ke tempat yang kurang cahaya atau atur pencahayaan');
                         $('#snapButton').hide();
-                        // 			$('#snapButton').prop('disabled', true);
+                    } else if (quality.darkPercentage > 0.9) {
+                        alert('Output kamera terlalu gelap!\nTolong pindah ke tempat yang lebih terang');
+                        $('#snapButton').hide();
                     } else {
                         $('#snapButton').show()
                     }
-
-
-                    // Menutup elemen canvas
-                    canvas.remove();
                 }
             });
         </script>
