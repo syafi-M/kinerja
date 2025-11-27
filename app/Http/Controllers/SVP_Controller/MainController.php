@@ -21,22 +21,25 @@ class MainController extends Controller
         $filter = $request->search;
         $filterMitra = $request->mitra;
         $filter2 = Carbon::parse($filter);
-        
+
         $mitra = Kerjasama::with('client')->get();
-        
+
         $tanggalIki = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
-        
+
         $kerjasama = Auth::user()->kerjasama_id;
         $absenQue = Absensi::latest();
-        
+
         if ($filter) {
             $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month);
+            if($filterMitra){
+                $absenQ = $absenQ->where('kerjasama_id', $filterMitra);
+            }
             $absen = $absenQ->paginate(50)->appends($request->except('page'));;
         }else{
             $mon = Carbon::now()->month;
             $absen = Absensi::orderBy('tanggal_absen', 'desc')->orderBy('kerjasama_id', 'desc')->whereMonth('tanggal_absen', $mon)->latest()->paginate(31);
         }
-        
+
         return view('spv_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter'));
     }
 
@@ -50,7 +53,7 @@ class MainController extends Controller
     {
         $kerjasama = Auth::user()->kerjasama_id;
         $user = User::where('kerjasama_id', $kerjasama)->paginate(15);
-        return view('spv_view/laporan/index', compact('user'));
+        return view('spv_view/user/index', compact('user'));
     }
 
     public function indexLembur()

@@ -16,23 +16,23 @@ use Illuminate\Support\Facades\Storage;
 
 class MainController extends Controller
 {
-    
+
     public function indexAbsen(Request $request)
     {
-        
-        
+
+
         $filter = $request->search;
         $filterMitra = $request->mitra;
         $filter2 = Carbon::parse($filter);
-        
+
         $mitra = Kerjasama::with('client')->get();
-        
+
         $tanggalIki = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
-        
+
         $kerjasama = Auth::user()->kerjasama_id;
         $absenQue = Absensi::latest();
-        
-        
+
+
         if ($filter) {
             if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS"){
                 $codeCS = ['OCS', 'CO-CS'];
@@ -66,18 +66,18 @@ class MainController extends Controller
                 $codeJabatan = ['SCR', 'CO-SCR'];
                 if(auth()->user()->id == 175) {
                     if($filterMitra) {
-                        
+
                     $absen = Absensi::latest()->where('kerjasama_id', $filterMitra)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                                 $query->whereIn('code_jabatan', $codeJabatan);
                             })->paginate(20);
                     }else{
-                        
+
                     $absen = Absensi::latest()->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                                 $query->whereIn('code_jabatan', $codeJabatan);
                             })->orderBy('kerjasama_id', 'asc')->paginate(50);
                     }
                 }else {
-                    
+
                     $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                                 $query->whereIn('code_jabatan', $codeJabatan);
                             })->paginate(31);
@@ -86,18 +86,18 @@ class MainController extends Controller
                 $codeJabatan = ['SCR', 'CO-SCR'];
                 if(auth()->user()->id == 175) {
                     if($filterMitra) {
-                        
+
                     $absen = Absensi::latest()->where('kerjasama_id', $filterMitra)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                                 $query->whereIn('code_jabatan', $codeJabatan);
                             })->paginate(20);
                     }else{
-                        
+
                     $absen = Absensi::latest()->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                                 $query->whereIn('code_jabatan', $codeJabatan);
                             })->orderBy('kerjasama_id', 'asc')->paginate(50);
                     }
                 }else {
-                    
+
                     $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                                 $query->whereIn('code_jabatan', $codeJabatan);
                             })->paginate(31);
@@ -110,7 +110,7 @@ class MainController extends Controller
                 $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->paginate(31);
             }
         }
-        
+
         if(!$tanggalIki){
             return view('leader_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter'));
         } else {
@@ -136,11 +136,11 @@ class MainController extends Controller
     {
         $filterDivisi = $request->input('divisi');
         $filterMitra = $request->input('mitra');
-        
+
         $divisi = Divisi::all();
         $mitra = Kerjasama::with('client')->get();
         $kerjasama = Auth::user()->kerjasama_id;
-        
+
         if($filterDivisi){
             $user = User::where('kerjasama_id', $kerjasama)->where('devisi_id', $filterDivisi)->paginate(90);
         }else{
@@ -161,7 +161,7 @@ class MainController extends Controller
                                 })->paginate(30);
                     }else{
                         $user = User::where('kerjasama_id', '!=', 1)->orderBy('nama_lengkap', 'asc')->whereHas('divisi.jabatan', function ($query) {
-                                    $query->whereNotIn('code_jabatan', ['SCR', 'CO-SCR', 'JM', 'FO']);
+                                    $query->whereNotIn('code_jabatan', ['SCR', 'CO-SCR', 'JM']);
                                 })->paginate(30);
                     }
                 }else{
@@ -185,9 +185,9 @@ class MainController extends Controller
                 }
             }
         }
-        
+
         // dd($user, Auth::user());
-        
+
         return view('leader_view/user/index', compact('user', 'divisi', 'mitra', 'filterMitra'));
     }
 
@@ -204,13 +204,13 @@ class MainController extends Controller
                 $lembur = Lembur::latest()->where('kerjasama_id', $kerjasama)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
                             $query->whereIn('code_jabatan', $codeJabatan);
                         })->paginate(31);
-            
+
         }else{
             $lembur = Lembur::where('kerjasama_id', $kerjasama)->paginate(30);
         }
         return view('leader_view/lembur/index', compact('lembur'));
     }
-    
+
     public function indexAbsenSholat()
     {
         $kerjasama = Auth::user()->kerjasama_id;
@@ -228,14 +228,14 @@ class MainController extends Controller
         $absen = Absensi::where('kerjasama_id', $kerjasama)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->get();
         return view('leader_view/absenSholat/index', compact('user', 'absen'));
     }
-    
+
     public function storeAbsenSholat(Request $request)
     {
         $absenRecords = Absensi::whereIn('user_id', $request->user)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->orderBy('user_id', 'asc')->get();
         foreach ($absenRecords as $absen) {
             if(Carbon::now()->format('H:i:s') >= '11:20:00' && Carbon::now()->format('H:i:s') <= '14:10:00'){
                 $img = $request->fotoSholat;
-                
+
                 $folderPath = "public/images/";
                 $image_parts = explode(";base64,", $img);
                 $image_type_aux = explode("image/", $image_parts[0]);
@@ -245,13 +245,13 @@ class MainController extends Controller
                 $fileName = $formatName . '.png';
                 $file = $folderPath . $fileName;
                 Storage::put($file, $image_base64);
-                
+
                 $absen->fotoDzuhur = $fileName;
-                    
+
                 $absen->dzuhur = 1;
             }else if(Carbon::now()->format('H:i:s') >= '17:20:00' && Carbon::now()->format('H:i:s') <= '18:45:00'){
                 $img = $request->fotoSholat;
-                
+
                 $folderPath = "public/images/";
                 $image_parts = explode(";base64,", $img);
                 $image_type_aux = explode("image/", $image_parts[0]);
@@ -261,9 +261,9 @@ class MainController extends Controller
                 $fileName = $formatName . '.png';
                 $file = $folderPath . $fileName;
                 Storage::put($file, $image_base64);
-                
+
                 $absen->fotoMagrib = $fileName;
-                
+
                 $absen->magrib = 1;
             }
             // dd($request->all(), $absen);
