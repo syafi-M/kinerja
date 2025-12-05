@@ -49,7 +49,7 @@ class AbsensiController extends Controller
                 default => '16:00',
             };
 
-            $shift = Shift::orderBy('jam_start', 'asc')->where('jam_start', '>=', $startTime)->where('client_id', $user->kerjasama->client_id)->where('jabatan_id', $user->divisi->jabatan_id)->get();
+            $shift = Shift::orderBy('jam_start', 'asc')->where('jam_start', '>=', $startTime)->where('client_id', $user->kerjasama->client_id)->where('jabatan_id', $user->jabatan_id)->get();
         } else {
             $shift = $now->format('H:i');
         }
