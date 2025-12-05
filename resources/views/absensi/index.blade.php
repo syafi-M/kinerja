@@ -386,7 +386,14 @@
                         Route::currentRouteName() == 'absensi-karyawan-co-scr.index',
                 ) !!};
                 var isDarkEnvironment = false;
-                // console.log(isLeadr);
+                var isBrightEnvironment = false; // Added missing variable declaration
+
+                // Hysteresis variables to prevent rapid toggling
+                var darkConfirmationCount = 0;
+                var brightConfirmationCount = 0;
+                var colorConfirmationCount = 0;
+                const confirmationThreshold = 1; // Require 3 consecutive detections
+                const resetThreshold = 1; // Reset after 2 good frames
 
                 // Mengatur ukuran canvas sesuai opsi
                 canvas.width = 320;
@@ -401,26 +408,19 @@
                         height: 450
                     }
                 };
-                //console.log(navigator.mediaDevices.getUserMedia(constraints));
 
                 // Mengambil akses kamera
                 navigator.mediaDevices.getUserMedia(constraints)
                     .then(function(mediaStream) {
-                        // Menampilkan video dari kamera ke elemen video
                         video.srcObject = mediaStream;
                         video.onloadedmetadata = function(e) {
-                            // $('.svg-icon-foto').show();
                             canvas.width = video.videoWidth;
                             canvas.height = video.videoHeight;
-                            //console.log(canvas.width)
                             video.play();
                             checkVideoStatus();
                             // Memeriksa status video setiap beberapa detik
-                            setInterval(function() {
-                                checkVideoStatus();
-                            }, 1000); // Memeriksa setiap 2 detik, sesuaikan jika diperlukan
+                            setInterval(checkVideoStatus, 1000);
                         };
-
                     })
                     .catch(function(err) {
                         console.log('Gagal mengambil akses kamera: ' + err);
@@ -433,7 +433,6 @@
                         var green = data[i + 1];
                         var blue = data[i + 2];
 
-                        // Periksa apakah warna piksel sesuai dengan warna yang ditetapkan
                         if (red > colorThreshold.red && green < colorThreshold.green && blue < colorThreshold.blue) {
                             colorPixels++;
                         }
@@ -445,90 +444,94 @@
                     let darkPixels = 0;
                     let brightPixels = 0;
                     let totalPixels = data.length / 4;
+                    let totalBrightness = 0;
 
                     for (let i = 0; i < data.length; i += 4) {
-                        // Menghitung kecerahan
-                        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        // Calculate brightness using luminance formula
+                        const brightness = (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+                        totalBrightness += brightness;
 
-                        if (brightness < 40) { // Ambang batas gelap
+                        // Less sensitive thresholds
+                        if (brightness < 30) { // Increased from 40 to 30
                             darkPixels++;
-                        } else if (brightness > 220) { // Ambang batas terang
+                        } else if (brightness > 230) { // Increased from 220 to 230
                             brightPixels++;
                         }
                     }
 
+                    // Calculate average brightness
+                    const avgBrightness = totalBrightness / totalPixels;
+
                     return {
                         darkPercentage: darkPixels / totalPixels,
-                        brightPercentage: brightPixels / totalPixels
+                        brightPercentage: brightPixels / totalPixels,
+                        avgBrightness: avgBrightness
                     };
                 }
 
                 // Fungsi untuk mengambil snapshot
                 function takeSnapshot() {
-                    // Menggunakan ukuran yang sama dengan elemen video
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-
-                    // Menggambar video pada canvas
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                    // Get image data
                     var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                     var data = imageData.data;
 
-                    // Check image quality
+                    // Check current image quality
                     const quality = detectImageQuality(data);
 
-                    // Apply adjustments based on image quality
-                    if (isDarkEnvironment) {
-                        // Apply manual brightness/contrast enhancement
-                        let brightnessFactor = 40; // increase brightness by +40
-                        let contrastFactor = 1.3; // contrast multiplier
+                    // Apply adjustments based on current image quality
+                    if (quality.darkPercentage > 0.7 || quality.avgBrightness < 70) {
+                        // Apply brightness and contrast adjustments for dark images
+                        const brightnessAdjust = 30;
+                        const contrastAdjust = 1.2;
 
                         for (let i = 0; i < data.length; i += 4) {
-                            // Brightness
-                            data[i] = Math.min(data[i] + brightnessFactor, 255); // Red
-                            data[i + 1] = Math.min(data[i + 1] + brightnessFactor, 255); // Green
-                            data[i + 2] = Math.min(data[i + 2] + brightnessFactor, 255); // Blue
+                            // Apply brightness
+                            data[i] = Math.min(data[i] + brightnessAdjust, 255);
+                            data[i + 1] = Math.min(data[i + 1] + brightnessAdjust, 255);
+                            data[i + 2] = Math.min(data[i + 2] + brightnessAdjust, 255);
 
-                            // Contrast
-                            data[i] = Math.min(Math.max(((data[i] - 128) * contrastFactor + 128), 0), 255);
-                            data[i + 1] = Math.min(Math.max(((data[i + 1] - 128) * contrastFactor + 128), 0), 255);
-                            data[i + 2] = Math.min(Math.max(((data[i + 2] - 128) * contrastFactor + 128), 0), 255);
+                            // Apply contrast
+                            data[i] = Math.min(Math.max(((data[i] - 128) * contrastAdjust + 128), 0), 255);
+                            data[i + 1] = Math.min(Math.max(((data[i + 1] - 128) * contrastAdjust + 128), 0), 255);
+                            data[i + 2] = Math.min(Math.max(((data[i + 2] - 128) * contrastAdjust + 128), 0), 255);
                         }
 
-                        // Put enhanced data back
                         context.putImageData(imageData, 0, 0);
-                    } else if (isBrightEnvironment) {
-                        // Reduce brightness for overexposed images
-                        let brightnessReduction = 50; // Reduce brightness by -50
+                    }
+                    else if (quality.brightPercentage > 0.5 || quality.avgBrightness > 190) {
+                        // Apply brightness reduction for overexposed images
+                        const brightnessReduction = 20;
+                        const contrastAdjust = 0.95;
 
                         for (let i = 0; i < data.length; i += 4) {
                             // Reduce brightness
-                            data[i] = Math.max(data[i] - brightnessReduction, 0); // Red
-                            data[i + 1] = Math.max(data[i + 1] - brightnessReduction, 0); // Green
-                            data[i + 2] = Math.max(data[i + 2] - brightnessReduction, 0); // Blue
+                            data[i] = Math.max(data[i] - brightnessReduction, 0);
+                            data[i + 1] = Math.max(data[i + 1] - brightnessReduction, 0);
+                            data[i + 2] = Math.max(data[i + 2] - brightnessReduction, 0);
+
+                            // Apply contrast
+                            data[i] = Math.min(Math.max(((data[i] - 128) * contrastAdjust + 128), 0), 255);
+                            data[i + 1] = Math.min(Math.max(((data[i + 1] - 128) * contrastAdjust + 128), 0), 255);
+                            data[i + 2] = Math.min(Math.max(((data[i + 2] - 128) * contrastAdjust + 128), 0), 255);
                         }
 
-                        // Put adjusted data back
                         context.putImageData(imageData, 0, 0);
                     }
 
-                    // Alternative File creation
+                    // Create file from canvas
                     canvas.toBlob(function(blob) {
-                        // Create a File object with explicit extension in filename
                         var filename = "attendance_" + Date.now() + ".png";
                         var file = new File([blob], filename, { type: "image/png" });
 
-                        // Create a DataTransfer object to simulate file selection
                         var dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
 
-                        // Set the file input's files
                         var fileInput = document.getElementById('image');
                         fileInput.files = dataTransfer.files;
 
-                        // Display preview
                         var imageUrl = URL.createObjectURL(blob);
                         document.getElementById('results').innerHTML =
                             '<img id="imgprev" width="200" height="200" class="rounded-md" src="' + imageUrl + '"/>';
@@ -539,69 +542,100 @@
                     takeSnapshot();
                 });
 
-
                 // Fungsi untuk memeriksa status video
                 function checkVideoStatus() {
-                    // Membuat elemen canvas untuk memproses gambar dari video
                     canvas.width = 450;
                     canvas.height = 450;
-
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                    // Mengambil data piksel dari gambar
                     var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
                     var data = imageData.data;
 
-                    // Check image quality
                     const quality = detectImageQuality(data);
 
-                    // Update environment flags
-                    isDarkEnvironment = quality.darkPercentage > 0.7; // 70% dark
-                    isBrightEnvironment = quality.brightPercentage > 0.5; // 50% bright
+                    // Less sensitive environment detection
+                    const darkCondition = quality.darkPercentage > 0.75 || quality.avgBrightness < 75;
+                    const brightCondition = quality.brightPercentage > 0.55 || quality.avgBrightness > 185;
+
+                    // Update confirmation counters
+                    if (darkCondition) {
+                        darkConfirmationCount++;
+                        brightConfirmationCount = 0;
+                    } else {
+                        darkConfirmationCount = Math.max(0, darkConfirmationCount - resetThreshold);
+                    }
+
+                    if (brightCondition) {
+                        brightConfirmationCount++;
+                        darkConfirmationCount = 0;
+                    } else {
+                        brightConfirmationCount = Math.max(0, brightConfirmationCount - resetThreshold);
+                    }
+
+                    // Update environment flags only after confirmation
+                    isDarkEnvironment = darkConfirmationCount >= confirmationThreshold;
+                    isBrightEnvironment = brightConfirmationCount >= confirmationThreshold;
 
                     var redPixels = 0;
                     var purplePixels = 0;
                     var darkBluePixels = 0;
 
-                    // Ambang batas warna
                     var colorThresholds = {
                         red: 150,
                         green: 100,
                         blue: 100
                     };
-                    // Memanggil fungsi detectColor untuk warna merah
+
                     redPixels = detectColor(data, colorThresholds);
 
-                    // Mengganti ambang batas warna untuk warna ungu
                     colorThresholds.red = 150;
                     colorThresholds.green = 100;
                     colorThresholds.blue = 150;
-
-                    // Memanggil fungsi detectColor untuk warna ungu
                     purplePixels = detectColor(data, colorThresholds);
 
-                    // Mengganti ambang batas warna untuk warna biru tua
                     colorThresholds.red = 100;
                     colorThresholds.green = 100;
                     colorThresholds.blue = 150;
-                    // Memanggil fungsi detectColor untuk warna biru tua
                     darkBluePixels = detectColor(data, colorThresholds);
 
-                    // Memeriksa apakah terlalu banyak warna yang terdeteksi
-                    if (redPixels / (canvas.width * canvas.height) > 0.2 ||
-                        purplePixels / (canvas.width * canvas.height) > 0.2 ||
-                        darkBluePixels / (canvas.width * canvas.height) > 0.2) {
+                    const totalPixels = canvas.width * canvas.height;
+                    const colorThreshold = 0.25; // Increased from 0.2
+
+                    // Color detection with confirmation
+                    const colorCondition = redPixels / totalPixels > colorThreshold ||
+                        purplePixels / totalPixels > colorThreshold ||
+                        darkBluePixels / totalPixels > colorThreshold;
+
+                    if (colorCondition) {
+                        colorConfirmationCount++;
+                    } else {
+                        colorConfirmationCount = Math.max(0, colorConfirmationCount - resetThreshold);
+                    }
+
+                    const colorDetected = colorConfirmationCount >= confirmationThreshold;
+
+                    // Only show alerts after confirmation
+                    if (colorDetected) {
                         alert('Terlalu banyak warna terdeteksi!\nTolong agak menjauh dari kamera');
-                        $('#snapButton').hide()
-                    } else if (isBrightEnvironment) {
-                        alert(
-                            'Gambar terlalu terang (flooded)!\nTolong pindah ke tempat yang kurang cahaya atau atur pencahayaan');
                         $('#snapButton').hide();
-                    } else if (quality.darkPercentage > 0.9) {
+                        // Reset counters after alert
+                        darkConfirmationCount = 0;
+                        brightConfirmationCount = 0;
+                        colorConfirmationCount = 0;
+                    } else if (isBrightEnvironment) {
+                        alert('Gambar terlalu terang!\nTolong pindah ke tempat yang kurang cahaya atau atur pencahayaan');
+                        $('#snapButton').hide();
+                        darkConfirmationCount = 0;
+                        brightConfirmationCount = 0;
+                        colorConfirmationCount = 0;
+                    } else if (isDarkEnvironment) {
                         alert('Output kamera terlalu gelap!\nTolong pindah ke tempat yang lebih terang');
                         $('#snapButton').hide();
+                        darkConfirmationCount = 0;
+                        brightConfirmationCount = 0;
+                        colorConfirmationCount = 0;
                     } else {
-                        $('#snapButton').show()
+                        $('#snapButton').show();
                     }
                 }
             });
