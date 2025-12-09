@@ -385,15 +385,6 @@
                     Route::currentRouteName() == 'absensi-karyawan-co-cs.index' ||
                         Route::currentRouteName() == 'absensi-karyawan-co-scr.index',
                 ) !!};
-                var isDarkEnvironment = false;
-                var isBrightEnvironment = false; // Added missing variable declaration
-
-                // Hysteresis variables to prevent rapid toggling
-                var darkConfirmationCount = 0;
-                var brightConfirmationCount = 0;
-                var colorConfirmationCount = 0;
-                const confirmationThreshold = 1; // Require 3 consecutive detections
-                const resetThreshold = 1; // Reset after 2 good frames
 
                 // Mengatur ukuran canvas sesuai opsi
                 canvas.width = 320;
@@ -418,27 +409,12 @@
                             canvas.height = video.videoHeight;
                             video.play();
                             checkVideoStatus();
-                            // Memeriksa status video setiap beberapa detik
                             setInterval(checkVideoStatus, 1000);
                         };
                     })
                     .catch(function(err) {
                         console.log('Gagal mengambil akses kamera: ' + err);
                     });
-
-                function detectColor(data, colorThreshold) {
-                    var colorPixels = 0;
-                    for (var i = 0; i < data.length; i += 4) {
-                        var red = data[i];
-                        var green = data[i + 1];
-                        var blue = data[i + 2];
-
-                        if (red > colorThreshold.red && green < colorThreshold.green && blue < colorThreshold.blue) {
-                            colorPixels++;
-                        }
-                    }
-                    return colorPixels;
-                }
 
                 function detectImageQuality(data) {
                     let darkPixels = 0;
@@ -469,6 +445,129 @@
                     };
                 }
 
+               // Simplified presence detection for low-quality cameras
+                function detectPresence(data, width, height) {
+                    // Convert to grayscale
+                    const grayscale = new Uint8ClampedArray(width * height);
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                        grayscale[i / 4] = gray;
+                    }
+
+                    // Calculate basic metrics
+                    let totalBrightness = 0;
+                    let minBrightness = 255;
+                    let maxBrightness = 0;
+                    let brightnessVariation = 0;
+                    let prevBrightness = grayscale[0];
+
+                    // Sample the image in a grid pattern for efficiency
+                    const sampleSize = 10; // Check every 10th pixel
+                    const sampleCount = Math.floor(width / sampleSize) * Math.floor(height / sampleSize);
+
+                    for (let y = 0; y < height; y += sampleSize) {
+                        for (let x = 0; x < width; x += sampleSize) {
+                            const idx = y * width + x;
+                            const brightness = grayscale[idx];
+
+                            totalBrightness += brightness;
+
+                            if (brightness < minBrightness) minBrightness = brightness;
+                            if (brightness > maxBrightness) maxBrightness = brightness;
+
+                            brightnessVariation += Math.abs(brightness - prevBrightness);
+                            prevBrightness = brightness;
+                        }
+                    }
+
+                    const avgBrightness = totalBrightness / sampleCount;
+                    const contrast = maxBrightness - minBrightness;
+                    const normalizedVariation = brightnessVariation / sampleCount;
+
+                    // Decision logic - much simpler thresholds
+                    // 1. Check if brightness is in acceptable range
+                    const acceptableBrightness = avgBrightness > 20 && avgBrightness < 240;
+
+                    // 2. Check if there's some contrast (not a completely flat image)
+                    const hasContrast = contrast > 30;
+
+                    // 3. Check if there's some variation (not a completely static scene)
+                    const hasVariation = normalizedVariation > 1;
+
+                    const hasPresence = acceptableBrightness && hasContrast && hasVariation;
+
+                    return hasPresence;
+                }
+
+                // Motion detection to detect if something is moving in front of the camera
+                let previousFrame = null;
+                function detectMotion(data, width, height) {
+                    if (!previousFrame) {
+                        // Store current frame for next comparison
+                        previousFrame = new Uint8ClampedArray(data);
+                        return false; // Can't detect motion on first frame
+                    }
+
+                    let motionPixels = 0;
+                    const threshold = 30; // Motion sensitivity threshold
+                    const sampleSize = 15; // Sample every 15th pixel for efficiency
+
+                    for (let i = 0; i < data.length; i += 4 * sampleSize) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                        const prevR = previousFrame[i];
+                        const prevG = previousFrame[i + 1];
+                        const prevB = previousFrame[i + 2];
+                        const prevGray = 0.299 * prevR + 0.587 * prevG + 0.114 * prevB;
+
+                        const diff = Math.abs(gray - prevGray);
+                        if (diff > threshold) {
+                            motionPixels++;
+                        }
+                    }
+
+                    // Update previous frame
+                    previousFrame = new Uint8ClampedArray(data);
+
+                    const motionPercentage = motionPixels / (data.length / (4 * sampleSize));
+
+                    // If more than 5% of sampled pixels show motion, consider it as presence
+                    return motionPercentage > 0.05;
+                }
+
+                // Replace the existing checkVideoStatus function with this updated version
+                function checkVideoStatus() {
+                    canvas.width = 450;
+                    canvas.height = 450;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    var data = imageData.data;
+
+                    const quality = detectImageQuality(data);
+
+                    // Check if video is too dark or too bright
+                    const isTooDark = quality.darkPercentage > 0.8 || quality.avgBrightness < 20;
+                    const isTooBright = quality.brightPercentage > 0.6 || quality.avgBrightness > 220;
+
+                    // Check if there's presence using two methods
+                    const hasPresence = detectPresence(data, canvas.width, canvas.height);
+                    const hasMotion = detectMotion(data, canvas.width, canvas.height);
+
+                    // Hide or show the snapshot button based on conditions
+                    if (isTooDark || isTooBright || (!hasPresence && !hasMotion)) {
+                        $('#snapButton').hide();
+                    } else {
+                        $('#snapButton').show();
+                    }
+                }
+
                 // Fungsi untuk mengambil snapshot
                 function takeSnapshot() {
                     canvas.width = video.videoWidth;
@@ -484,8 +583,8 @@
                     // Apply adjustments based on current image quality
                     if (quality.darkPercentage > 0.7 || quality.avgBrightness < 70) {
                         // Apply brightness and contrast adjustments for dark images
-                        const brightnessAdjust = 30;
-                        const contrastAdjust = 1.2;
+                        const brightnessAdjust = 40;
+                        const contrastAdjust = 1.3;
 
                         for (let i = 0; i < data.length; i += 4) {
                             // Apply brightness
@@ -503,8 +602,8 @@
                     }
                     else if (quality.brightPercentage > 0.5 || quality.avgBrightness > 190) {
                         // Apply brightness reduction for overexposed images
-                        const brightnessReduction = 20;
-                        const contrastAdjust = 0.95;
+                        const brightnessReduction = 30;
+                        const contrastAdjust = 0.9;
 
                         for (let i = 0; i < data.length; i += 4) {
                             // Reduce brightness
@@ -541,103 +640,6 @@
                 $('#snapButton').click(function() {
                     takeSnapshot();
                 });
-
-                // Fungsi untuk memeriksa status video
-                function checkVideoStatus() {
-                    canvas.width = 450;
-                    canvas.height = 450;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    var data = imageData.data;
-
-                    const quality = detectImageQuality(data);
-
-                    // Less sensitive environment detection
-                    const darkCondition = quality.darkPercentage > 0.75 || quality.avgBrightness < 75;
-                    const brightCondition = quality.brightPercentage > 0.55 || quality.avgBrightness > 185;
-
-                    // Update confirmation counters
-                    if (darkCondition) {
-                        darkConfirmationCount++;
-                        brightConfirmationCount = 0;
-                    } else {
-                        darkConfirmationCount = Math.max(0, darkConfirmationCount - resetThreshold);
-                    }
-
-                    if (brightCondition) {
-                        brightConfirmationCount++;
-                        darkConfirmationCount = 0;
-                    } else {
-                        brightConfirmationCount = Math.max(0, brightConfirmationCount - resetThreshold);
-                    }
-
-                    // Update environment flags only after confirmation
-                    isDarkEnvironment = darkConfirmationCount >= confirmationThreshold;
-                    isBrightEnvironment = brightConfirmationCount >= confirmationThreshold;
-
-                    var redPixels = 0;
-                    var purplePixels = 0;
-                    var darkBluePixels = 0;
-
-                    var colorThresholds = {
-                        red: 150,
-                        green: 100,
-                        blue: 100
-                    };
-
-                    redPixels = detectColor(data, colorThresholds);
-
-                    colorThresholds.red = 150;
-                    colorThresholds.green = 100;
-                    colorThresholds.blue = 150;
-                    purplePixels = detectColor(data, colorThresholds);
-
-                    colorThresholds.red = 100;
-                    colorThresholds.green = 100;
-                    colorThresholds.blue = 150;
-                    darkBluePixels = detectColor(data, colorThresholds);
-
-                    const totalPixels = canvas.width * canvas.height;
-                    const colorThreshold = 0.25; // Increased from 0.2
-
-                    // Color detection with confirmation
-                    const colorCondition = redPixels / totalPixels > colorThreshold ||
-                        purplePixels / totalPixels > colorThreshold ||
-                        darkBluePixels / totalPixels > colorThreshold;
-
-                    if (colorCondition) {
-                        colorConfirmationCount++;
-                    } else {
-                        colorConfirmationCount = Math.max(0, colorConfirmationCount - resetThreshold);
-                    }
-
-                    const colorDetected = colorConfirmationCount >= confirmationThreshold;
-
-                    // Only show alerts after confirmation
-                    if (colorDetected) {
-                        alert('Terlalu banyak warna terdeteksi!\nTolong agak menjauh dari kamera');
-                        $('#snapButton').hide();
-                        // Reset counters after alert
-                        darkConfirmationCount = 0;
-                        brightConfirmationCount = 0;
-                        colorConfirmationCount = 0;
-                    } else if (isBrightEnvironment) {
-                        alert('Gambar terlalu terang!\nTolong pindah ke tempat yang kurang cahaya atau atur pencahayaan');
-                        $('#snapButton').hide();
-                        darkConfirmationCount = 0;
-                        brightConfirmationCount = 0;
-                        colorConfirmationCount = 0;
-                    } else if (isDarkEnvironment) {
-                        alert('Output kamera terlalu gelap!\nTolong pindah ke tempat yang lebih terang');
-                        $('#snapButton').hide();
-                        darkConfirmationCount = 0;
-                        brightConfirmationCount = 0;
-                        colorConfirmationCount = 0;
-                    } else {
-                        $('#snapButton').show();
-                    }
-                }
             });
         </script>
         <!--Camera-->
