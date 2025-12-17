@@ -9,6 +9,7 @@ use App\Models\Lembur;
 use App\Models\User;
 use App\Models\Divisi;
 use App\Models\Kerjasama;
+use App\Models\UploadImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -122,7 +123,7 @@ class MainController extends Controller
     public function indexLaporan()
     {
         $kerjasama = Auth::user()->kerjasama->client_id;
-        $laporan = Laporan::where('client_id', $kerjasama)->paginate(30);
+        $laporan = UploadImage::where('clients_id', $kerjasama)->paginate(30);
         return view('leader_view/laporan/index', compact('laporan'));
     }
     public function showLaporan($id)
