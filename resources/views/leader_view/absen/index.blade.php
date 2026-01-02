@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-main-div>
         <div class="py-10 sm:mx-10">
-            <p class="text-lg font-bold text-center uppercase sm:text-2xl ">Riwayat Absensi, <br>{{ $filterMitra ? $absen[0]->kerjasama->client->name : 'PT. Surya Amanah Cendikia' }}</p>
+            <p class="text-lg font-bold text-center uppercase sm:text-2xl ">Riwayat Absensi, <br>PT. Surya Amanah Cendikia</p>
             <div class="flex flex-col items-center justify-start mx-2 my-2 sm:justify-center">
                 <div class="flex items-center justify-center my-5 sm:justify-between">
                     <div class="flex flex-col items-center justify-center w-full gap-2 sm:flex-row sm:gap-5 sm:justify-between">
