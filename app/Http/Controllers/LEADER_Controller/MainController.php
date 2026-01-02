@@ -20,104 +20,85 @@ class MainController extends Controller
 
     public function indexAbsen(Request $request)
     {
+        // --- 1. Early Exit for Specific Condition ---
+        $isSpecialDate = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
+        if ($isSpecialDate) {
+            abort(500);
+        }
 
-
-        $filter = $request->search;
+        // --- 2. Initialize Core Variables ---
+        $user = Auth::user();
+        $filter = $request->search; // This can be a full date or a month string
         $filterMitra = $request->mitra;
-        $filter2 = Carbon::parse($filter);
+        $isDiv18 = $user->devisi_id == 18;
 
+        // Data for the view
         $mitra = Kerjasama::with('client')->get();
 
-        $tanggalIki = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
+        // --- 3. Start Building the Query ---
+        $query = Absensi::with('user.divisi.jabatan');
 
-        $kerjasama = Auth::user()->kerjasama_id;
-        $absenQue = Absensi::latest();
-
-
-        if ($filter) {
-            if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS"){
-                $codeCS = ['OCS', 'CO-CS'];
-                $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month)->whereHas('user.divisi.jabatan', function ($query) use ($codeCS) {
-                            $query->whereIn('code_jabatan', $codeCS);
-                        });
-            }else if(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR"){
-                $codeSCR = ['SCR', 'CO-SCR'];
-                $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month)->whereHas('user.divisi.jabatan', function ($query) use ($codeSCR) {
-                            $query->whereIn('code_jabatan', $codeSCR);
-                        });
-            }else if (Auth::user()->id == 175) {
-                $codeSCR = ['SCR', 'CO-SCR'];
-                $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month)->whereHas('user.divisi.jabatan', function ($query) use ($codeSCR) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        });
-            }else if (Auth::user()->devisi_id == 18) {
-                $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month)->where('kerjasama_id', $filterMitra);
-            }else {
-                $absenQ = $absenQue->whereMonth('tanggal_absen', $filter2->month);
-            }
-            $absen = $absenQ->paginate(50)->appends($request->except('page'));;
-        }else{
-            $mon = Carbon::now()->month;
-            if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS"){
-                $codeJabatan = ['OCS', 'CO-CS'];
-                $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        })->paginate(31);
-            }else if(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR"){
-                $codeJabatan = ['SCR', 'CO-SCR'];
-                if(auth()->user()->id == 175) {
-                    if($filterMitra) {
-
-                    $absen = Absensi::latest()->where('kerjasama_id', $filterMitra)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->paginate(20);
-                    }else{
-
-                    $absen = Absensi::latest()->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->orderBy('kerjasama_id', 'asc')->paginate(50);
-                    }
-                }else {
-
-                    $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->paginate(31);
-                }
-            }else if (Auth::user()->id == 175) {
-                $codeJabatan = ['SCR', 'CO-SCR'];
-                if(auth()->user()->id == 175) {
-                    if($filterMitra) {
-
-                    $absen = Absensi::latest()->where('kerjasama_id', $filterMitra)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->paginate(20);
-                    }else{
-
-                    $absen = Absensi::latest()->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->orderBy('kerjasama_id', 'asc')->paginate(50);
-                    }
-                }else {
-
-                    $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->paginate(31);
-                }
-            }else if (Auth::user()->devisi_id == 18) {
-                $absen = Absensi::orderBy('tanggal_absen', 'desc')->orderBy('kerjasama_id', 'desc')->whereMonth('tanggal_absen', $mon)->latest()->paginate(31);
-            }
-            else{
-                $codeJabatan = ['SCR', 'CO-SCR'];
-                $absen = Absensi::latest()->where('kerjasama_id', $kerjasama)->whereMonth('tanggal_absen', $mon)->paginate(31);
-            }
-        }
-
-        if(!$tanggalIki){
-            return view('leader_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter'));
+        // --- 4. Apply Date/Month Filter (THIS IS THE UPDATED SECTION) ---
+        if ($isDiv18) {
+            // For users in devisi_id 18:
+            // - If a date is provided, filter by that exact date.
+            // - If no date is provided, default to filtering by the current month.
+            $query->when(
+                $filter,
+                fn($q) => $q->whereDate('tanggal_absen', $filter),
+                fn($q) => $q->whereMonth('tanggal_absen', Carbon::now()->month)
+            );
         } else {
-            abort(500);
-            return view('leader_view/absen/index');
+            // For all other users:
+            // - The filter is treated as a month selector.
+            // - Default to the current month if no filter is provided.
+            $targetMonth = $filter ? Carbon::parse($filter)->month : Carbon::now()->month;
+            $query->whereMonth('tanggal_absen', $targetMonth);
         }
+
+        // --- 5. Apply Role-Based and User-Specific Filters ---
+        $userRole = $user->divisi->jabatan->code_jabatan ?? null;
+        $isUser175 = $user->id == 175;
+
+        $jabatanCodes = [
+            'CO-CS' => ['OCS', 'CO-CS'],
+            'CO-SCR' => ['SCR', 'CO-SCR'],
+        ];
+
+        if ($isDiv18) {
+            $query->when($filterMitra, fn($q) => $q->where('kerjasama_id', $filterMitra));
+        } elseif (isset($jabatanCodes[$userRole]) || $isUser175) {
+            $codesToFilter = $jabatanCodes[$userRole] ?? $jabatanCodes['CO-SCR'];
+            $query->whereHas('user.divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $codesToFilter));
+            if ($isUser175 && $filterMitra) {
+                $query->where('kerjasama_id', $filterMitra);
+            }
+        } else {
+            $query->where('kerjasama_id', $user->kerjasama_id);
+        }
+
+        // --- 6. Apply Ordering and Pagination ---
+        if ($isUser175 && !$filterMitra) {
+            $query->orderBy('kerjasama_id', 'asc')->latest();
+        } elseif ($isDiv18) {
+            $query->orderBy('tanggal_absen', 'desc')->orderBy('kerjasama_id', 'desc');
+        } else {
+            $query->latest();
+        }
+
+        $perPage = 31;
+        if ($isUser175 && $filterMitra) {
+            $perPage = 20;
+        } elseif ($filter) { // If any filter is applied, show more results
+            $perPage = 50;
+        }
+
+        $absen = $query->paginate($perPage)->appends($request->except('page'));
+
+        // dd($absen);
+
+        // --- 7. Return the View ---
+        return view('leader_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter'));
     }
 
     public function indexLaporan()

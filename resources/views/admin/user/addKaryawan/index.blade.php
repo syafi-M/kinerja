@@ -34,7 +34,7 @@
     <div class="min-h-screen">
         <div class="rounded-md shadow-md" style="margin: 5%;">
             <div style="background: #C0E8FC;">
-                <p class="text-center font-bold"
+                <p class="font-bold text-center"
                     style="padding: 5% 0; color: #132D4C; font-size: 34px; line-height: 1;">Daftar Sebagai Karyawan Baru
                     <br /><span style="font-size: 18px;">PT. Surya Amanah Cendikia</span>
                 </p>
@@ -45,8 +45,8 @@
                         <!-- Name Lengkap -->
                         <div>
                             <x-input-label for="nama_lengkap" class="required" :value="__('Nama lengkap')" />
-                            <x-text-input id="nama_lengkap" class="block mt-1 w-full" type="text" name="nama_lengkap"
-                                :value="old('nama_lengkap')" required autofocus autocomplete="nama_lengkap"
+                            <x-text-input id="nama_lengkap" class="block w-full mt-1" type="text" name="nama_lengkap"
+                                :value="old('nama_lengkap')" required autofocus autocomplete="name"
                                 placeholder="Masukkan nama lengkap user..." />
                             <x-input-error :messages="$errors->get('nama_lengkap')" class="mt-2" />
                         </div>
@@ -54,7 +54,7 @@
                         <!-- Email Address -->
                         <div class="mt-2">
                             <x-input-label for="email" class="required" :value="__('Email aktif')" />
-                            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
+                            <x-text-input id="email" class="block w-full mt-1" type="email" name="email"
                                 :value="old('email')" required autocomplete="email" placeholder="Masukkan email user..." />
                             <x-input-error :messages="$errors->get('email')" class="mt-2" />
                         </div>
@@ -62,9 +62,9 @@
                         <!-- TTL -->
                         <div class="mt-2">
                             <x-input-label for="ttl" class="required" :value="__('Tempat tanggal lahir')" />
-                            <div class="w-full flex justify-center items-center gap-1">
+                            <div class="flex items-center justify-center w-full gap-1">
                                 <x-text-input id="tpt" class="block mt-1" style="width: 50%;" type="text"
-                                    name="tpt" required value="" placeholder="TL..." autocomplete="tpt" />
+                                    name="tpt" required value="" placeholder="TL..." autocomplete="address-level2" />
                                 <x-text-input id="tgl" class="block mt-1" style="width: 50%;" type="date"
                                     name="tgl" required value="" placeholder="TL..." autocomplete="tgl" />
                             </div>
@@ -73,23 +73,23 @@
                         <!-- alamat -->
                         <div class="mt-2">
                             <x-input-label for="alamat" class="required" :value="__('Alamat tinggal (sekarang)')" />
-                            <x-text-input id="alamat" class="block mt-1 w-full" type="text" name="alamat"
-                                required value="" placeholder="Alamat..." autocomplete="alamat" />
+                            <x-text-input id="alamat" class="block w-full mt-1" type="text" name="alamat"
+                                required value="" placeholder="Alamat..." autocomplete="street-address" />
                             <x-input-error :messages="$errors->get('alamat')" class="mt-2" />
                         </div>
                         <!-- NIK -->
                         <div class="mt-2">
                             <x-input-label for="NIK" class="required" :value="__('NIK')" />
-                            <x-text-input id="NIK" class="block mt-1 w-full" type="text" name="nik"
+                            <x-text-input id="NIK" class="block w-full mt-1" type="text" name="nik"
                                 required value="" placeholder="Nik..." maxlength="16" pattern="[0-9]*"
-                                autocomplete="nik" />
+                                autocomplete="off" />
                             <x-input-error :messages="$errors->get('nik')" class="mt-2" />
                         </div>
                         {{-- foto KTP --}}
-                        <div class="mt-2 p-1">
+                        <div class="p-1 mt-2">
                             <x-input-label for="img2" class="required" :value="__('Foto KTP (depan)')" />
-                            <div class="preview2 hidden w-full">
-                                <span class="flex justify-center items-center">
+                            <div class="hidden w-full preview2">
+                                <span class="flex items-center justify-center">
                                     <label for="img2" class="p-1">
                                         <img class="img2 ring-2 ring-slate-500/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s"
                                             src="" alt="" srcset="" width="200px">
@@ -99,11 +99,11 @@
                             </div>
                             <label for="img2"
                                 class="w-full iImage2 flex flex-col items-center justify-center rounded-md bg-slate-300/70  ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s">
-                                <span class="p-3 flex justify-center flex-col items-center">
-                                    <i class="ri-image-add-line text-xl text-slate-700/90"></i>
+                                <span class="flex flex-col items-center justify-center p-3">
+                                    <i class="text-xl ri-image-add-line text-slate-700/90"></i>
                                     <span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
                                     <input id="img2"
-                                        class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
+                                        class="hidden w-full mt-1 shadow-none file-input file-input-sm file-input-bordered"
                                         type="file" name="ktp" :value="old('image')" accept="image/*"
                                         autofocus required autocomplete="img2" />
                                 </span>
@@ -113,17 +113,17 @@
                         <!-- KK -->
                         <div class="mt-2">
                             <x-input-label for="kk" class="required" :value="__('No. KK')" />
-                            <x-text-input id="kk" class="block mt-1 w-full" type="text" name="kk"
+                            <x-text-input id="kk" class="block w-full mt-1" type="text" name="kk"
                                 required value="" placeholder="No. KK..." maxlength="16" pattern="[0-9]*"
-                                autocomplete="kk" />
+                                autocomplete="off" />
                             <x-input-error :messages="$errors->get('kk')" class="mt-2" />
                         </div>
                         <!-- No HP -->
                         <div class="mt-2">
                             <x-input-label for="phone" class="required" :value="__('No. HP aktif')" />
-                            <x-text-input id="phone" class="block mt-1 w-full" type="tel" name="no_hp"
+                            <x-text-input id="phone" class="block w-full mt-1" type="tel" name="no_hp"
                                 required value="" placeholder="No hp aktif..." maxlength="14"
-                                pattern="[0-9]{10,15}" autocomplete="off" />
+                                pattern="[0-9]{10,15}" autocomplete="tel" />
                             <x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
                         </div>
 
@@ -131,7 +131,7 @@
                         <div class="mt-2">
                             <x-input-label for="client" class="required" :value="__('Unit kerja')" />
                             <select name="client_id" id="" required
-                                class="select select-bordered w-full mt-1">
+                                class="w-full mt-1 select select-bordered">
                                 <option selected disabled>~ Pilih Unit Kerja ~</option>
                                 @foreach ($kerjasama as $i)
                                     <option name="client_id" value="{{ $i->client_id }}" class="py-2">
@@ -143,7 +143,7 @@
                         <div class="mt-2">
                             <x-input-label for="devisi" class="required" :value="__('Bagian')" />
                             <select name="devisi_id" id="devisi" required
-                                class="select select-bordered w-full mt-1">
+                                class="w-full mt-1 select select-bordered">
                                 <option selected disabled>~ Pilih Bagian ~</option>
                                 @foreach ($devisi as $i)
                                     <option value="{{ $i->id }}" class="py-2">
@@ -152,10 +152,10 @@
                             </select>
                         </div>
                         {{-- foto Profile --}}
-                        <div class="mt-2 p-1">
+                        <div class="p-1 mt-2">
                             <x-input-label for="foto Profil" class="required" :value="__('Foto profil')" />
-                            <div class="preview hidden w-full">
-                                <span class="flex justify-center items-center">
+                            <div class="hidden w-full preview">
+                                <span class="flex items-center justify-center">
                                     <label for="img" class="p-1">
                                         <img class="img1 ring-2 ring-slate-500/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s"
                                             src="" alt="" srcset="" width="200px">
@@ -165,11 +165,11 @@
                             </div>
                             <label for="img"
                                 class="w-full iImage1 flex flex-col items-center justify-center rounded-md bg-slate-300/70  ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s">
-                                <span class="p-3 flex justify-center flex-col items-center">
-                                    <i class="ri-image-add-line text-xl text-slate-700/90"></i>
+                                <span class="flex flex-col items-center justify-center p-3">
+                                    <i class="text-xl ri-image-add-line text-slate-700/90"></i>
                                     <span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
                                     <input id="img"
-                                        class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
+                                        class="hidden w-full mt-1 shadow-none file-input file-input-sm file-input-bordered"
                                         type="file" name="image" :value="old('image')" accept="image/*"
                                         autofocus required autocomplete="img" />
                                 </span>
@@ -180,8 +180,8 @@
                         <!-- Password -->
                         <div class="mt-2">
                             <x-input-label for="password" class="required" :value="__('Password aplikasi')" />
-                            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password"
-                                :value="old('password')" required autocomplete="off" placeholder="Buat password anda..." />
+                            <x-text-input id="password" class="block w-full mt-1" type="password" name="password"
+                                :value="old('password')" required autocomplete="new-password" placeholder="Buat password anda..." />
                             <x-input-error :messages="$errors->get('password')" class="mt-2" />
                         </div>
 
@@ -195,13 +195,13 @@
                                 </button>
                             </div>
                             <x-input-error :messages="$errors->get('otp')" class="mt-2" />
-                            <p id="otp-timer" class="text-sm text-gray-600 mt-2 hidden">
+                            <p id="otp-timer" class="hidden mt-2 text-sm text-gray-600">
                                 Kirim ulang OTP dalam <span id="otp-countdown">90</span> detik...
                             </p>
                         </div>
 
 
-                        <div class="flex justify-end mt-10 gap-2">
+                        <div class="flex justify-end gap-2 mt-10">
                             <a href="/" class="btn btn-error hover:bg-red-500 transition-all ease-linear .2s">
                                 Kembali
                             </a>

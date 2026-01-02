@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 class RegSukses extends Notification
 {
     // use Queueable;
-    
+
     protected string $username;
     protected string $password;
 
@@ -38,8 +38,9 @@ class RegSukses extends Notification
     public function toMail($notifiable)
     {
         // \Log::info("Notif RegSukses triggered: " . $this->username . $this->password);
-        
+
         return (new MailMessage)
+            ->from('kinerja@sac-po.com', 'Sac-Po Admin')
             ->subject('Detail Akun Kinerja SAC Kamu')
             ->greeting('Hai, Sobat!')
             ->line('Ini dia detail akun Kinerja SAC kamu:')
@@ -50,7 +51,7 @@ class RegSukses extends Notification
             ->line('Saat ini akun kamu masih belum aktif, ya. Mohon tunggu informasi selanjutnya dari tim kami.')
             ->line('')
             ->line('*Email ini dikirim otomatis, mohon untuk tidak membalas.*')
-            ->salutation('Tetap semangat dan sukses selalu — Tim Kami')
+            ->salutation('Tetap semangat dan sukses selalu - Tim Kami')
             ->success();
     }
 }
