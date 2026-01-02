@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClientRequest;
 use App\Models\Client;
+use App\Models\Kerjasama;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ClientController extends Controller
@@ -116,17 +120,39 @@ class ClientController extends Controller
 
     public function destroy($id)
     {
-        $client = Client::find($id);
-        if ($client != null) {
-            if ($client->logo == null) {
-                toastr()->error('Logo Tidak Ditemukan', 'error');
-            }
-                if ($client->logo) {
-                    Storage::disk('public')->delete('images/'.$client->logo);
-                }
+        // Use a database transaction to ensure both deletes succeed or fail together.
+        DB::beginTransaction();
+
+        try {
+            // Find the client or fail with a 404 error
+            $client = Client::findOrFail($id);
+
+            // Delete all related 'kerjasama' records first.
+            // This is efficient and runs a single DELETE query.
+            $client->kerjasama()->delete();
+
+            // Now, delete the client itself.
+            $client->delete();
+
+            // If we got here, commit the transaction to make the changes permanent.
+            DB::commit();
+
+            toastr()->success('Client dan semua data kerjasamanya berhasil dihapus.', 'Sukses');
+            return redirect()->route('data-client.index');
+
+        } catch (ModelNotFoundException $e) {
+            // This will catch the error from findOrFail if the client doesn't exist.
+            DB::rollBack(); // Rollback any changes (though none were made)
+            toastr()->error('Data klien tidak ditemukan.', 'Error');
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            // Catch any other unexpected exceptions (e.g., database connection issues).
+            DB::rollBack(); // Rollback any changes made during the transaction.
+            // Log the detailed error for debugging
+            Log::error('Failed to delete client and kerjasama: ' . $e->getMessage());
+            toastr()->error('Terjadi kesalahan saat menghapus data.', 'Error');
+            return redirect()->back();
         }
-        $client->delete();
-        toastr()->error('Data Tidak Ditemukan', 'error');
-        return redirect()->back();
     }
 }

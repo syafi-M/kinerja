@@ -26,4 +26,9 @@ class Client extends Model
         return $this->hasMany(Shift::class);
     }
 
+    public function Kerjasama()
+    {
+        return $this->hasMany(Kerjasama::class);
+    }
+
 }
