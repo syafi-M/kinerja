@@ -58,7 +58,7 @@ class MainController extends Controller
 
         // --- 5. Apply Role-Based and User-Specific Filters ---
         $userRole = $user->divisi->jabatan->code_jabatan ?? null;
-        $isUser175 = $user->id == 175;
+        $isSPV = $user->jabatan->code_jabatan == 'SPV-W';
 
         $jabatanCodes = [
             'CO-CS' => ['OCS', 'CO-CS'],
@@ -67,18 +67,20 @@ class MainController extends Controller
 
         if ($isDiv18) {
             $query->when($filterMitra, fn($q) => $q->where('kerjasama_id', $filterMitra));
-        } elseif (isset($jabatanCodes[$userRole]) || $isUser175) {
+        } elseif (isset($jabatanCodes[$userRole]) || $isSPV) {
             $codesToFilter = $jabatanCodes[$userRole] ?? $jabatanCodes['CO-SCR'];
             $query->whereHas('user.divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $codesToFilter));
-            if ($isUser175 && $filterMitra) {
+            if ($isSPV && $filterMitra) {
                 $query->where('kerjasama_id', $filterMitra);
+            } else {
+                $query->where('kerjasama_id', $user->kerjasama_id);
             }
         } else {
             $query->where('kerjasama_id', $user->kerjasama_id);
         }
 
         // --- 6. Apply Ordering and Pagination ---
-        if ($isUser175 && !$filterMitra) {
+        if ($isSPV && !$filterMitra) {
             $query->orderBy('kerjasama_id', 'asc')->latest();
         } elseif ($isDiv18) {
             $query->orderBy('tanggal_absen', 'desc')->orderBy('kerjasama_id', 'desc');
@@ -87,7 +89,7 @@ class MainController extends Controller
         }
 
         $perPage = 31;
-        if ($isUser175 && $filterMitra) {
+        if ($isSPV && $filterMitra) {
             $perPage = 20;
         } elseif ($filter) { // If any filter is applied, show more results
             $perPage = 50;

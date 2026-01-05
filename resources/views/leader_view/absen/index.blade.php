@@ -31,7 +31,7 @@
                                     <div class="w-full join sm:ml-10">
                                         <div style="width: 75%;" class="flex flex-col w-3/4 join-item">
                                             <input type="month" name="search" id="search" value="{{ $defaultMonth }}" max="{{ $now }}" placeholder="pilih bulan..." class="w-full text-sm rounded-none input input-sm input-bordered" />
-                                            @if(Auth::user()->id == 175)
+                                            @if(Auth::user()->jabatan->code_jabatan == 'SPV-W')
                                                 <select name="mitra" class="w-full text-xs text-black rounded-none select select-bordered select-sm">
                                                     <option disabled selected>~Pilih Mitra~</option>
                                                     @forelse($mitra as $i)
