@@ -36,6 +36,9 @@ use App\Http\Controllers\ListPekerjaanController;
 use App\Http\Controllers\SlipGajiController;
 use App\Http\Controllers\ReportSholatController;
 use App\Http\Controllers\MonevController;
+use App\Models\TempUser;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -76,6 +79,33 @@ Route::get('/check-email', function (\Illuminate\Http\Request $request) {
     $email = \App\Models\User::where('email', $request->email)->exists();
     $phone = \App\Models\User::where('no_hp', $request->no_hp)->exists();
     return response()->json(['email' => $email, 'phone' => $phone]);
+});
+
+Route::get('/seed-username-counter', function () {
+    // Find the highest number from the 'users' table
+    $lastUserNumber = User::where('name', 'LIKE', 'SAC%')
+        ->pluck('name')
+        ->map(fn($name) => (int) substr($name, 3))
+        ->max() ?? 99; // Default to 99 if no users exist
+
+    // Find the highest number from the 'temp_users' table
+    $lastTempUserNumber = TempUser::where('data->username', 'LIKE', 'SAC%')
+        ->get()
+        ->map(function ($tempUser) {
+            $data = json_decode($tempUser->data);
+            return $data && isset($data->username) ? (int) substr($data->username, 3) : null;
+        })
+        ->filter()
+        ->max() ?? 99; // Default to 99 if no temp users exist
+
+    // Find the absolute highest number
+    $highestNumber = max($lastUserNumber, $lastTempUserNumber);
+
+    // Set the counter to this highest number.
+    // The next `increment()` call will give us $highestNumber + 1.
+    Cache::forever('sac_username_counter', $highestNumber);
+
+    return "Username counter has been seeded to: " . $highestNumber;
 });
 
 // Only AUTH
