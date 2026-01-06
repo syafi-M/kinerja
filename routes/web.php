@@ -89,14 +89,23 @@ Route::get('/seed-username-counter', function () {
         ->max() ?? 99; // Default to 99 if no users exist
 
     // Find the highest number from the 'temp_users' table
-    $lastTempUserNumber = TempUser::where('data->username', 'LIKE', 'SAC%')
+    // FIX: Added COLLATE to the whereRaw clause to solve the collation mismatch error.
+
+    $lastTempUserNumber = TempUser::whereRaw(
+            "json_unquote(json_extract(`data`, '$.\"username\"'))
+             COLLATE utf8mb3_unicode_ci LIKE ?",
+            ['SAC%']
+        )
         ->get()
         ->map(function ($tempUser) {
             $data = json_decode($tempUser->data);
-            return $data && isset($data->username) ? (int) substr($data->username, 3) : null;
+            return $data && isset($data->username)
+                ? (int) substr($data->username, 3)
+                : null;
         })
         ->filter()
-        ->max() ?? 99; // Default to 99 if no temp users exist
+        ->max() ?? 99;
+
 
     // Find the absolute highest number
     $highestNumber = max($lastUserNumber, $lastTempUserNumber);
