@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http as httped;
+use Illuminate\Support\Facades\Log;
 // use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -106,7 +107,7 @@ class AbsensiController extends Controller
 
         // Lokasi terkait
         $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
-        $lokLok = Lokasi::with('Client')->get();
+        $lokLok = Lokasi::with('Client')->whereHas('client')->get();
         $penempatan = Kerjasama::with('Client')->get();
 
         $matchedShifts = collect(); // default kosong
@@ -352,7 +353,7 @@ class AbsensiController extends Controller
                 } catch (\Exception $e) {
                     // dd($request->all(), $e);
                     DB::rollBack();
-                    \Log::error('Error storing data Absensi: ' . $e->getMessage());
+                    Log::error('Error storing data Absensi: ' . $e->getMessage());
                     toastr()->error('Gagal Absen Cek Signal Dan Coba Lagi', 'error');
 
                     return redirect()->back();

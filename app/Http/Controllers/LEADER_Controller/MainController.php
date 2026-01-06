@@ -36,7 +36,7 @@ class MainController extends Controller
         $mitra = Kerjasama::with('client')->get();
 
         // --- 3. Start Building the Query ---
-        $query = Absensi::with('user.divisi.jabatan');
+        $query = Absensi::with('user.divisi.jabatan')->latest();
 
         // --- 4. Apply Date/Month Filter (THIS IS THE UPDATED SECTION) ---
         if ($isDiv18) {
@@ -69,9 +69,15 @@ class MainController extends Controller
             $query->when($filterMitra, fn($q) => $q->where('kerjasama_id', $filterMitra));
         } elseif (isset($jabatanCodes[$userRole]) || $isSPV) {
             $codesToFilter = $jabatanCodes[$userRole] ?? $jabatanCodes['CO-SCR'];
+
             $query->whereHas('user.divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $codesToFilter));
-            if ($isSPV && $filterMitra) {
-                $query->where('kerjasama_id', $filterMitra);
+
+            if ($isSPV) {
+                if ($filterMitra) {
+                    $query->where('kerjasama_id', $filterMitra);
+                }else {
+                    $query;
+                }
             } else {
                 $query->where('kerjasama_id', $user->kerjasama_id);
             }

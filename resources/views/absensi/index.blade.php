@@ -865,18 +865,17 @@
             return pointA.distanceTo(pointB);
         }
 
-        function findClosestLocation(userLatLng, locations, threshold = 5000) {
+        function findClosestLocation(userLatLng, locations, threshold) {
             var closestLocations = [];
-            loc.forEach(function(location) {
+            locations.forEach(function(location) {
                 var distance = getDistanceFromLatLng(userLatLng[0], userLatLng[1], location.latitude, location
                     .longtitude);
                 // Add location to closestLocations array if it's within the threshold
-                // console.log(location, distance)
-                if (distance <= location.radius) {
+                // console.log(location, Math.round(distance), '<=', parseInt(location.radius, 10), distance <= parseInt(location.radius, 10));
+                if (distance <= threshold) {
                     closestLocations.push(location);
                 }
             });
-            // console.log(closestLocations);
             return closestLocations;
         }
         if (navigator.geolocation) {
@@ -884,7 +883,7 @@
                 var userLatLng = [position.coords.latitude, position.coords.longitude];
 
                 // Set a distance threshold (e.g., 5000 meters = 5 km)
-                var threshold = 50; // 5 km
+                var threshold = 500; // 5 km
 
                 // Find the closest locations within the threshold distance
                 var closestLocations = findClosestLocation(userLatLng, loc, threshold);
