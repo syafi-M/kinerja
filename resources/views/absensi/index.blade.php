@@ -871,11 +871,17 @@
                 var distance = getDistanceFromLatLng(userLatLng[0], userLatLng[1], location.latitude, location
                     .longtitude);
                 // Add location to closestLocations array if it's within the threshold
-                // console.log(location, Math.round(distance), '<=', parseInt(location.radius, 10), distance <= parseInt(location.radius, 10));
+                // console.log(location.client.name + ' distance: ' + distance + ' meters' + 'with threshold: ' + threshold);
                 if (distance <= threshold) {
+                    location.distance = distance; // Optionally store the distance
                     closestLocations.push(location);
                 }
             });
+
+            closestLocations.sort(function(a, b) {
+                return a.distance - b.distance;
+            });
+
             return closestLocations;
         }
         if (navigator.geolocation) {
@@ -889,7 +895,7 @@
                 var closestLocations = findClosestLocation(userLatLng, loc, threshold);
 
                 // Get the select element
-                const selectMitra = $('.selectMitra');
+                var selectMitra = $('.selectMitra');
 
                 // Clear existing options
                 selectMitra.html('');
@@ -990,31 +996,40 @@
                         }
                     })
                 } else if (@json(Auth::user()->id) == 7 || @json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
-                    closestLocations.forEach(function(location) {
+                    if (closestLocations.length > 0) {
+                        // Get the absolute closest one (the first item in the sorted array)
+                        var location = closestLocations[0];
+
+                        // Update form values
                         $('#lat_mitra').val(location.latitude);
                         $('#long_mitra').val(location.longtitude);
                         $('#radius_mitra').val(location.radius);
 
-                        var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
-                        $('#kerjasama_id').val(selectMitra.id);
-                        $('.viewKerjasama').val(selectMitra.client.name);
+                        // Find and update Mitra info
+                        selectMitra = mitra.find(mit => mit.client_id == location.client_id);
+                        if (selectMitra) {
+                            $('#kerjasama_id').val(selectMitra.id);
+                            $('.viewKerjasama').val(selectMitra.client.name);
+                        }
 
+                        // Add visual circle to map for the closest location
                         L.circle([location.latitude, location.longtitude], {
                             color: 'crimson',
                             fillColor: '#f09',
                             fillOpacity: 0.5,
                             radius: location.radius
                         }).addTo(map);
-                        if (location.id == 28) {
-                            map.setView([location.latitude, location.longtitude], 15);
-                        }
+
+                        // Set map view and open popup
+                        map.setView([location.latitude, location.longtitude], 16);
 
                         L.popup()
                             .setLatLng([location.latitude, location.longtitude])
-                            .setContent("Lokasi absen: <br>" + location.client
-                                .name) // Correct concatenation
+                            .setContent("Lokasi terdekat: <br>" + location.client.name)
                             .openOn(map);
-                    })
+                    } else {
+                        console.log("No locations found within the threshold.");
+                    }
                 }
             });
         } else {
