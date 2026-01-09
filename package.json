@@ -8,6 +8,7 @@
     "get-vite": "npm install -g vite"
   },
   "dependencies": {
+    "@alpinejs/collapse": "^3.15.3",
     "alpinejs": "^3.13.8",
     "axios": "^1.6.8",
     "daisyui": "^4.10.2",

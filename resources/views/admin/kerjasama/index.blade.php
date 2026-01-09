@@ -2,16 +2,16 @@
 	<x-main-div>
 		<div>
 			<div>
-				<p class="text-center text-2xl font-bold py-10 uppercase">Index Kerjasama</p>
+				<p class="py-10 text-2xl font-bold text-center uppercase">Index Kerjasama</p>
 			</div>
 			<div class="flex justify-end mx-10 my-10">
-				<div class="input flex items-center input-bordered w-fit">
+				<div class="flex items-center input input-bordered w-fit">
 					<i class="ri-search-2-line"></i>
-					<input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..." required>
+					<input type="search" id="searchInput" class="ml-1 border-none rounded" placeholder="Search..." required>
 				</div>
 			</div>
 
-			<div class="overflow-x-auto mx-10">
+			<div class="mx-10 overflow-x-auto">
 				<table class="table w-full bg-slate-50" id="searchTable">
 					<!-- head -->
 					<thead>
@@ -36,11 +36,11 @@
 								<td>{{ $i->experied }}</td>
 								<td>{{ $i->approve1 }}</td>
 								<td>
-									<form action="{{ url('kerjasamas/' . $i->id) }}" method="POST" class="h-9">
+									<form action="{{ url('kerjasama/' . $i->id) }}" method="POST" class="h-9">
 										@csrf
 										@method('DELETE')
 										<x-btn-submit />
-										<x-btn-edit>{{ url('kerjasamas/' . $i->id . '/edit') }}</x-btn-edit>
+										<x-btn-edit>{{ url('kerjasama/' . $i->id . '/edit') }}</x-btn-edit>
 									</form>
 								</td>
 							</tr>
@@ -52,12 +52,12 @@
 					</tbody>
 				</table>
 			</div>
-			<div class="mt-4 mx-10">
+			<div class="mx-10 mt-4">
 				{{ $kerjasama->links()}}
 			</div>
-			<div class="flex justify-end gap-2 mx-16 py-3">
+			<div class="flex justify-end gap-2 py-3 mx-16">
 				<a href="{{ route('admin.index') }}" class="btn btn-error">Back</a>
-				<a href="{{ route('kerjasamas.create') }}" class="btn btn-primary">+ Kerjasama</a>
+				<a href="{{ route('kerjasama.create') }}" class="btn btn-primary">+ Kerjasama</a>
 			</div>
 	</x-main-div>
 

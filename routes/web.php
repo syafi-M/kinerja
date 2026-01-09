@@ -319,8 +319,8 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::resource('/admin', AdminController::class);
     Route::resource('/client/data-client', ClientController::class);
     Route::resource('/users', UserController::class);
-    Route::resource('/kerjasamas', KerjasamaController::class);
-    Route::resource('/devisi', DivisiController::class);
+    Route::resource('/kerjasama', KerjasamaController::class);
+    Route::resource('/divisi', DivisiController::class);
     Route::resource('/perlengkapan', PerlengkapanController::class);
 
     Route::get('/divisi/{divisiId}/add-equipment', [DivisiController::class, 'editEquipment'])->name('editRquipment');
