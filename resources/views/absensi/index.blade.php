@@ -883,7 +883,7 @@
                 var userLatLng = [position.coords.latitude, position.coords.longitude];
 
                 // Set a distance threshold (e.g., 5000 meters = 5 km)
-                var threshold = 500; // 5 km
+                var threshold = 50; // 5 km
 
                 // Find the closest locations within the threshold distance
                 var closestLocations = findClosestLocation(userLatLng, loc, threshold);
