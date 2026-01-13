@@ -38,6 +38,24 @@ class MainController extends Controller
         // --- 3. Start Building the Query ---
         $query = Absensi::with('user.divisi.jabatan')->latest();
 
+        if($filterMitra) {
+            if(Auth::user()->jabatan_id == 20) {
+                $jabatanCodes = ['OCS', 'CO-CS', 'TMN', 'PTR', 'KSR', 'PG', 'TKS'];
+            } else {
+                $jabatanCodes = ['SCR', 'CO-SCR', 'JM', 'DRV', 'FO', 'RCP', 'JK'];
+            }
+            $users = User::where('kerjasama_id', $filterMitra)
+                        ->select('id', 'nama_lengkap')
+                        ->whereHas('divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $jabatanCodes))
+                        ->orderBy('nama_lengkap', 'asc')
+                        ->get();
+            if($request->user) {
+                $query->where('user_id', $request->user);
+            }
+        }else {
+            $users = collect(); // Empty collection if no mitra is selected
+        }
+
         // --- 4. Apply Date/Month Filter (THIS IS THE UPDATED SECTION) ---
         if ($isDiv18) {
             // For users in devisi_id 18:
@@ -106,7 +124,7 @@ class MainController extends Controller
         // dd($absen);
 
         // --- 7. Return the View ---
-        return view('leader_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter'));
+        return view('leader_view/absen/index', compact('absen', 'mitra', 'filterMitra', 'filter', 'users'));
     }
 
     public function indexLaporan()
@@ -124,61 +142,99 @@ class MainController extends Controller
 
     public function indexUser(Request $request)
     {
+        // 1. Eager load relationships to prevent N+1 queries
+        $authUser = Auth::user()->load(['divisi.jabatan']);
+
+        // 2. Get filter inputs
         $filterDivisi = $request->input('divisi');
         $filterMitra = $request->input('mitra');
 
-        $divisi = Divisi::all();
-        $mitra = Kerjasama::with('client')->get();
-        $kerjasama = Auth::user()->kerjasama_id;
+        // 3. Optimize queries for dropdowns (select only what's needed)
+        $divisi = Divisi::orderBy('name', 'asc')->pluck('name', 'id');
+        $mitra = Kerjasama::select('kerjasamas.*') // 1. Select columns only from the main table
+                   ->join('clients', 'kerjasamas.client_id', '=', 'clients.id') // 2. Join the tables
+                   ->orderBy('clients.name', 'asc') // 3. Order by the joined table's column
+                   ->with('client:id,name') // 4. Still eager load the relationship for the model
+                   ->get();
 
-        if($filterDivisi){
-            $user = User::where('kerjasama_id', $kerjasama)->where('devisi_id', $filterDivisi)->paginate(90);
-        }else{
-            if(Auth::user()->role_id == 2 || Auth::user()->divisi->jabatan->code_jabatan == 'DIREKSI'){
-                $user = User::paginate(9999999);
-            }else{
-                if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS"){
-                   $codeJabatan = ['OCS', 'CO-CS'];
-                    $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                        $query->whereIn('code_jabatan', $codeJabatan);
-                    })->orderBy('nama_lengkap', 'asc')->paginate(30);
-                }else if(Auth::user()->divisi->jabatan->code_jabatan == "MITRA") {
-                    $user = User::where('kerjasama_id', $kerjasama)->orderBy('nama_lengkap', 'asc')->paginate(30);
-                }else if(Auth::user()->devisi_id == 26) {
-                    if(Auth::user()->id == 175){
-                        $user = User::where('kerjasama_id', '!=', 1)->orderBy('nama_lengkap', 'asc')->whereHas('divisi.jabatan', function ($query) {
-                                    $query->whereNotIn('code_jabatan', ['OCS', 'CO-CS', 'TMN']);
-                                })->paginate(30);
-                    }else{
-                        $user = User::where('kerjasama_id', '!=', 1)->orderBy('nama_lengkap', 'asc')->whereHas('divisi.jabatan', function ($query) {
-                                    $query->whereNotIn('code_jabatan', ['SCR', 'CO-SCR', 'JM']);
-                                })->paginate(30);
-                    }
-                }else{
-                    $codeJabatan = ['SCR', 'CO-SCR'];
-                    if(auth()->user()->id == 175){
-                        if ($filterMitra) {
-                            $user = User::where('kerjasama_id', $filterMitra)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->orderBy('kerjasama_id', 'asc')->orderBy('nama_lengkap', 'asc')->paginate(50);
-                        }else {
-                            $user = User::whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                                $query->whereIn('code_jabatan', $codeJabatan);
-                            })->orderBy('kerjasama_id', 'asc')->orderBy('nama_lengkap', 'asc')->paginate(50);
-                        }
-                    }
-                    else{
-                        $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        })->orderBy('nama_lengkap', 'asc')->paginate(30);
-                    }
+        // 4. Start with a base query
+        $query = User::query();
+
+        // 5. Apply permission-based filtering and ordering using guard clauses
+        // This flattens the nested if/else structure, making it much easier to read.
+
+
+        // Super Admin / Direksi: Can see all users
+        if ($authUser->role_id == 2 || $authUser->divisi->jabatan->code_jabatan === 'DIREKSI') {
+            // Apply division filter if it exists, otherwise show all
+            if ($filterDivisi) {
+                $query->where('devisi_id', $filterDivisi);
+            }
+            $user = $query->orderBy('nama_lengkap', 'asc')->paginate(100); // Use a reasonable pagination limit
+            return view('leader_view/user/index', compact('user', 'divisi', 'mitra', 'filterMitra', 'filterDivisi'));
+        }
+
+        // Apply division filter if it exists for non-admin users
+        if ($filterDivisi) {
+            // This condition was at the top, but it's more logical here.
+            // It overrides the complex logic below if a division is selected.
+            $user = $query->orderBy('nama_lengkap', 'asc')->paginate(90);
+            return view('leader_view/user/index', compact('user', 'divisi', 'mitra', 'filterMitra', 'filterDivisi'));
+        }
+
+        // CO-CS Role
+        if ($authUser->divisi->jabatan->code_jabatan === "CO-CS" || $authUser->jabatan_id == 20) {
+            $query->whereHas('divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', ['OCS', 'CO-CS']))
+            ->orderBy('nama_lengkap', 'asc');
+        }
+        // MITRA Role
+        elseif ($authUser->divisi->jabatan->code_jabatan === "MITRA") {
+            $query->orderBy('nama_lengkap', 'asc');
+        }
+        // Special Division (ID 26)
+        elseif ($authUser->devisi_id == 26) {
+            $query->where('kerjasama_id', '!=', 1)->orderBy('nama_lengkap', 'asc');
+
+            if ($authUser->jabatan_id == 35) {
+                $query->whereHas('divisi.jabatan', fn($q) => $q->whereNotIn('code_jabatan', ['MITRA', 'OCS', 'CO-CS', 'TMN']));
+            } else {
+                $query->whereHas('divisi.jabatan', fn($q) => $q->whereNotIn('code_jabatan', ['MITRA', 'SCR', 'CO-SCR', 'JM']));
+            }
+
+            $query->orderBy('kerjasama_id', 'asc')->orderBy('nama_lengkap', 'asc');
+
+            // Apply the mitra filter specifically for this role
+            if ($filterMitra) {
+                $query->where('kerjasama_id', $filterMitra);
+                // dd($query->get());
+            }
+            $user = $query->paginate(50);
+        }
+        // Default SCR / CO-SCR Role
+        else {
+            $codeJabatan = ['SCR', 'CO-SCR'];
+            $query->whereHas('divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $codeJabatan));
+
+            // Special Jabatan (ID 35) that can filter by Mitra
+            if ($authUser->jabatan_id == 35) {
+                $query->orderBy('kerjasama_id', 'asc')->orderBy('nama_lengkap', 'asc');
+
+                // Apply the mitra filter specifically for this role
+                if ($filterMitra) {
+                    $query->where('kerjasama_id', $filterMitra);
                 }
+                $user = $query->paginate(50);
+                return view('leader_view/user/index', compact('user', 'divisi', 'mitra', 'filterMitra', 'filterDivisi'));
+            } else {
+                $query->orderBy('nama_lengkap', 'asc');
             }
         }
 
-        // dd($user, Auth::user());
+        // 6. Execute the final query with a default pagination
+        $user = $query->paginate(30);
 
-        return view('leader_view/user/index', compact('user', 'divisi', 'mitra', 'filterMitra'));
+
+        return view('leader_view/user/index', compact('user', 'divisi', 'mitra', 'filterMitra', 'filterDivisi'));
     }
 
     public function indexLembur()

@@ -1,7 +1,10 @@
 <x-app-layout>
     <x-main-div>
+        <div class="flex justify-start mx-4 mt-4 mb-2 w-full">
+            <button onclick="history.back()" class="btn btn-error">Kembali</button>
+        </div>
         @if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS")
-        <div class="m-10 flex flex-col gap-2">
+        <div class="mx-10 my-5 flex flex-col gap-2">
             {{-- menu menu leader --}}
 			<div class=" w-full space-y-4  sm:px-16 overflow-hidden flex items-center"id="Luser">
 				<a href="{{ route('lead_user') }}" class="btn btn-info w-full"><i
@@ -31,7 +34,7 @@
 					Lembur</a>
 			</div>
 			<div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Llaporan">
-				<a href="{{ route('lead_laporan') }}" class="btn btn-info w-full"><i
+				<a href="https://laporan-sac.sac-po.com" class="btn btn-info w-full"><i
 						class="ri-image-add-line text-xl"></i>Data Laporan</a>
 			</div>
 			<div class="w-full space-y-4  sm:px-16 overflow-hidden" id="Lrating">
@@ -48,7 +51,7 @@
 			</div>
         </div>
         @elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
-        <div class="m-10 flex flex-col gap-2">
+        <div class="mx-10 my-5 flex flex-col gap-2">
             {{-- menu menu danru --}}
 			<div class=" w-full space-y-4  sm:px-16 overflow-hidden flex items-center"id="Luser">
 				<a href="{{ route('danru_user') }}" class="btn btn-info w-full"><i
@@ -78,7 +81,7 @@
 					Lembur</a>
 			</div>
 			<div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Llaporan">
-				<a href="{{ route('danru_laporan') }}" class="btn btn-info w-full"><i
+				<a href="https://laporan-sac.sac-po.com" class="btn btn-info w-full"><i
 						class="ri-image-add-line text-xl"></i>Data Laporan</a>
 			</div>
 			<div class="w-full space-y-4  sm:px-16 overflow-hidden" id="Lrating">
@@ -95,7 +98,7 @@
 			</div>
         </div>
         @elseif(Auth::user()?->jabatan->code_jabatan == "SPV-W")
-        <div class="m-10 flex flex-col gap-2">
+        <div class="mx-10 my-5 flex flex-col gap-2">
             {{-- menu menu spv w --}}
 			<div class=" w-full space-y-4  sm:px-16 overflow-hidden flex items-center"id="Luser">
 				<a href="{{ route('spvw_user') }}" class="btn btn-info w-full"><i
@@ -125,7 +128,7 @@
 					Lembur</a>
 			</div>
 			<div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Llaporan">
-				<a href="{{ route('spvw_laporan') }}" class="btn btn-info w-full"><i
+				<a href="https://laporan-sac.sac-po.com" class="btn btn-info w-full"><i
 						class="ri-image-add-line text-xl"></i>Data Laporan</a>
 			</div>
 			<div class="w-full space-y-4  sm:px-16 overflow-hidden" id="Lrating">
@@ -142,8 +145,5 @@
 			</div>
         </div>
         @endif
-         <div class="flex sm:justify-end justify-center my-10">
-            <a href="{{ route('dashboard.index') }}" class="btn btn-error mx-2 sm:mx-10">Kembali</a>
-        </div>
     </x-main-div>
 </x-app-layout>

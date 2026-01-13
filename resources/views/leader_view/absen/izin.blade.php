@@ -2,6 +2,9 @@
     <x-main-div>
         <div class="py-10 sm:mx-10">
 			<p class="text-center text-lg sm:text-2xl uppercase font-bold">Riwayat izin, <br>{{ auth()->user()->id == 175 ? "Semua Mitra" : Auth::user()->kerjasama->client->name }}</p>
+            <div class="flex justify-start my-1 mx-2 w-full">
+                <button onclick="history.back()" class="btn btn-error">Kembali</button>
+            </div>
             <div class="flex items-center w-full justify-center sm:justify-end my-5">
                 <x-search/>
             </div>
@@ -18,11 +21,10 @@
                 </div>
                 @endif
                 <div class="overflow-x-scroll w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
-                    <table id="searchTable" class="table w-full table-xs table-zebra sm:table-md text-xs bg-slate-50 font-semibold sm:text-md ">
+                    <table id="searchTable" class="table w-full table-xs table-zebra sm:table-md text-xs bg-slate-50 font-semibold sm:text-md rounded-xl">
                         <thead>
                             <tr>
-                                <th class="bg-slate-300 rounded-tl-xl">#</th>
-                                <th class="bg-slate-300">Nama lengkap</th>
+                                <th class="bg-slate-300 rounded-tl-xl">Nama lengkap</th>
                                 <th class="bg-slate-300">Shift</th>
                                 @if(auth()->user()->id == 175)
                                 <th class="bg-slate-300">Penempatan</th>
@@ -33,34 +35,23 @@
                             </tr>
                         </thead>
                         <tbody class="rounded-b-xl">
-                            @php
-                                $no = 1;
-                            @endphp
                             @forelse ($izin as $i)
                                 <tr>
-                                    <td>{{ $no++ }}</td>
                                     <td>{{ $i->user->nama_lengkap }}</td>
                                     <td>{{ $i->shift->shift_name }}</td>
                                     @if(auth()->user()->id == 175)
                                     <td>
-                                        @php
-                                            $words = explode(' ', $i->kerjasama->client->name);
-                                            $initials = '';
-                                            foreach ($words as $word) {
-                                                $initials .= substr($word, 0, 1);
-                                            }
-                                        @endphp
-                                        {{ $initials }}
+                                        {{ $i->user->kerjasama->client->panggilan ?: $i->user->kerjasama->client->name }}
                                     </td>
                                     @endif
                                     <td class="text-start line-clamp-2">{{ $i->alasan_izin }}</td>
                                     <td>
                                         @if ($i->approve_status == 'process')
-                                            <span class="badge bg-amber-500 px-2 text-xs overflow-hidden font-semibold">{{ $i->approve_status }}</span>    
+                                            <span class="badge bg-amber-500 px-2 text-xs overflow-hidden font-semibold">{{ $i->approve_status }}</span>
                                         @elseif($i->approve_status == 'accept')
-                                            <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $i->approve_status }}</span>    
+                                            <span class="badge bg-emerald-700 px-2 text-xs text-white overflow-hidden">{{ $i->approve_status }}</span>
                                         @else
-                                            <span class="badge bg-red-500 px-2 text-xs overflow-hidden font-semibold text-white">{{ $i->approve_status }}</span>    
+                                            <span class="badge bg-red-500 px-2 text-xs overflow-hidden font-semibold text-white">{{ $i->approve_status }}</span>
                                         @endif
                                     </td>
                                     <td class="flex justify-center gap-1 items-center">
@@ -99,15 +90,6 @@
                 </div>
                 <div id="pag-1" class="mt-5 mb-5 mx-10">
                     {{ $izin->links() }}
-                </div>
-                <div class="flex justify-center mt-4 sm:justify-end w-full">
-		            @if(Auth::user()->divisi->code_jabatan == "CO-CS")
-        			    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>
-        		    @elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
-        			    <a href="{{ route('danruView') }}" class="btn btn-error">Kembali</a>
-        		    @else
-        			    <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
-        		    @endif
                 </div>
             </div>
         </div>

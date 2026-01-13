@@ -33,10 +33,10 @@
             <div class="flex md:hidden mx-5 items-center" style="width: 28%;">
                 <form action="{{ route('slip-gaji.index') }}" method="get">
                     <input type="hidden" name="bulan" value="{{ now()->subMonth()->format('Y-m') }}" />
-                    <button class="btn btn-sm btn-warning">
-                        <span class="flex items-center gap-1">
-                            <i class="ri-bank-card-line"></i>
-                            <p>Slip</p>
+                    <button class="btn btn-sm btn-warning overflow-hidden">
+                        <span class="flex items-center gap-1 overflow-hidden">
+                            <i class="ri-bank-card-line w-4 h-4"></i>
+                            <p class="overflow-hidden text-center">Slip</p>
                         </span>
                     </button>
                 </form>

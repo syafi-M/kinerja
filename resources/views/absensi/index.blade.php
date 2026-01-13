@@ -872,7 +872,7 @@
                     .longtitude);
                 // Add location to closestLocations array if it's within the threshold
                 // console.log(location.client.name + ' distance: ' + distance + ' meters' + 'with threshold: ' + threshold);
-                if (distance <= threshold) {
+                if (distance <= (parseInt(location.radius, 10) + threshold)) {
                     location.distance = distance; // Optionally store the distance
                     closestLocations.push(location);
                 }

@@ -5,11 +5,16 @@
             <div class="flex flex-col items-center justify-start mx-2 my-2 sm:justify-center">
                 <div class="flex items-center justify-center my-5 sm:justify-between">
                     <div class="flex flex-col items-center justify-center w-full gap-2 sm:flex-row sm:gap-5 sm:justify-between">
+                        <div class="flex justify-start my-1 w-full">
+                            <button onclick="history.back()" class="btn btn-error">Kembali</button>
+                        </div>
                         <div class="w-full p-4 mx-5 rounded-md bg-slate-100">
                             @php
                                 $isMitra = Auth::user()->divisi->jabatan->code_jabatan === 'MITRA';
                                 $isCoScr = Auth::user()->divisi->jabatan->code_jabatan === 'CO-SCR';
                                 $isDireksi = Auth::user()->devisi_id == 18;
+                                $isSpvW = Auth::user()->jabatan->code_jabatan == 'SPV-W';
+
                                 if ($isDireksi) {
                                     $now = Carbon\Carbon::now()->format('Y-m-d');
                                 } else {
@@ -65,7 +70,52 @@
                                         <button type="submit" class="w-full h-full btn btn-info">FILTER</button>
                                     </div>
                                 </form>
+                            @elseif($isSpvW)
+                                <form method="GET" class="flex flex-wrap items-end gap-3 p-4 bg-base-100 rounded-xl shadow-sm border border-base-200">
+                                    <div class="form-control w-full sm:w-auto">
+                                        <label class="label pb-1"><span class="label-text text-xs font-semibold">Bulan</span></label>
+                                        <input type="month" name="search" id="search" value="{{ $defaultMonth }}" max="{{ $now }}"
+                                            class="input input-bordered input-sm focus:input-primary text-xs" />
+                                    </div>
 
+                                    <div class="form-control w-full sm:w-48">
+                                        <label class="label pb-1"><span class="label-text text-xs font-semibold">Mitra</span></label>
+                                        <select name="mitra" class="select select-bordered select-sm focus:select-primary text-xs">
+                                            <option disabled selected>Pilih Mitra</option>
+                                            @forelse($mitra as $i)
+                                                <option value="{{ $i->id }}" {{ $filterMitra == $i->id ? 'selected' : '' }}>
+                                                    {{ ucwords(strtolower($i->client->panggilan ?: $i->client->name)) }}
+                                                </option>
+                                            @empty
+                                                <option disabled>Mitra Kosong</option>
+                                            @endforelse
+                                        </select>
+                                    </div>
+
+                                    <div class="form-control w-full sm:w-48">
+                                        <label class="label pb-1"><span class="label-text text-xs font-semibold">User</span></label>
+                                        <select name="user" id="user" {{ $filterMitra ? '' : 'disabled' }}
+                                                class="select select-bordered select-sm focus:select-primary text-xs">
+                                            <option disabled selected>Pilih User</option>
+                                            @forelse($users as $u)
+                                                <option value="{{ $u->id }}" {{ request('user') == $u->id ? 'selected' : '' }}>
+                                                    {{ ucwords(strtolower($u->nama_lengkap)) }}
+                                                </option>
+                                            @empty
+                                                <option disabled>User Kosong</option>
+                                            @endforelse
+                                        </select>
+                                    </div>
+
+                                    <div class="w-full sm:w-auto">
+                                        <button type="submit" class="btn btn-info btn-sm w-full px-8 text-white">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                            </svg>
+                                            FILTER
+                                        </button>
+                                    </div>
+                                </form>
                             @else
                                 <form action="{{ url('LEADER/leader-absensi') }}" method="GET" class="sm:flex sm:justify-start">
                                     <div class="join sm:ml-10">
@@ -76,9 +126,11 @@
                             @endif
                         </div>
 
-                        <div class="flex items-center mt-5">
-                            <x-search />
-                        </div>
+                        @if (!$isSpvW)
+                            <div class="flex items-center mt-5">
+                                <x-search />
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -86,14 +138,13 @@
                     <table id="searchTable" class="table text-xs font-semibold table-xs table-zebra sm:table-md bg-slate-50 sm:text-md ">
                         <thead>
 							<tr class="text-center">
-								<th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">#</th>
-								<th class="p-1 py-2 bg-slate-300" style="padding-left: 2rem; padding-right: 2rem;">Foto</th>
+								<th class="p-1 py-2 bg-slate-300 rounded-tl-2xl px-8">Foto</th>
                                 <th class="p-1 py-2 bg-slate-300">Nama</th>
-								<th class="p-1 py-2 bg-slate-300" style="padding-left: 3rem; padding-right: 3rem;">Shift</th>
+								<th class="p-1 py-2 bg-slate-300 px-12">Shift</th>
 								@if(auth()->user()->id == 175)
 								<th class="p-1 py-2 bg-slate-300">Penempatan</th>
 								@endif
-								<th class="p-1 py-2 bg-slate-300" style="padding-left: 1.5rem; padding-right: 1.5rem;">Tanggal</th>
+								<th class="p-1 py-2 bg-slate-300 px-6">Tanggal</th>
 								<th class="p-1 px-5 py-2 bg-slate-300">Masuk - pulang</th>
 								@if(Auth::user()->devisi_id == 8)
 								    <th class="p-1 py-2 bg-slate-300">Keterangan</th>
@@ -104,12 +155,8 @@
 							</tr>
 						</thead>
                         <tbody>
-                            @php
-                                $n = 1;
-                            @endphp
                             @forelse ($absen as $i)
                             <tr>
-                                <td class="p-1 ">{{ $n++ }}.</td>
                                 @if ($i->image == 'no-image.jpg')
 									<td>
 										<x-no-img />
@@ -121,31 +168,24 @@
 										<x-no-img />
 									</td>
 								@endif
-                                <td class="p-1 break-words whitespace-pre-wrap">{{ ucwords(strtolower($i->user->nama_lengkap)) }}</td>
-                                <td class="p-1 text-center">{{ $i->shift?->shift_name }}, <br> {{ $i->shift?->jam_start }} - {{ Carbon\Carbon::parse($i->shift?->jam_end)->subHour(1)->format('H:i') }}</td>
+                                <td class="p-1 break-words whitespace-pre-wrap line-clamp-3">{{ ucwords(strtolower($i->user->nama_lengkap)) }}</td>
+                                <td class="p-1 text-center">{{ $i->shift?->shift_name }}, <br> {{ Carbon\Carbon::parse($i->shift?->jam_start)->format('H:i') }} - {{ Carbon\Carbon::parse($i->shift?->jam_end)->subHour(1)->format('H:i') }}</td>
                                 @if(auth()->user()->id == 175)
-								<td class="p-1">
-								    @php
-                                        $words = explode(' ', $i->kerjasama?->client?->name);
-                                        $initials = '';
-                                        foreach ($words as $word) {
-                                            $initials .= substr($word, 0, 1);
-                                        }
-                                    @endphp
-                                    {{ $initials }}
+								<td class="p-1 text-center">
+								    {{ $i->kerjasama->client->panggilan ?: $i->kerjasama->client->name }}
 								</td>
 								@endif
                                 <td class="p-1 text-center"><p>{{ $i->tanggal_absen }}</p></td>
                                 <td class="p-1 ">
                                     <span class="flex flex-col justify-center text-center">
-                                        <span>{{ $i->absensi_type_masuk }}</span>
+                                        <span>{{ Carbon\Carbon::parse($i->absensi_type_masuk)->format('H:i') }}</span>
                                         <span> - </span>
                                         @if($i->absensi_type_pulang == null)
                                             <span class="font-semibold text-red-500 capitalize">kosong</span>
                                         @elseif($i->absensi_type_pulang == 'Tidak Absen Pulang')
-                                            <span class="font-semibold text-yellow-500 capitalize">{{ $i->absensi_type_pulang }}</span>
+                                            <span class="font-semibold text-yellow-500 capitalize">{{ Carbon\Carbon::parse($i->absensi_type_pulang)->format('H:i') }}</span>
                                         @else
-                                            {{ $i->absensi_type_pulang }}
+                                            {{ Carbon\Carbon::parse($i->absensi_type_pulang)->format('H:i') }}
                                         @endif
                                     </span>
                                 </td>
@@ -218,18 +258,9 @@
                         </tbody>
                     </table>
                 </div>
-                    <div id="pag-1" class="mx-10 mt-5 mb-5">
-                        {{ $absen->links() }}
-                    </div>
-                    <div class="flex">
-		                @if(Auth::user()->divisi->code_jabatan == "CO-CS")
-            			    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>
-            		    @elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
-            			    <a href="{{ route('danruView') }}" class="btn btn-error">Kembali</a>
-            		    @else
-            			    <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
-            		    @endif
-                    </div>
+                <div id="pag-1" class="mx-10 my-2">
+                    {{ $absen->links() }}
+                </div>
             </div>
         </div>
     </x-main-div>

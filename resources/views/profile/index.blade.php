@@ -26,7 +26,7 @@
         </style>
         <div class="md:flex flex-col justify-center items-center">
             <p class="text-center text-2xl font-bold pt-5 uppercase grid justify-center items-center">Profile</p>
-            <div class="bg-slate-100 mx-5 my-5 rounded-md shadow max-w-sm w-full">
+            <div class="bg-slate-100 mx-5 my-5 rounded-md shadow max-w-sm">
                 <div class="">
                     <span class="flex justify-end mt-5 mx-5">
                         <a href="{{ route('profile.edit', Auth::user()->id) }}"
@@ -135,7 +135,7 @@
                 @endif
             </div>
             <div class="flex justify-center sm:justify-end mt-2 mb-5">
-                <a href="{{ route('dashboard.index') }}" class="btn btn-error mx-2 sm:mx-10">Kembali</a>
+                <button onclick="history.back()" class="btn btn-error">Kembali</button>
             </div>
         </div>
     </x-main-div>

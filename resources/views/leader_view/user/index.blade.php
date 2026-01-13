@@ -13,9 +13,9 @@
                         @php
                             $jabatan = Auth::user()->divisi->jabatan->code_jabatan ?? Auth::user()->divisi->code_jabatan;
                         @endphp
-                        <a href="{{ 
+                        <a href="{{
                             $jabatan === 'CO-CS' ? route('leaderView') :
-                            ($jabatan === 'CO-SCR' ? route('danruView') : route('dashboard.index')) 
+                            ($jabatan === 'CO-SCR' ? route('danruView') : route('dashboard.index'))
                         }}" class="btn btn-error">Kembali</a>
                     </div>
 
@@ -25,14 +25,14 @@
                 </div>
 
                 {{-- Mitra Filter (visible only for user ID 175) --}}
-                @if(auth()->id() == 175)
-                    <form action="{{ route('danru_user') }}" method="GET" class="flex justify-center items-center gap-1 bg-slate-100 rounded w-full px-2 py-3 mb-5">
+                @if(Auth::user()->jabatan->code_jabatan == 'SPV-W')
+                    <form action="" method="GET" class="flex justify-center items-end gap-1 bg-slate-100 rounded w-full px-2 py-3 mb-5">
                         <div style="width: 66.66%;" class="w-2/3">
                             <label class="label text-xs sm:text-base">Pilih Mitra</label>
                             <select name="mitra" class="select select-bordered text-black select-sm text-xs w-full">
                                 <option disabled selected>~Pilih Mitra~</option>
                                 @forelse($mitra as $i)
-                                    <option value="{{ $i->id }}" {{ $filterMitra == $i->id ? 'selected' : '' }}>{{ $i->client->name }}</option>
+                                    <option value="{{ $i->id }}" {{ $filterMitra == $i->id ? 'selected' : '' }}>{{ ucwords(strtolower($i->client->panggilan ?: $i->client->name)) }}</option>
                                 @empty
                                     <option disabled>~Mitra Kosong~</option>
                                 @endforelse
@@ -81,20 +81,7 @@
                                     </td>
                                     <td class="p-1 break-words whitespace-pre-line">{{ $i->email }}</td>
                                     <td class="p-1 break-words whitespace-pre-line">
-                                        @php
-                                            $name = $i->kerjasama->client->name ?? null;
-                                            if ($name) {
-                                                preg_match('/\((.*?)\)/', $name, $match);
-                                                $suffix = isset($match[0]) ? ' ' . $match[0] : '';
-                                                $cleanName = preg_replace('/\s*\(.*?\)\s*/', ' ', $name);
-                                                $initials = collect(explode(' ', trim($cleanName)))
-                                                    ->map(fn($word) => strtoupper(substr(str_replace("'", '', $word), 0, 1)))
-                                                    ->implode('');
-                                                echo $initials . $suffix;
-                                            } else {
-                                                echo 'kosong';
-                                            }
-                                        @endphp
+                                        {{ $i->kerjasama->client->panggilan ?: $i->kerjasama->client->name ?? 'Penempatan Kosong ?' }}
                                     </td>
                                 </tr>
                             @empty

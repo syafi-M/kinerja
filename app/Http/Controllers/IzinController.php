@@ -22,11 +22,9 @@ class IzinController extends Controller
     {
         $user = Auth::user()->kerjasama_id;
         if(auth()->user()->id == 175) {
-            
-        $izin = Izin::latest()->orderBy('kerjasama_id', 'asc')->paginate(40);
+            $izin = Izin::latest()->whereHas('user')->orderBy('kerjasama_id', 'asc')->paginate(40);
         }else {
-            
-        $izin = Izin::where('kerjasama_id', $user)->paginate(30);
+            $izin = Izin::latest()->whereHas('user')->where('kerjasama_id', $user)->paginate(30);
         }
 
         return view('leader_view.absen.izin', ['izin' => $izin]);

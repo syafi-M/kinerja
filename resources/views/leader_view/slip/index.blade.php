@@ -4,15 +4,9 @@
             <p class="text-lg font-bold text-center uppercase sm:text-2xl ">List Gaji Karyawan, <br>{{ auth()->user()->id == 175 ? "Semua Mitra" : Auth::user()->kerjasama->client->name }}</p>
             <div class="flex flex-col items-center justify-start mx-2 my-2 sm:justify-center">
 
-                <div class="flex items-center justify-center w-full gap-2 mt-5 sm:justify-between">
-                    <div class="w-full">
-                        @if(Auth::user()->divisi->code_jabatan == "CO-CS")
-                		    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>
-                	    @elseif(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR")
-                		    <a href="{{ route('danruView') }}" class="btn btn-error">Kembali</a>
-                	    @else
-                		    <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
-                	    @endif
+                <div class="flex flex-col md:flex-row items-center justify-center w-full gap-2 mt-5 md:justify-between">
+                    <div class="flex justify-start my-1 w-full">
+                        <button onclick="history.back()" class="btn btn-error">Kembali</button>
                     </div>
                     <div class="flex justify-end mt-5" style="min-width: 50%;">
                         <form action="{{ Auth::user()->kerjasama_id == 1 ? route('slip-karyawan') : (Auth::user()->jabatan_id == 11 ? route('danru-slip') : route('leader-slip')) }}" method="GET" class="flex flex-col gap-2 p-2 mb-5 rounded bg-slate-100" style="">
@@ -34,7 +28,7 @@
                             </div>
                             @endif
                             <div class="join" style="Width: 100%;">
-                                <input type="month" name="bulan" value="{{ $bulan ? $bulan : Carbon\Carbon::now()->subMonth()->format('Y-m') }}" max="{{ Carbon\Carbon::now()->addMonth()->format('Y-m') }}" class="input input-sm input-bordered join-item" style="width: 75%;" />
+                                <input type="month" name="bulan" value="{{ $bulan ? $bulan : Carbon\Carbon::now()->subMonth()->format('Y-m') }}" max="{{ Carbon\Carbon::now()->addMonth()->format('Y-m') }}" class="input input-sm input-bordered join-item text-xs" style="width: 75%;" />
                                 <button type="submit" class="btn btn-sm btn-info join-item" style="width: 25%;" ><i class="ri-search-2-line"></i></button>
                             </div>
                         </form>

@@ -316,11 +316,11 @@
                                 <button class="text-sm font-bold uppercase">Laporan</button>
                             </div>
                             <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="tambahLaporan">
-                                <a href="{{ Auth::user()->divisi->jabatan->code_jabatan != 'OCS' || Auth::user()->divisi->jabatan->code_jabatan != 'SCR' ? url('scan') : '#' }}"
+                                <a href="https://laporan-sac.sac-po.com"
                                     class="w-full btn btn-info">Tambah Laporan</a>
                             </div>
                             <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="cekLaporan">
-                                <a href="{{ route('laporan.index') }}" class="w-full btn btn-info">Riwayat
+                                <a href="https://laporan-sac.sac-po.com" class="w-full btn btn-info">Riwayat
                                     Laporan</a>
                             </div>
 
@@ -594,23 +594,6 @@
                                 @endif
                             </div>
                         @endif
-                        {{-- handle akhiri lembur
-                        <div class="flex justify-center sm:justify-end">
-                            @foreach ($lembur as $i)
-                                @if (Auth::user()->id == $i->user_id && $i->jam_selesai == null)
-                                    <form action="{{ url('lembur/' . $i->id) }}" method="POST" class="tooltip">
-                                        @csrf
-                                        @method('PUT')
-                                        <button type="submit"
-                                            class="flex items-center justify-center px-3 py-1 mt-5 mr-0 text-xl text-white uppercase transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all sm:mr-2"><i
-                                                class="font-sans text-3xl ri-run-line"></i><span
-                                                class="font-bold">Selasaikan Lembur</span>
-                                        </button>
-                                    </form>
-                                @else
-                                @endif
-                            @endforeach
-                        </div> --}}
                     </div>
                 </div>
 
