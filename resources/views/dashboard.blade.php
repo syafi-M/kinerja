@@ -672,7 +672,7 @@
     </div>
 
     <script defer>
-        $(document).ready(function() {
+        (function($) {
             // Cache DOM elements
             const elements = {
                 lat: $('.lat'),
@@ -687,6 +687,19 @@
             const lokasiMitra = {!! json_encode($lokasiMitra) !!};
             const userCoopId = @json(Auth::user()->kerjasama_id);
 
+            // pre calculated loc
+            const processedLocations = lokasiMitra.map(loc => ({
+                lat: loc.latitude,
+                lng: loc.longtitude,
+                radius: parseFloat(loc.radius),
+                center: L.latLng(loc.latitude, loc.longtitude)
+            }));
+
+            let watchId = null;
+            let lastPosition = null;
+            let positionCheckThrottle = null;
+            const THROTTLE_DELAY = 1000;
+
             // Check if geolocation is supported
             if (!navigator.geolocation) {
                 handleGeolocationNotSupported();
@@ -699,18 +712,45 @@
                 maximumAge: 0
             };
 
-            navigator.geolocation.watchPosition(
+            watchId = navigator.geolocation.watchPosition(
                 handlePositionUpdate,
                 handleGeolocationError,
                 watchOptions
             );
 
+            $(window).on('beforeunload', function() {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                }
+            });
+
             // Helper functions
             function handlePositionUpdate(position) {
-                const {
-                    latitude,
-                    longitude
-                } = position.coords;
+                if (positionCheckThrottle) {
+                    clearTimeout(positionCheckThrottle);
+                };
+
+                positionCheckThrottle = setTimeout(function() {
+                    processPositionUpdate(position);
+                }, THROTTLE_DELAY);
+            }
+
+            function processPositionUpdate(position) {
+                const { latitude, longitude } = position.coords;
+
+                // Skip if position hasn't changed significantly
+                if (lastPosition) {
+                    const distance = calculateDistance(
+                        latitude, longitude,
+                        lastPosition.lat, lastPosition.lng
+                    );
+
+                    // Only process if moved more than 5 meters
+                    if (distance < 5) return;
+                }
+
+                // Update last position
+                lastPosition = { lat: latitude, lng: longitude };
 
                 // Update form fields
                 elements.lat.val(latitude);
@@ -720,44 +760,56 @@
                 // Handle different coop types
                 if (userCoopId === 1) {
                     // For coop 1, always enable the button without radius check
-                    elements.pulangBtn
-                        .prop('disabled', false)
-                        .removeClass('btn-disabled');
-                    elements.pulangBtnText.html('Pulang');
+                    updateButtonState(true);
                 } else {
                     // For other coops, check if user is within any location's radius
                     checkLocationRadius(latitude, longitude);
                 }
             }
 
+            // Optimized distance calculation (Haversine formula)
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371e3; // Earth's radius in meters
+                const φ1 = lat1 * Math.PI/180;
+                const φ2 = lat2 * Math.PI/180;
+                const Δφ = (lat2-lat1) * Math.PI/180;
+                const Δλ = (lon2-lon1) * Math.PI/180;
+
+                const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                        Math.cos(φ1) * Math.cos(φ2) *
+                        Math.sin(Δλ/2) * Math.sin(Δλ/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+                return R * c; // Distance in meters
+            }
+
+            // Optimized radius checking
             function checkLocationRadius(userLat, userLng) {
-                const userLocation = L.latLng(userLat, userLng);
                 let withinAnyRadius = false;
 
-                // Check each location in lokasiMitra
-                for (const location of lokasiMitra) {
-                    const centerLocation = L.latLng(location.latitude, location.longtitude);
-                    const distance = userLocation.distanceTo(centerLocation);
+                // Use our pre-processed locations for faster checks
+                for (const location of processedLocations) {
+                    const distance = calculateDistance(
+                        userLat, userLng,
+                        location.lat, location.lng
+                    );
 
-                    if (distance <= parseFloat(location.radius)) {
+                    if (distance <= location.radius) {
                         withinAnyRadius = true;
-                        break; // Exit loop once we find one valid location
+                        break; // Exit early if we find a match
                     }
                 }
 
-                // Update button based on location check
                 updateButtonState(withinAnyRadius);
             }
 
             function updateButtonState(isWithinRadius) {
                 if (isWithinRadius) {
-                    // User is within at least one radius
                     elements.pulangBtn
                         .prop('disabled', false)
                         .removeClass('btn-disabled');
                     elements.pulangBtnText.html('Pulang');
                 } else {
-                    // User is outside all radii
                     elements.pulangBtn
                         .prop('disabled', true)
                         .addClass('btn-disabled');
@@ -767,15 +819,31 @@
 
             function handleGeolocationError(error) {
                 console.error("Geolocation error:", error);
-                // Optional: Show user-friendly error message
-                // elements.labelMap.text("Location access denied. Please enable location services.").removeClass('hidden');
+
+                // Show user-friendly error message based on error code
+                let errorMessage = "Location access error. ";
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += "Please allow location access.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += "Location information unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += "Location request timed out.";
+                        break;
+                    default:
+                        errorMessage += "Unknown error occurred.";
+                }
+
+                elements.labelMap.text(errorMessage).removeClass('hidden');
             }
 
             function handleGeolocationNotSupported() {
                 alert('Geolocation is not supported by your browser.');
-                elements.labelMap.removeClass('hidden');
+                elements.labelMap.text('Geolocation is not supported by your browser.').removeClass('hidden');
             }
-        });
+        }) (jQuery);
     </script>
     <script>
         $(document).ready(function() {
