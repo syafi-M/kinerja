@@ -1098,7 +1098,7 @@
         // Constants
         const ABSEN_CREATED_TIME = @json($absenP?->created_at->format('Y-m-d H:i:s'));
         const MINUTES_BEFORE_SHIFT_END = 60;
-        const MINUTES_AFTER_SHIFT_END = -180;
+        const MINUTES_AFTER_SHIFT_END = -360;
         const SUPERVISOR_MIN_WORK_TIME = 390;
         const IS_OVERNIGHT_SHIFT = shift?.is_overnight == true;
 
