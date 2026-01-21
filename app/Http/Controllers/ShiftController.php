@@ -27,6 +27,7 @@ class ShiftController extends Controller
     public function store(ShiftRequest $request)
     {
         // dd($request->all());
+        $isOvernight = $request->boolean('is_overnight');
         $shift = new Shift;
         $shift = [
             'jabatan_id' => $request->jabatan_id,
@@ -34,6 +35,7 @@ class ShiftController extends Controller
             'shift_name' => $request->shift_name,
             'jam_start' => $request->jam_start,
             'jam_end' => $request->jam_end,
+            'is_overnight' => $isOvernight,
             'hari' => json_encode($request->hari),
         ];
 
@@ -71,12 +73,14 @@ class ShiftController extends Controller
 
     public function update(ShiftRequest $request, $id)
     {
+        $isOvernight = $request->boolean('is_overnight');
         $shift = [
             'jabatan_id' => $request->jabatan_id,
             'client_id' => $request->client_id,
             'shift_name' => $request->shift_name,
             'jam_start' => $request->jam_start,
             'jam_end' => $request->jam_end,
+            'is_overnight' => $isOvernight,
             'hari' => json_encode($request->hari),
         ];
 

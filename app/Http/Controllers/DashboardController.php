@@ -33,6 +33,22 @@ class DashboardController extends Controller
         $absenQueryBase = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
             ->where('user_id', $user->id);
 
+        $tempAbsen = (clone $absenQueryBase)
+            ->whereBetween('created_at', [Carbon::yesterday()->startOfDay(), Carbon::now()])
+            ->latest()
+            ->first();
+
+        if ($tempAbsen && $tempAbsen->shift) {
+            // Ambil jam_end dari shift, set ke tanggal hari ini, lalu tambah 2 jam
+            $limitPulang = Carbon::today()->setTimeFromTimeString($tempAbsen->shift->jam_end)->addHours(1)->addMinutes(30);
+
+            // Cek jika ini shift overnight (absen masuk kemarin, pulang pagi ini)
+            // Jika sekarang masih sebelum jam pulang yang ditambah 2 jam, maka batasnya valid
+        } else {
+            // Default jika data shift tidak ditemukan
+            $limitPulang = Carbon::today()->setTime(12, 0, 0);
+        }
+
         // Ambil data absensi yang belum melakukan absensi pulang
         $absen = (clone $absenQueryBase)
             ->whereNull('absensi_type_pulang')
@@ -41,8 +57,8 @@ class DashboardController extends Controller
         // Ambil data absensi pada rentang waktu dari kemarin hingga hari ini
         $absenP = (clone $absenQueryBase)
             ->whereBetween('created_at', [
-                Carbon::yesterday()->startOfDay(),
-                Carbon::today()->endOfDay()
+                $limitPulang->copy()->subDay()->subHour(),
+                $limitPulang
             ])
             ->latest()
             ->first();
@@ -160,11 +176,18 @@ class DashboardController extends Controller
 
         $luweh1Dino = false;
         if ($absenP) {
-            $luweh1Dino = Carbon::createFromFormat('Y-m-d, H:i:s', $absenP->created_at->format('Y-m-d, H:i:s'))
-                ->diffInHours(Carbon::now()) <= 20;
+            if ($absenP->shift->is_overnight) {
+                // Untuk shift lintas hari, hitung dari jam selesai shift kemarin
+                $shiftEndTime = Carbon::createFromFormat('Y-m-d H:i', $absenP->created_at->format('Y-m-d') . ' ' . $absenP->shift->jam_end)
+                    ->addDay(); // Tambah satu hari karena shiftnya lintas hari
+                $luweh1Dino = $shiftEndTime->diffInHours(Carbon::now()) <= 4;
+            } else {
+                // Untuk shift reguler, hitung dari waktu absen dibuat
+                $luweh1Dino = Carbon::createFromFormat('Y-m-d, H:i:s', $absenP->created_at->format('Y-m-d, H:i:s'))
+                    ->diffInHours(Carbon::now()) <= 20;
+            }
         }
 
-        // dd($sholat, $sholatSaatIni, $rillSholat);
 
         return view('dashboard', compact(
             'absen',

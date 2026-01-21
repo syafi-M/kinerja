@@ -18,6 +18,10 @@ class Shift extends Model
         'hari',
     ];
 
+    protected $casts = [
+        'is_overnight' => 'boolean',
+    ];
+
     public function Jabatan()
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');

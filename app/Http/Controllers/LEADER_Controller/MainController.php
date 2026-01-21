@@ -189,7 +189,7 @@ class MainController extends Controller
         }
         // MITRA Role
         elseif ($authUser->divisi->jabatan->code_jabatan === "MITRA") {
-            $query->orderBy('nama_lengkap', 'asc');
+            $query->where('kerjasama_id', Auth::user()->kerjasama_id)->orderBy('nama_lengkap', 'asc');
         }
         // Special Division (ID 26)
         elseif ($authUser->devisi_id == 26) {
