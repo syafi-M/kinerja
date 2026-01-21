@@ -98,7 +98,7 @@
         <div class="flex items-center justify-start">
             @if ($absenP && $absenP?->absensi_type_pulang == null)
                 <div id="statusAbsensiContainer" class="inset-0 px-4 py-2 ml-5 font-semibold text-center rounded-tr-lg rounded-bl-lg shadow-md w-fit"
-                    style="font-size: 10pt; {{ $rillSholat ? '' : 'margin-bottom: 10px;' }}">
+                    style="background-color: #fafafa; font-size: 10pt; {{ $rillSholat ? '' : 'margin-bottom: 10px;' }}">
                     <p id="statusAbsensiText">Memeriksa status...</p>
                 </div>
             @endif
@@ -1097,7 +1097,7 @@
 
         // Constants
         const ABSEN_CREATED_TIME = @json($absenP?->created_at->format('Y-m-d H:i:s'));
-        const MINUTES_BEFORE_SHIFT_END = 120;
+        const MINUTES_BEFORE_SHIFT_END = 60;
         const MINUTES_AFTER_SHIFT_END = -90;
         const SUPERVISOR_MIN_WORK_TIME = 390;
         const IS_OVERNIGHT_SHIFT = shift?.is_overnight == true;
@@ -1234,21 +1234,34 @@
                         .css({'background-color': '#006118', 'color': '#DEDEDE', 'text-align': 'left'}); // Hijau
 
                     let ketWaktu = "";
-                    if (elements.endTime) {
-                        const [endH, endM] = elements.endTime.split(':').map(Number);
-                        let appearanceTime = new Date();
-                        appearanceTime.setHours(endH - 2, endM, 0);
+
+                    if (isSupervisorOrSpecialDept && ABSEN_CREATED_TIME) {
+                        // LOGIKA SUPERVISOR: Created_at + 390 Menit
+                        let appearanceTime = new Date(ABSEN_CREATED_TIME);
+                        appearanceTime.setMinutes(appearanceTime.getMinutes() + SUPERVISOR_MIN_WORK_TIME);
 
                         const jamTampil = padZero(appearanceTime.getHours());
                         const menitTampil = padZero(appearanceTime.getMinutes());
 
-                        // Menggunakan <br> untuk baris baru dan style font-size untuk ukuran kecil
+                        ketWaktu = `<br><span style="font-size: 8pt; opacity: 0.8; font-weight: normal;">
+                                        Tombol absen pulang muncul jam <span style="font-weight: bold; text-decoration: underline; text-underline-offset: 1px;">${jamTampil}:${menitTampil}</span>
+                                    </span>`;
+
+                    } else if (elements.endTime) {
+                        // LOGIKA STAFF NORMAL: EndTime - 120 Menit
+                        const [endH, endM] = elements.endTime.split(':').map(Number);
+                        let appearanceTime = new Date();
+                        appearanceTime.setHours(endH - 1, endM, 0);
+
+                        const jamTampil = padZero(appearanceTime.getHours());
+                        const menitTampil = padZero(appearanceTime.getMinutes());
+
                         ketWaktu = `<br><span style="font-size: 8pt; opacity: 0.8; font-weight: normal;">
                                         Tombol absen pulang muncul jam <span style="font-weight: bold; text-decoration: underline; text-underline-offset: 1px;">${jamTampil}:${menitTampil}</span>
                                     </span>`;
                     }
 
-                    // Gunakan .html() bukan .text() agar tag <br> dan <span> terbaca sebagai HTML
+                    // Gunakan .html() agar tag span & br terbaca
                     elements.statusText.html('Sudah Absen Masuk' + ketWaktu);
                 }
             }
