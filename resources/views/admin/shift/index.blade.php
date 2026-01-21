@@ -1,16 +1,16 @@
 <x-app-layout>
     <x-main-div>
-        <div class="py-10 px-5">
-            <p class="text-center text-2xl font-bold  uppercase">Data Shift</p>
+        <div class="px-5 py-10">
+            <p class="text-2xl font-bold text-center uppercase">Data Shift</p>
             <div class="flex justify-end mr-10">
                 <x-search />
             </div>
-            <div class="flex justify-end gap-2 mx-16 py-3">
+            <div class="flex justify-end gap-2 py-3 mx-16">
                 <a href="{{ route('admin.index') }}" class="btn btn-error">Kembali</a>
                 <a href="{{ route('shift.create') }}" class="btn btn-primary">+ Shift</a>
             </div>
-            <div class="flex justify-center overflow-x-auto mx-10 pb-10">
-                <table class="table table-fixed table-sm w-full shadow-md bg-slate-50" id="searchTable">
+            <div class="flex justify-center pb-10 mx-10 overflow-x-auto">
+                <table class="table w-full shadow-md table-fixed table-sm bg-slate-50" id="searchTable">
                     <thead>
                         <tr>
                             <th class="bg-slate-300 rounded-tl-2xl">#</th>
@@ -19,11 +19,12 @@
                             <th class="bg-slate-300 ">Nama Shift</th>
                             <th class="bg-slate-300 ">Jam Mulai</th>
                             <th class="bg-slate-300 ">Jam Selesai</th>
-                            <th class="bg-slate-300 text-center">Hari</th>
+                            <th class="bg-slate-300 ">Pergantian Hari</th>
+                            <th class="text-center bg-slate-300">Hari</th>
                             <th class="bg-slate-300 rounded-tr-2xl">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="text-sm my-10">
+                    <tbody class="my-10 text-sm">
                         @php
                             $no = 1;
                         @endphp
@@ -34,11 +35,18 @@
                                 @if ($i->client != null)
                                     <td class="break-words whitespace-pre-wrap">{{ $i->client->name }}</td>
                                 @else
-                                    <td class="break-words whitespace-pre-wrap text-red-500">Kosong</td>
+                                    <td class="text-red-500 break-words whitespace-pre-wrap">Kosong</td>
                                 @endif
                                 <td>{{ $i->shift_name }}</td>
                                 <td>{{ $i->jam_start }}</td>
                                 <td>{{ $i->jam_end }}</td>
+                                <td>
+                                    @if ($i->is_overnight == 1)
+                                        Ya
+                                    @else
+                                        Tidak
+                                    @endif
+                                </td>
                                 <td class="grid grid-cols-3 gap-1 text-center">
                                     {{-- menampilkan hari dalam bentuk badge --}}
                                     @php
@@ -48,7 +56,7 @@
 
                                             if (count($daysArray) == 7) {
                                                 $days =
-                                                    '<span class="px-2 py-1 col-span-3 mx-auto bg-green-500 text-white rounded text-sm">Setiap Hari</span>';
+                                                    '<span class="col-span-3 px-2 py-1 mx-auto text-sm text-white bg-green-500 rounded">Setiap Hari</span>';
                                             } else {
                                                 $dayMap = [
                                                     'Senin' => 'Sen',
@@ -80,7 +88,7 @@
                                             }
                                         } else {
                                             $days =
-                                                '<span class="px-2 py-1 col-span-3 mx-auto bg-gray-400 text-white rounded text-sm">Kosong</span>';
+                                                '<span class="col-span-3 px-2 py-1 mx-auto text-sm text-white bg-gray-400 rounded">Kosong</span>';
                                         }
                                     @endphp
                                     {!! $days !!}
@@ -106,28 +114,28 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-5 mx-10">
+            <div class="mx-10 mt-5">
                 {{ $shift->links() }}
             </div>
 
         </div>
         <div
-            class="fixed inset-0 modalDeleteUser hidden bg-slate-500/10 backdrop-blur-sm transition-all duration-300 ease-in-out">
-            <div class="bg-slate-200 w-fit p-5 mx-2 rounded-md shadow">
+            class="fixed inset-0 hidden transition-all duration-300 ease-in-out modalDeleteUser bg-slate-500/10 backdrop-blur-sm">
+            <div class="p-5 mx-2 rounded-md shadow bg-slate-200 w-fit">
                 <div class="flex justify-end mb-3">
-                    <button id="close" class="btn btn-error scale-90">&times;</button>
+                    <button id="close" class="scale-90 btn btn-error">&times;</button>
                 </div>
                 <form id="formDelet" action="{{ url('client/data-client/' . $i->id) }}" method="POST"
-                    class="flex justify-center items-center formDelet ">
+                    class="flex items-center justify-center formDelet ">
                     @csrf
                     @method('DELETE')
-                    <div class="flex justify-center flex-col gap-2">
+                    <div class="flex flex-col justify-center gap-2">
                         <div class="flex flex-col gap-2">
-                            <p id="textModalDelet" class="textModalDelet text-center text-lg font-semibold"></p>
+                            <p id="textModalDelet" class="text-lg font-semibold text-center textModalDelet"></p>
                         </div>
-                        <div class="flex justify-center items-center overflow-hidden">
-                            <button type="submit" class="btn btn-error overflow-hidden"><span
-                                    class="font-bold overflow-hidden">Hapus Data</span>
+                        <div class="flex items-center justify-center overflow-hidden">
+                            <button type="submit" class="overflow-hidden btn btn-error"><span
+                                    class="overflow-hidden font-bold">Hapus Data</span>
                             </button>
                         </div>
                     </div>

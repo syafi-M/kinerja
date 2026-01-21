@@ -3,8 +3,8 @@
         <form method="POST" action="{{ route('shift.store') }}" class="mx-20" id="form">
             @csrf
             <div>
-                <p class="text-center text-2xl font-bold my-10">Tambah Shift</p>
-                <div class="bg-slate-100 mx-10 my-10 px-10 py-5 rounded shadow">
+                <p class="my-10 text-2xl font-bold text-center">Tambah Shift</p>
+                <div class="px-10 py-5 mx-10 my-10 rounded shadow bg-slate-100">
                     <div class="grid grid-cols-2 gap-5">
                         <!-- Jabatan -->
                         <div class="flex flex-col">
@@ -48,12 +48,22 @@
                         <input type="time" name="jam_end" id="jam_end" class="input input-bordered">
                     </div>
 
+                    <!-- overnight -->
+                    <div class="flex flex-col">
+                        <label for="is_overnight" class="label">Pergantian Hari</label>
+                        <select name="is_overnight" id="is_overnight" class="select-bordered select">
+                            <option selected disabled>~ Pilih Pergantian Hari ~</option>
+                            <option value="0">Tidak</option>
+                            <option value="1">Ya</option>
+                        </select>
+                    </div>
+
                     {{-- day --}}
                     <div class="">
                         <label class="label">
-                            <span class="label-text font-semibold">Hari</span>
+                            <span class="font-semibold label-text">Hari</span>
                         </label>
-                        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                        <div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
                             @php
                                 $days = [
                                     'Senin' => 'Sen',
@@ -77,13 +87,13 @@
                             @endforeach
                         </div>
                         <button type="button" onclick="toggleAllDays()"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors mx-auto block mt-2">
+                            class="block px-4 py-2 mx-auto mt-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400">
                             Pilih Semua
                         </button>
                     </div>
 
 
-                    <div class="flex gap-2 my-5 justify-end">
+                    <div class="flex justify-end gap-2 my-5">
                         <button><a href="{{ route('shift.index') }}" class="btn btn-error">Kembali</a></button>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
