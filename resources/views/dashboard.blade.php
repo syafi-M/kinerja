@@ -1185,7 +1185,7 @@
                     elements.jam2.text('~ Masa Absen Pulang Hampir Habis ~');
                     elements.labelWaktu.text('');
                 } else if (sisaMenit <= 0) {
-                    elements.jam2.text('~ Waktunya Pulang (Lembur) ~');
+                    elements.jam2.text('~ Waktunya Pulang ~');
                     elements.labelWaktu.text('Shift Selesai');
                 } else {
                     elements.jam2.text(timeStr);
