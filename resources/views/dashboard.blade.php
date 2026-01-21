@@ -1231,8 +1231,25 @@
 
                 if (elements.statusContainer.length > 0) {
                     elements.statusContainer
-                        .css({'background-color': '#006118', 'color': '#DEDEDE'}) // Hijau;
-                    elements.statusText.text('Sudah Absen Masuk');
+                        .css({'background-color': '#006118', 'color': '#DEDEDE', 'text-align': 'left'}); // Hijau
+
+                    let ketWaktu = "";
+                    if (elements.endTime) {
+                        const [endH, endM] = elements.endTime.split(':').map(Number);
+                        let appearanceTime = new Date();
+                        appearanceTime.setHours(endH - 2, endM, 0);
+
+                        const jamTampil = padZero(appearanceTime.getHours());
+                        const menitTampil = padZero(appearanceTime.getMinutes());
+
+                        // Menggunakan <br> untuk baris baru dan style font-size untuk ukuran kecil
+                        ketWaktu = `<br><span style="font-size: 8pt; opacity: 0.8; font-weight: normal;">
+                                        Tombol absen pulang muncul jam <span style="font-weight: bold; text-decoration: underline; text-underline-offset: 1px;">${jamTampil}:${menitTampil}</span>
+                                    </span>`;
+                    }
+
+                    // Gunakan .html() bukan .text() agar tag <br> dan <span> terbaca sebagai HTML
+                    elements.statusText.html('Sudah Absen Masuk' + ketWaktu);
                 }
             }
         }
@@ -1242,8 +1259,26 @@
         }
 
         function initializeModals() {
-            $('#modalSiangBtn').click(() => $('.modalSiang').removeClass('hidden').addClass('flex justify-center items-center'));
-            $('.close').click(() => $('.modalSiang').addClass('hidden').removeClass('flex'));
+            // Handler untuk modal siang (yang sudah ada)
+            $('#modalSiangBtn').click(() => {
+                $('.modalSiang').removeClass('hidden').addClass('flex justify-center items-center');
+            });
+
+            $('.close').click(() => {
+                $('.modalSiang').addClass('hidden').removeClass('flex');
+            });
+
+            // --- TAMBAHKAN DI SINI UNTUK MODAL NEWS ---
+            $('.closeNews').on('click', function() {
+                // Gunakan .addClass('hidden') jika pakai Tailwind
+                // Atau .hide() untuk jQuery standar
+                $('.modalNews').addClass('hidden');
+
+                // Opsional: hapus dari DOM agar tidak berat
+                setTimeout(() => {
+                    $('.modalNews').remove();
+                }, 100);
+            });
         }
 
         // Tambahan: Peringatan jika mencoba menutup tab/browser sebelum absen pulang
