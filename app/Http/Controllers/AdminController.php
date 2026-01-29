@@ -62,6 +62,7 @@ class AdminController extends Controller
                 $q->latest('created_at')->limit(1);
             }])
             ->orderBy('absensi_max_created_at', 'asc') // TERLAMA dulu
+            ->limit(15)
             ->get();
 
         // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)
