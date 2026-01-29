@@ -40,15 +40,10 @@ class AdminController extends Controller
     {
 
         $user = User::all();
-        $datas = [];
-        foreach ($user as $arr) {
-            $data = DB::table('sessions')->where('last_seen_at', '>', now()->subMinutes(5))->get();
-            foreach ($data as $dat) {
-                if ($dat->user_id == $arr->id) {
-                    $datas[] = $dat;
-                }
-            }
-        }
+        $datas = DB::table('sessions')
+            ->where('last_seen_at', '>', now()->subMinutes(5))
+            ->whereNotNull('user_id')
+            ->get();
         $oneMonthsAgo = Carbon::now()->subMonths()->startOfMonth();
 
         $notActiveUsers = User::select('id', 'nama_lengkap', 'name', 'devisi_id', 'kerjasama_id', 'created_at', 'updated_at')
@@ -62,7 +57,7 @@ class AdminController extends Controller
                 $q->latest('created_at')->limit(1);
             }])
             ->orderBy('absensi_max_created_at', 'asc') // TERLAMA dulu
-            ->limit(10)
+            ->limit(20)
             ->get();
 
         // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)
