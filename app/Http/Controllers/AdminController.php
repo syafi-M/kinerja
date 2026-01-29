@@ -46,18 +46,29 @@ class AdminController extends Controller
             ->get();
         $oneMonthsAgo = Carbon::now()->subMonths()->startOfMonth();
 
-        $notActiveUsers = User::select('id', 'nama_lengkap', 'name', 'devisi_id', 'kerjasama_id', 'created_at', 'updated_at')
-            ->where('kerjasama_id', '!=', 1)
-            ->whereNotIn('devisi_id', [8, 18])
+        $notActiveUsers = User::select(
+                'users.id',
+                'users.nama_lengkap',
+                'users.name',
+                'users.devisi_id',
+                'latest_absensi.last_attendance' // Added so you can see the date
+            )
+            ->leftJoinSub(
+                DB::table('absensis')
+                    ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
+                    ->groupBy('user_id'), // <--- This fixes the 1140 error
+                'latest_absensi',
+                'users.id',
+                '=',
+                'latest_absensi.user_id'
+            )
+            ->where('users.kerjasama_id', '!=', 1)
+            ->whereNotIn('users.devisi_id', [8, 18])
             ->whereDoesntHave('absensi', function ($q) use ($oneMonthsAgo) {
                 $q->where('created_at', '>=', $oneMonthsAgo);
             })
-            ->withMax('absensi', 'created_at') // eager aggregate
-            ->with(['absensi' => function ($q) {
-                $q->latest('created_at')->limit(1);
-            }])
-            ->orderBy('absensi_max_created_at', 'asc') // TERLAMA dulu
-            ->limit(20)
+            ->orderBy('latest_absensi.last_attendance', 'asc')
+            ->limit(25)
             ->get();
 
         // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)

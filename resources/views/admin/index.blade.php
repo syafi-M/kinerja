@@ -152,7 +152,7 @@
                                                     <i class="text-lg text-gray-600 ri-user-line"></i>
                                                 </div>
                                                 <div class="min-w-0">
-                                                    <p class="font-semibold text-gray-900 truncate">{{ $user->name }} | {{ ucwords(strtolower($user->nama_lengkap)) }} | {{ $user->kerjasama->client ? ($user->kerjasama->client->panggilan ?? $user->kerjasama->client->name) : 'Tidak ada client' }}</p>
+                                                    <p class="font-semibold text-gray-900 truncate">{{ $user->name }} | {{ ucwords(strtolower($user->nama_lengkap)) }} | {{ $user->kerjasama ? ($user->kerjasama->client->panggilan ?? $user->kerjasama->client->name) : 'Tidak ada client' }}</p>
                                                     <div class="flex items-center gap-2 mt-1 text-sm text-gray-600">
                                                         <i class="text-xs text-yellow-500 ri-time-line"></i>
                                                         Terakhir aktif: {{ $user->absensi()->latest()->first() ? Carbon\Carbon::parse($user->absensi()->latest()->first()->created_at)->diffForHumans() : 'Belum pernah absen' }}
