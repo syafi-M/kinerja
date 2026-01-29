@@ -49,13 +49,23 @@ class AdminController extends Controller
                 }
             }
         }
-        $threeMonthsAgo = Carbon::now()->subMonths(3)->startOfMonth();
+        $oneMonthsAgo = Carbon::now()->subMonths()->startOfMonth();
 
+        $notActiveUsers = User::select('id', 'nama_lengkap', 'name', 'devisi_id', 'kerjasama_id', 'created_at', 'updated_at')
+            ->where('kerjasama_id', '!=', 1)
+            ->whereNotIn('devisi_id', [8, 18])
+            ->whereDoesntHave('absensi', function ($q) use ($oneMonthsAgo) {
+                $q->where('created_at', '>=', $oneMonthsAgo);
+            })
+            ->withMax('absensi', 'created_at') // eager aggregate
+            ->with(['absensi' => function ($q) {
+                $q->latest('created_at')->limit(1);
+            }])
+            ->orderBy('absensi_max_created_at', 'asc') // TERLAMA dulu
+            ->get();
 
         // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)
         //     ->orderBy('created_at', 'desc')->first();
-
-        // dd($threeMonthsAgo, $abs, $abs2);
 
         $online = count($datas);
         $user = User::count();
@@ -66,7 +76,7 @@ class AdminController extends Controller
         $expert = Kerjasama::whereDate('experied', '<=', Carbon::now()->addMonths(2))->get();
 
 
-        return view('admin.index', compact('user', 'client', 'izin', 'ip', 'expert', 'online'));
+        return view('admin.index', compact('user', 'client', 'izin', 'ip', 'expert', 'online', 'notActiveUsers'));
     }
     public function getUptime()
     {

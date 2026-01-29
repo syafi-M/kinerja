@@ -35,17 +35,17 @@ class DivisiController extends Controller
         ];
 
         Divisi::create($devisi);
-        
+
         toastr()->success('Devisi berhasil dibuat', 'success');
-        return redirect()->to(route('devisi.index'));
+        return redirect()->to(route('divisi.index'));
     }
 
     public function editEquipment($divisiId)
     {
-        
+
         $divisi = Divisi::findOrFail($divisiId);
         $alat = Perlengkapan::all();
-        
+
         return view('admin.devisi.add', ['data' => $divisi, 'alat' => $alat]);
     }
 
@@ -57,7 +57,7 @@ class DivisiController extends Controller
         $divisi->Perlengkapan()->attach($equipmentIds);
         // dd($divisi);
         toastr()->success('Devisi berhasil dibuat', 'success');
-        return redirect()->to(route('devisi.index'));
+        return redirect()->to(route('divisi.index'));
     }
 
     public function edit($id)
@@ -81,14 +81,14 @@ class DivisiController extends Controller
         ];
         if($request->input('delete_alat', [])){
             $alatDelete = $request->input('delete_alat', []);
-            $dev->Perlengkapan()->detach($alatDelete);    
+            $dev->Perlengkapan()->detach($alatDelete);
         }
         $dev->Perlengkapan()->attach($equipmentIds);
         // dd($devisi, $dev);
 
         Divisi::findOrFail($id)->update($devisi);
         toastr()->success('Data Telah Ter Update', 'success');
-        return redirect()->to(route('devisi.index'));
+        return redirect()->to(route('divisi.index'));
     }
 
     public function destroy($id)

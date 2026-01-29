@@ -33,96 +33,136 @@
 
             <div class="px-4 pb-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-                <!-- Alerts Section -->
-                @if ($izin || $expert)
+               {{-- Alerts Section --}}
+                @if ($izin || $expert || count($notActiveUsers) > 0)
                     <div class="mb-6 space-y-4">
-                        <!-- Pending Approvals Alert -->
+
+                        {{-- Pending Approvals --}}
                         @if ($izin)
                             <a href="{{ route('data-izin.admin') }}"
-                                class="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
-                                <div
-                                    class="absolute inset-0 transition-transform duration-700 transform -translate-x-full -skew-x-12 bg-white/10 group-hover:translate-x-full">
-                                </div>
+                            class="group relative block overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 p-6 shadow-lg transition-all hover:scale-[1.01] hover:shadow-xl">
+
+                                <div class="absolute inset-0 transition-transform duration-700 -translate-x-full -skew-x-12 bg-white/10 group-hover:translate-x-full"></div>
+
                                 <div class="relative flex items-center justify-between">
                                     <div class="flex items-center gap-4">
-                                        <div
-                                            class="flex items-center justify-center w-14 h-14 bg-white/20 backdrop-blur rounded-xl">
+                                        <div class="flex items-center justify-center h-14 w-14 rounded-xl bg-white/20 backdrop-blur">
                                             <i class="text-2xl text-white ri-notification-3-line"></i>
                                         </div>
                                         <div>
-                                            <h3 class="mb-1 text-lg font-bold text-white">Pending Approvals</h3>
-                                            <p class="text-sm text-blue-100">{{ $izin }} izin menunggu
-                                                persetujuan Anda</p>
+                                            <h3 class="text-lg font-bold text-white">Pending Approvals</h3>
+                                            <p class="text-sm text-blue-100">{{ $izin }} izin menunggu persetujuan Anda</p>
                                         </div>
                                     </div>
+
                                     <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center w-12 h-12 bg-white shadow-lg rounded-xl">
+                                        <div class="flex items-center justify-center w-12 h-12 bg-white shadow-lg rounded-xl">
                                             <span class="text-xl font-bold text-blue-600">{{ $izin }}</span>
                                         </div>
-                                        <i
-                                            class="text-xl text-white transition-transform ri-arrow-right-line group-hover:translate-x-1"></i>
+                                        <i class="text-xl text-white transition-transform ri-arrow-right-line group-hover:translate-x-1"></i>
                                     </div>
                                 </div>
                             </a>
                         @endif
 
-                        <!-- Expiring Contracts -->
+                        {{-- Expiring Contracts --}}
                         @if ($expert)
-                            <div x-data="{ openContracts: false }"
-                                class="overflow-hidden bg-white border border-gray-100 shadow-lg rounded-2xl">
-                                <div @click="openContracts = !openContracts"
-                                    class="px-6 py-4 transition-all duration-300 cursor-pointer bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700">
+                            <div x-data="{ open: false }" class="overflow-hidden bg-white border border-gray-100 shadow-lg rounded-2xl">
+
+                                <div @click="open = !open"
+                                    class="px-6 py-4 transition cursor-pointer bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
-                                            <div
-                                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/20 backdrop-blur">
+                                            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/20 backdrop-blur">
                                                 <i class="text-xl text-white ri-time-line"></i>
                                             </div>
                                             <div>
                                                 <h3 class="text-base font-bold text-white">Kontrak Akan Berakhir</h3>
-                                                <p class="text-xs text-red-100">{{ count($expert) }} kontrak memerlukan
-                                                    perhatian</p>
+                                                <p class="text-xs text-red-100">{{ count($expert) }} kontrak memerlukan perhatian</p>
                                             </div>
                                         </div>
+
                                         <div class="flex items-center gap-3">
-                                            <div
-                                                class="flex items-center justify-center w-10 h-10 bg-white rounded-lg shadow-lg">
+                                            <div class="flex items-center justify-center w-10 h-10 bg-white rounded-lg shadow-lg">
                                                 <span class="text-lg font-bold text-red-600">{{ count($expert) }}</span>
                                             </div>
-                                            <i :class="openContracts ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                                                class="text-2xl text-white transition-transform duration-300"></i>
+                                            <i class="text-2xl text-white transition"
+                                            :class="open ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div x-show="openContracts" x-collapse
-                                    class="overflow-y-auto divide-y divide-gray-100 max-h-96">
+
+                                <div x-show="open" x-collapse class="overflow-y-auto divide-y max-h-96">
                                     @foreach ($expert as $ex)
-                                        <div
-                                            class="flex items-center justify-between px-6 py-4 overflow-hidden transition-colors duration-150 hover:bg-gray-50 group">
-                                            <div class="flex items-center flex-1 gap-4 overflow-hidden">
-                                                <div
-                                                    class="flex items-center justify-center flex-shrink-0 w-12 h-12 transition-transform bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl group-hover:scale-110">
+                                        <div class="flex items-center justify-between px-6 py-4 group hover:bg-gray-50">
+                                            <div class="flex items-center flex-1 min-w-0 gap-4">
+                                                <div class="flex items-center justify-center w-12 h-12 transition rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 group-hover:scale-110">
                                                     <i class="text-lg text-gray-600 ri-building-line"></i>
                                                 </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <p class="font-semibold text-gray-900 truncate">
-                                                        {{ $ex->client->name }}</p>
-                                                    <div class="flex items-center gap-2 mt-1">
+                                                <div class="min-w-0">
+                                                    <p class="font-semibold text-gray-900 truncate">{{ $ex->client->name }}</p>
+                                                    <div class="flex items-center gap-2 mt-1 text-sm text-gray-600">
                                                         <i class="text-xs text-red-500 ri-calendar-line"></i>
-                                                        <p class="text-sm text-gray-600">
-                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d', $ex->experied)->isoFormat('DD MMMM YYYY') }}
-                                                        </p>
+                                                        {{ Carbon\Carbon::createFromFormat('Y-m-d', $ex->experied)->isoFormat('DD MMMM YYYY') }}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div
-                                                class="flex items-center gap-2 px-4 py-2 overflow-hidden text-sm font-medium text-white transition-all duration-200 rounded-lg shadow-md bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg">
-                                                <a href="{{ url('kerjasamas/' . $ex->id . '/edit') }}">
-                                                    <i class="ri-edit-line"></i>
-                                                    <span>Update</span>
-                                                </a>
+
+                                            <a href="{{ url('kerjasamas/'.$ex->id.'/edit') }}"
+                                            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg shadow-md bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg">
+                                                <i class="ri-edit-line"></i> Update
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                            </div>
+                        @endif
+
+                        {{-- Not Active Users --}}
+                        @if (count($notActiveUsers) > 0)
+                            <div x-data="{ open: false }" class="overflow-hidden bg-white border border-gray-100 shadow-lg rounded-2xl">
+
+                                <div @click="open = !open"
+                                    class="px-6 py-4 transition cursor-pointer bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-white/20 backdrop-blur">
+                                                <i class="text-xl text-white ri-user-line"></i>
                                             </div>
+                                            <div>
+                                                <h3 class="text-base font-bold text-white">User Tidak Aktif</h3>
+                                                <p class="text-xs text-yellow-100">{{ count($notActiveUsers) }} user tidak aktif dalam 1 bulan terakhir atau lebih</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center justify-center w-10 h-10 bg-white rounded-lg shadow-lg">
+                                                <span class="text-lg font-bold text-yellow-600">{{ count($notActiveUsers) }}</span>
+                                            </div>
+                                            <i class="text-2xl text-white transition"
+                                            :class="open ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="open" x-collapse class="overflow-y-auto divide-y max-h-96">
+                                    @foreach ($notActiveUsers as $user)
+                                        <div class="flex items-center justify-between px-6 py-4 group hover:bg-gray-50">
+                                            <div class="flex items-center flex-1 min-w-0 gap-4 overflow-hidden">
+                                                <div class="flex items-center justify-center w-12 h-12 transition rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 group-hover:scale-110">
+                                                    <i class="text-lg text-gray-600 ri-user-line"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="font-semibold text-gray-900 truncate">{{ $user->name }} | {{ ucwords(strtolower($user->nama_lengkap)) }} | {{ $user->kerjasama->client ? ($user->kerjasama->client->panggilan ?? $user->kerjasama->client->name) : 'Tidak ada client' }}</p>
+                                                    <div class="flex items-center gap-2 mt-1 text-sm text-gray-600">
+                                                        <i class="text-xs text-yellow-500 ri-time-line"></i>
+                                                        Terakhir aktif: {{ $user->absensi()->latest()->first() ? Carbon\Carbon::parse($user->absensi()->latest()->first()->created_at)->diffForHumans() : 'Belum pernah absen' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a href="{{ url('users/'.$user->id.'/edit') }}"
+                                                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg shadow-md bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg">
+                                                <i class="ri-edit-line"></i> Update
+                                            </a>
                                         </div>
                                     @endforeach
                                 </div>
