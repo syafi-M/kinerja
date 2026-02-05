@@ -129,7 +129,7 @@
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium whitespace-nowrap">
                                                 <i class="ri-time-line"></i>
-                                                1 Hari
+                                                1 Shift
                                             </span>
                                         @elseif(($overtime->type_overtime ?? '') == 'jam')
                                             <span
@@ -290,7 +290,7 @@
                         <div>
                             <p class="text-xs text-slate-500 mb-1">Jenis Lembur</p>
                             <p class="font-semibold text-slate-800"
-                                x-text="detail.type_overtime == 'shift' ? 'Shift 1 Hari' : detail.type_overtime"></p>
+                                x-text="detail.type_overtime == 'shift' ? '1 Shift' : detail.type_overtime"></p>
                             <p class="font-semibold text-xs text-slate-800" x-text="detail.type_overtime_manual">
                             </p>
                         </div>
