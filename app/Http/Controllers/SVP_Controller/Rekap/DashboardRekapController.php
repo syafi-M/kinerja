@@ -31,9 +31,22 @@ class DashboardRekapController extends Controller
 
     public function indexOvertimes($id)
     {
-        $client = Client::where('id', $id)->get();
+        $client = Client::findOrFail($id);
         return view('spv_view.rekap.overtimes.index', [
-            'cleint' => $client
+            'client' => $client
         ]);
+    }
+
+    public function indexPersonOut($kerjasama)
+    {
+        if (auth()->user()->kerjasama_id != 1) abort(403);
+
+        $client = Client::find($kerjasama);
+
+        if (!$client) {
+            abort(404);
+        }
+
+        return view('spv_view.rekap.person_out.index', compact('client'));
     }
 }

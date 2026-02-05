@@ -35,44 +35,63 @@ class OvertimesController extends Controller
                 )
                 ->get();
 
-            // Group by user and sum overtime
-            $groupedOvertimes = $overtimes->groupBy('user_id')->map(function ($userOvertimes) {
-                $first = $userOvertimes->first();
-                $totalJam = 0;
-                $totalRupiah = 0;
+            // Group by user_id AND type_overtime
+            $groupedOvertimes = $overtimes->groupBy(function ($item) {
+                return $item->user_id . '_' . strtolower($item->type_overtime);
+            })->map(function ($group) {
+                $first = $group->first();
+                $typeOvertime = strtolower($first->type_overtime);
 
-                foreach ($userOvertimes as $overtime) {
-                    $value = $this->parseOvertimeValue($overtime->type_overtime_manual);
+                // Hanya hitung untuk 'jam' dan 'lainnya'
+                if (in_array($typeOvertime, ['jam', 'lainnya'])) {
+                    $totalJam = 0;
+                    $totalRupiah = 0;
 
-                    if ($value['type'] === 'jam') {
-                        $totalJam += $value['value'];
-                    } elseif ($value['type'] === 'rupiah') {
-                        $totalRupiah += $value['value'];
+                    foreach ($group as $overtime) {
+                        $value = $this->parseOvertimeValue($overtime->type_overtime_manual);
+
+                        if ($value['type'] === 'jam') {
+                            $totalJam += $value['value'];
+                        } elseif ($value['type'] === 'rupiah') {
+                            $totalRupiah += $value['value'];
+                        }
                     }
-                }
 
-                // Format hasil
-                $formattedOvertime = '';
-                if ($totalJam > 0 && $totalRupiah > 0) {
-                    $formattedOvertime = $totalJam . ' Jam + ' . number_format($totalRupiah, 0, ',', '.');
-                } elseif ($totalJam > 0) {
-                    $formattedOvertime = $totalJam . ' Jam';
-                } elseif ($totalRupiah > 0) {
-                    $formattedOvertime = 'Rp ' . number_format($totalRupiah, 0, ',', '.');
-                }
+                    // Format hasil
+                    $formattedOvertime = '';
+                    if ($totalJam > 0 && $totalRupiah > 0) {
+                        $formattedOvertime = $totalJam . ' Jam + Rp ' . number_format($totalRupiah, 0, ',', '.');
+                    } elseif ($totalJam > 0) {
+                        $formattedOvertime = $totalJam . ' Jam';
+                    } elseif ($totalRupiah > 0) {
+                        $formattedOvertime = 'Rp ' . number_format($totalRupiah, 0, ',', '.');
+                    }
 
-                return [
-                    'id' => $first->id,
-                    'user' => $first->user,
-                    'date_overtime' => $first->date_overtime,
-                    'type_overtime' => $first->type_overtime,
-                    'type_overtime_manual' => $formattedOvertime,
-                    'total_jam' => $totalJam,
-                    'total_rupiah' => $totalRupiah,
-                    'status' => $first->status,
-                    'desc' => $first->desc,
-                    'count' => $userOvertimes->count()
-                ];
+                    return [
+                        'id' => $first->id,
+                        'user' => $first->user,
+                        'date_overtime' => $first->date_overtime,
+                        'type_overtime' => $first->type_overtime,
+                        'type_overtime_manual' => $formattedOvertime,
+                        'total_jam' => $totalJam,
+                        'total_rupiah' => $totalRupiah,
+                        'status' => $first->status,
+                        'desc' => $first->desc,
+                        'count' => $group->count()
+                    ];
+                } else {
+                    // Untuk 'shift', tidak dijumlahkan
+                    return [
+                        'id' => $first->id,
+                        'user' => $first->user,
+                        'date_overtime' => $first->date_overtime,
+                        'type_overtime' => $first->type_overtime,
+                        'type_overtime_manual' => $first->type_overtime_manual,
+                        'status' => $first->status,
+                        'desc' => $first->desc,
+                        'count' => $group->count()
+                    ];
+                }
             })->values();
 
             return response()->json([

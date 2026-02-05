@@ -1,4 +1,15 @@
 <x-app-layout>
+    @push('styles')
+        <style>
+            #detailModal {
+                transition: opacity 0.2s ease-in-out;
+            }
+
+            #detailModal.opacity-100 {
+                opacity: 1;
+            }
+        </style>
+    @endpush
     <x-main-div>
         <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
 
@@ -181,7 +192,8 @@
                             </div>
 
                             <!-- Action Button -->
-                            <a href="{{ route('manajemen_rekap_indexOvertimes', $mitra->id) }}"
+                            <button
+                                onclick="openModal({{ $mitra->id }}, '{{ addslashes($mitra->name ?? 'Nama Mitra') }}')"
                                 class="w-full sm:w-auto flex-shrink-0 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 group">
                                 <span>Lihat Detail</span>
                                 <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
@@ -189,7 +201,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 5l7 7-7 7"></path>
                                 </svg>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 @empty
@@ -237,35 +249,201 @@
             @endif
 
         </div>
+
+        <!-- Modal Overlay -->
+        <div id="detailModal" class="fixed inset-0 z-[999999] hidden" aria-labelledby="modal-title" role="dialog"
+            aria-modal="true">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
+
+            <!-- Modal Container -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <!-- Modal Content -->
+                    <div
+                        class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-md">
+                        <!-- Modal Header -->
+                        <div class="bg-white px-6 pt-6 pb-4">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                                        id="modalAvatar">
+                                        M
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 leading-tight" id="modalTitle">
+                                            Nama Mitra</h3>
+                                        <p class="text-sm text-gray-500 mt-0.5">Pilih data yang ingin dilihat</p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="closeModal()"
+                                    class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none flex-shrink-0 ml-3">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="bg-white px-6 py-4 space-y-3">
+                            <!-- Data Lembur Button -->
+                            <a href="#" id="linkLembur"
+                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200 rounded-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4
+                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-indigo-700 transition-colors">
+                                        Data Lembur
+                                    </h4>
+                                    <p class="text-gray-600 text-xs">
+                                        Lihat rekap data lembur karyawan
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-indigo-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <!-- Data Personil Keluar Button -->
+                            <a href="#" id="linkPersonilKeluar"
+                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200 rounded-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4
+                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-emerald-700 transition-colors">
+                                        Data Personil Keluar
+                                    </h4>
+                                    <p class="text-gray-600 text-xs">
+                                        Lihat data karyawan yang keluar
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="bg-gray-50 px-6 py-4 rounded-b-lg">
+                            <button type="button" onclick="closeModal()"
+                                class="w-full px-4 py-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg font-medium transition-colors">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </x-main-div>
 
-    @push('scripts')
-        <script>
-            // Auto-submit search on desktop (hidden on mobile since we have button)
-            const searchInput = document.getElementById('searchInput');
-            let searchTimeout;
+    <script>
+        // Auto-submit search on desktop (hidden on mobile since we have button)
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
 
-            if (searchInput && window.innerWidth >= 640) {
-                searchInput.addEventListener('input', function(e) {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        if (e.target.value.length >= 2 || e.target.value.length === 0) {
-                            this.form.submit();
-                        }
-                    }, 500);
-                });
-            }
-
-            // Submit on Enter key for all devices
-            if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        clearTimeout(searchTimeout);
-                        e.preventDefault();
+        if (searchInput && window.innerWidth >= 640) {
+            searchInput.addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (e.target.value.length >= 2 || e.target.value.length === 0) {
                         this.form.submit();
                     }
-                });
+                }, 500);
+            });
+        }
+
+        // Submit on Enter key for all devices
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    e.preventDefault();
+                    this.form.submit();
+                }
+            });
+        }
+
+        // Modal Functions
+        let scrollPosition = 0;
+
+        function openModal(mitraId, mitraName) {
+            const modal = document.getElementById('detailModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalAvatar = document.getElementById('modalAvatar');
+            const linkLembur = document.getElementById('linkLembur');
+            const linkPersonilKeluar = document.getElementById('linkPersonilKeluar');
+
+            // Save current scroll position
+            scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Set modal content
+            modalTitle.textContent = mitraName;
+            modalAvatar.textContent = mitraName.charAt(0).toUpperCase();
+
+            // Set links with mitra ID
+            linkLembur.href = `/Management/rekap-overtimes/${mitraId}`;
+            linkPersonilKeluar.href = `/Management/rekap-person-out/${mitraId}`;
+
+            // Show modal
+            modal.classList.remove('hidden');
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollPosition}px`;
+            document.body.style.width = '100%';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('detailModal');
+
+            // Hide modal
+            modal.classList.add('hidden');
+
+            // Restore body scroll
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+
+            // Restore scroll position
+            window.scrollTo(0, scrollPosition);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this || e.target.classList.contains('bg-opacity-75')) {
+                closeModal();
             }
-        </script>
-    @endpush
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('detailModal');
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+    </script>
 </x-app-layout>

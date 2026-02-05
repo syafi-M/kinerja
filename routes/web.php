@@ -40,6 +40,7 @@ use App\Http\Controllers\ReportSholatController;
 use App\Http\Controllers\MonevController;
 use App\Http\Controllers\SVP_Controller\Rekap\DashboardRekapController;
 use App\Http\Controllers\SVP_Controller\Rekap\OvertimesController;
+use App\Http\Controllers\SVP_Controller\Rekap\PersonOutController as RekapPersonOutController;
 use App\Models\TempUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -224,6 +225,7 @@ Route::middleware(['auth', 'spv', 'apdt'])->group(function () {
 Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('/Management/rekap-data', [DashboardRekapController::class, 'index'])->name('manajemen_rekap');
     Route::get('/Management/rekap-overtimes/{id}', [DashboardRekapController::class, 'indexOvertimes'])->name('manajemen_rekap_indexOvertimes');
+    Route::get('/Management/rekap-person-out/{id}', [DashboardRekapController::class, 'indexPersonOut'])->name('manajemen_rekap_indexPersonOut');
     Route::get('/Management/spv-absensi', [MainController::class, 'indexAbsen'])->name('manajemen_absensi');
     Route::get('/Management/spv-laporan', [MainController::class, 'indexLaporan'])->name('manajemen_laporan');
     Route::get('/Management/spv-lembur', [MainController::class, 'indexLembur'])->name('manajemen_lembur');
@@ -232,6 +234,7 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     //API AJA
     // Route::resource('/api/v1/overtimes-api', OvertimesController::class);
     Route::get('/api/v1/overtimes-api/{kerjasama}', [OvertimesController::class, 'index'])->name('api-overtimes');
+    Route::get('/api/v1/person-out-api/{kerjasama}', [RekapPersonOutController::class, 'index'])->name('api-person-out');
 });
 
 // SPV W
