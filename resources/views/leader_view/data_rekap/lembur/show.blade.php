@@ -129,19 +129,19 @@
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium whitespace-nowrap">
                                                 <i class="ri-time-line"></i>
-                                                Shift
+                                                1 Hari
                                             </span>
                                         @elseif(($overtime->type_overtime ?? '') == 'jam')
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-medium whitespace-nowrap">
                                                 <i class="ri-timer-line"></i>
-                                                Jam
+                                                {{ $overtime->type_overtime_manual }}
                                             </span>
                                         @else
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium whitespace-nowrap">
                                                 <i class="ri-more-line"></i>
-                                                Lainnya
+                                                {{ $overtime->type_overtime_manual }}
                                             </span>
                                         @endif
                                     </td>
@@ -289,22 +289,10 @@
                         </div>
                         <div>
                             <p class="text-xs text-slate-500 mb-1">Jenis Lembur</p>
-                            <p class="font-semibold text-slate-800" x-text="detail.type_overtime || '-'"></p>
-                            <div x-data="{
-                                formatRupiah(val) {
-                                    if (val === null || val === undefined || val === '') return '-';
-                                    if (!/^\d+$/.test(val)) return val;
-                            
-                                    const num = Number(val);
-                                    return num > 500 ?
-                                        'Rp ' + num.toLocaleString('id-ID') :
-                                        num.toString();
-                                }
-                            }">
-                                <p class="font-semibold text-xs text-slate-800"
-                                    x-text="formatRupiah(detail.type_overtime_manual)">
-                                </p>
-                            </div>
+                            <p class="font-semibold text-slate-800"
+                                x-text="detail.type_overtime == 'shift' ? 'Shift 1 Hari' : detail.type_overtime"></p>
+                            <p class="font-semibold text-xs text-slate-800" x-text="detail.type_overtime_manual">
+                            </p>
                         </div>
                     </div>
                     <div>

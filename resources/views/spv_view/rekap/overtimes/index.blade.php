@@ -170,10 +170,10 @@
                                     Tipe Lembur</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
+                                    Keterangan</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Keterangan</th>
+                                    Status</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="tableBody">
@@ -403,13 +403,12 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.user?.nama_lengkap || '-'}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDate(item.date_overtime)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-800">${overtimeType}</span>
+                <span class="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-800">${overtimeDisplay}</span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">
+                <span class="font-semibold text-indigo-600">${item.desc}</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">${statusBadge}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">
-                <span class="font-semibold text-indigo-600">${overtimeDisplay}</span>
-                ${item.count > 1 ? `<span class="ml-2 text-xs text-gray-500">(${item.count} data)</span>` : ''}
-            </td>
         `;
 
                 tbody.appendChild(row);
@@ -629,64 +628,92 @@
             }
         }
 
-        // Export to Excel
+        // Export to Excel - UPDATED
         function exportToExcel() {
             if (filteredData.length === 0) {
                 alert('Tidak ada data untuk diekspor');
                 return;
             }
 
-            const data = filteredData.map((item, index) => {
-                const typeOvertime = (item.type_overtime || '').toLowerCase();
-                let jumlahLembur = '-';
+            // Group data by employee
+            const groupedByEmployee = {};
 
-                if (typeOvertime === 'jam' || typeOvertime === 'lainnya') {
-                    jumlahLembur = item.type_overtime_manual || '-';
-                } else if (typeOvertime === 'shift') {
-                    jumlahLembur = item.count > 1 ? `${item.count} Shift` : '1 Shift';
+            filteredData.forEach(item => {
+                const employeeKey = item.user?.id || 'unknown';
+
+                if (!groupedByEmployee[employeeKey]) {
+                    groupedByEmployee[employeeKey] = {
+                        nama: item.user?.nama_lengkap || '-',
+                        mitra: item.user?.kerjasama?.client?.name || '-',
+                        posisi: item.user?.jabatan?.name_jabatan || '-',
+                        hari: 0,
+                        jam: [],
+                        lainnya: []
+                    };
                 }
 
+                const typeOvertime = (item.type_overtime || '').toLowerCase();
+
+                if (typeOvertime === 'shift') {
+                    groupedByEmployee[employeeKey].hari += (item.count || 1);
+                } else if (typeOvertime === 'jam') {
+                    if (item.type_overtime_manual) {
+                        groupedByEmployee[employeeKey].jam.push(item.type_overtime_manual);
+                    }
+                } else if (typeOvertime === 'lainnya') {
+                    if (item.type_overtime_manual) {
+                        groupedByEmployee[employeeKey].lainnya.push(item.type_overtime_manual);
+                    }
+                }
+            });
+
+            // Convert to array for Excel
+            const data = Object.values(groupedByEmployee).map((employee, index) => {
                 return {
                     'No': index + 1,
-                    'Nama Karyawan': item.user?.nama_lengkap || '-',
-                    'Mitra Kerja': item.user?.kerjasama?.client?.name || '-',
-                    'Posisi': item.user?.jabatan?.name_jabatan || '-',
-                    'Tipe Lembur': item.type_overtime || '-',
-                    'Jumlah': jumlahLembur
+                    'Nama Karyawan': employee.nama,
+                    'Mitra Kerja': employee.mitra,
+                    'Posisi': employee.posisi,
+                    'Hari': employee.hari > 0 ? employee.hari + ' hari' : '',
+                    'Jam': employee.jam.length > 0 ? employee.jam.join(', ') : '',
+                    'Lainnya': employee.lainnya.length > 0 ? employee.lainnya.join(', ') : ''
                 };
             });
 
             const ws = XLSX.utils.json_to_sheet(data);
 
+            // Set column widths
             ws['!cols'] = [{
                     wch: 5
-                },
+                }, // No
                 {
                     wch: 25
-                },
+                }, // Nama Karyawan
                 {
                     wch: 25
-                },
+                }, // Mitra Kerja
                 {
                     wch: 20
-                },
+                }, // Posisi
                 {
-                    wch: 15
-                },
+                    wch: 10
+                }, // Hari
                 {
-                    wch: 20
-                }
+                    wch: 25
+                }, // Jam
+                {
+                    wch: 25
+                } // Lainnya
             ];
 
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Data Lembur');
 
-            const fileName =
-                `Data_Lembur_{{ $client->name ?? 'Mitra' }}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            const fileName = `Data_Lembur_{{ $client->name ?? 'Mitra' }}_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(wb, fileName);
         }
 
-        // Export to PDF
+        // Export to PDF - UPDATED dengan border tipis dan fit in paper
         function exportToPDF() {
             if (filteredData.length === 0) {
                 alert('Tidak ada data untuk diekspor');
@@ -698,114 +725,183 @@
             } = window.jspdf;
             const doc = new jsPDF('landscape');
 
-            doc.setFontSize(16);
+            // Header
+            doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
             doc.text('Data Lembur - {{ $client->name ?? 'Mitra' }}', 14, 15);
 
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
-            doc.text(`Periode: ${document.getElementById('periodDate').textContent}`, 14, 22);
+            doc.text(`Periode: ${document.getElementById('periodDate').textContent}`, 14, 21);
             doc.text(
                 `Total Data: ${filteredData.length} | Diajukan: ${document.getElementById('approvedCount').textContent}`,
-                14, 28);
+                14, 26);
 
-            const groupedByType = {};
+            // Group data by employee
+            const groupedByEmployee = {};
+
             filteredData.forEach(item => {
-                const type = item.type_overtime || 'Lainnya';
-                if (!groupedByType[type]) {
-                    groupedByType[type] = [];
+                const employeeKey = item.user?.id || 'unknown';
+
+                if (!groupedByEmployee[employeeKey]) {
+                    groupedByEmployee[employeeKey] = {
+                        nama: item.user?.nama_lengkap || '-',
+                        mitra: item.user?.kerjasama?.client?.name || '-',
+                        posisi: item.user?.jabatan?.name_jabatan || '-',
+                        hari: 0,
+                        jam: [],
+                        lainnya: []
+                    };
                 }
-                groupedByType[type].push(item);
+
+                const typeOvertime = (item.type_overtime || '').toLowerCase();
+
+                if (typeOvertime === 'shift') {
+                    groupedByEmployee[employeeKey].hari += (item.count || 1);
+                } else if (typeOvertime === 'jam') {
+                    if (item.type_overtime_manual) {
+                        groupedByEmployee[employeeKey].jam.push(item.type_overtime_manual);
+                    }
+                } else if (typeOvertime === 'lainnya') {
+                    if (item.type_overtime_manual) {
+                        groupedByEmployee[employeeKey].lainnya.push(item.type_overtime_manual);
+                    }
+                }
             });
 
-            let startY = 35;
+            // Prepare table data
+            const tableData = Object.values(groupedByEmployee).map((employee, index) => {
+                return [
+                    index + 1,
+                    employee.nama,
+                    employee.mitra,
+                    employee.posisi,
+                    employee.hari > 0 ? employee.hari + ' hari' : '',
+                    employee.jam.length > 0 ? employee.jam.join(', ') : '',
+                    employee.lainnya.length > 0 ? employee.lainnya.join(', ') : ''
+                ];
+            });
 
-            Object.entries(groupedByType).forEach(([typeOvertime, items], typeIndex) => {
-                if (startY > 180) {
-                    doc.addPage();
-                    startY = 20;
-                }
-
-                // Type Header (Blue Background)
-                doc.setFillColor(59, 130, 246);
-
-                doc.setFontSize(11);
-                doc.setFont(undefined, 'bold');
-                doc.setTextColor(255, 255, 255);
-
-                // Type overtime title
-                doc.text(`Tipe Lembur: ${typeOvertime.toUpperCase()}`, 18, startY + 7);
-
-                startY += 10;
-
-                // Reset text color to black
-                doc.setTextColor(0, 0, 0);
-
-                // Table data for this type
-                const tableData = items.map((item, index) => {
-                    const typeOvertimeLower = (item.type_overtime || '').toLowerCase();
-                    let jumlahLembur = '-';
-
-                    if (typeOvertimeLower === 'jam' || typeOvertimeLower === 'lainnya') {
-                        jumlahLembur = item.type_overtime_manual || '-';
-                    } else if (typeOvertimeLower === 'shift') {
-                        jumlahLembur = item.count > 1 ? `${item.count} Shift` : '1 Shift';
-                    }
-
-                    return [
-                        index + 1,
-                        item.user?.nama_lengkap || '-',
-                        item.user?.kerjasama?.client?.name || '-',
-                        item.user?.jabatan?.name_jabatan || '-',
-                        jumlahLembur
-                    ];
-                });
-
-                // Create table for this type
-                doc.autoTable({
-                    startY: startY,
-                    head: [
-                        ['No', 'Nama Karyawan', 'Mitra Kerja', 'Posisi', 'Jumlah']
-                    ],
-                    body: tableData,
-                    theme: 'grid',
-                    styles: {
-                        fontSize: 9,
-                        cellPadding: 3
-                    },
-                    headStyles: {
-                        fillColor: [79, 70, 229],
-                        fontStyle: 'bold'
-                    },
-                    columnStyles: {
-                        0: {
-                            cellWidth: 10
+            // Create table dengan border tipis dan fit in paper
+            doc.autoTable({
+                startY: 32,
+                head: [
+                    [{
+                            content: 'No',
+                            rowSpan: 2,
+                            styles: {
+                                valign: 'middle',
+                                halign: 'center'
+                            }
                         },
-                        1: {
-                            cellWidth: 60
+                        {
+                            content: 'Nama Karyawan',
+                            rowSpan: 2,
+                            styles: {
+                                valign: 'middle',
+                                halign: 'center'
+                            }
                         },
-                        2: {
-                            cellWidth: 50
+                        {
+                            content: 'Mitra Kerja',
+                            rowSpan: 2,
+                            styles: {
+                                valign: 'middle',
+                                halign: 'center'
+                            }
                         },
-                        3: {
-                            cellWidth: 45
+                        {
+                            content: 'Posisi',
+                            rowSpan: 2,
+                            styles: {
+                                valign: 'middle',
+                                halign: 'center'
+                            }
                         },
-                        4: {
-                            cellWidth: 35,
-                            halign: 'center'
+                        {
+                            content: 'Jumlah',
+                            colSpan: 3,
+                            styles: {
+                                halign: 'center'
+                            }
                         }
-                    },
-                    margin: {
-                        left: 14,
-                        right: 14
-                    },
-                    alternateRowStyles: {
-                        fillColor: [245, 247, 250]
-                    }
-                });
-
-                // Update startY after table
-                startY = doc.lastAutoTable.finalY + 8;
+                    ],
+                    [{
+                            content: 'Hari',
+                            styles: {
+                                halign: 'center'
+                            }
+                        },
+                        {
+                            content: 'Jam',
+                            styles: {
+                                halign: 'center'
+                            }
+                        },
+                        {
+                            content: 'Lainnya',
+                            styles: {
+                                halign: 'center'
+                            }
+                        }
+                    ]
+                ],
+                body: tableData,
+                theme: 'grid',
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                    valign: 'middle',
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    fillColor: [79, 70, 229],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    halign: 'center',
+                    valign: 'middle',
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1,
+                    fontSize: 8
+                },
+                columnStyles: {
+                    0: {
+                        cellWidth: 12,
+                        halign: 'center'
+                    }, // No
+                    1: {
+                        cellWidth: 50
+                    }, // Nama
+                    2: {
+                        cellWidth: 55
+                    }, // Mitra
+                    3: {
+                        cellWidth: 45
+                    }, // Posisi
+                    4: {
+                        cellWidth: 18,
+                        halign: 'center'
+                    }, // Hari
+                    5: {
+                        cellWidth: 45
+                    }, // Jam
+                    6: {
+                        cellWidth: 45
+                    } // Lainnya
+                },
+                margin: {
+                    left: 10,
+                    right: 10
+                },
+                alternateRowStyles: {
+                    fillColor: [255, 255, 255]
+                },
+                bodyStyles: {
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1
+                },
+                tableWidth: 'auto'
             });
 
             const fileName = `Data_Lembur_{{ $client->name ?? 'Mitra' }}_${new Date().toISOString().split('T')[0]}.pdf`;
