@@ -267,6 +267,19 @@ Route::middleware(['auth', 'spv-w', 'apdt'])->group(function () {
     Route::resource('/spvw-monev', MonevController::class);
 });
 
+Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {
+    Route::view('/rekap-data', 'leader_view/data_rekap/index')->name('index.rekap.data.leader');
+    Route::resource('/overtime-application', OvertimeApplicationController::class);
+    Route::get('/api/v1/get-overtime/{id}', [OvertimeApplicationController::class, 'fetchApi'])->name('get-overtime-id');
+    Route::patch('/overtime-change-status/{id}', [OvertimeApplicationController::class, 'changeStatus'])->name('overtime.change_status');
+    Route::patch('/overtime-change-bulk', [OvertimeApplicationController::class, 'bulkStatus'])->name('overtime-bulk.status');
+
+    Route::resource('/person-is-out', PersonOutController::class);
+    Route::get('/api/v1/get-person-is-out/{id}', [PersonOutController::class, 'fetchApi'])->name('person-is-out-id');
+    Route::patch('/person-is-out-change-status/{id}', [PersonOutController::class, 'changeStatus'])->name('person-is-out.change_status');
+    Route::patch('/person-is-out-bulk', [PersonOutController::class, 'bulkStatus'])->name('person-is-out-bulk.status');
+});
+
 // leader
 Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     Route::resource('/LEADER/leader-rating', RatingController::class);
@@ -284,17 +297,6 @@ Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     Route::patch('/LEADER/leader-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('lead_acc');
     Route::patch('/LEADER/leader-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('lead_denied');
     Route::view('leaderView', 'leader_view/leaderView')->name('leaderView');
-
-    Route::view('/rekap-data', 'leader_view/data_rekap/index')->name('index.rekap.data.leader');
-    Route::resource('/overtime-application', OvertimeApplicationController::class);
-    Route::get('/api/v1/get-overtime/{id}', [OvertimeApplicationController::class, 'fetchApi'])->name('get-overtime-id');
-    Route::patch('/overtime-change-status/{id}', [OvertimeApplicationController::class, 'changeStatus'])->name('overtime.change_status');
-    Route::patch('/overtime-change-bulk', [OvertimeApplicationController::class, 'bulkStatus'])->name('overtime-bulk.status');
-
-    Route::resource('/person-is-out', PersonOutController::class);
-    Route::get('/api/v1/get-person-is-out/{id}', [PersonOutController::class, 'fetchApi'])->name('person-is-out-id');
-    Route::patch('/person-is-out-change-status/{id}', [PersonOutController::class, 'changeStatus'])->name('person-is-out.change_status');
-    Route::patch('/person-is-out-bulk', [PersonOutController::class, 'bulkStatus'])->name('person-is-out-bulk.status');
 
     Route::resource('/leader-checklist', ChecklistController::class);
     Route::post('/leader-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('leader-checklist.ajx');
