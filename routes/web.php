@@ -31,11 +31,15 @@ use App\Http\Controllers\SubareaController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\FinalisasiController;
+use App\Http\Controllers\LEADER_Controller\OvertimeApplicationController;
+use App\Http\Controllers\LEADER_Controller\PersonOutController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ListPekerjaanController;
 use App\Http\Controllers\SlipGajiController;
 use App\Http\Controllers\ReportSholatController;
 use App\Http\Controllers\MonevController;
+use App\Http\Controllers\SVP_Controller\Rekap\DashboardRekapController;
+use App\Http\Controllers\SVP_Controller\Rekap\OvertimesController;
 use App\Models\TempUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -92,10 +96,10 @@ Route::get('/seed-username-counter', function () {
     // FIX: Added COLLATE to the whereRaw clause to solve the collation mismatch error.
 
     $lastTempUserNumber = TempUser::whereRaw(
-            "json_unquote(json_extract(`data`, '$.\"username\"'))
+        "json_unquote(json_extract(`data`, '$.\"username\"'))
              COLLATE utf8mb3_unicode_ci LIKE ?",
-            ['SAC%']
-        )
+        ['SAC%']
+    )
         ->get()
         ->map(function ($tempUser) {
             $data = json_decode($tempUser->data);
@@ -218,10 +222,16 @@ Route::middleware(['auth', 'spv', 'apdt'])->group(function () {
 
 // untuk Manajemen
 Route::middleware(['auth', 'apdt'])->group(function () {
+    Route::get('/Management/rekap-data', [DashboardRekapController::class, 'index'])->name('manajemen_rekap');
+    Route::get('/Management/rekap-overtimes/{id}', [DashboardRekapController::class, 'indexOvertimes'])->name('manajemen_rekap_indexOvertimes');
     Route::get('/Management/spv-absensi', [MainController::class, 'indexAbsen'])->name('manajemen_absensi');
     Route::get('/Management/spv-laporan', [MainController::class, 'indexLaporan'])->name('manajemen_laporan');
     Route::get('/Management/spv-lembur', [MainController::class, 'indexLembur'])->name('manajemen_lembur');
     Route::get('/Management/spv-user', [MainController::class, 'indexUser'])->name('manajemen_user');
+
+    //API AJA
+    // Route::resource('/api/v1/overtimes-api', OvertimesController::class);
+    Route::get('/api/v1/overtimes-api/{kerjasama}', [OvertimesController::class, 'index'])->name('api-overtimes');
 });
 
 // SPV W
@@ -271,6 +281,17 @@ Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     Route::patch('/LEADER/leader-absensi-izin/accept/{id}', [IzinController::class, 'updateSuccess'])->name('lead_acc');
     Route::patch('/LEADER/leader-absensi/denied/{id}', [IzinController::class, 'updateDenied'])->name('lead_denied');
     Route::view('leaderView', 'leader_view/leaderView')->name('leaderView');
+
+    Route::view('/rekap-data', 'leader_view/data_rekap/index')->name('index.rekap.data.leader');
+    Route::resource('/overtime-application', OvertimeApplicationController::class);
+    Route::get('/api/v1/get-overtime/{id}', [OvertimeApplicationController::class, 'fetchApi'])->name('get-overtime-id');
+    Route::patch('/overtime-change-status/{id}', [OvertimeApplicationController::class, 'changeStatus'])->name('overtime.change_status');
+    Route::patch('/overtime-change-bulk', [OvertimeApplicationController::class, 'bulkStatus'])->name('overtime-bulk.status');
+
+    Route::resource('/person-is-out', PersonOutController::class);
+    Route::get('/api/v1/get-person-is-out/{id}', [PersonOutController::class, 'fetchApi'])->name('person-is-out-id');
+    Route::patch('/person-is-out-change-status/{id}', [PersonOutController::class, 'changeStatus'])->name('person-is-out.change_status');
+    Route::patch('/person-is-out-bulk', [PersonOutController::class, 'bulkStatus'])->name('person-is-out-bulk.status');
 
     Route::resource('/leader-checklist', ChecklistController::class);
     Route::post('/leader-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('leader-checklist.ajx');

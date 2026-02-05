@@ -9,18 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
 use Creagia\LaravelSignPad\Concerns\RequiresSignature;
 use Creagia\LaravelSignPad\Contracts\CanBeSigned;
-use Creagia\LaravelSignPad\Contracts\ShouldGenerateSignatureDocument;
-use Creagia\LaravelSignPad\Templates\BladeDocumentTemplate;
 use Creagia\LaravelSignPad\Templates\PdfDocumentTemplate;
 use Creagia\LaravelSignPad\SignatureDocumentTemplate;
 use Creagia\LaravelSignPad\SignaturePosition;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable implements CanBeSigned
 {
-    use HasApiTokens, HasFactory, Notifiable, RequiresSignature;
+    use HasApiTokens, HasFactory, Notifiable, RequiresSignature, SoftDeletes;
     protected $connection = 'mysql';
     protected $table = 'users';
     /**
@@ -133,5 +131,4 @@ class User extends Authenticatable implements CanBeSigned
     {
         return $this->setConnection("mysql2")->hasMany(SlipGaji::class);
     }
-
 }

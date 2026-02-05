@@ -1,4 +1,5 @@
 <?php
+
 use Intervention\Image\ImageManagerStatic as Image;
 use SadiqSalau\LaravelOtp\Facades\Otp;
 use Illuminate\Support\Facades\Notification;
@@ -14,21 +15,20 @@ function UploadImage($request, $NameFile)
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
 
-    $img = Image::make($file);
-    $imageSize = $img->filesize();
+        $img = Image::make($file);
+        $imageSize = $img->filesize();
 
-            $image = Image::make($file);
-            $extensions = $file->getClientOriginalExtension();
-            $randomNumber = mt_rand(1, 999999);
-            $rename = 'data' . $randomNumber . '.' . $extensions;
+        $image = Image::make($file);
+        $extensions = $file->getClientOriginalExtension();
+        $randomNumber = mt_rand(1, 999999);
+        $rename = 'data' . $randomNumber . '.' . $extensions;
 
-            $path = public_path('storage/images/' . $rename);
-            $img = Image::make($file->getRealPath());
-            $img->resize(450, 450);
-            $img->save($path, 13);
+        $path = public_path('storage/images/' . $rename);
+        $img = Image::make($file->getRealPath());
+        $img->resize(450, 450);
+        $img->save($path, 13);
 
-            return $rename;
-
+        return $rename;
     }
 }
 
@@ -38,20 +38,19 @@ function UploadImageV2($request, $NameFile)
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
 
-    $img = Image::make($file);
-    $imageSize = $img->filesize();
+        $img = Image::make($file);
+        $imageSize = $img->filesize();
 
-            $image = Image::make($file);
-            $extensions = $file->getClientOriginalExtension();
-            $randomNumber = mt_rand(1, 999999);
-            $rename = 'data' . $randomNumber . '.' . $extensions;
+        $image = Image::make($file);
+        $extensions = $file->getClientOriginalExtension();
+        $randomNumber = mt_rand(1, 999999);
+        $rename = 'data' . $randomNumber . '.' . $extensions;
 
-            $path = public_path('storage/images/' . $rename);
-            $img = Image::make($file->getRealPath());
-            $img->save($path, 85);
+        $path = public_path('storage/images/' . $rename);
+        $img = Image::make($file->getRealPath());
+        $img->save($path, 85);
 
-            return $rename;
-
+        return $rename;
     }
 }
 
@@ -61,20 +60,19 @@ function UploadImageUser($request, $NameFile)
     $file = $request->file($NameFile);
     if ($file != null && $file->isValid()) {
 
-    $img = Image::make($file);
-    $imageSize = $img->filesize();
+        $img = Image::make($file);
+        $imageSize = $img->filesize();
 
-            $image = Image::make($file);
-            $extensions = $file->getClientOriginalExtension();
-            $randomNumber = mt_rand(1, 999999);
-            $rename = 'data' . $randomNumber . '.' . $extensions;
+        $image = Image::make($file);
+        $extensions = $file->getClientOriginalExtension();
+        $randomNumber = mt_rand(1, 999999);
+        $rename = 'data' . $randomNumber . '.' . $extensions;
 
-            $path = public_path('storage/user/' . $rename);
-            $img = Image::make($file->getRealPath());
-            $img->save($path, 85);
+        $path = public_path('storage/user/' . $rename);
+        $img = Image::make($file->getRealPath());
+        $img->save($path, 85);
 
-            return $rename;
-
+        return $rename;
     }
 }
 
@@ -120,7 +118,7 @@ function UploadImageNew($request, $NameFile)
 function UploadFile($request, $NameFile)
 {
     $file = $request->file($NameFile);
-    if($file != null && $file->isValid()) {
+    if ($file != null && $file->isValid()) {
 
         $extensions = $file->getClientOriginalExtension();
         $randomName = mt_rand(1, 9999999);
@@ -181,12 +179,12 @@ function verifOtpReg($email, $code)
 
 function toRupiah($angka)
 {
-    if (strpos($angka, '.')){
-        return "Rp. ". $angka;
+    if (strpos($angka, '.')) {
+        return "Rp. " . $angka;
     } else if ($angka == '-') {
-        return "Rp. ". $angka;
-    } else{
-        return "Rp. ". number_format($angka, 0, '.','.');
+        return "Rp. " . $angka;
+    } else {
+        return "Rp. " . number_format($angka, 0, '.', '.');
     }
 }
 
@@ -206,4 +204,3 @@ function normalizePhone($phone)
 
     return $phone;
 }
-
