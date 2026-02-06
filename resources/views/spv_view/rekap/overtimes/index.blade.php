@@ -392,7 +392,6 @@
 
                 let overtimeDisplay = '-';
                 const typeOvertime = (item.type_overtime || '').toLowerCase();
-
                 if (typeOvertime == 'jam' || typeOvertime == 'lainnya') {
                     overtimeDisplay = item.type_overtime_manual || '-';
                 } else if (typeOvertime == 'shift') {

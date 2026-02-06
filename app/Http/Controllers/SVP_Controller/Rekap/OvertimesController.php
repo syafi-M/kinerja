@@ -53,10 +53,10 @@ class OvertimesController extends Controller
 
                     foreach ($group as $overtime) {
                         $value = $this->parseOvertimeValue($overtime->type_overtime_manual);
-
-                        if ($value['type'] === 'jam') {
+                        // dd($overtime->type_overtime_manual);
+                        if ($value['type'] == 'jam') {
                             $totalJam += $value['value'];
-                        } elseif ($value['type'] === 'rupiah') {
+                        } elseif ($value['type'] == 'rupiah') {
                             $totalRupiah += $value['value'];
                         }
                     }
@@ -127,7 +127,7 @@ class OvertimesController extends Controller
         $value = intval($clean);
 
         // 10–500 dianggap JAM
-        if ($value >= 10 && $value <= 500) {
+        if ($value >= 1 && $value <= 500) {
             return ['type' => 'jam', 'value' => $value];
         }
 
