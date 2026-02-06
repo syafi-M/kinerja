@@ -122,6 +122,23 @@ Route::get('/seed-username-counter', function () {
     return "Username counter has been seeded to: " . $highestNumber;
 });
 
+Route::get('/notifications/{id}', function ($id) {
+    $notif = auth()->user()
+        ->notifications()
+        ->where('id', $id)
+        ->firstOrFail();
+
+    $notif->markAsRead();
+
+    return match ($notif->data['type']) {
+        'overtime' =>
+        redirect()->route('manajemen_rekap_indexOvertimes', $notif->data['kerjasama_id']),
+        'person_out' =>
+        redirect()->route('manajemen_rekap_indexPersonOut', $notif->data['kerjasama_id']),
+        default => back(),
+    };
+})->name('notifications.redirect');
+
 // Only AUTH
 Route::middleware(['auth', 'apdt'])->group(function () {
     Route::view('/scan', 'admin.qrcode.scan');

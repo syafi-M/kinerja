@@ -299,6 +299,7 @@
 
                 const result = await response.json();
                 document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('totalEmployees').textContent = result.users_count;
 
                 if (result.success && result.data) {
                     overtimeData = result.data;
@@ -529,13 +530,9 @@
                 (item.status || '').toLowerCase() == 'di ajukan'
             ).length;
 
-            const uniqueEmployees = new Set(filteredData.map(item => item.user?.id).filter(Boolean)).size;
-
             document.getElementById('totalOvertimes').textContent = totalOvertimes;
             document.getElementById(
                 'approvedCount').textContent = approvedCount;
-            document.getElementById('totalEmployees')
-                .textContent = uniqueEmployees;
         }
 
         // Format date

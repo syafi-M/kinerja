@@ -16,7 +16,8 @@ class PersonOut extends Model
         'out_date',
         'reason',
         'reason_manual',
-        'img'
+        'img',
+        'status'
     ];
 
     protected static function booted()

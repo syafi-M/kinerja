@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OvertimeStoreRequest;
 use App\Models\Overtime;
 use App\Models\User;
+use App\Notifications\OvertimeSubmitted;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class OvertimeApplicationController extends Controller
 {
@@ -104,8 +106,32 @@ class OvertimeApplicationController extends Controller
 
     public function changeStatus($id)
     {
-        Overtime::where("id", $id)->update(["status" => "Di Ajukan"]);
+        $overtime = Overtime::findOrFail($id);
+
+        $overtime->update([
+            'status' => 'Di Ajukan'
+        ]);
+
         toastr()->success('Lembur Berhasil Di Ajukan!', 'success');
+
+        $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
+            ? 'SPV'
+            : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
+                ? 'MARKETING'
+                : null);
+
+        if ($targetCode) {
+            $users = User::whereHas(
+                'jabatan',
+                fn($q) =>
+                $q->where('code_jabatan', $targetCode)
+            )->get();
+
+            Notification::send(
+                $users,
+                new OvertimeSubmitted($overtime)
+            );
+        }
         return redirect()->back();
     }
 
@@ -114,13 +140,46 @@ class OvertimeApplicationController extends Controller
         $startDate = Carbon::now()->startOfMonth();
         $endDate   = Carbon::now()->endOfMonth();
 
-        Overtime::whereHas('user', function ($q) {
+        $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
+            ? 'SPV'
+            : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
+                ? 'MARKETING'
+                : null);
+
+        $overtimes = Overtime::whereHas('user', function ($q) {
             $q->where('kerjasama_id', auth()->user()->kerjasama_id);
         })
             ->whereBetween('date_overtime', [$startDate, $endDate])
-            ->where('status', null)->orWhere('status', 'pending')->update(["status" => "Di Ajukan"]);
-        // Overtime::where("id", $key->id)->where('status', '!=', 'rejected')->update(["status" => "Di Ajukan"]);
+            ->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhere('status', 'pending');
+            })
+            ->get();
+
+        if ($overtimes->isEmpty()) {
+            toastr()->info('Tidak ada data lembur untuk diajukan.');
+            return back();
+        }
+
+        Overtime::whereIn('id', $overtimes->pluck('id'))
+            ->update(['status' => 'Di Ajukan']);
+
+        // ambil approver
+        $approvers = User::whereHas(
+            'jabatan',
+            fn($q) =>
+            $q->where('code_jabatan', $targetCode)
+        )->get();
+
+        foreach ($overtimes as $overtime) {
+            Notification::send(
+                $approvers,
+                new OvertimeSubmitted($overtime)
+            );
+        }
+
+
         toastr()->success('Berhasil mengajukan semua lembur!', 'success');
-        return redirect()->back();
+        return back();
     }
 }

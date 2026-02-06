@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Responses\ApiResponse;
 use App\Models\Kerjasama;
 use App\Models\Overtime;
+use App\Models\User;
 use Carbon\Carbon;
 
 class OvertimesController extends Controller
@@ -35,6 +36,10 @@ class OvertimesController extends Controller
                 )
                 ->get();
 
+            $employe = User::where('kerjasama_id', $kerjasama)->whereHas('Jabatan', function ($j) {
+                $j->where('type_jabatan', auth()->user()->jabatan_id == 14 ? 'CLEANING SERVICE' : 'SECURITY');
+            })->count();
+
             // Group by user_id AND type_overtime
             $groupedOvertimes = $overtimes->groupBy(function ($item) {
                 return $item->user_id . '_' . strtolower($item->type_overtime);
@@ -42,7 +47,6 @@ class OvertimesController extends Controller
                 $first = $group->first();
                 $typeOvertime = strtolower($first->type_overtime);
 
-                // Hanya hitung untuk 'jam' dan 'lainnya'
                 if (in_array($typeOvertime, ['jam', 'lainnya'])) {
                     $totalJam = 0;
                     $totalRupiah = 0;
@@ -57,7 +61,6 @@ class OvertimesController extends Controller
                         }
                     }
 
-                    // Format hasil
                     $formattedOvertime = '';
                     if ($totalJam > 0 && $totalRupiah > 0) {
                         $formattedOvertime = $totalJam . ' Jam + Rp ' . number_format($totalRupiah, 0, ',', '.');
@@ -80,7 +83,6 @@ class OvertimesController extends Controller
                         'count' => $group->count()
                     ];
                 } else {
-                    // Untuk 'shift', tidak dijumlahkan
                     return [
                         'id' => $first->id,
                         'user' => $first->user,
@@ -97,6 +99,7 @@ class OvertimesController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $groupedOvertimes,
+                'users_count' => $employe,
                 'message' => 'Data lembur berhasil diambil'
             ]);
         } catch (\Throwable $e) {

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\LEADER_Controller;
 use App\Http\Controllers\Controller;
 use App\Models\PersonOut;
 use App\Models\User;
+use App\Notifications\PersonOutSubmitted;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class PersonOutController extends Controller
@@ -156,21 +158,71 @@ class PersonOutController extends Controller
 
     public function changeStatus($id)
     {
-        PersonOut::where("id", $id)->update(["status" => "Di Ajukan"]);
+        $personOut = PersonOut::findOrFail($id);
+        $personOut->update(["status" => "Di Ajukan"]);
         toastr()->success('Personil Keluar Berhasil Di Ajukan!', 'success');
+        $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
+            ? 'SPV'
+            : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
+                ? 'MARKETING'
+                : null);
+
+        if ($targetCode) {
+            $users = User::whereHas(
+                'jabatan',
+                fn($q) =>
+                $q->where('code_jabatan', $targetCode)
+            )->get();
+
+            Notification::send(
+                $users,
+                new PersonOutSubmitted($personOut)
+            );
+        }
         return redirect()->back();
     }
 
     public function bulkStatus()
     {
-        PersonOut::whereHas('user', function ($q) {
-            $q->withTrashed()->where('kerjasama_id', auth()->user()->kerjasama_id);
+        $personOuts = PersonOut::whereHas('user', function ($q) {
+            $q->withTrashed()
+                ->where('kerjasama_id', auth()->user()->kerjasama_id);
         })
-            ->where('status', null)->orWhere('status', 'pending')->update(["status" => "Di Ajukan"]);
-        // Overtime::where("id", $key->id)->where('status', '!=', 'rejected')->update(["status" => "Di Ajukan"]);
+            ->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhere('status', 'pending');
+            })
+            ->get();
+        $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
+            ? 'SPV'
+            : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
+                ? 'MARKETING'
+                : null);
+        if ($personOuts->isEmpty()) {
+            toastr()->info('Tidak ada pengajuan personil keluar.');
+            return back();
+        }
+
+        PersonOut::whereIn('id', $personOuts->pluck('id'))
+            ->update(['status' => 'Di Ajukan']);
+
+        $approvers = User::whereHas(
+            'jabatan',
+            fn($q) =>
+            $q->where('code_jabatan', $targetCode)
+        )->get();
+
+        foreach ($personOuts as $personOut) {
+            Notification::send(
+                $approvers,
+                new PersonOutSubmitted($personOut)
+            );
+        }
+
         toastr()->success('Berhasil mengajukan semua personil keluar!', 'success');
-        return redirect()->back();
+        return back();
     }
+
 
     public function fetchApi($id)
     {

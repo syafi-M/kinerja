@@ -267,7 +267,7 @@
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="ri-calendar-schedule-line"></i>
                                     <button class="text-sm font-bold uppercase">
-                                        Data Rekap
+                                        Data Rekap (Trial)
                                     </button>
                                 </div>
                             </div>
