@@ -793,7 +793,7 @@
             searchInput.addEventListener('input', function(e) {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
-                    if (e.target.value.length >= 2 || e.target.value.length === 0) {
+                    if (e.target.value.length >= 2 || e.target.value.length == 0) {
                         this.form.submit();
                     }
                 }, 500);
@@ -803,7 +803,7 @@
         // Submit on Enter key for all devices
         if (searchInput) {
             searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
+                if (e.key == 'Enter') {
                     clearTimeout(searchTimeout);
                     e.preventDefault();
                     this.form.submit();
@@ -860,7 +860,7 @@
 
         // Close modal when clicking outside
         document.getElementById('detailModal').addEventListener('click', function(e) {
-            if (e.target === this || e.target.classList.contains('bg-opacity-75')) {
+            if (e.target == this || e.target.classList.contains('bg-opacity-75')) {
                 closeModal();
             }
         });
@@ -868,7 +868,7 @@
         // Close modal with ESC key
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('detailModal');
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            if (e.key == 'Escape' && !modal.classList.contains('hidden')) {
                 closeModal();
             }
         });
@@ -951,7 +951,7 @@
 
         // Close on Escape key
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
+            if (event.key == 'Escape') {
                 const openModals = document.querySelectorAll('.notification-modal.show');
                 openModals.forEach(modal => {
                     const mitraId = modal.id.replace('notif-modal-', '');

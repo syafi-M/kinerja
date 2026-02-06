@@ -333,7 +333,7 @@
         function getOvertimeTypeDisplay(item) {
             const typeOvertime = (item.type_overtime || '').toLowerCase();
 
-            if (typeOvertime === 'lainnya') {
+            if (typeOvertime == 'lainnya') {
                 return item.type_overtime_manual || 'Lainnya';
             }
 
@@ -357,7 +357,7 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            if (filteredData.length === 0) {
+            if (filteredData.length == 0) {
                 showEmptyState('Tidak ada hasil', 'Tidak ada data yang sesuai dengan filter');
                 document.getElementById('tableContainer').classList.add('hidden');
                 document.getElementById('paginationContainer').classList.add('hidden');
@@ -366,7 +366,7 @@
 
             // Calculate pagination
             const itemsPerPageValue = document.getElementById('itemsPerPage').value;
-            itemsPerPage = itemsPerPageValue === 'all' ? filteredData.length : parseInt(itemsPerPageValue);
+            itemsPerPage = itemsPerPageValue == 'all' ? filteredData.length : parseInt(itemsPerPageValue);
             totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
             // Ensure current page is valid
@@ -393,9 +393,9 @@
                 let overtimeDisplay = '-';
                 const typeOvertime = (item.type_overtime || '').toLowerCase();
 
-                if (typeOvertime === 'jam' || typeOvertime === 'lainnya') {
+                if (typeOvertime == 'jam' || typeOvertime == 'lainnya') {
                     overtimeDisplay = item.type_overtime_manual || '-';
-                } else if (typeOvertime === 'shift') {
+                } else if (typeOvertime == 'shift') {
                     overtimeDisplay = item.count > 1 ? `${item.count} Shift` : '1 Shift';
                 }
 
@@ -431,10 +431,10 @@
             document.getElementById('showingTo').textContent = endIndex;
             document.getElementById('totalRecords').textContent = filteredData.length;
 
-            document.getElementById('firstPageBtn').disabled = currentPage === 1;
-            document.getElementById('prevPageBtn').disabled = currentPage === 1;
-            document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
-            document.getElementById('lastPageBtn').disabled = currentPage === totalPages;
+            document.getElementById('firstPageBtn').disabled = currentPage == 1;
+            document.getElementById('prevPageBtn').disabled = currentPage == 1;
+            document.getElementById('nextPageBtn').disabled = currentPage == totalPages;
+            document.getElementById('lastPageBtn').disabled = currentPage == totalPages;
 
             // Render page numbers
         }
@@ -460,7 +460,7 @@
 
             for (let i = startPage; i <= endPage; i++) {
                 const button = document.createElement('button');
-                button.className = i === currentPage ?
+                button.className = i == currentPage ?
                     'px-3 py-1.5 bg-indigo-600 text-white rounded-lg font-medium' :
                     'px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors';
                 button.textContent = i;
@@ -577,13 +577,13 @@
                 const employeeName = (item.user?.nama_lengkap || '').toLowerCase();
                 const matchName = !searchTerm || employeeName.includes(searchTerm);
 
-                const matchDate = !filterDate || item.date_overtime === filterDate;
+                const matchDate = !filterDate || item.date_overtime == filterDate;
 
                 const itemStatus = (item.status || '').toLowerCase();
                 const matchStatus = !filterStatus || itemStatus.includes(filterStatus);
 
                 const itemType = (item.type_overtime || '').toLowerCase();
-                const matchType = !filterType || itemType === filterType;
+                const matchType = !filterType || itemType == filterType;
 
                 return matchName && matchDate && matchStatus && matchType;
             });
@@ -593,7 +593,7 @@
             renderTable();
             updateStats();
 
-            if (filteredData.length === 0) {
+            if (filteredData.length == 0) {
                 document.getElementById('tableContainer').classList.add('hidden');
                 document.getElementById('paginationContainer').classList.add('hidden');
                 showEmptyState('Tidak ada hasil pencarian', 'Coba ubah filter atau kata kunci pencarian');
@@ -627,7 +627,7 @@
 
         // Export to Excel - UPDATED
         function exportToExcel() {
-            if (filteredData.length === 0) {
+            if (filteredData.length == 0) {
                 alert('Tidak ada data untuk diekspor');
                 return;
             }
@@ -651,13 +651,13 @@
 
                 const typeOvertime = (item.type_overtime || '').toLowerCase();
 
-                if (typeOvertime === 'shift') {
+                if (typeOvertime == 'shift') {
                     groupedByEmployee[employeeKey].hari += (item.count || 1);
-                } else if (typeOvertime === 'jam') {
+                } else if (typeOvertime == 'jam') {
                     if (item.type_overtime_manual) {
                         groupedByEmployee[employeeKey].jam.push(item.type_overtime_manual);
                     }
-                } else if (typeOvertime === 'lainnya') {
+                } else if (typeOvertime == 'lainnya') {
                     if (item.type_overtime_manual) {
                         groupedByEmployee[employeeKey].lainnya.push(item.type_overtime_manual);
                     }
@@ -712,7 +712,7 @@
 
         // Export to PDF - UPDATED dengan border tipis dan fit in paper
         function exportToPDF() {
-            if (filteredData.length === 0) {
+            if (filteredData.length == 0) {
                 alert('Tidak ada data untuk diekspor');
                 return;
             }
@@ -753,13 +753,13 @@
 
                 const typeOvertime = (item.type_overtime || '').toLowerCase();
 
-                if (typeOvertime === 'shift') {
+                if (typeOvertime == 'shift') {
                     groupedByEmployee[employeeKey].hari += (item.count || 1);
-                } else if (typeOvertime === 'jam') {
+                } else if (typeOvertime == 'jam') {
                     if (item.type_overtime_manual) {
                         groupedByEmployee[employeeKey].jam.push(item.type_overtime_manual);
                     }
-                } else if (typeOvertime === 'lainnya') {
+                } else if (typeOvertime == 'lainnya') {
                     if (item.type_overtime_manual) {
                         groupedByEmployee[employeeKey].lainnya.push(item.type_overtime_manual);
                     }
