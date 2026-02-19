@@ -329,14 +329,13 @@
 
                     <div class="space-y-1">
                         <button @click="openMenu = (openMenu === 'rekap' ? null : 'rekap')"
-                                @focus="openMenu = 'rekap'"
                                 :class="(openMenu === 'rekap' || {{ $isRekapMenuActive ? 'true' : 'false' }}) ? 'bg-sky-50 border-sky-200 text-sky-700' : 'text-gray-600 hover:bg-sky-50'"
                                 class="flex items-center w-full p-1 transition border border-transparent rounded-xl group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2">
                             <div :class="(openMenu === 'rekap' || {{ $isRekapMenuActive ? 'true' : 'false' }}) ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 group-hover:bg-sky-100'" class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
-                                <i class="text-lg ri-file-text-line"></i>
+                                <i class="text-lg ri-file-chart-line"></i>
                             </div>
                             <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                                <span class="text-sm font-semibold">Slip Gaji</span>
+                                <span class="text-sm font-semibold">Rekapitulasi</span>
                                 <i class="transition-transform duration-200 ri-arrow-down-s-line" :class="openMenu === 'rekap' ? 'rotate-180' : ''"></i>
                             </div>
                         </button>
