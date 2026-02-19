@@ -1,132 +1,329 @@
-<x-app-layout>
-	<x-main-div>
-		<div class="py-10 px-10">
-			<p class="text-center font-bold text-2xl uppercase">Tambah User</p>
-			<form method="POST" action="{{ route('users.store') }}" class=" my-10" id="form" enctype="multipart/form-data">
-				@csrf
-				<div class="bg-slate-100 px-10 py-5 rounded shadow">
-					
-					<!-- Name -->
-					<div>
-				        
-						<x-input-label for="name" :value="__('Nama')" />
-						<x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required
-							autofocus autocomplete="name" placeholder="Masukkan username.. ( Username terakhir, {{ $lastUser->name }} )"/>
-						<x-input-error :messages="$errors->get('name')" class="mt-2" />
-					</div>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Tambah User')
 
-					<!-- Name Lengkap -->
-					<div>
-						<x-input-label for="nama_lengkap" :value="__('Nama Lengkap')" />
-						<x-text-input id="nama_lengkap" class="block mt-1 w-full" type="text" name="nama_lengkap" :value="old('nama_lengkap')" required
-							autofocus autocomplete="nama_lengkap" placeholder="Masukkan nama lengkap user..."/>
-						<x-input-error :messages="$errors->get('nama_lengkap')" class="mt-2" />
-					</div>
+    <div
+        x-data="{
+            density: 'normal',
+            init() {
+                const params = new URLSearchParams(window.location.search);
+                const queryDensity = params.get('density');
+                const savedDensity = localStorage.getItem('create_user_density');
+                if (queryDensity === 'ultra_compact' || queryDensity === 'normal') {
+                    this.density = queryDensity;
+                } else if (savedDensity === 'ultra_compact' || savedDensity === 'normal') {
+                    this.density = savedDensity;
+                }
+                this.persistDensity();
+            },
+            setDensity(mode) {
+                this.density = mode;
+                this.persistDensity();
+            },
+            persistDensity() {
+                localStorage.setItem('create_user_density', this.density);
+            }
+        }"
+        x-init="init()"
+        class="mx-auto w-full max-w-screen px-1 sm:px-2 lg:px-4"
+        :class="density === 'ultra_compact' ? 'space-y-2' : 'space-y-5'"
+    >
+        <section
+            class="border border-gray-100/80 bg-white/90 shadow-sm backdrop-blur-sm"
+            :class="density === 'ultra_compact' ? 'rounded-lg p-3' : 'rounded-2xl p-6'"
+        >
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="font-semibold uppercase tracking-[0.12em] text-blue-600" :class="density === 'ultra_compact' ? 'text-[11px]' : 'text-xs'">User Management</p>
+                    <h2 class="mt-1 font-bold text-gray-900" :class="density === 'ultra_compact' ? 'text-lg' : 'text-3xl'">Tambah User</h2>
+                    <p class="mt-1 text-gray-600" :class="density === 'ultra_compact' ? 'text-[11px]' : 'text-sm'">
+                        Mode `Normal` untuk kenyamanan visual, mode `Ultra Compact` untuk input cepat.
+                    </p>
+                </div>
 
-					<!-- Email Address -->
-					<div class="mt-4">
-						<x-input-label for="email" :value="__('Email')" />
-						<x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required
-							autocomplete="username" placeholder="Masukkan email user..."/>
-						<x-input-error :messages="$errors->get('email')" class="mt-2" />
-					</div>
-					
-					<!-- NIK -->
-        			<div class="mt-4">
-        				<x-input-label for="NIK" :value="__('NIK')" />
-        				<x-text-input id="NIK" class="block mt-1 w-full" type="text" name="nik"
-        					value="" placeholder="Nik..." maxlength="16"  pattern="[0-9]*" autocomplete="nik" />
-        				<x-input-error :messages="$errors->get('nik')" class="mt-2" />
-        			</div>
-        			<!-- No HP -->
-        			<div class="mt-4">
-        				<x-input-label for="no_hp" :value="__('No. HP Aktif')" />
-        				<x-text-input id="no_hp" class="block mt-1 w-full" type="text" name="no_hp"
-        					value="" placeholder="No hp aktif..." maxlength="14" autocomplete="no_hp" />
-        				<x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
-        			</div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+                        <button
+                            type="button"
+                            @click="setDensity('ultra_compact')"
+                            class="rounded-md px-2.5 py-1 text-xs font-semibold transition"
+                            :class="density === 'ultra_compact' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                        >
+                            Ultra Compact
+                        </button>
+                        <button
+                            type="button"
+                            @click="setDensity('normal')"
+                            class="rounded-md px-2.5 py-1 text-xs font-semibold transition"
+                            :class="density === 'normal' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                        >
+                            Normal
+                        </button>
+                    </div>
 
-					<!-- Password -->
-					<div class="mt-4">
-						<x-input-label for="password" :value="__('Password')" />
+                    <a
+                        href="{{ route('users.index') }}"
+                        class="inline-flex items-center border border-gray-200 bg-white font-semibold text-gray-700 transition hover:bg-gray-50"
+                        :class="density === 'ultra_compact' ? 'rounded-lg px-3 py-1.5 text-xs' : 'rounded-xl px-4 py-2 text-sm'"
+                    >
+                        Kembali ke Data User
+                    </a>
+                </div>
+            </div>
+        </section>
 
-						<x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required
-							autocomplete="new-password" placeholder="Masukkan password user..."/>
+        <form
+            method="POST"
+            action="{{ route('users.store') }}"
+            id="form"
+            enctype="multipart/form-data"
+            :class="density === 'ultra_compact' ? 'space-y-2' : 'space-y-5'"
+        >
+            @csrf
 
-						<x-input-error :messages="$errors->get('password')" class="mt-2" />
-					</div>
+            <div
+                :class="density === 'ultra_compact'
+                    ? 'grid gap-2 xl:grid-cols-[1fr_220px]'
+                    : 'grid gap-5 xl:grid-cols-[1fr_320px]'"
+            >
+                <section
+                    class="border border-gray-100/80 bg-white/95 shadow-sm"
+                    :class="density === 'ultra_compact' ? 'rounded-lg p-3' : 'rounded-2xl p-6'"
+                >
+                    <h3 class="font-semibold uppercase tracking-wide text-gray-700" :class="density === 'ultra_compact' ? 'text-[11px]' : 'text-sm'">Form User</h3>
 
-					<!-- Confirm Password -->
-					<div class="mt-4">
-						<x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-						<x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation"
-							required autocomplete="new-password" placeholder="Konfirmasi password..."/>
-
-						<x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-					</div>
-					<!-- client -->
-					<div class="mt-4">
-						<x-input-label for="client" :value="__('Client')" />
-						<select name="kerjasama_id" id="" class="select select-bordered w-full mt-1">
-							<option selected disabled>~ Pilih Client ~</option>
-							@foreach ($data as $i)
-								<option name="kerjasama_id" value="{{ $i->id }}" class="py-2">{{ $i->client->name }}</option>
-							@endforeach
-						</select>
-					</div>
-					<!-- divisi -->
-					<div class="mt-4">
-						<x-input-label for="divisi" :value="__('Divisi')" />
-						<select name="devisi_id" id="" class="select select-bordered w-full mt-1">
-							<option selected disabled>~ Pilih Devisi ~</option>
-							@foreach ($dev as $i)
-								<option name="devisi_id" value="{{ $i->id }}" class="py-2">{{ $i->name }}</option>
-							@endforeach
-						</select>
-					</div>
-					<!-- jabatan -->
-					<div class="mt-4">
-						<x-input-label for="jabatan_id" :value="__('Jabatan')" />
-						<select name="jabatan_id" id="" class="select select-bordered w-full mt-1">
-							<option selected disabled>~ Pilih Jabatan ~</option>
-							@foreach ($jabatan as $i)
-								<option name="jabatan_id" value="{{ $i->id }}" class="py-2">{{ $i->name_jabatan }}</option>
-							@endforeach
-						</select>
-					</div>
-					{{-- foto Profile --}}
-					
-					<div class="md:mt-4 p-1">
-                        <x-input-label for="foto Profil" :value="__('foto Profil')" />
-                        <div class="preview hidden w-full">
-                            <span class="flex justify-center items-center">
-                                <label for="img" class="p-1">
-                                    <img class="img1 ring-2 ring-slate-500/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s"
-                                        src="" alt="" srcset="" height="120px" width="120px">
-                                    
-                                </label>
-                            </span>
+                    <div
+                        :class="density === 'ultra_compact'
+                            ? 'mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-3'
+                            : 'mt-4 grid gap-4 md:grid-cols-2'"
+                    >
+                        <div>
+                            <label for="name" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Username</label>
+                            <input
+                                id="name"
+                                type="text"
+                                name="name"
+                                value="{{ old('name') }}"
+                                required
+                                autocomplete="name"
+                                placeholder="Username (terakhir: {{ optional($lastUser)->name ?? '-' }})"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
                         </div>
-                        <label for="img"
-                            class="w-full iImage1 flex flex-col items-center justify-center rounded-md bg-slate-300/70  ring-2 ring-slate-400/70 hover:ring-0 hover:bg-slate-300 transition ease-in-out .2s">
-                            <span class="p-3 flex justify-center flex-col items-center">
-                                <i class="ri-image-add-line text-xl text-slate-700/90"></i>
-                                <span class="text-xs font-semibold text-slate-700/70">+ Gambar</span>
-                                <input id="img" class="hidden mt-1 w-full file-input file-input-sm file-input-bordered shadow-none"
-                                    type="file" name="image" :value="old('image')" autofocus autocomplete="img" />
-                            </span>
-                        </label>
-                        <x-input-error :messages="$errors->get('image1')" class="mt-2" />
-    				</div>
-					<div class="flex justify-end mt-10 gap-2">
-						<a href="{{ route('users.index') }}" class="btn btn-error hover:bg-red-500 transition-all ease-linear .2s">
-							Back
-						</a>
-						<button type="submit" class="btn btn-primary">Save</button>
-					</div>
-				</div>
-			</form>
-		</div>
-	</x-main-div>
-</x-app-layout>
+
+                        <div>
+                            <label for="nama_lengkap" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Nama Lengkap</label>
+                            <input
+                                id="nama_lengkap"
+                                type="text"
+                                name="nama_lengkap"
+                                value="{{ old('nama_lengkap') }}"
+                                required
+                                autocomplete="nama_lengkap"
+                                placeholder="Nama lengkap"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('nama_lengkap')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="email" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                required
+                                autocomplete="username"
+                                placeholder="Email user"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="no_hp" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">No. HP</label>
+                            <input
+                                id="no_hp"
+                                type="text"
+                                name="no_hp"
+                                value="{{ old('no_hp') }}"
+                                maxlength="14"
+                                autocomplete="no_hp"
+                                placeholder="No HP aktif"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('no_hp')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="NIK" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">NIK</label>
+                            <input
+                                id="NIK"
+                                type="text"
+                                name="nik"
+                                value="{{ old('nik') }}"
+                                maxlength="16"
+                                pattern="[0-9]*"
+                                autocomplete="nik"
+                                placeholder="NIK"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('nik')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="kerjasama_id" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Client</label>
+                            <select
+                                name="kerjasama_id"
+                                id="kerjasama_id"
+                                required
+                                class="select select-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'select-sm h-9 text-xs' : 'h-11 text-sm'"
+                            >
+                                <option value="" disabled {{ old('kerjasama_id') ? '' : 'selected' }}>Pilih Client</option>
+                                @foreach ($data as $i)
+                                    <option value="{{ $i->id }}" {{ old('kerjasama_id') == $i->id ? 'selected' : '' }}>{{ $i->client->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('kerjasama_id')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="devisi_id" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Divisi</label>
+                            <select
+                                name="devisi_id"
+                                id="devisi_id"
+                                required
+                                class="select select-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'select-sm h-9 text-xs' : 'h-11 text-sm'"
+                            >
+                                <option value="" disabled {{ old('devisi_id') ? '' : 'selected' }}>Pilih Divisi</option>
+                                @foreach ($dev as $i)
+                                    <option value="{{ $i->id }}" {{ old('devisi_id') == $i->id ? 'selected' : '' }}>{{ $i->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('devisi_id')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="jabatan_id" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Jabatan</label>
+                            <select
+                                name="jabatan_id"
+                                id="jabatan_id"
+                                required
+                                class="select select-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'select-sm h-9 text-xs' : 'h-11 text-sm'"
+                            >
+                                <option value="" disabled {{ old('jabatan_id') ? '' : 'selected' }}>Pilih Jabatan</option>
+                                @foreach ($jabatan as $i)
+                                    <option value="{{ $i->id }}" {{ old('jabatan_id') == $i->id ? 'selected' : '' }}>{{ $i->name_jabatan }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('jabatan_id')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="password" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                required
+                                autocomplete="new-password"
+                                placeholder="Password"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
+                        </div>
+
+                        <div>
+                            <label for="password_confirmation" class="font-semibold text-gray-700" :class="density === 'ultra_compact' ? 'mb-1 block text-[11px]' : 'mb-1.5 block text-sm'">Confirm Password</label>
+                            <input
+                                id="password_confirmation"
+                                type="password"
+                                name="password_confirmation"
+                                required
+                                autocomplete="new-password"
+                                placeholder="Konfirmasi password"
+                                class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                                :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
+                            />
+                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1.5" />
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    class="h-fit border border-gray-100/80 bg-white/95 shadow-sm xl:sticky xl:top-20"
+                    :class="density === 'ultra_compact' ? 'rounded-lg p-3' : 'rounded-2xl p-5'"
+                >
+                    <h3 class="font-semibold uppercase tracking-wide text-gray-700" :class="density === 'ultra_compact' ? 'text-[11px]' : 'text-sm'">Foto Profil</h3>
+                    <div class="space-y-2" :class="density === 'ultra_compact' ? 'mt-2' : 'mt-4'">
+                        <div class="flex items-center justify-center">
+                            <img
+                                id="previewImage"
+                                src="{{ asset('/logo/person.png') }}"
+                                alt="Preview"
+                                class="border border-gray-200 object-cover object-center shadow-sm"
+                                :class="density === 'ultra_compact' ? 'h-24 w-24 rounded-lg' : 'h-36 w-36 rounded-2xl'"
+                            />
+                        </div>
+                        <input
+                            id="img"
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                            class="file-input file-input-bordered w-full border-gray-200 bg-white focus:outline-none"
+                            :class="density === 'ultra_compact' ? 'file-input-sm text-xs' : 'text-sm'"
+                        />
+                        <p class="text-gray-500" :class="density === 'ultra_compact' ? 'text-[10px]' : 'text-xs'">Format JPG/PNG proporsional.</p>
+                        <x-input-error :messages="$errors->get('image')" class="mt-1.5" />
+                    </div>
+                </section>
+            </div>
+
+            <div class="flex justify-end gap-2" :class="density === 'ultra_compact' ? 'pb-1' : 'pb-2'">
+                <a
+                    href="{{ route('users.index') }}"
+                    class="inline-flex items-center border border-gray-200 bg-white font-semibold text-gray-700 transition hover:bg-gray-50"
+                    :class="density === 'ultra_compact' ? 'rounded-lg px-3 py-1.5 text-xs' : 'rounded-xl px-4 py-2 text-sm'"
+                >
+                    Batal
+                </a>
+                <button
+                    type="submit"
+                    class="inline-flex items-center bg-blue-600 font-semibold text-white transition hover:bg-blue-700"
+                    :class="density === 'ultra_compact' ? 'rounded-lg px-3 py-1.5 text-xs' : 'rounded-xl px-4 py-2 text-sm'"
+                >
+                    Simpan User
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @push('scripts')
+        <style>
+            [x-cloak] { display: none !important; }
+        </style>
+        <script>
+            $(function() {
+                $('#img').on('change', function(e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        $('#previewImage').attr('src', evt.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        </script>
+    @endpush
+</x-admin-layout>

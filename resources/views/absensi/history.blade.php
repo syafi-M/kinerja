@@ -176,7 +176,7 @@
             }
         </style>
         <div class="py-10">
-            <p class="text-center text-lg sm:text-2xl uppercase pb-10 font-bold ">Riwayat kehadiran Saya</p>
+            <p class="pb-10 text-lg font-bold text-center uppercase sm:text-2xl ">Riwayat kehadiran Saya</p>
             <!--kalendar-->
             <div class="divCal">
                 <div class="calendar-container">
@@ -184,7 +184,7 @@
                         <form method="GET">
                             <input type="hidden" name="search"
                                 value="{{ $filter ? Carbon\Carbon::parse($filter)->subMonth(1)->format('Y-m') : Carbon\Carbon::now()->subMonth(1)->format('Y-m') }}">
-                            <button type="submit"><i class="ri-arrow-drop-left-line font-bold"
+                            <button type="submit"><i class="font-bold ri-arrow-drop-left-line"
                                     style="font-size: 3rem; line-height: 1;"></i></button>
                         </form>
 
@@ -194,7 +194,7 @@
                         <form method="GET">
                             <input type="hidden" name="search"
                                 value="{{ $filter ? Carbon\Carbon::parse($filter)->addMonth(1)->format('Y-m') : Carbon\Carbon::now()->addMonth(1)->format('Y-m') }}">
-                            <button type="submit"><i class="ri-arrow-drop-right-line font-bold"
+                            <button type="submit"><i class="font-bold ri-arrow-drop-right-line"
                                     style="font-size: 3rem; line-height: 1;"></i></button>
                         </form>
                     </div>
@@ -234,7 +234,7 @@
                                 })
                                 ->keyBy(fn($a) => \Carbon\Carbon::parse($a->created_at)->day);
 
-                            $holidays = $harLib->keyBy(fn($h) => \Carbon\Carbon::parse($h['tanggal'])->format('Y-m-d'));
+                            $holidays = $harLib->keyBy(fn($h) => \Carbon\Carbon::parse($h['date'])->format('Y-m-d'));
                         @endphp
 
                         @for ($week = 0; $week < $weeks; $week++)
@@ -370,8 +370,8 @@
                     </div>
                 </div>
             </div>
-            <div class="flex justify-center items-center" style="margin: 2rem 2rem 0 2rem;">
-                <div class="bg-white rounded-md p-2 w-full" style="max-width: 300pt;">
+            <div class="flex items-center justify-center" style="margin: 2rem 2rem 0 2rem;">
+                <div class="w-full p-2 bg-white rounded-md" style="max-width: 300pt;">
                     <p class="text-sm font-semibold">Keterangan:</p>
                     <div class="flex items-center">
                         <div class="day double-strikethrough" style="width: 35px; scale: 70%;">
@@ -400,8 +400,8 @@
                 </div>
             </div>
 
-            <div class="flex flex-col items-center mx-2 sm:justify-center justify-start">
-                <div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
+            <div class="flex flex-col items-center justify-start mx-2 sm:justify-center">
+                <div class="w-full mx-2 overflow-x-auto md:overflow-hidden sm:mx-0 sm:w-full">
                     <table
                         class="table w-full table-xs bg-slate-50 sm:table-md text-sm sm:text-md scale-90 md:scale-90 {{ Auth::user()->kerjasama_id != 1 ? 'table-zebra' : '' }}">
                         <thead>
@@ -415,7 +415,7 @@
                                 @if (Auth::user()->kerjasama_id == 1)
                                     <th class="bg-slate-300">Absen Siang(dzuhur)</th>
                                 @endif
-                                <th class="bg-slate-300 px-5">Absen Keluar</th>
+                                <th class="px-5 bg-slate-300">Absen Keluar</th>
                                 <th
                                     class="bg-slate-300 {{ Auth::user()->jabatan->code_jabatan == 'SPV-W' ? 'hidden' : '' }}">
                                     Telat/Tidak</th>
@@ -448,7 +448,7 @@
                                     @continue
                                     <tr>
                                         <td colspan="6" class="text-center">
-                                            <div class="my-10 mx-3">
+                                            <div class="mx-3 my-10">
                                                 <h2>Tidak Ada History Absen</h2>
                                             </div>
                                         </td>
@@ -465,12 +465,12 @@
                                         <td>{{ $arr->tanggal_absen }}</td>
                                         <td class="text-center">{{ $arr->absensi_type_masuk }}</td>
                                         @if (Auth::user()->kerjasama_id == 1)
-                                            <td class="text-center">{!! $arr->dzuhur ? 'Sudah Absen' : '<span class="text-red-500 font-semibold uppercase">Belum Absen</span>' !!}</td>
+                                            <td class="text-center">{!! $arr->dzuhur ? 'Sudah Absen' : '<span class="font-semibold text-red-500 uppercase">Belum Absen</span>' !!}</td>
                                         @endif
                                         {{-- Handle Absensi Type Pulang --}}
                                         <td class="text-center">
                                             {!! $arr->absensi_type_pulang == null
-                                                ? '<span class="text-red-500 underline font-bold">Belum Absen Pulang</span>'
+                                                ? '<span class="font-bold text-red-500 underline">Belum Absen Pulang</span>'
                                                 : $arr->absensi_type_pulang !!}
                                         </td>
                                         {{-- End Handle Absensi Type Pulang --}}
@@ -562,7 +562,7 @@
                                                 }
                                             @endphp
 
-                                            <td class="flex flex-col justify-center items-center" style="width: 180px;">
+                                            <td class="flex flex-col items-center justify-center" style="width: 180px;">
                                                 <div class="{{ $badgeClass }}">
                                                     <p>{{ $label }}</p>
                                                 </div>
@@ -583,7 +583,7 @@
                 @if (Auth::user()->kerjasama_id == 1)
                     <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md"
                         style="background-color: #00670A;">
-                        <span class ="text-center text-white font-semibold">
+                        <span class ="font-semibold text-center text-white">
                             @if (auth()->user()->name == 'MEI' || auth()->user()->name == 'ZAKY')
                                 Poin Anda {{ $absen->whereIn('user_id', ['424', '423'])->count() }}
                             @else
@@ -601,22 +601,22 @@
                     <template x-if="opModal">
                         <div x-cloak x-show="opModal">
                             <div style="z-index: 9000; backdrop-filter: blur(1px);"
-                                class="fixed w-full flex justify-center items-center inset-0 bg-slate-500/10 transition-all duration-300 ease-in-out h-screen">
-                                <div class="flex justify-center items-center">
-                                    <div class="bg-slate-200 inset-0 w-fit p-3 mx-10 my-10 rounded-md shadow">
+                                class="fixed inset-0 flex items-center justify-center w-full h-screen transition-all duration-300 ease-in-out bg-slate-500/10">
+                                <div class="flex items-center justify-center">
+                                    <div class="inset-0 p-3 mx-10 my-10 rounded-md shadow bg-slate-200 w-fit">
                                         <div class="flex justify-end mb-3">
                                             <button @click="opModal = false"
-                                                class="btn btn-error scale-90 closeButton">&times;</button>
+                                                class="scale-90 btn btn-error closeButton">&times;</button>
                                         </div>
                                         <div>
                                             @if ($status == 'BAIK')
                                                 <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md"
                                                     style="background-color: #00670A;">
-                                                    <span class ="text-center text-white font-semibold">
+                                                    <span class ="font-semibold text-center text-white">
                                                         Persentase Kehadiran
                                                         {{ $persentase > 100 ? '100%' : round($persentase) . '%' }}
                                                         <br />
-                                                        <span class="bg-white px-2 rounded-md text-red-500">
+                                                        <span class="px-2 text-red-500 bg-white rounded-md">
                                                             Telat {{ $telat }} kali
                                                         </span>
                                                         <br />
@@ -626,10 +626,10 @@
                                             @elseif($status == 'CUKUP')
                                                 <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md"
                                                     style="background-color: #663300;">
-                                                    <span class ="text-center text-white font-semibold">
+                                                    <span class ="font-semibold text-center text-white">
                                                         Persentase Kehadiran {{ round($persentase) . '%' }}
                                                         <br />
-                                                        <span class="bg-white px-2 rounded-md text-red-500">
+                                                        <span class="px-2 text-red-500 bg-white rounded-md">
                                                             Telat {{ $telat }} kali
                                                         </span>
                                                         <br />
@@ -639,10 +639,10 @@
                                             @else
                                                 <div class="flex items-center justify-center px-5 py-2 m-2 rounded-md shadow-md"
                                                     style="background-color: #660000;">
-                                                    <span class ="text-center text-white font-semibold">
+                                                    <span class ="font-semibold text-center text-white">
                                                         Persentase Kehadiran {{ round($persentase) . '%' }}
                                                         <br />
-                                                        <span class="bg-white px-2 rounded-md text-red-500">
+                                                        <span class="px-2 text-red-500 bg-white rounded-md">
                                                             Telat {{ $telat }} kali
                                                         </span>
                                                         <br />
@@ -659,11 +659,11 @@
                 </div>
                 <!--END MODAL-->
             </div>
-            <div id="pag-1" class="mt-5 mb-5 mx-10">
+            <div id="pag-1" class="mx-10 mt-5 mb-5">
                 {{ $absen->links() }}
             </div>
             <div class="flex justify-center sm:justify-end" style="margin-top: 5px;">
-                <a href="{{ route('dashboard.index') }}" class="btn btn-error mx-2 sm:mx-10">Kembali</a>
+                <a href="{{ route('dashboard.index') }}" class="mx-2 btn btn-error sm:mx-10">Kembali</a>
             </div>
     </x-main-div>
 </x-app-layout>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Spreadsheet</title>
+    <title>Laporan Absensi Spreadsheet</title>
     <script src="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.js"></script>
     <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.css" type="text/css" />
     <script src="https://jsuites.net/v5/jsuites.js"></script>
@@ -422,44 +422,43 @@
 </head>
 
 <body>
-    <x-app-layout>
+    <x-admin-layout :fullWidth="true">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <x-main-div>
             <div class="main-container">
                 <div class="header-section">
-                    <h1>Attendance Management System</h1>
-                    <p>Employee attendance tracking and reporting dashboard</p>
+                    <h1>Laporan Absensi</h1>
+                    <p>Spreadsheet monitoring absensi karyawan</p>
                 </div>
 
                 <div class="legend-section">
                     <h3 class="legend-title">
                         <i class="fas fa-info-circle"></i>
-                        Attendance Legend
+                        Keterangan Absensi
                     </h3>
                     <div class="legend-grid md:grid-cols-3">
                         <div class="legend-item masuk">
                             <div class="legend-symbol symbol-m">M</div>
-                            <span><strong>Masuk</strong> - Present/Working</span>
+                            <span><strong>Masuk</strong> - Hadir/Bekerja</span>
                         </div>
                         <div class="legend-item izin">
                             <div class="legend-symbol symbol-i">I</div>
-                            <span><strong>Izin</strong> - Sick Leave/Permission</span>
+                            <span><strong>Izin</strong> - Sakit/Izin</span>
                         </div>
                         <div class="legend-item tidak">
                             <div class="legend-symbol symbol-t">T</div>
-                            <span><strong>Tidak Masuk</strong> - Absent</span>
+                            <span><strong>Tidak Masuk</strong> - Tidak Hadir</span>
                         </div>
                         <div class="legend-item libur">
                             <div class="legend-symbol symbol-mt">L</div>
-                            <span><strong>Libur</strong> - Leave/Holiday</span>
+                            <span><strong>Libur</strong> - Cuti/Libur</span>
                         </div>
                         <div class="legend-item weekend">
                             <div class="legend-symbol symbol-weekend">//</div>
-                            <span><strong>Weekend</strong> - Saturday/Sunday</span>
+                            <span><strong>Weekend</strong> - Sabtu/Minggu</span>
                         </div>
                         <div class="legend-item holiday">
                             <div class="legend-symbol symbol-holiday">H</div>
-                            <span><strong>Holiday</strong> - National Holiday</span>
+                            <span><strong>Holiday</strong> - Hari Libur Nasional</span>
                         </div>
                     </div>
                 </div>
@@ -468,16 +467,15 @@
                     <div id="spreadsheet"></div>
 
                     <div class="controls-section">
-                        <button class="download-btn" id="download">Download PDF Report</button>
+                        <button class="download-btn" id="download">Download PDF</button>
                     </div>
                 </div>
 
                 <div class="footer-section">
-                    <p>© 2024 Attendance Management System | Last updated: <span id="currentTime"></span></p>
+                    <p>© 2024 Sistem Absensi | Terakhir diperbarui: <span id="currentTime"></span></p>
                 </div>
             </div>
-        </x-main-div>
-    </x-app-layout>
+    </x-admin-layout>
     <div class="notification" id="notification"></div>
 
     <script>

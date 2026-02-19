@@ -97,7 +97,8 @@
         @include('../layouts/navbar')
         <div class="flex items-center justify-start">
             @if ($absenP && $absenP?->absensi_type_pulang == null)
-                <div id="statusAbsensiContainer" class="inset-0 px-4 py-2 ml-5 font-semibold text-center rounded-tr-lg rounded-bl-lg shadow-md w-fit"
+                <div id="statusAbsensiContainer"
+                    class="inset-0 px-4 py-2 ml-5 font-semibold text-center rounded-tr-lg rounded-bl-lg shadow-md w-fit"
                     style="background-color: #fafafa; font-size: 10pt; {{ $rillSholat ? '' : 'margin-bottom: 10px;' }}">
                     <p id="statusAbsensiText">Memeriksa status...</p>
                 </div>
@@ -251,6 +252,42 @@
                                     <a href="{{ route('izin.index') }}" class="w-full btn btn-info">Riwayat Izin</a>
                                 </div>
                         </div>
+                        {{-- Handle Rekap & Lembur --}}
+                        @php
+                            $jabatanMatch = match ($codeJabatan) {
+                                'CO-CS' => true,
+                                'CO-SCR' => true,
+                                default => false,
+                            };
+                        @endphp
+                        @if ($jabatanMatch)
+                            <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
+                                <div id="btnRekap"
+                                    onclick="window.location='{{ route('index.rekap.data.leader') }}'"
+                                    class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
+                                    <i class="ri-calendar-schedule-line"></i>
+                                    <button class="text-sm font-bold uppercase">
+                                        Data Rekap (Trial)
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- TO Manajemen SPV And MRT --}}
+
+                        @if (auth()->user()->jabatan_id == 4 || auth()->user()->jabatan_id == 14)
+                            <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
+                                <div id="btnRekap" onclick="window.location='{{ route('manajemen_rekap') }}'"
+                                    class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
+                                    <i class="ri-calendar-schedule-line"></i>
+                                    <button class="text-sm font-bold uppercase">
+                                        Data Rekap
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- End Handle --}}
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                             @if (Auth::user()->kerjasama_id == 1)
                                 <div id="btnCP"
@@ -316,8 +353,8 @@
                                 <button class="text-sm font-bold uppercase">Laporan</button>
                             </div>
                             <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="tambahLaporan">
-                                <a href="https://laporan-sac.sac-po.com"
-                                    class="w-full btn btn-info">Tambah Laporan</a>
+                                <a href="https://laporan-sac.sac-po.com" class="w-full btn btn-info">Tambah
+                                    Laporan</a>
                             </div>
                             <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="cekLaporan">
                                 <a href="https://laporan-sac.sac-po.com" class="w-full btn btn-info">Riwayat
@@ -736,7 +773,10 @@
             }
 
             function processPositionUpdate(position) {
-                const { latitude, longitude } = position.coords;
+                const {
+                    latitude,
+                    longitude
+                } = position.coords;
 
                 // Skip if position hasn't changed significantly
                 if (lastPosition) {
@@ -750,7 +790,10 @@
                 }
 
                 // Update last position
-                lastPosition = { lat: latitude, lng: longitude };
+                lastPosition = {
+                    lat: latitude,
+                    lng: longitude
+                };
 
                 // Update form fields
                 elements.lat.val(latitude);
@@ -770,15 +813,15 @@
             // Optimized distance calculation (Haversine formula)
             function calculateDistance(lat1, lon1, lat2, lon2) {
                 const R = 6371e3; // Earth's radius in meters
-                const φ1 = lat1 * Math.PI/180;
-                const φ2 = lat2 * Math.PI/180;
-                const Δφ = (lat2-lat1) * Math.PI/180;
-                const Δλ = (lon2-lon1) * Math.PI/180;
+                const φ1 = lat1 * Math.PI / 180;
+                const φ2 = lat2 * Math.PI / 180;
+                const Δφ = (lat2 - lat1) * Math.PI / 180;
+                const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-                const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                        Math.cos(φ1) * Math.cos(φ2) *
-                        Math.sin(Δλ/2) * Math.sin(Δλ/2);
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                    Math.cos(φ1) * Math.cos(φ2) *
+                    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
                 return R * c; // Distance in meters
             }
@@ -822,7 +865,7 @@
 
                 // Show user-friendly error message based on error code
                 let errorMessage = "Location access error. ";
-                switch(error.code) {
+                switch (error.code) {
                     case error.PERMISSION_DENIED:
                         errorMessage += "Please allow location access.";
                         break;
@@ -843,7 +886,7 @@
                 alert('Geolocation is not supported by your browser.');
                 elements.labelMap.text('Geolocation is not supported by your browser.').removeClass('hidden');
             }
-        }) (jQuery);
+        })(jQuery);
     </script>
     <script>
         $(document).ready(function() {
@@ -1183,7 +1226,8 @@
             if (IS_OVERNIGHT_SHIFT) {
                 elements.labelWaktu.text('Shift Lintas Hari');
                 // Jika sisaMenit < 0 berarti sudah lewat jam pulang
-                elements.jam2.text(sisaMenit > MINUTES_AFTER_SHIFT_END ? (sisaMenit > 0 ? `Sisa: ${timeStr}` : '~ Waktunya Pulang ~') : '~ Shift Berakhir ~');
+                elements.jam2.text(sisaMenit > MINUTES_AFTER_SHIFT_END ? (sisaMenit > 0 ? `Sisa: ${timeStr}` :
+                    '~ Waktunya Pulang ~') : '~ Shift Berakhir ~');
             } else {
                 if (sisaMenit < MINUTES_AFTER_SHIFT_END) {
                     elements.jam2.text('~ Masa Absen Pulang Hampir Habis ~');
@@ -1226,7 +1270,10 @@
 
                 if (elements.statusContainer.length > 0) {
                     elements.statusContainer
-                        .css({'background-color': '#8F0000', 'color': '#DEDEDE'}) // Merah;
+                        .css({
+                            'background-color': '#8F0000',
+                            'color': '#DEDEDE'
+                        }) // Merah;
                     elements.statusText.text('Waktunya Absen Pulang!');
                 }
             } else {
@@ -1235,7 +1282,11 @@
 
                 if (elements.statusContainer.length > 0) {
                     elements.statusContainer
-                        .css({'background-color': '#006118', 'color': '#DEDEDE', 'text-align': 'left'}); // Hijau
+                        .css({
+                            'background-color': '#006118',
+                            'color': '#DEDEDE',
+                            'text-align': 'left'
+                        }); // Hijau
 
                     // Gunakan .html() agar tag span & br terbaca
                     elements.statusText.html('Sudah Absen Masuk');

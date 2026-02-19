@@ -1,91 +1,82 @@
-<x-app-layout>
-	<div class="bg-slate-500 mx-10 rounded">
-		<div>
-			<p class="text-center text-2xl font-bold py-10 uppercase">Index Ruangan</p>
-		</div>
-		<div class="flex justify-end">
-			<div class="input flex w-fit mx-10 items-center justify-end mb-5 input-bordered">
-				<i class="ri-search-2-line"></i>
-				<input type="search" id="searchInput" class="border-none rounded ml-1" placeholder="Search..." required>
-			</div>
-		</div>
-		<div class="flex justify-start mx-10 mb-5">
-    		<form action="{{ route('ruangan.import') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
-    		    @csrf
-    		    <label for="iCP" class="btn btn-success overflow-hidden" ><i class="ri-file-excel-2-line text-lg"></i><span id="importLabel" class="overflow-hidden">Import Ruangan</span></label>
-    		    <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
-    		    <button class="btn btn-primary hidden" type="submit" id="btnImport">Import</button>
-    		</form>
-		</div>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Data Ruangan')
 
-		<div class="overflow-x-auto mx-10">
-			<table class="table table-zebra table-sm w-full bg-slate-50" id="searchTable">
-				<!-- head -->
-				<thead>
-					<tr>
-						<th class="bg-slate-300 rounded-tl-2xl">#</th>
-						<th class="bg-slate-300 ">Client</th>
-						<th class="bg-slate-300 ">Nama Ruangan</th>
-						<th class="bg-slate-300 rounded-tr-2xl">Action</th>
-					</tr>
-				</thead>
-				<tbody>
-					@php
-						$no = 1;
-					@endphp
-					@forelse ($ruangan as $i)
-						<tr>
-							<td>{{ $no++ }}</td>
-							@if ($i->kerjasama)
-							<td>{{ $i->kerjasama->client->name }}</td>
-								
-							@else
-								<td>Belum Ada Client</td>
-							@endif
-							<td>{{ $i->nama_ruangan}}</td>
-							<td>
-								<form action="{{ url('ruangan/' . $i->id) }}" method="POST" class="overflow-hidden">
-									@csrf
-									@method('DELETE')
-									<x-btn-edit>{{ url('ruangan/' . $i->id . '/edit') }}</x-btn-edit>
-									<x-btn-submit></x-btn-submit>
-								</form>
-							</td>
-						</tr>
-					@empty
-						<tr>
-							<td colspan="4" class="text-center">Data Kosong</td>
-						</tr>
-					@endforelse
-				</tbody>
-			</table>
-            <div class="mt-4">
-                {{ $ruangan->links()}}
+    <div class="mx-auto w-full max-w-screen-xl space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Ruangan Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Data Ruangan</h1>
+                    <p class="mt-1 text-sm text-gray-600">Kelola daftar ruangan berdasarkan mitra/client.</p>
+                </div>
+                <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                    <label class="flex h-10 w-full items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 sm:w-72">
+                        <i class="ri-search-2-line text-base text-gray-500"></i>
+                        <input type="search" id="searchInput" class="w-full border-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none" placeholder="Cari ruangan atau client..." />
+                    </label>
+                    <a href="{{ route('ruangan.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Ruangan</a>
+                    <a href="{{ route('admin.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Dashboard</a>
+                </div>
             </div>
-			<div class="flex justify-end my-3 gap-2 mx-10">
-				<a href="{{ route('admin.index') }}"
-					class="btn btn-error border-none hover:bg-red-500 transition-all ease-in-out .2s">Back</a>
-				<a href="{{ route('ruangan.create') }}"
-					class="btn btn-warning hover:bg-yellow-600 border-none transition-all ease-in-out .2s">+ Ruangan</a>
+        </section>
 
-			</div>
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <form action="{{ route('ruangan.import') }}" method="POST" class="flex flex-wrap items-center gap-2" enctype="multipart/form-data">
+                @csrf
+                <label for="iCP" class="inline-flex h-10 cursor-pointer items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"><i class="ri-file-excel-2-line mr-1.5 text-base"></i><span id="importLabel">Import Ruangan</span></label>
+                <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
+                <button class="hidden inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700" type="submit" id="btnImport">Import</button>
+            </form>
+        </section>
 
-		</div>
-    <script>
-        $(document).ready(function () {
-            $('#iCP').on('change', function () {
-                var fileInput = $(this);
-                var importLabel = $('#importLabel');
-                var submitButton = $('#btnImport');
-    
-                if (fileInput.val()) {
-                    importLabel.text('Klik import');
-                    submitButton.removeClass('hidden');
-                } else {
-                    importLabel.text('Import Pekerjaan');
-                    submitButton.addClass('hidden');
-                }
+        <section class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full min-w-[700px] divide-y divide-gray-100" id="searchTable">
+                    <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                        <tr>
+                            <th class="px-4 py-3 sm:px-5">#</th>
+                            <th class="px-4 py-3 sm:px-5">Client</th>
+                            <th class="px-4 py-3 sm:px-5">Nama Ruangan</th>
+                            <th class="px-4 py-3 text-right sm:px-5">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        @php $no = 1; @endphp
+                        @forelse ($ruangan as $i)
+                            <tr class="transition-colors hover:bg-blue-50/40">
+                                <td class="px-4 py-3 text-gray-500 sm:px-5">{{ $no++ }}</td>
+                                <td class="px-4 py-3 sm:px-5">{{ $i->kerjasama ? $i->kerjasama->client->name : 'Belum Ada Client' }}</td>
+                                <td class="px-4 py-3 font-semibold text-gray-800 sm:px-5">{{ $i->nama_ruangan}}</td>
+                                <td class="px-4 py-3 sm:px-5">
+                                    <div class="flex justify-end gap-1.5">
+                                        <x-btn-edit>{{ url('ruangan/' . $i->id . '/edit') }}</x-btn-edit>
+                                        <form action="{{ url('ruangan/' . $i->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-btn-submit></x-btn-submit>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500 sm:px-5">Data ruangan kosong.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="border-t border-gray-100 px-4 py-3 sm:px-5">{{ $ruangan->links()}}</div>
+        </section>
+    </div>
+
+    @push('scripts')
+        <script>
+            $(function() {
+                $('#iCP').on('change', function() {
+                    const hasValue = !!$(this).val();
+                    $('#importLabel').text(hasValue ? 'Klik import' : 'Import Ruangan');
+                    $('#btnImport').toggleClass('hidden', !hasValue);
+                });
             });
-        });
-    </script>
-</x-app-layout>
+        </script>
+    @endpush
+</x-admin-layout>

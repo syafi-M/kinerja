@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
         <div class="py-10 px-5">
 			<p class="text-center text-2xl font-bold  uppercase">Index Hari Libur</p>
             <div class="flex justify-end ">
@@ -45,5 +44,4 @@
 				<a href="{{ route('holiday.create') }}" class="btn btn-primary">+ Hari Libur</a>
 			</div>
         </div>
-    </x-main-div>
-</x-app-layout>
+</x-admin-layout>

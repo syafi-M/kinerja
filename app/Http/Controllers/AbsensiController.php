@@ -126,7 +126,9 @@ class AbsensiController extends Controller
 
         $shift = $matchedShifts->isNotEmpty() ? $matchedShifts : $shift;
 
-        // dd($shift); // Collection of matched shifts
+        // if(Auth::user()->id == 709) {
+        //     dd($shift);
+        // }
 
         return view('absensi.index', compact('penempatan', 'lokLok', 'userL', 'tesLib', 'afaLib', 'shift', 'dev', 'absensi', 'harLok', 'dirShift'));
     }
@@ -1010,7 +1012,7 @@ class AbsensiController extends Controller
 
         $isFiltered = $request->filled('search');
         $filterDate = $isFiltered ? Carbon::parse($request->search) : Carbon::now();
-        $month = $filterDate->month;
+        $month = $filterDate->format('m');
         $year = $filterDate->year;
 
         $pointId = Point::all();
@@ -1087,8 +1089,8 @@ class AbsensiController extends Controller
 
         // API data
         $client = new HTTP();
-        $apiEndpoint = 'https://dayoffapi.vercel.app/api?year=' . $year;
-        $apiEndpointMonth = 'https://dayoffapi.vercel.app/api?month=' . $month . '&year=' . $year;
+        $apiEndpoint = "https://syafi-m.github.io/liburan-api/{$year}.json";
+        $apiEndpointMonth = "https://syafi-m.github.io/liburan-api/api/{$year}/{$month}.json";
 
         $data = json_decode($client->get($apiEndpoint)->getBody(), true);
         $dataMonth = json_decode($client->get($apiEndpointMonth)->getBody(), true);

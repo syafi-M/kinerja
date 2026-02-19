@@ -68,7 +68,7 @@ class AdminController extends Controller
                 $q->where('created_at', '>=', $oneMonthsAgo);
             })
             ->orderBy('latest_absensi.last_attendance', 'asc')
-            ->limit(25)
+            ->limit(33)
             ->get();
 
         // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)
@@ -80,7 +80,7 @@ class AdminController extends Controller
         $izin = Izin::where('approve_status', 'process')->whereMonth('created_at', Carbon::now()->month)->count();
         $ip = $request->ip();
 
-        $expert = Kerjasama::whereDate('experied', '<=', Carbon::now()->addMonths(2))->get();
+        $expert = Kerjasama::whereDate('experied', '<=', Carbon::now()->addMonths(2))->orderBy('experied', 'asc')->get();
 
 
         return view('admin.index', compact('user', 'client', 'izin', 'ip', 'expert', 'online', 'notActiveUsers'));
@@ -681,7 +681,6 @@ class AdminController extends Controller
         // dd($request->all());
         $temps = TempUser::all();
         $users = User::whereIn('id', $check)->get(); // fetch all needed users at once
-        $results = [];
 
         foreach ($temps as $temp) {
             // Clean JSON
@@ -697,11 +696,16 @@ class AdminController extends Controller
             $username = $decoded['username'] ?? null;
 
             if ($username) {
-                // Find matching user by name
+                // Cari user yang cocok di koleksi $users
                 $user = $users->firstWhere('name', $username);
 
                 if ($user) {
-                    $results[] = $decoded;
+                    // Masukkan data dari JSON (misal 'password') ke field temporary di objek $user
+                    // Kita beri nama field-nya 'pw_temp' agar tidak bentrok dengan attribute asli
+                    $user->pw_temp = $decoded['pw'] ?? null;
+
+                    // Jika Anda juga butuh data lain dari JSON masuk ke objek user:
+                    $user->temporary_data = $decoded;
                 }
             }
         }
@@ -724,7 +728,6 @@ class AdminController extends Controller
                 $html = view('admin.user.export-user', [
                     'data' => $users,
                     'exportType' => $exportType,
-                    'results' => $results
                 ])->render();
             } elseif ($exportType === 'id_card') {
                 // Logic for exporting ID cards

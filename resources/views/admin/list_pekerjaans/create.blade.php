@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
     <div class="bg-slate-500 p-4 mx-36 shadow-md rounded-md">
 		<p class="text-center text-2xl uppercase font-bold">Tambah Pekerjaan</p>
 		<form method="POST" action="{{ route('listPekerjaan.store') }}" class="mx-[25%] my-10" id="form">
@@ -101,5 +100,4 @@
             });
         });
     </script>
-</x-main-div>
-</x-app-layout>
+</x-admin-layout>

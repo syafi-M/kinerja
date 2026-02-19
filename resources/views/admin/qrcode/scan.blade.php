@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout :fullWidth="true">
     <style>
         @keyframes pulse {
             0%, 100% {
@@ -14,7 +14,6 @@
         }
     </style>
 
-    <x-main-div>
         <div class="py-10 px-5">
             <div class="bg-slate-50 rounded-lg p-2">
                 <p class="text-lg font-semibold text-center">Scan QR Laporan</p>
@@ -30,7 +29,6 @@
                 </span>
             </div>
         </div>
-    </x-main-div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -109,4 +107,4 @@
     });
 </script>
 
-</x-app-layout>
+</x-admin-layout>

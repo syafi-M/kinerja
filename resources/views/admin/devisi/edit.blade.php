@@ -1,53 +1,76 @@
-<x-app-layout>
-    <form action="{{ url('divisi/'. $data->id) }}" method="POST">
-    @method('PUT')
-    @csrf
-    <x-main-div>
-    <p class="my-10 text-2xl font-bold text-center uppercase">Edit Divisi</p>
-    <div class="flex items-center justify-center pb-10">
-        <div class="w-[25rem] px-2 py-2 p-2 bg-white max-w-md shadow-md rounded-md">
-            <div id="inputContainer" class="flex flex-col pb-2">
-                <label>Nama Divisi</label>
-                <input type="text" value="{{ $data->name }}" name="name" class="input input-bordered">
-            </div>
-            <div class="pb-10">
-			    <x-input-label for="jabatan_id" :value="__('Jabatan')" />
-			    <select name="jabatan_id" id="" class="w-full mt-1 select select-bordered">
-					<option selected disabled>~ Pilih Jabatan ~</option>
-					@foreach ($jabatan as $i)
-						<option name="jabatan_id" {{$data->jabatan_id == $i->id ? 'selected' : '' }} value="{{ $i->id }}" class="py-2">{{ $i->code_jabatan }} | {{ $i->name_jabatan }}</option>
-					@endforeach
-				</select>
-			</div>
-			<div  id="inputContainer" class="flex flex-col pb-10">
-                <label class="pl-2 label">Perlengkapan</label>
-				<div class="grid gap-2 p-1 mt-4">
-    				    @foreach ($alat as $i)
-                            @php
-                            $isChecked = $lengkapan->contains('perlengkapan_id', $i->id);
-                            @endphp
-                            <span class="flex gap-2">
-                            <div class="w-full p-1 bg-orange-200 rounded">
-                                <input type="checkbox" {{ $isChecked ? '' : 'name=perlengkapan_id[]' }} value="{{ $i->id }}" class="checkbox" {{ $isChecked ? 'checked' : '' }} />
-                                <label>{{ $i->name }}</label>
-                            </div>
-                                @if($isChecked)
-                                <div class="w-full p-1 bg-red-500 rounded">
-                                    <input type="checkbox" name=delete_alat[] value="{{ $i->id }}" class="checkbox" />
-                                    <label class="text-white">Delete dari Divisi</label>
-                                </div>
-                                @endif
-                            </span>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Edit Divisi')
 
-                        @endforeach
-				</div>
+    <div class="mx-auto w-full max-w-screen-xl space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Divisi Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Divisi</h1>
+                    <p class="mt-1 text-sm text-gray-600">Perbarui data utama dan atur perlengkapan yang digunakan oleh divisi.</p>
+                </div>
+                <a href="{{ route('divisi.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                    Kembali
+                </a>
             </div>
-            <div class="flex justify-end gap-2">
-                <a href="{{ url('divisi') }}" class="btn btn-error w-fit">cancel</a>
-                <button type="submit" class="btn btn-primary w-fit">Save</button>
-            </div>
-        </div>
+        </section>
+
+        <form action="{{ url('divisi/' . $data->id) }}" method="POST" class="space-y-4">
+            @method('PUT')
+            @csrf
+
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label for="name" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nama Divisi</label>
+                        <input id="name" type="text" name="name" value="{{ old('name', $data->name) }}" required
+                            class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" />
+                    </div>
+
+                    <div>
+                        <label for="jabatan_id" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Jabatan</label>
+                        <select name="jabatan_id" id="jabatan_id" required class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none">
+                            <option value="" disabled>~ Pilih Jabatan ~</option>
+                            @foreach ($jabatan as $i)
+                                <option value="{{ $i->id }}" {{ old('jabatan_id', $data->jabatan_id) == $i->id ? 'selected' : '' }}>{{ $i->code_jabatan }} | {{ $i->name_jabatan }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="mb-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-[0.14em] text-gray-700">Perlengkapan</h3>
+                    <p class="mt-1 text-xs text-gray-500">Item yang sudah terpasang bisa ditandai untuk dihapus dari divisi.</p>
+                </div>
+                <div class="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($alat as $i)
+                        @php
+                            $isChecked = $lengkapan->contains('perlengkapan_id', $i->id);
+                        @endphp
+
+                        <div class="rounded-xl border {{ $isChecked ? 'border-blue-200 bg-blue-50/40' : 'border-gray-200 bg-white' }} p-3">
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                <input type="checkbox" {{ $isChecked ? '' : 'name=perlengkapan_id[]' }} value="{{ $i->id }}" class="checkbox checkbox-sm" {{ $isChecked ? 'checked' : '' }} />
+                                <span class="font-medium">{{ $i->name }}</span>
+                            </label>
+
+                            @if($isChecked)
+                                <label class="mt-2 inline-flex items-center gap-2 rounded-lg bg-red-50 px-2 py-1 text-[11px] font-medium text-red-700">
+                                    <input type="checkbox" name="delete_alat[]" value="{{ $i->id }}" class="checkbox checkbox-xs" />
+                                    <span>Hapus dari divisi</span>
+                                </label>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-5 flex justify-end gap-2">
+                    <a href="{{ route('divisi.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </section>
+        </form>
     </div>
-</x-main-div>
-    </form>
-</x-app-layout>
+</x-admin-layout>

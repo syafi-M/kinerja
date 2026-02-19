@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
         <form action="{{ route('pekerjaanCp.update', [$pcpId->id]) }}" method="POST">
         @method('put')
         @csrf
@@ -67,5 +66,4 @@
 				</div>
         </div>
         </form>
-    </x-main-div>
-</x-app-layout>
+</x-admin-layout>

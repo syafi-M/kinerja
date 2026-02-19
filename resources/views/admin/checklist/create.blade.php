@@ -1,99 +1,80 @@
-<x-app-layout>
-    <x-main-div>
-        <div>
-			<p class="text-center text-2xl font-bold py-10 uppercase">Create Checklist</p>
-        </div>
-        
-        <form method="POST" action="{{ route('admin-checklist.store') }}" class="mx-[25%] my-10" id="form">
-			@csrf
-            <div class="bg-slate-100 px-10 py-5 rounded shadow">
-                <div class="mt-3">
-                    <x-input-label for="area" :value="__('Nama Area')" />
-                   <select name="area" id="area" class="select select-bordered w-full mt-1">
-                        <option selected disabled>~ Pilih Area ~</option>
-                        @php
-                            $renderedAreas = []; // Track rendered areas
-                        @endphp
-                        @forelse($areasub as $ar)
-                            @if (!in_array($ar->area->nama_area, $renderedAreas))
-                                <option value="{{ $ar->area->nama_area }}">{{ $ar->area?->nama_area }}</option>
-                                @php
-                                    $renderedAreas[] = $ar->area->nama_area; // Add rendered area to the list
-                                @endphp
-                            @endif
-                        @empty
-                            <option disabled>~ Kosong ~</option>
-                        @endforelse
-                    </select>
-					<x-input-error :messages="$errors->get('area')" class="mt-2" />
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Tambah Checklist')
+
+    <div class="mx-auto w-full max-w-screen-md space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Checklist Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Checklist</h1>
+                    <p class="mt-1 text-sm text-gray-600">Catat kondisi kebersihan berdasarkan area dan sub area.</p>
                 </div>
-                <div class="mt-3">
-					<x-input-label for="subarea" :value="__('Nama Sub Area')" />
-					<select name="sub_area" id="subarea" class="select select-bordered w-full mt-1">
-                        <option selected disabled>~ Pilih Area ~</option>
-                        @forelse($areasub as $ar)
-                            <option value="{{ $ar->subarea?->name }}" data-name="{{ $ar->area->nama_area }}">{{ $ar->subarea?->name }}</option>
-                        @empty
-                            <option disabled>~ Kosong ~</option>
-                        @endforelse
-                    </select>
-					<x-input-error :messages="$errors->get('subarea')" class="mt-2" />
-				</div>
-				<div class="mt-3">
-				    <x-input-label for="tingkat_kebersihan" :value="__('Tingkat Kebersihan')" />
-                    <span style="height: 10rem;" class="flex flex-col input input-bordered gap-2">
-                        <p>~ Pilih Tingkat Kebersihan ~</p>
-                        <span class="flex gap-2 p-1">
-                            <input type="radio" name="tingkat_bersih" value="bersih" class="radio p-1"/>
-                            <label>Bersih</label>
-                        </span>
-                        <span class="flex gap-2 p-1">
-                            <input type="radio" name="tingkat_bersih" value="cukup" class="radio p-1"/>
-                            <label>Cukup</label>
-                        </span>
-                        <span class="flex gap-2 p-1">
-                            <input type="radio" name="tingkat_bersih" value="kurang" class="radio p-1"/>
-                            <label>Kurang</label>
-                        </span>
-                    </span>
-                    
-					<x-input-error :messages="$errors->get('tingkat_kebersihan')" class="mt-2" />
-				</div>
-                <div class="flex gap-2 my-5 justify-end">
-					<button><a href="{{ route('admin-checklist.index') }}" class="btn btn-error">Kembali</a></button>
-					<button type="submit" class="btn btn-primary">Save</button>
-				</div>
+                <a href="{{ route('admin-checklist.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
             </div>
+        </section>
+
+        <form method="POST" action="{{ route('admin-checklist.store') }}" class="space-y-4" id="form">
+            @csrf
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="space-y-4">
+                    <div>
+                        <label for="area" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nama Area</label>
+                        <select name="area" id="area" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none">
+                            <option selected disabled>~ Pilih Area ~</option>
+                            @php $renderedAreas = []; @endphp
+                            @forelse($areasub as $ar)
+                                @if (!in_array($ar->area->nama_area, $renderedAreas))
+                                    <option value="{{ $ar->area->nama_area }}">{{ $ar->area?->nama_area }}</option>
+                                    @php $renderedAreas[] = $ar->area->nama_area; @endphp
+                                @endif
+                            @empty
+                                <option disabled>~ Kosong ~</option>
+                            @endforelse
+                        </select>
+                        <x-input-error :messages="$errors->get('area')" class="mt-2" />
+                    </div>
+                    <div>
+                        <label for="subarea" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nama Sub Area</label>
+                        <select name="sub_area" id="subarea" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none">
+                            <option selected disabled>~ Pilih Sub Area ~</option>
+                            @forelse($areasub as $ar)
+                                <option value="{{ $ar->subarea?->name }}" data-name="{{ $ar->area->nama_area }}">{{ $ar->subarea?->name }}</option>
+                            @empty
+                                <option disabled>~ Kosong ~</option>
+                            @endforelse
+                        </select>
+                        <x-input-error :messages="$errors->get('subarea')" class="mt-2" />
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Tingkat Kebersihan</label>
+                        <div class="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                            <label class="flex items-center gap-2"><input type="radio" name="tingkat_bersih" value="bersih" class="radio"/>Bersih</label>
+                            <label class="flex items-center gap-2"><input type="radio" name="tingkat_bersih" value="cukup" class="radio"/>Cukup</label>
+                            <label class="flex items-center gap-2"><input type="radio" name="tingkat_bersih" value="kurang" class="radio"/>Kurang</label>
+                        </div>
+                        <x-input-error :messages="$errors->get('tingkat_kebersihan')" class="mt-2" />
+                    </div>
+                </div>
+                <div class="mt-5 flex justify-end gap-2">
+                    <a href="{{ route('admin-checklist.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Checklist</button>
+                </div>
+            </section>
         </form>
-    </x-main-div>
+    </div>
+
+    @push('scripts')
         <script>
-            $(document).ready(function() {
-    function handlePekerjaanVisibility() {
-        $('#area').change(function() {
-            var selectedTypeCheck = $(this).val();
-
-            if (selectedTypeCheck === '0') { // Compare against '0' string
-                $('#subarea option').hide();
-            } else {
-                $('#subarea option').each(function() {
-                    var dataName = $(this).data('name');
-
-                    if (dataName && dataName.toString() === selectedTypeCheck) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
+            $(function() {
+                $('#subarea option[data-name]').hide();
+                $('#area').on('change', function() {
+                    const selectedArea = $(this).val();
+                    $('#subarea').val('');
+                    $('#subarea option[data-name]').each(function() {
+                        $(this).toggle($(this).data('name') === selectedArea);
+                    });
                 });
-            }
-        });
-    }
-
-    window.onload = function() {
-        $('#subarea option').hide(); // Hide all initially
-        handlePekerjaanVisibility();
-    };
-});
-
-    
+            });
         </script>
-</x-app-layout>
+    @endpush
+</x-admin-layout>

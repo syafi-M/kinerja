@@ -1,36 +1,38 @@
-<x-app-layout>
-    <x-main-div>
-        <div class="p-10">
-            <p class="text-center font-bold text-2xl uppercase">Buat Laporan Harian</p>
-            <form method="POST" action="{{ route('point.store') }}" class=" my-10">
-            @csrf
-            <div class="bg-slate-100 px-10 py-5 rounded shadow">
-                {{-- client --}}
-                <div class="my-5">
-                    <x-input-label for="client" :value="__('Nama Client')" />
-                    <select name="client_id" id="client_id" class="select select-bordered w-full mt-1">
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Tambah Poin')
+
+    <div class="mx-auto w-full max-w-screen-md space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-yellow-600">Point Management</p>
+            <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Data Poin</h1>
+            <p class="mt-1 text-sm text-gray-600">Atur nilai poin berdasarkan client.</p>
+        </section>
+
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <form method="POST" action="{{ route('point.store') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <x-input-label for="client_id" :value="__('Nama Client')" />
+                    <select name="client_id" id="client_id" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-yellow-500 focus:outline-none">
                         <option selected disabled>~ Pilih Client ~</option>
                         @foreach ($client as $i)
-                            <option name="client_id" value="{{ $i->id }}" class="py-2">{{ $i->name }}</option>
+                            <option value="{{ $i->id }}" {{ old('client_id') == $i->id ? 'selected' : '' }}>{{ $i->name }}</option>
                         @endforeach
                     </select>
-					<x-input-error :messages="$errors->get('client_id')" class="mt-2" />
+                    <x-input-error :messages="$errors->get('client_id')" class="mt-2" />
                 </div>
-                {{-- sac point --}}
-                <div class="my-5">
-                    <x-input-label for="sac_point" :value="__('Jumlah Point')" />
-                    <input type="text" name="sac_point" id="sac_point" class="input input-bordered w-full" placeholder="masukkan jumlah point...">
-					<x-input-error :messages="$errors->get('sac_point')" class="mt-2" />
-                </div>
-                <div class="my-5 flex justify-end gap-2">
-                    <a href="{{ route('point.index') }}" class="btn btn-error hover:bg-red-500 transition-all ease-linear .2s">
-                        Back
-                    </a>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </div>
 
+                <div>
+                    <x-input-label for="sac_point" :value="__('Jumlah Poin')" />
+                    <input type="number" min="0" name="sac_point" id="sac_point" value="{{ old('sac_point') }}" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-yellow-500 focus:outline-none" placeholder="Masukkan jumlah poin..." />
+                    <x-input-error :messages="$errors->get('sac_point')" class="mt-2" />
+                </div>
+
+                <div class="flex justify-end gap-2 pt-1">
+                    <a href="{{ route('point.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-yellow-500 px-4 text-sm font-semibold text-white transition hover:bg-yellow-600">Simpan</button>
+                </div>
             </form>
-        </div>
-    </x-main-div>
-</x-app-layout>
+        </section>
+    </div>
+</x-admin-layout>

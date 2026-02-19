@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
         <div class="py-10 px-5">
             <p class="text-center font-bold text-2xl uppercase">
                 Data List Pekerjaan
@@ -94,7 +93,6 @@
             {{ $listPekerjaans->links() }}
         </div>
         </div>
-    </x-main-div>
     <script>
         $(document).ready(function() {
             $('#iCP').on('change', function() {
@@ -112,4 +110,4 @@
             });
         });
     </script>
-</x-app-layout>
+</x-admin-layout>

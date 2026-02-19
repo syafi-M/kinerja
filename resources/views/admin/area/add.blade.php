@@ -1,31 +1,34 @@
-<x-app-layout>
-    <x-main-div>
-    <p class="text-2xl text-center font-bold uppercase my-10">Sub Area</p>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Tambah Sub Area')
 
-    <div class="flex justify-center mb-10 ">
-        <form action="{{ route('add.subarea', $area->id) }}" method="POST">
-        @csrf
-		{{-- @method("PATCH") --}}
-        <div class="w-[25rem] px-2 py-2 p-2 bg-white max-w-md shadow-md rounded-md">
-            <div  id="inputContainer" class="flex flex-col pb-10">
-                <label class="label pl-2">Perlengkapan</label>
-				<div class="p-1 mt-4 grid gap-2">
-				@foreach ($sub as $i)
-				<div class="bg-orange-200 py-1 rounded">
-					<input type="checkbox" name="subarea_id[]" value="{{ $i->id }}" class="checkbox"/>
-					<label>{{ $i->name }}</label>
-				</div>
-				@endforeach
-				</div>
-            </div>
-            <div class="flex justify-end gap-2 mx-2">
+    <div class="mx-auto w-full max-w-screen-lg space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <button type="submit" class="btn btn-info w-fit">Save</button>
-                    <a class="btn btn-error overflow-hidden" href="{{ route('area.index') }}">Back</a>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Area Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Sub Area</h1>
+                    <p class="mt-1 text-sm text-gray-600">Pilih sub area yang akan dikaitkan ke area ini.</p>
                 </div>
+                <a href="{{ route('area.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
             </div>
-        </div>
+        </section>
+
+        <form action="{{ route('add.subarea', $area->id) }}" method="POST" class="space-y-4">
+            @csrf
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($sub as $i)
+                        <label class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700">
+                            <input type="checkbox" name="subarea_id[]" value="{{ $i->id }}" class="checkbox checkbox-sm"/>
+                            <span>{{ $i->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                <div class="mt-5 flex justify-end gap-2">
+                    <a class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50" href="{{ route('area.index') }}">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Pilihan</button>
+                </div>
+            </section>
         </form>
     </div>
-</x-main-div>
-</x-app-layout>
+</x-admin-layout>

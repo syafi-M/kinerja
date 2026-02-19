@@ -1,28 +1,34 @@
-<x-app-layout>
-    <x-main-div>
-		<div class="py-10 px-5">
-			<p class="text-center text-2xl font-bold  uppercase">Index Pekerjaan CP</p>
+<x-admin-layout :fullWidth="true">
+		<div class="px-5 py-10">
+			<div class="mb-4">
+				<p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Checkpoint Management</p>
+				<h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Index Rencana Kerja</h1>
+				<p class="mt-1 text-sm text-gray-600">Monitor rencana dan pekerjaan checkpoint karyawan.</p>
+			</div>
 			<div class="flex flex-col justify-end ">
-				<div class=" flex flex-col justify-end items-end ">
+				<div class="flex flex-col items-end justify-end ">
 				<x-search />
 				
 			</div>
-				<div class="flex justify-between gap-2 mx-16 py-3">
-    				<form action="{{ route('import-pekerjaan') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
-    				    @csrf
-    				    <label for="iCP" class="btn btn-success overflow-hidden" ><i class="ri-file-excel-2-line text-lg"></i><span id="importLabel" class="overflow-hidden">Import Pekerjaan</span></label>
-    				    <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
-    				    <button class="btn btn-primary hidden" type="submit" id="btnImport">Import</button>
-    				</form>
-    				<a href="{{ route('pekerjaanCp.create') }}" class="btn btn-primary">+ Pekerjaan</a>
-    			</div>
+				<div class="flex justify-between gap-2 py-3 mx-16">
+	    			<form action="{{ route('import-pekerjaan') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
+	    				    @csrf
+	    				    <label for="iCP" class="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">
+									<i class="text-base ri-file-excel-2-line"></i>
+									<span id="importLabel" class="overflow-hidden">Import Pekerjaan</span>
+								</label>
+	    				    <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
+	    				    <button class="inline-flex items-center hidden h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700" type="submit" id="btnImport">Import</button>
+	    				</form>
+	    				<a href="{{ route('pekerjaanCp.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">+ Tambah Pekerjaan</a>
+	    			</div>
 			</div>
 			<!--Handle error-->
 			    @if(session('failures'))
 			    <div class="mx-10 mb-5">
-                    <div class="alert alert-error text-white border-none" style="background-color: #b50404">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <div class="mx-10 flex">
+                    <div class="text-white border-none alert alert-error" style="background-color: #b50404">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <div class="flex mx-10">
                             <strong>Duplicate Data : </strong>
                             <ul class="ml-2">
                                 <li>{{ session('failures')}}</li>
@@ -32,8 +38,8 @@
 			    </div>
                 @endif
 			<!--End Handle-->
-			<div class="flex justify-center overflow-x-auto mx-10 pb-10">
-				<table class="table table-fixed w-full shadow-md bg-slate-50" id="searchTable">
+			<div class="flex justify-center pb-10 mx-10 overflow-x-auto">
+				<table class="table w-full shadow-md table-auto bg-slate-50" id="searchTable">
 					<thead>
 						<tr>
 							<th class="bg-slate-300 rounded-tl-2xl">#</th>
@@ -45,26 +51,38 @@
 							<th class="bg-slate-300 rounded-tr-2xl">Action</th>
 						</tr>
 					</thead>
-					<tbody class="text-sm my-10">
+					<tbody class="my-10 text-sm">
 						@php
 							$no = 1;
 						@endphp
 						@forelse ($pcp as $i)
 							<tr>
-								<td>{{ $no++ }}</td>
+								<td class="max-w-[20px]">{{ $no++ }}</td>
 								<td>{{ $i->user?->nama_lengkap ?$i->user?->nama_lengkap : 'Kosong' }}</td>
 								<td>{{ $i->divisi?->jabatan?->name_jabatan ?  $i->divisi?->jabatan?->name_jabatan : 'Kosong' }}</td>
-								<td>{{ $i->kerjasama->client->name }}</td>
+								<td>{{ $i->kerjasama?->client?->panggilan ?? $i->kerjasama?->client?->name }}</td>
 								<td>{{ $i->name }}</td>
 								<td>{{ $i->type_check }}</td>
-								<td class="space-y-2">
-									<x-btn-edit>{{ route('pekerjaanCp.edit', [$i->id]) }}</x-btn-edit>
+								<td class="flex gap-1">
+									<a
+										href="{{ route('pekerjaanCp.edit', [$i->id]) }}"
+										class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+									>
+										<i class="text-xs ri-edit-line"></i>
+										Edit
+									</a>
 									@if(Auth::user()->role_id == 2)
-    									<form action="{{ route('pekerjaanCp.destroy', [$i->id]) }}" method="POST">
-    										@csrf
-    										@method('DELETE')
-    										<x-btn-submit/>
-    									</form>
+										<form action="{{ route('pekerjaanCp.destroy', [$i->id]) }}" method="POST">
+											@csrf
+											@method('DELETE')
+											<button
+												type="submit"
+												class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+											>
+												<i class="text-xs ri-delete-bin-6-line"></i>
+												Hapus
+											</button>
+										</form>
 									@endif
 								</td>
 							</tr>
@@ -76,12 +94,12 @@
 					</tbody>
 				</table>
 			</div>
-				<div class="mt-5 mx-10">
+				<div class="mx-10 mt-5">
 					{{ $pcp->links() }}
 				</div>
-			<div class="flex justify-end gap-2 mx-16 py-3">
-				<a href="{{ route('admin.index') }}" class="btn btn-error">Back</a>
-			</div>
+				<div class="flex justify-end gap-2 py-3 mx-16">
+					<a href="{{ route('admin.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-red-700 transition border border-red-200 rounded-xl bg-red-50 hover:bg-red-100">Back</a>
+				</div>
 		</div>
     <script>
     $(document).ready(function () {
@@ -100,5 +118,4 @@
         });
     });
 </script>
-	</x-main-div>
-</x-app-layout>
+</x-admin-layout>

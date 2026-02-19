@@ -1,119 +1,130 @@
-<x-app-layout>
-    <div class="mx-10 rounded bg-slate-500">
-        <div>
-            <p class="py-10 text-2xl font-bold text-center uppercase">Data Divisi</p>
-        </div>
-        <div class="flex justify-end">
-            <div class="flex items-center justify-end mx-10 mb-5 input w-fit input-bordered">
-                <i class="ri-search-2-line"></i>
-                <input type="search" id="searchInput" class="ml-1 border-none rounded" placeholder="Search..." required>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Data Divisi')
+
+    <div x-data="{ delOpen: false, deleteId: null, deleteName: '' }" class="w-full max-w-screen-xl px-2 mx-auto space-y-4 sm:px-3 lg:px-4">
+        <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Divisi Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Data Divisi</h1>
+                    <p class="mt-1 text-sm text-gray-600">Kelola relasi divisi, jabatan, dan perlengkapan operasional dalam satu halaman.</p>
+                </div>
+                <div class="flex flex-col w-full gap-2 sm:w-auto sm:flex-row sm:items-center">
+                    <label class="flex items-center w-full h-10 gap-2 px-3 border border-gray-200 rounded-xl bg-gray-50 sm:w-72">
+                        <i class="text-base text-gray-500 ri-search-2-line"></i>
+                        <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari divisi, jabatan, perlengkapan..." />
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('divisi.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
+                            <i class="ri-add-line mr-1.5 text-base"></i> Tambah Divisi
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="flex justify-end gap-2 my-3">
-            <a href="{{ route('admin.index') }}"
-                class="btn btn-error border-none hover:bg-red-500 transition-all ease-in-out .2s">Kembali</a>
-            <a href="{{ route('divisi.create') }}"
-                class="btn btn-warning hover:bg-yellow-600 border-none transition-all ease-in-out .2s">+ Divisi</a>
+        </section>
 
-        </div>
+        <section class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+            <div class="flex flex-wrap items-center gap-2 px-4 py-3 text-xs text-gray-500 border-b border-gray-100 sm:px-5">
+                <span class="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700">Total: {{ $data->total() }}</span>
+                <span>Menampilkan data divisi terbaru.</span>
+            </div>
+            <div class="w-full max-w-full overflow-x-auto">
+                <table class="w-full min-w-[560px] divide-y divide-gray-100" id="searchTable">
+                    <thead class="text-xs font-semibold tracking-wide text-left text-gray-600 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 sm:px-5">#</th>
+                            <th class="px-4 py-3 sm:px-5">Nama Divisi</th>
+                            <th class="hidden px-4 py-3 md:table-cell sm:px-5">Jabatan</th>
+                            <th class="hidden px-4 py-3 lg:table-cell sm:px-5">Perlengkapan</th>
+                            <th class="px-4 py-3 text-right sm:px-5">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
+                        @php $no = 1; @endphp
+                        @forelse ($data as $i)
+                            <tr class="align-top transition-colors hover:bg-blue-50/40">
+                                <td class="px-4 py-3 text-gray-500 sm:px-5">{{ $no++ }}</td>
+                                <td class="px-4 py-3 sm:px-5">
+                                    <p class="font-semibold text-gray-800">{{ $i->name }}</p>
+                                    <p class="mt-0.5 text-xs text-gray-500 md:hidden">{{ $i->jabatan?->name_jabatan ?? 'Jabatan kosong' }}</p>
+                                    <div class="flex flex-wrap gap-1 mt-2 lg:hidden">
+                                        @forelse ($i->perlengkapan as $value)
+                                            <span class="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700">{{ $value->name }}</span>
+                                        @empty
+                                            <span class="text-[11px] text-amber-700">Belum ada perlengkapan</span>
+                                        @endforelse
+                                    </div>
+                                </td>
+                                <td class="hidden px-4 py-3 md:table-cell sm:px-5">
+                                    {{ $i->jabatan?->name_jabatan ?? '~ Jabatan Kosong ~' }}
+                                </td>
+                                <td class="hidden px-4 py-3 lg:table-cell sm:px-5">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @forelse ($i->perlengkapan as $value)
+                                            <span class="inline-block rounded-md bg-yellow-100 font-semibold px-2 py-0.5 text-xs text-gray-700">{{ $value->name }}</span>
+                                        @empty
+                                            <a href="{{ url('/divisi/' . $i->id . '/add-equipment') }}" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold transition border rounded-lg border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100">
+                                                <i class="ri-add-circle-fill"></i> Tambah
+                                            </a>
+                                        @endforelse
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 sm:px-5">
+                                    <div class="flex justify-end gap-2">
+                                        <a
+                                            href="{{ url('divisi/' . $i->id . '/edit') }}"
+                                            class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-100"
+                                        >
+                                            <i class="text-xs ri-edit-line"></i>
+                                            Edit
+                                        </a>
+                                        <button
+                                            type="button"
+                                            @click="delOpen = true; deleteId = {{ $i->id }}; deleteName = '{{ addslashes($i->name) }}'"
+                                            class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 text-[11px] font-semibold text-red-700 transition hover:bg-red-100"
+                                        >
+                                            <i class="text-xs ri-delete-bin-6-line"></i>
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-sm text-center text-gray-500 sm:px-5">Data divisi masih kosong.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="mx-10 overflow-x-auto">
-            <table class="table w-full table-fixed table-sm table-zebra bg-slate-50" id="searchTable">
-                <!-- head -->
-                <thead>
-                    <tr>
-                        <th class="bg-slate-300 rounded-tl-2xl">#</th>
-                        <th class="bg-slate-300 ">Nama Devisi</th>
-                        <th class="bg-slate-300 ">Jabatan</th>
-                        <th class="bg-slate-300 ">Perlengkapan</th>
-                        <th class="bg-slate-300 rounded-tr-2xl">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $no = 1;
-                    @endphp
-                    @forelse ($data as $i)
-                        <tr>
-                            <td>{{ $no++ }}</td>
-                            <td>{{ $i->name }}</td>
-                            @if ($i->jabatan != null)
-                                <td>{{ $i->jabatan->name_jabatan }}</td>
-                            @else
-                                <td>~ Jabatan Kosong ~</td>
-                            @endif
-                            <td>
-                                @forelse ($i->perlengkapan as $value)
-                                    <span class="capitalize break-words whitespace-pre-wrap">{{ $value->name }},</span>
-                                @empty
-                                    <a href="{{ url('/divisi/' . $i->id . '/add-equipment') }}"
-                                        class="text-2xl text-yellow-500 hover:text-yellow-600 transition-all ease-in-out .2s"><i
-                                            class="ri-add-circle-fill"></i></a>
-                                @endforelse
-                            </td>
-                            <td class="overflow-hidden">
-                                <x-btn-edit>{{ url('divisi/' . $i->id . '/edit') }}</x-btn-edit>
-                                <x-btn-submit type="button" id="deleteUser" class="deleteUser"
-                                    data="{{ $i }}" data-dataId="{{ $i->id }}" />
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="text-center">Data Kosong</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-            <div class="mt-4">
+            <div class="px-4 py-3 border-t border-gray-100 sm:px-5">
                 {{ $data->links() }}
             </div>
+        </section>
 
-
-        </div>
-        <div
-            class="fixed inset-0 hidden transition-all duration-300 ease-in-out modalDeleteUser bg-slate-500/10 backdrop-blur-sm">
-            <div class="p-5 mx-2 rounded-md shadow bg-slate-200 w-fit">
-                <div class="flex justify-end mb-3">
-                    <button id="close" class="scale-90 btn btn-error">&times;</button>
+        <div x-show="delOpen" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/35 backdrop-blur-sm">
+            <div class="w-full max-w-md overflow-hidden bg-white shadow-xl rounded-2xl">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-800">Konfirmasi Hapus Divisi</h3>
+                    <button @click="delOpen = false" type="button" class="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-50">Tutup</button>
                 </div>
-                <form id="formDelet" action="{{ url('client/data-client/' . $i->id) }}" method="POST"
-                    class="flex items-center justify-center formDelet ">
+                <form :action="`{{ url('divisi') }}/${deleteId}`" method="POST" class="p-5 space-y-4">
                     @csrf
                     @method('DELETE')
-                    <div class="flex flex-col justify-center gap-2">
-                        <div class="flex flex-col gap-2">
-                            <p id="textModalDelet" class="text-lg font-semibold text-center textModalDelet"></p>
-                        </div>
-                        <div class="flex items-center justify-center overflow-hidden">
-                            <button type="submit" class="overflow-hidden btn btn-error"><span
-                                    class="overflow-hidden font-bold">Hapus Data</span>
-                            </button>
-                        </div>
+                    <p class="text-sm text-gray-600">Apakah Anda yakin ingin menghapus divisi <span class="font-semibold text-gray-800" x-text="deleteName"></span>?</p>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" @click="delOpen = false" class="px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Batal</button>
+                        <button type="submit" class="px-3 py-2 text-xs font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700">Hapus</button>
                     </div>
                 </form>
             </div>
         </div>
-        <script>
-            $(document).ready(function() {
-                $('.deleteUser').click(function() {
-                    var data = $(this).data('data');
-                    var dataId = $(this).data('dataId');
+    </div>
 
-                    var decodedJsonStr = data.replace(/&quot;/g, '"');
-
-                    var jsonObj = JSON.parse(decodedJsonStr);
-                    // console.log(jsonObj);
-
-                    $('.formDelet').attr('action', `{{ url('divisi/') }}/${jsonObj.id}`);
-                    $('.textModalDelet').text(`Apakah Anda Yakin Ingin Menghapus Divisi ${jsonObj.name}?`);
-                    $('.modalDeleteUser').removeClass('hidden')
-                        .addClass('flex justify-center items-center opacity-100');
-                });
-
-                $('#close').click(function() {
-                    $('.modalDeleteUser').addClass('hidden').removeClass(
-                        'flex justify-center items-center opacity-100');
-                });
-            })
-        </script>
-</x-app-layout>
+    @push('scripts')
+        <style>
+            [x-cloak] { display: none !important; }
+        </style>
+    @endpush
+</x-admin-layout>

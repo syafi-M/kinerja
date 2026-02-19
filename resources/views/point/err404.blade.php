@@ -1,13 +1,16 @@
 <x-app-layout>
-    <x-main-div>
-        <p class="text-center text-lg sm:text-2xl font-bold uppercase pt-10">Point Saya</p>
-        <div class="flex justify-center flex-col items-center ">
-            <div class=" py-10 font-semibold w-fit bg-slate-100 mx-10 my-10 rounded-md p-3 px-10 shadow-md">
-                <h2 class="underline text-red-600 text-xs text-center sm:text-xl mb-8">Kamu Belum Mempunyai Point !</h2>
-                <div class="pt-2 flex justify-center">
-                    <a href="{{ url('dashboard') }}" class="px-10 btn btn-error">Back</a>
-                </div>
+    <div class="mx-auto w-full max-w-xl px-4 py-8 sm:px-6">
+        <section class="rounded-2xl border border-red-100 bg-white p-6 shadow-sm">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-red-600">Point Summary</p>
+            <h1 class="mt-1 text-xl font-bold tracking-tight text-gray-900">Point Saya</h1>
+            <p class="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                Kamu belum mempunyai point.
+            </p>
+            <div class="mt-5 flex justify-end">
+                <a href="{{ url('dashboard') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                    Kembali
+                </a>
             </div>
-        </div>
-    </x-main-div>
- </x-app-layout>
+        </section>
+    </div>
+</x-app-layout>

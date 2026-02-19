@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
         <form action="{{ route('export_checklist')}}" method="POST">
         @csrf
         	@forelse ($arr as $i)
@@ -9,5 +8,4 @@
             @endforelse
             <button type="submit">Save</button>
         </form>
-    </x-main-div>
-</x-app-layout>
+</x-admin-layout>

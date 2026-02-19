@@ -1,211 +1,126 @@
-<x-app-layout>
-    <div x-data="{ delOpen: false }" :class="{ 'overflow-hidden': delOpen }"
-        class="bg-slate-500 mx-10 mb-10 shadow-md p-2 rounded-md">
-        <div>
-            <p class="text-center text-2xl font-bold py-10 uppercase">Data All User</p>
-        </div>
-        {{-- atas --}}
-        <div class="flex justify-between items-start overflow-hidden mx-10">
-            <div class="">
-                <form id="filterForm" action="{{ route('users.index') }}" method="GET" class=""
-                    style="padding-bottom: 0">
-                    <select name="filterKerjasama" id="filterKerjasama"
-                        class="select select-bordered active:border-none border-none">
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Data User Admin')
+
+    <div x-data="{ delOpen: false }" :class="{ 'overflow-hidden': delOpen }" class="w-full px-1 mx-auto space-y-3 overflow-x-hidden max-w-screen sm:px-2 lg:px-3">
+        <section class="p-4 border shadow-sm rounded-xl border-gray-100/80 bg-white/80 backdrop-blur-sm sm:p-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.12em] text-blue-600">User Management</p>
+                    <h2 class="mt-0.5 text-xl font-bold text-gray-900">Data All User</h2>
+                    <p class="mt-0.5 text-xs text-gray-600">Kelola akun user, export data, dan tindak lanjut status user.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('users.create') }}" class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700">
+                        + Tambah User
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="p-3 border shadow-sm rounded-xl border-gray-100/80 bg-white/85 sm:p-4">
+            <div class="grid gap-3 lg:grid-cols-2 lg:items-end">
+                <form id="filterForm" action="{{ route('users.index') }}" method="GET" class="flex flex-wrap items-center min-w-0 gap-2">
+                    <select name="filterKerjasama" id="filterKerjasama" class="w-full max-w-xs text-xs bg-white border-gray-200 select select-bordered h-9 focus:outline-none">
                         <option selected disabled>~ Kerja Sama ~</option>
                         @foreach ($kerjasama as $i)
                             <option value="{{ $i->id }}" {{ $filterKerjasama == $i->id ? 'selected' : '' }}>
-                                {{ $i?->client?->name }}</option>
+                                {{ $i?->client?->panggilan ?? $i?->client?->name }}
+                            </option>
                         @endforeach
                     </select>
-                    <button type="submit"
-                        class="bg-blue-500 px-5 py-2 rounded-md hover:bg-blue-600 transition-colors ease-in .2s font-bold uppercase ml-3">Filter</button>
+                    <label class="flex items-center w-full max-w-full gap-2 bg-white border-gray-200 rounded-lg input input-bordered h-9 lg:w-72">
+                        <i class="text-gray-500 ri-search-2-line"></i>
+                        <input id="searchInput" data-search-mode="server" name="search" value="{{ $search ?? request('search') }}" type="text" class="w-full text-xs bg-transparent border-none focus:outline-none" placeholder="Search..." />
+                    </label>
+                    <input type="hidden" name="page" id="pageInput" value="{{ request('page', 1) }}">
+                    <button type="submit" class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700">
+                        Filter
+                    </button>
+                    <button type="button" id="resetFilterBtn" class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
+                        Reset
+                    </button>
                 </form>
-            </div>
-            <x-search />
-        </div>
-        <div class="hidden justify-between items-center overflow-hidden mx-10 my-1">
-            <div>
-                <form id="massUpdateUser" action="{{ route('user.massUpdate') }}" method="POST"
-                    class="p-1 flex flex-col gap-2">
-                    @csrf
-                    <label>Mass Update User (jangan digunakan sembarangan)</label>
-                    <div class="flex w-full gap-1">
-                        <select name="kerjasama" id="filterKerjasama"
-                            class="select select-sm text-sm select-bordered active:border-none border-none w-full">
-                            <option selected disabled>~ Kerja Sama ~</option>
-                            @foreach ($kerjasama as $i)
-                                <option value="{{ $i->id }}">{{ $i?->client?->name }}</option>
-                            @endforeach
-                        </select>
-                        <select name="devisi" id="filterKerjasama"
-                            class="select select-sm text-sm select-bordered active:border-none border-none w-full">
-                            <option selected disabled>~ Devisi ~</option>
-                            @foreach ($dev as $i)
-                                <option value="{{ $i->id }}">{{ $i?->jabatan?->name_jabatan }} id:
-                                    {{ $i->id }}</option>
-                            @endforeach
-                        </select>
-                        <select name="field" id="filterKerjasama"
-                            class="select select-sm text-sm select-bordered active:border-none border-none w-full">
-                            <option selected disabled>~ Field (yang mau diisi/diganti) ~</option>
-                            <option value="jabatan_id">Jabatan ID</option>
-                            <option value="kerjasama_id">Kerjasama ID</option>
-                            <!--<option value="devisi_id">Devisi ID</option>-->
-                        </select>
-                    </div>
-                    <div class="flex w-full gap-1">
-                        <input name="old_value" type="text" placeholder="data lama..."
-                            class="input input-bordered input-sm w-full" />
-                        <input name="new_value" type="text" placeholder="data baru..."
-                            class="input input-bordered input-sm w-full" />
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit"
-                            class="bg-amber-500 px-5 py-2 rounded-md hover:bg-blue-600 transition-colors ease-in .2s font-bold uppercase ml-3">Update</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto mx-10 my-10">
-            <table class="table table-xs table-zebra w-full bg-slate-50" id="searchTable">
-                <!-- head -->
-                <thead class="text-center">
-                    <tr>
-                        <th class="bg-slate-300 rounded-tl-2xl "></th>
-                        <th class="bg-slate-300 ">#</th>
-                        <th class="bg-slate-300 ">IMAGE</th>
-                        <th class="bg-slate-300 ">NAMA</th>
-                        <th class="bg-slate-300 ">NAMA LENGKAP</th>
-                        <th class="bg-slate-300 ">EMAIL</th>
-                        <th class="bg-slate-300 ">NIK</th>
-                        <th class="bg-slate-300 ">NO. HP</th>
-                        <th class="bg-slate-300 ">KERJASAMA</th>
-                        <th class="bg-slate-300 rounded-tr-2xl px-5">AKSI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $no = 1;
-                    @endphp
-                    <form action="{{ route('export_checklist') }}" method="POST" id="exportUserForm">
-                        @csrf
-                        @method('POST')
-
-                        <input type="hidden" name="export_type" id="exportType" value="">
-
-                        <div class="flex items-start justify-between mb-2">
-                            <span class="flex bg-slate-200 rounded-xl shadow p-1">
-                                <span class="flex items-center ">
-                                    <input type="checkbox" name="check_all" id="checkbox_all" value="true"
-                                        class="ml-5 checkbox" />
-                                    <label for="checkbox_all" class="ml-2 font-semibold">Pilih Semua</label>
-                                </span>
-                                <div class="flex justify-end mx-10 gap-2">
-                                    <button type="submit" class="btn btn-primary font-semibold" id="exportUser"
-                                        onclick="setExportType('data')">export data</button>
-                                    <button type="submit" class="btn btn-primary font-semibold" id="exportUser"
-                                        onclick="setExportType('id_card')">export id card</button>
-                                    <button type="button" class="btn btn-error font-semibold" id="delUser"
-                                        @click="delOpen = true">Hapus User</button>
-                                </div>
-                            </span>
-                            <div class="flex justify-end gap-2 mb-10">
-                                <a href="{{ route('admin.index') }}" class="btn btn-error">Kembali</a>
-                                <a href="{{ route('users.create') }}" class="btn btn-primary">+ User</a>
-                            </div>
-                        </div>
-                        @forelse ($user as $i)
-                            <tr>
-                                <span id="data" data-value="{{ $i->id }}"></span>
-                                <td><input class="checkbox" type="checkbox" name="check[]"
-                                        id="check_{{ $i->id }}" value="{{ $i->id }}" /></td>
-                                <td>{{ $no++ }}</td>
-                                @if ($i->image == 'no-image.jpg')
-                                    <td>
-                                        <x-no-img />
-                                    </td>
-                                @elseif(Storage::disk('public')->exists('images/' . $i->image))
-                                    <td class="flex justify-center items-center">
-                                        <div style="width: 100px; height: 100px; border-radius: 2px;"
-                                            class="flex justify-center items-center overflow-hidden">
-                                            <img loading="lazy" src="{{ asset('storage/images/' . $i->image) }}"
-                                                data-src="{{ asset('storage/images/' . $i->image) }}" alt=""
-                                                srcset=""
-                                                style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;">
-                                        </div>
-                                    </td>
-                                @elseif(Storage::disk('public')->exists('user/' . $i->image))
-                                    <td class="flex justify-center items-center">
-                                        <div style="width: 100px; height: 100px; border-radius: 2px;"
-                                            class="flex justify-center items-center overflow-hidden">
-                                            <img loading="lazy" src="{{ asset('storage/user/' . $i->image) }}"
-                                                data-src="{{ asset('storage/user/' . $i->image) }}" alt=""
-                                                srcset=""
-                                                style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;">
-                                        </div>
-                                    </td>
-                                @else
-                                    <td>
-                                        <x-no-img />
-                                    </td>
-                                @endif
-                                <td>{{ $i->name }}</td>
-                                <td class="break-words whitespace-pre-line">{{ $i->nama_lengkap }}</td>
-                                <td class="break-words whitespace-pre-line">{{ $i->email }}</td>
-                                <td class="break-words whitespace-pre-line" style="max-width: 96pt;">
-                                    {{ $i->nik ? \Illuminate\Support\Facades\Crypt::decryptString($i->nik) : '---' }}
-                                </td>
-                                <td class="break-words whitespace-pre-line" style="max-width: 92pt;">
-                                    {{ $i->no_hp ? '+62' . $i->no_hp : '---' }}</td>
-                                @if ($i->kerjasama == null || $i?->kerjasama?->client == null)
-                                    <td>kosong</td>
-                                @else
-                                    <td class="break-words whitespace-pre-line">{{ $i?->kerjasama?->client?->name }}
-                                    </td>
-                                @endif
-                                <td>
-                                    <span class="flex items-center gap-1">
-                                        <x-btn-edit>{{ url('users/' . $i->id . '/edit') }}</x-btn-edit>
-                                        <button type="button" class="delete-button hidden"
-                                            data-user-id="{{ $i->id }}"></button>
-                                    </span>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center">Data Kosong</td>
-                            </tr>
-                        @endforelse
-                    </form>
-                </tbody>
-            </table>
-        </div>
-        <div class="mt-5">
-            {{ $user->links() }}
-        </div>
-
-        <div x-show="delOpen"
-            class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center overflow-hidden">
-            <div style="width: 60vw; height: 60vh;" class="bg-slate-100 p-4 rounded shadow-lg overflow-hidden">
-                <div class="flex items-center gap-4 w-full">
-                    <p style="width: 95%"
-                        class="bg-yellow-500 rounded-md p-2 text-center font-semibold text-slate-800">Konfirmasi Hapus
-                        Akun</p>
-                    <button @click="delOpen = false" style="width: 5%" class="btn btn-sm btn-error">X</button>
+                <div class="flex items-center gap-2 text-[11px] text-gray-500 lg:justify-self-end">
+                    <span id="filterLoading" class="hidden text-blue-600 loading loading-spinner loading-xs"></span>
+                    <p>Tip: Gunakan filter + search untuk mempercepat pencarian user.</p>
                 </div>
-                <div class="flex flex-col justify-between overflow-hidden" style="height: 90%;">
-                    <p>Akun user yang akan dihapus: </p>
-                    <div class='flex justify-center items-center overflow-y-scroll'>
-                        <div id="isiUser"
-                            style="min-width: 40vw; max-width: 40vw; min-height: 35vh; max-height: 35vh;"
-                            class="bg-white rounded overflow-y-scroll">
+            </div>
+        </section>
 
-                        </div>
+        <section class="overflow-hidden border shadow-sm rounded-xl border-gray-100/80 bg-white/90">
+            <form action="{{ route('export_checklist') }}" method="POST" id="exportUserForm">
+                @csrf
+                @method('POST')
+                <input type="hidden" name="export_type" id="exportType" value="">
+
+                <div class="flex flex-col gap-2 p-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <label class="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-700">
+                            <input type="checkbox" name="check_all" id="checkbox_all" value="true" class="checkbox checkbox-sm" />
+                            Pilih Semua
+                        </label>
+                        <button type="button" data-export-type="data" class="export-user-btn rounded-lg bg-blue-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                            Export Data
+                        </button>
+                        <button type="button" data-export-type="id_card" class="export-user-btn rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                            Export ID Card
+                        </button>
+                        <button type="button" class="rounded-lg bg-red-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50" id="delUser" @click="delOpen = true" disabled>
+                            Hapus User
+                        </button>
+                        <span id="selectedCountBadge" class="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1.5 text-[11px] font-semibold text-gray-600">0 user dipilih</span>
                     </div>
-                    <div class="flex justify-end overflow-hidden">
-                        <button type="submit" id="subUser" onclick="setExportType('delete')"
-                            class="btn btn-error">Submit</button>
+                </div>
+
+                <div class="w-full max-w-full overflow-x-auto">
+                    <table class="w-full min-w-[660px] divide-y divide-gray-100 md:min-w-[860px]" id="searchTable">
+                        <thead class="text-xs font-semibold tracking-wide text-left text-gray-600 uppercase bg-gray-50/90">
+                            <tr>
+                                <th class="sticky top-0 z-10 px-3 py-2 bg-gray-50/95"></th>
+                                <th class="sticky top-0 z-10 px-3 py-2 bg-gray-50/95">#</th>
+                                <th class="sticky top-0 z-10 hidden px-3 py-2 bg-gray-50/95 md:table-cell">Image</th>
+                                <th class="sticky top-0 z-10 px-3 py-2 bg-gray-50/95">Nama</th>
+                                <th class="sticky top-0 z-10 hidden px-3 py-2 bg-gray-50/95 lg:table-cell">Nama Lengkap</th>
+                                <th class="sticky top-0 z-10 px-3 py-2 bg-gray-50/95">Email</th>
+                                <th class="sticky top-0 z-10 hidden px-3 py-2 bg-gray-50/95 lg:table-cell">No. HP</th>
+                                <th class="sticky top-0 z-10 hidden px-3 py-2 bg-gray-50/95 md:table-cell">Kerjasama</th>
+                                <th class="sticky top-0 z-10 px-3 py-2 bg-gray-50/95">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody" class="text-sm text-gray-700 divide-y divide-gray-100">
+                            <tr id="clientNoResultRow" class="hidden">
+                                <td colspan="10" class="px-4 py-6 text-sm text-center text-gray-500">Tidak ada data yang cocok dengan filter/search.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </section>
+
+        <div id="ajaxPagination" class="flex flex-col items-start justify-between gap-2 px-3 py-2 text-xs text-gray-600 border border-gray-100 rounded-lg bg-white/80 sm:flex-row sm:items-center">
+            <p id="paginationInfo">Memuat data...</p>
+            <div class="flex items-center gap-2">
+                <button type="button" id="prevPageBtn" class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Prev</button>
+                <span id="paginationState" class="text-xs font-semibold text-gray-500">Page 1 / 1</span>
+                <button type="button" id="nextPageBtn" class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Next</button>
+            </div>
+        </div>
+
+        <div x-show="delOpen" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/35 backdrop-blur-sm">
+            <div class="w-full max-w-2xl overflow-hidden bg-white shadow-xl rounded-2xl">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                    <h3 class="text-sm font-semibold tracking-wide text-gray-800 uppercase">Konfirmasi Hapus Akun</h3>
+                    <button @click="delOpen = false" type="button" class="px-3 py-1 text-sm font-semibold text-gray-600 transition border border-gray-200 rounded-lg hover:bg-gray-50">
+                        Tutup
+                    </button>
+                </div>
+                <div class="p-5 space-y-3">
+                    <p class="text-sm text-gray-600">Akun user yang akan dihapus:</p>
+                    <div id="isiUser" class="p-3 overflow-y-auto text-sm text-gray-700 border border-gray-200 max-h-72 rounded-xl bg-gray-50"></div>
+                    <div class="flex justify-end">
+                        <button type="button" id="subUser" class="px-4 py-2 text-sm font-semibold text-white transition bg-red-600 rounded-xl hover:bg-red-700">
+                            Submit Hapus
+                        </button>
                     </div>
                 </div>
             </div>
@@ -216,31 +131,194 @@
         function setExportType(type) {
             $('#exportType').val(type);
         }
-        $(document).ready(function() {
-            // Saat halaman dimuat, ambil semua elemen dengan class "lazy-image"
-            var lazyImages = $('.lazy-image');
 
-            // Fungsi untuk memuat gambar ketika mendekati jendela pandangan pengguna
-            function lazyLoad() {
-                lazyImages.each(function() {
-                    var image = $(this);
-                    if (image.is(':visible') && !image.attr('src')) {
-                        image.attr('src', image.attr('data-src'));
+        $(function() {
+            let searchDebounceTimer = null;
+            const filterForm = $('#filterForm');
+            const searchInput = $('#searchInput');
+            const filterKerjasama = $('#filterKerjasama');
+            const pageInput = $('#pageInput');
+            const filterLoading = $('#filterLoading');
+            const resetFilterBtn = $('#resetFilterBtn');
+            const userTableBody = $('#userTableBody');
+            const noResultRow = $('#clientNoResultRow');
+            const prevPageBtn = $('#prevPageBtn');
+            const nextPageBtn = $('#nextPageBtn');
+            const paginationInfo = $('#paginationInfo');
+            const paginationState = $('#paginationState');
+
+            let currentPage = Number(pageInput.val() || 1);
+            let lastPage = 1;
+            let lastSubmittedSearch = (searchInput.val() || '').trim();
+
+            function escapeHtml(text) {
+                return String(text || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function renderRows(items, page, perPage) {
+                userTableBody.empty();
+
+                if (!items.length) {
+                    noResultRow.removeClass('hidden');
+                    userTableBody.append(noResultRow);
+                    return;
+                }
+
+                noResultRow.addClass('hidden');
+
+                items.forEach(function(item, index) {
+                    const rowNumber = ((page - 1) * perPage) + (index + 1);
+                    const rowHtml = `
+                        <tr class="transition-colors odd:bg-white even:bg-gray-50/40 hover:bg-blue-50/40 user-row">
+                            <td class="px-3 py-2 align-top">
+                                <input class="checkbox checkbox-sm" type="checkbox" name="check[]" id="check_${item.id}" value="${item.id}" />
+                            </td>
+                            <td class="px-3 py-2 align-top">${rowNumber}</td>
+                            <td class="hidden px-3 py-2 align-top md:table-cell">
+                                <div class="overflow-hidden border border-gray-200 rounded-lg h-14 w-14">
+                                    <img loading="lazy" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" class="object-cover object-center w-full h-full" />
+                                </div>
+                            </td>
+                            <td class="px-3 py-2 align-top">
+                                <p class="font-medium text-gray-800">${escapeHtml(item.name).toUpperCase()}</p>
+                                <div class="mt-1 space-y-0.5 text-xs text-gray-500 md:hidden">
+                                    <p>${escapeHtml(item.kerjasama_name)}</p>
+                                    <p>${escapeHtml(item.no_hp)}</p>
+                                </div>
+                            </td>
+                            <td class="hidden px-3 py-2 break-words whitespace-pre-line align-top lg:table-cell">${escapeHtml(item.nama_lengkap).charAt(0).toUpperCase() + escapeHtml(item.nama_lengkap).slice(1).toLowerCase()}</td>
+                            <td class="px-3 py-2 break-words whitespace-pre-line align-top">${escapeHtml(item.email)}</td>
+                            <td class="hidden px-3 py-2 break-words whitespace-pre-line align-top lg:table-cell">${escapeHtml(item.no_hp)}</td>
+                            <td class="hidden px-3 py-2 break-words whitespace-pre-line align-top md:table-cell">${escapeHtml(item.kerjasama_name)}</td>
+                            <td class="px-3 py-2 align-top">
+                                <a href="${escapeHtml(item.edit_url)}" class="inline-flex gap-1 items-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-100">
+                                    <i class="ri-pencil-line"></i> Edit
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                    userTableBody.append(rowHtml);
+                });
+            }
+
+            function updatePaginationUI(pagination) {
+                currentPage = pagination.current_page;
+                lastPage = pagination.last_page;
+                pageInput.val(currentPage);
+                paginationInfo.text(`Menampilkan ${pagination.from} - ${pagination.to} dari ${pagination.total} user`);
+                paginationState.text(`Page ${pagination.current_page} / ${pagination.last_page}`);
+                prevPageBtn.prop('disabled', currentPage <= 1);
+                nextPageBtn.prop('disabled', currentPage >= lastPage);
+            }
+
+            function refreshSelectionState() {
+                const selectedCount = $('input[name="check[]"]:checked').length;
+                $('#selectedCountBadge').text(selectedCount + ' user dipilih');
+                $('#delUser').prop('disabled', selectedCount === 0);
+                $('.export-user-btn').prop('disabled', selectedCount === 0);
+            }
+
+            function fetchUsers(page = 1) {
+                filterLoading.removeClass('hidden');
+                $('#checkbox_all').prop('checked', false);
+
+                $.ajax({
+                    url: "{{ route('users.index') }}",
+                    method: 'GET',
+                    data: {
+                        ajax: 1,
+                        page: page,
+                        filterKerjasama: filterKerjasama.val() || '',
+                        search: (searchInput.val() || '').trim()
+                    },
+                    success: function(response) {
+                        renderRows(response.data || [], response.pagination.current_page, response.pagination.per_page);
+                        updatePaginationUI(response.pagination);
+                        refreshSelectionState();
+                        lastSubmittedSearch = (searchInput.val() || '').trim();
+                    },
+                    error: function() {
+                        userTableBody.empty();
+                        noResultRow.removeClass('hidden');
+                        userTableBody.append(noResultRow);
+                        paginationInfo.text('Gagal memuat data.');
+                        paginationState.text('Page - / -');
+                        prevPageBtn.prop('disabled', true);
+                        nextPageBtn.prop('disabled', true);
+                    },
+                    complete: function() {
+                        filterLoading.addClass('hidden');
                     }
                 });
             }
 
-            // Panggil fungsi lazyLoad saat halaman dimuat dan saat pengguna menggulir
-            lazyLoad();
-            $(window).on('scroll', lazyLoad);
+            searchInput.on('input', function() {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(function() {
+                    const currentSearch = (searchInput.val() || '').trim();
+                    if (currentSearch === lastSubmittedSearch) return;
+                    fetchUsers(1);
+                }, 300);
+            });
 
+            searchInput.on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchDebounceTimer);
+                    fetchUsers(1);
+                }
+            });
 
-            var id = $('#data').attr('data-value');
+            filterKerjasama.on('change', function() {
+                fetchUsers(1);
+            });
+
+            resetFilterBtn.on('click', function() {
+                searchInput.val('');
+                filterKerjasama.prop('selectedIndex', 0).val('');
+                fetchUsers(1);
+            });
+
+            filterForm.on('submit', function(e) {
+                e.preventDefault();
+                fetchUsers(1);
+            });
+
+            prevPageBtn.on('click', function() {
+                if (currentPage > 1) fetchUsers(currentPage - 1);
+            });
+
+            nextPageBtn.on('click', function() {
+                if (currentPage < lastPage) fetchUsers(currentPage + 1);
+            });
+
+            $('#checkbox_all').on('change', function() {
+                $('input[id^="check_"]').prop('checked', $(this).is(':checked'));
+                refreshSelectionState();
+            });
+
+            $(document).on('change', 'input[name="check[]"]', function() {
+                const total = $('input[name="check[]"]').length;
+                const selected = $('input[name="check[]"]:checked').length;
+                $('#checkbox_all').prop('checked', total > 0 && total === selected);
+                refreshSelectionState();
+            });
+
+            $('.export-user-btn').on('click', function(e) {
+                e.preventDefault();
+                setExportType($(this).data('export-type'));
+                $('#exportUserForm').submit();
+            });
 
             $('#delUser').on('click', function() {
                 const checkedUsers = $('input[name="check[]"]:checked');
                 const isiUser = $('#isiUser');
-                isiUser.empty(); // Clear previous content
+                isiUser.empty();
 
                 if (checkedUsers.length === 0) {
                     isiUser.append('<p class="text-red-600">Tidak ada user yang dipilih.</p>');
@@ -252,55 +330,18 @@
                     const userRow = $(this).closest('tr');
                     const userName = userRow.find('td:nth-child(4)').text().trim();
                     const userFullname = userRow.find('td:nth-child(5)').text().trim();
-                    isiUser.append(
-                        `<p>${index + 1}. User: ${userId} | ${userName} | ${userFullname}</p>`);
-                    // console.log(`Checked user ID: ${userId}, Nama: ${userName}`);
+                    isiUser.append(`<p>${index + 1}. User: ${userId} | ${userName} | ${userFullname}</p>`);
                 });
             });
 
-
-            $('#checkbox_all').not('input[id^="check_"]').click(function() {
-                var checkBoxes = $('input[id^="check_"]');
-                checkBoxes.prop("checked", !checkBoxes.prop("checked"));
-
-
+            $('#subUser').on('click', function(e) {
+                e.preventDefault();
+                setExportType('delete');
+                $('#exportUserForm').submit();
             });
 
-            $(document).ready(function() {
-                // Handle user deletion with jQuery AJAX
-                $('.delete-button').click(function(event) {
-                    event.preventDefault();
-                    var userId = $(this).data('user-id');
-                    var deleteUrl = "{{ route('users.destroy', [':id']) }}".replace(':id', userId);
-                    console.log(userId, deleteUrl);
-
-                    $.ajax({
-                        url: deleteUrl,
-                        type: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        success: function() {
-                            // Handle success, e.g., remove the table row
-                            // $(`#check_${userId}`).closest('tr').remove();
-                        },
-                        error: function(xhr, status, error) {
-                            console.log(error);
-                            alert('An error occurred while deleting the user.');
-                        }
-                    });
-                });
-
-                $('#subUser').click(function(e) {
-                    e.preventDefault();
-                    $('#exportUserForm').submit();
-                })
-
-                $('#exportUser').click(function(e) {
-                    e.preventDefault();
-                    $('#exportUserForm').submit();
-                })
-            });
+            refreshSelectionState();
+            fetchUsers(currentPage);
         });
     </script>
-</x-app-layout>
+</x-admin-layout>

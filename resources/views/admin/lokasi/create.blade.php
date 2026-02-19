@@ -1,41 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ env('APP_NAME', 'Absensi SAC-PONOROGO') }}</title>
-	<link rel="shortcut icon" href="{{ URL::asset('favicon.ico') }}" type="image/x-icon">
-    
-    <link rel="preconnect" href="https://fonts.bunny.net">
-	<link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-		integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Tambah Lokasi')
 
-        <!-- Scripts -->
-	@vite(['resources/css/app.css', 'resources/js/app.js'])
+    <div class="mx-auto w-full max-w-screen-lg space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Lokasi Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Lokasi</h1>
+                    <p class="mt-1 text-sm text-gray-600">Tentukan koordinat lokasi client dan radius absensi.</p>
+                </div>
+                <a href="{{ route('lokasi.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
+            </div>
+        </section>
 
-    {{-- Leaflet --}}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    
-    <style>
-       
-
-    </style>
-
-</head>
-<body class="font-sans antialiased overflow-hidden bg-slate-400">
-    <div class="min-h-screen">
-        <main>
-            @include('../layouts/navbar')
-        <div class="bg-slate-500 p-4 mx-36 shadow-md rounded-md">
-            <p class="text-center text-2xl uppercase font-bold">Tambah Lokasi</p>
-                <form method="POST" action="{{ route('lokasi.store') }}" class="mx-[25%] my-10" id="form">
-                @csrf
-                <div class="bg-slate-100 px-10 py-5 rounded shadow">
-                    <div class="flex flex-col">
-                        <label for="client_id" class="label">Client</label>
-                        <select name="client_id" id="client_id" class="select-bordered select mb-2">
+        <form method="POST" action="{{ route('lokasi.store') }}" class="space-y-4" id="form">
+            @csrf
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label for="client_id" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Client</label>
+                        <select name="client_id" id="client_id" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none">
                             <option selected disabled>~ Pilih Client ~</option>
                             @forelse ($client as $cli)
                                 <option value="{{ $cli->id }}">{{ $cli->name }}</option>
@@ -44,52 +28,66 @@
                             @endforelse
                         </select>
                     </div>
-                    {{-- lang --}}
-                    <div class="flex flex-col">
-                        <x-input-label for="latitude" :value="__('Latitude')" />
-                        <input name="latitude" class="block mt-1 w-full input" id="latitude" value="" placeholder="Input Latitude..."/>
+                    <div>
+                        <label for="latitude" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Latitude</label>
+                        <input name="latitude" id="latitude" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" placeholder="Input Latitude..."/>
                     </div>
-                    {{-- long --}}
-                    <div class="flex flex-col">
-                        <x-input-label for="longitude" :value="__('Longitude')" />
-                        <input name="longtitude" class="block mt-1 w-full input" id="longtitude" value="" placeholder="Input Longitude..."/>
+                    <div>
+                        <label for="longtitude" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Longitude</label>
+                        <input name="longtitude" id="longtitude" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" placeholder="Input Longitude..."/>
                     </div>
-                    {{-- rad --}}
-                    <div class="flex flex-col">
-                        <x-input-label for="radius" :value="__('Radius')" />
-                        <input  class="disabled block mt-1 w-full input input-bordered" value="" placeholder="input radius satuan 'M', min 50..." id="radius" name="radius" type="number"/>
-                    </div>
-                    <div id="map"></div>
-                    <div class="flex gap-2 my-5 justify-end">
-                        <button><a href="{{ route('lokasi.index') }}" class="btn btn-error">Back</a></button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                    <div class="md:col-span-2">
+                        <label for="radius" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Radius (meter)</label>
+                        <input id="radius" name="radius" type="number" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" placeholder="Input radius min 50..."/>
                     </div>
                 </div>
-                </form>
-            </div>
-        </main>
+
+                <div class="mt-4 overflow-hidden rounded-xl border border-gray-200">
+                    <div id="map" class="h-80 w-full"></div>
+                </div>
+
+                <div class="mt-5 flex justify-end gap-2">
+                    <a href="{{ route('lokasi.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Lokasi</button>
+                </div>
+            </section>
+        </form>
     </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        var lat = document.getElementById('lat')
-        var long = document.getElementById('long')
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition);
-        }
+    @push('scripts')
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script>
+            (function() {
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longtitude');
+                const map = L.map('map').setView([-7.865, 111.466], 13);
 
-        function showPosition(position) {
-            lat.value = position.coords.latitude;
-            long.value = position.coords.longitude;
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
 
-            var latitude = position.coords.latitude;  // Ganti dengan latitude Anda
-            var longitude = position.coords.longitude; // Ganti dengan longitude Anda
+                let marker;
+                function setPoint(lat, lng) {
+                    latInput.value = lat.toFixed(6);
+                    lngInput.value = lng.toFixed(6);
+                    if (marker) map.removeLayer(marker);
+                    marker = L.marker([lat, lng]).addTo(map);
+                }
 
-        }
-    </script>
-</body>
-</html>
+                map.on('click', function(e) {
+                    setPoint(e.latlng.lat, e.latlng.lng);
+                });
 
-
-
-
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 15);
+                        setPoint(lat, lng);
+                    });
+                }
+            })();
+        </script>
+    @endpush
+</x-admin-layout>

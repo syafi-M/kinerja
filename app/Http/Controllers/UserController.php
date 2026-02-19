@@ -35,10 +35,74 @@ class UserController extends Controller
         $dev = Divisi::all();
         $user = User::with('Kerjasama')->orderBy('name', 'desc');
         $user->when($request->filterKerjasama, function ($query) use ($request) {
-            return $query->where('kerjasama_id', '=', $request->filterKerjasama . '%');
+            return $query->where('kerjasama_id', $request->filterKerjasama);
+        });
+        $user->when($request->search, function ($query) use ($request) {
+            $search = trim($request->search);
+            return $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('nama_lengkap', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
         });
 
-        return view('admin.user.index', ['user' => $user->paginate(100), 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev, 'filterKerjasama' => $request->filterKerjasama]);
+        $user = $user->paginate(100);
+        $user->appends($request->only(['filterKerjasama', 'search']));
+
+        if ($request->boolean('ajax')) {
+            $items = $user->getCollection()->map(function ($item) {
+                $defaultImg = asset('/logo/person.png');
+                if ($item->image === 'no-image.jpg') {
+                    $imageUrl = $defaultImg;
+                } elseif (Storage::disk('public')->exists('images/' . $item->image)) {
+                    $imageUrl = asset('storage/images/' . $item->image);
+                } elseif (Storage::disk('public')->exists('user/' . $item->image)) {
+                    $imageUrl = asset('storage/user/' . $item->image);
+                } else {
+                    $imageUrl = $defaultImg;
+                }
+
+                $nik = '---';
+                if ($item->nik) {
+                    try {
+                        $nik = Crypt::decryptString($item->nik);
+                    } catch (\Throwable $th) {
+                        $nik = '---';
+                    }
+                }
+
+                $kerjasamaName = optional(optional($item->kerjasama)->client)->panggilan
+                    ? optional(optional($item->kerjasama)->client)->panggilan
+                    : (optional(optional($item->kerjasama)->client)->name ?? 'kosong');
+
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'nama_lengkap' => $item->nama_lengkap,
+                    'email' => $item->email,
+                    'nik' => $nik,
+                    'no_hp' => $item->no_hp ? '+62' . $item->no_hp : '---',
+                    'kerjasama_id' => $item->kerjasama_id,
+                    'kerjasama_name' => $kerjasamaName,
+                    'image_url' => $imageUrl,
+                    'edit_url' => url('users/' . $item->id . '/edit'),
+                ];
+            });
+
+            return response()->json([
+                'data' => $items,
+                'pagination' => [
+                    'current_page' => $user->currentPage(),
+                    'last_page' => $user->lastPage(),
+                    'per_page' => $user->perPage(),
+                    'total' => $user->total(),
+                    'from' => $user->firstItem() ?? 0,
+                    'to' => $user->lastItem() ?? 0,
+                ],
+            ]);
+        }
+
+        return view('admin.user.index', ['user' => $user, 'kerjasama' => $kerjasama, 'client' => $client, 'dev' => $dev, 'filterKerjasama' => $request->filterKerjasama, 'search' => $request->search]);
     }
 
     /**

@@ -1,29 +1,29 @@
-<x-app-layout>
-	<x-main-div>
-		<div class="py-10 px-10">
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Edit Sub Area')
 
-			<p class="text-2xl text-center font-bold uppercase mb-10">Edit Sub Area</p>
+    <div class="mx-auto w-full max-w-screen-md space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Sub Area Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Sub Area</h1>
+                    <p class="mt-1 text-sm text-gray-600">Perbarui nama sub area.</p>
+                </div>
+                <a href="{{ route('subarea.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
+            </div>
+        </section>
 
-			<div class="flex justify-center">
-				<form action="{{ route('subarea.update', $subId->id) }}" method="POST">
-					@csrf
-					@method("PATCH")
-					<div class="w-[25rem] px-2 py-2 p-2 bg-white max-w-md shadow-md rounded-md">
-						<div id="inputContainer" class="flex flex-col pb-10">
-							<label class="label pl-2">Name</label>
-							<input type="text" value="{{ $subId->name }}" placeholder="Input Name..." class="input input-bordered my-2" id="input"
-								name="name[]" />
-						</div>
-						<div class="flex justify-between gap-2 mx-2">
-							<div>
-								<button type="submit" class="btn btn-info w-fit">Save</button>
-								<a href="{{ route('subarea.index') }}" class="btn btn-error">Back</a>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-
-	</x-main-div>
-</x-app-layout>
+        <form action="{{ route('subarea.update', $subId->id) }}" method="POST" class="space-y-4">
+            @csrf
+            @method('PATCH')
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Name</label>
+                <input type="text" value="{{ $subId->name }}" placeholder="Input Name..." class="input input-bordered w-full" name="name[]" />
+                <div class="mt-5 flex justify-end gap-2">
+                    <a href="{{ route('subarea.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </section>
+        </form>
+    </div>
+</x-admin-layout>

@@ -1,34 +1,40 @@
-<x-app-layout>
-    <x-main-div>
-        <form action="{{ route('point.update', [$point->id]) }}" method="POST">
-        @method('put')
-        @csrf
-        <div>
-            <p class="text-center text-2xl font-bold my-10">Edit Point, {{$point->client->name}}</p>
-            <div class="bg-slate-100 mx-10 my-10 px-10 py-5 rounded shadow">
-                <!--Client-->
-                <div class="flex flex-col">
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Edit Poin')
+
+    <div class="mx-auto w-full max-w-screen-md space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-yellow-600">Point Management</p>
+            <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Data Poin</h1>
+            <p class="mt-1 text-sm text-gray-600">Perbarui nilai poin untuk client {{ $point->client?->name ?? '-' }}.</p>
+        </section>
+
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <form action="{{ route('point.update', [$point->id]) }}" method="POST" class="space-y-4">
+                @method('put')
+                @csrf
+
+                <div>
                     <x-input-label for="client_id" :value="__('Client')" />
-                    <select name="client_id" id="" class="select select-bordered w-full mt-1">
-    					<option disabled>~ Pilih Client ~</option>
-    					@foreach ($client as $i)
-    						<option name="client_id" {{ $point->client_id == $i->id ? 'selected' : '' }}  value="{{ $i->id }}" class="py-2">{{ $i->name }}</option>
-    					@endforeach
-    				</select>
-    				<x-input-error :messages="$errors->get('client_id')" class="mt-2" />
-				</div>
-				{{-- sac point --}}
-                <div class="my-5">
-                    <x-input-label for="sac_point" :value="__('Jumlah Point')" />
-                    <input type="text" name="sac_point" value="{{$point->sac_point}}" id="sac_point" class="input input-bordered w-full" placeholder="masukkan jumlah point...">
-					<x-input-error :messages="$errors->get('sac_point')" class="mt-2" />
+                    <select name="client_id" id="client_id" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-yellow-500 focus:outline-none">
+                        <option disabled>~ Pilih Client ~</option>
+                        @foreach ($client as $i)
+                            <option {{ (old('client_id', $point->client_id) == $i->id) ? 'selected' : '' }} value="{{ $i->id }}">{{ $i->name }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('client_id')" class="mt-2" />
                 </div>
-                <div class="flex gap-2 my-5 justify-end">
-                    <button><a href="{{ route('point.index') }}" class="btn btn-error">Back</a></button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+
+                <div>
+                    <x-input-label for="sac_point" :value="__('Jumlah Poin')" />
+                    <input type="number" min="0" name="sac_point" value="{{ old('sac_point', $point->sac_point) }}" id="sac_point" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-yellow-500 focus:outline-none" placeholder="Masukkan jumlah poin..." />
+                    <x-input-error :messages="$errors->get('sac_point')" class="mt-2" />
                 </div>
-            </div>
-        </div>
-        </form>
-    </x-main-div>
-</x-app-layout>
+
+                <div class="flex justify-end gap-2 pt-1">
+                    <a href="{{ route('point.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-yellow-500 px-4 text-sm font-semibold text-white transition hover:bg-yellow-600">Simpan Perubahan</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</x-admin-layout>

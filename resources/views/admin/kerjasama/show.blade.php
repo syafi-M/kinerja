@@ -1,3 +1,3 @@
-<x-app-layout>
+<x-admin-layout :fullWidth="true">
     <p>{{ $kerjasama->id}}</p>
-</x-app-layout>
+</x-admin-layout>

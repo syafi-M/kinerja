@@ -9,6 +9,7 @@ use App\Models\Kerjasama;
 use App\Models\User;
 use App\Models\ListPekerjaan;
 use App\Models\LaporanMitra;
+use App\Models\UploadImage;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -49,7 +50,7 @@ class LaporanController extends Controller
                 
                 $mitra = Kerjasama::all();
                 $ruangan = Ruangan::all();
-                $laporan = Laporan::orderBy('created_at', 'desc')->paginate(25);
+                $laporan = UploadImage::orderBy('created_at', 'desc')->paginate(30);
                 return view('laporan.index', ['laporan' => $laporan, 'mitra' => $mitra, 'ruangan' => $ruangan, 'min' => $min, 'max' => $max]);
             }elseif(Auth::user()->divisi->jabatan->code_jabatan == 'MITRA'){
                 $ker = Auth::user()->kerjasama->client_id;

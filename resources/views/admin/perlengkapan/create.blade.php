@@ -1,30 +1,33 @@
-<x-app-layout>
-	<x-main-div>
-		<div class="py-10 px-10">
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Tambah Perlengkapan')
 
-			<p class="text-2xl text-center font-bold uppercase mb-10">Create Perlengkapan</p>
+    <div class="w-full max-w-screen-md px-2 mx-auto space-y-4 sm:px-3 lg:px-4">
+        <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Perlengkapan Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Perlengkapan</h1>
+                    <p class="mt-1 text-sm text-gray-600">Masukkan satu atau beberapa nama perlengkapan sekaligus.</p>
+                </div>
+                <a href="{{ route('perlengkapan.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Kembali</a>
+            </div>
+        </section>
 
-			<div class="flex justify-center ">
-				<form action="{{ route('perlengkapan.store') }}" method="POST">
-					@csrf
-					<div class="w-[25rem] px-2 py-2 p-2 bg-white max-w-md shadow-md rounded-md">
-						<div id="inputContainer" class="flex flex-col pb-10">
-							<label class="label pl-2">Name</label>
-							<input type="text" placeholder="Input Name..." class="input input-bordered my-2" id="input"
-								name="name[]" />
-						</div>
-						<div class="flex justify-between gap-2 mx-2">
-							<button type="button" id="add" class="btn btn-warning w-fit">Add Input</button>
-							<div>
-
-								<button type="submit" class="btn btn-info w-fit">Save</button>
-								<a href="{{ route('perlengkapan.index') }}" class="btn btn-error">Back</a>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-
-	</x-main-div>
-</x-app-layout>
+        <form action="{{ route('perlengkapan.store') }}" method="POST" class="space-y-4">
+            @csrf
+            <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
+                <div id="inputContainer" class="space-y-2">
+                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nama</label>
+                    <input type="text" placeholder="Input Nama Perlengkapan..." class="w-full input input-bordered" name="name[]" />
+                </div>
+                <div class="flex flex-wrap justify-between gap-2 mt-5">
+                    <button type="button" id="add" class="inline-flex items-center h-10 px-4 text-sm font-semibold border rounded-xl border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100">Add Input</button>
+                    <div class="flex gap-2">
+                        <a href="{{ route('perlengkapan.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Batal</a>
+                        <button type="submit" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">Simpan</button>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </div>
+</x-admin-layout>

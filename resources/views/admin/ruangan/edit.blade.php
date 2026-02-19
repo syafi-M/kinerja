@@ -1,33 +1,43 @@
-<x-app-layout>
-	<div class="bg-slate-500 p-4 mx-36 shadow-md rounded-md">
-		<p class="text-center text-2xl uppercase font-bold">Edit Ruangan</p>
-		<form method="POST" action="{{ route('ruangan.update', $ruanganId->id) }}" class="mx-[25%] my-10" id="form">
-			@csrf
-            @method('PATCH')
-			<div class="bg-slate-100 px-10 py-5 rounded shadow">
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Edit Ruangan')
+
+    <div class="mx-auto w-full max-w-screen-md space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <x-input-label for="Client" :value="__('Nama Mitra')" />
-                    <select name="kerjasama_id" id="" class="select select-bordered w-full mt-1">
-                        <option selected disabled>~ Pilih Mitra ~</option>
-                        @foreach ($kerjasama as $i)
-                            <option name="kerjasama_id" {{ $ruanganId->kerjasama_id == $i->id ? 'selected' : '' }}  value="{{ $i->id }}" class="py-2">{{ $i->client->name }}</option>
-                        @endforeach
-                    </select>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Ruangan Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Ruangan</h1>
+                    <p class="mt-1 text-sm text-gray-600">Perbarui ruangan dan mitra terkait.</p>
                 </div>
+                <a href="{{ route('ruangan.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
+            </div>
+        </section>
 
-				<!-- name -->
-				<div>
-					<x-input-label for="nama_ruangan" :value="__('Nama Ruangan')" />
-					<x-text-input id="nama_ruangan" class="block mt-1 w-full" type="text" name="nama_ruangan" value="{{ $ruanganId->nama_ruangan}}" required
-						autofocus autocomplete="nama_ruangan" />
-					<x-input-error :messages="$errors->get('nama_ruangan')" class="mt-2" />
-				</div>
-
-				<div class="flex gap-2 my-5 justify-end">
-					<button><a href="{{ route('ruangan.index') }}" class="btn btn-error">Back</a></button>
-					<button type="submit" class="btn btn-primary">Save</button>
-				</div>
-			</div>
-		</form>
-	</div>
-</x-app-layout>
+        <form method="POST" action="{{ route('ruangan.update', $ruanganId->id) }}" class="space-y-4" id="form">
+            @csrf
+            @method('PATCH')
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="space-y-4">
+                    <div>
+                        <label for="kerjasama_id" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nama Mitra</label>
+                        <select name="kerjasama_id" id="kerjasama_id" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none">
+                            <option selected disabled>~ Pilih Mitra ~</option>
+                            @foreach ($kerjasama as $i)
+                                <option {{ $ruanganId->kerjasama_id == $i->id ? 'selected' : '' }} value="{{ $i->id }}">{{ $i->client->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="nama_ruangan" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nama Ruangan</label>
+                        <input id="nama_ruangan" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" type="text" name="nama_ruangan" value="{{ $ruanganId->nama_ruangan}}" required autocomplete="nama_ruangan" />
+                        <x-input-error :messages="$errors->get('nama_ruangan')" class="mt-2" />
+                    </div>
+                </div>
+                <div class="mt-5 flex justify-end gap-2">
+                    <a href="{{ route('ruangan.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </section>
+        </form>
+    </div>
+</x-admin-layout>

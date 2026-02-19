@@ -1,99 +1,62 @@
-<x-app-layout>
-	<x-main-div class="ydis">
-		<div class="bg-slate-500 p-4  shadow-md rounded-md">
-			<p class="text-center text-2xl uppercase font-bold my-10">Jadwal Hari {{ $hari }}</p>
-			@if (Auth::user()->role_id == 2)
-				<form action="{{ route('jadwal_export.admin') }}" method="get">
-					<div class="flex justify-end mx-10 mb-2 ">
-						<input type="text" name="str1"  class="hidden">
-						<input type="text" name="end1" class="hidden">
-						<div class="flex flex-col items-center gap-x-2">
-							<select name="filter" class="input input-bordered">
-								<option class="disabled" disabled>~Pilih Mitra~</option>
-								@forelse($kerj as $i)
-									<option value="{{ $i->id }}" {{ $i->id == $filter ? 'selected' : '' }}>{{ $i->client->name }}</option>
-								@empty
-									<option class="disabled">~Mitra Kosong~</option>
-								@endforelse
-							</select>
-						</div>
-					</div>
-					<span class=" justify-end mx-10">    
-						<button type="submit" class="bg-yellow-400 px-3 py-2 shadow rounded-md text-2xl flex items-center gap-2"
-							style="margin-bottom: 3rem;">
-							<p class="text-sm font-semibold">Print PDF</p>
-							<i class="ri-file-download-line"></i>
-						</button>
-					</span>
-				</form>
-			@else
-				<form action="{{ route('lead_jadwal_export') }}" method="get" class="hidden">
-					<div class="flex justify-end mx-10 mb-2 ">
-						<button type="submit" class="bg-yellow-400 px-3 mt-4 py-2 shadow rounded-md text-2xl flex items-center gap-2">
-							<p class="text-sm font-semibold">Print PDF</p>
-							<i class="ri-file-download-line"></i>
-						</button>
-						<input type="text" name="str1" hidden>
-						<input type="text" name="end1"  hidden>
-					</div>
-				</form>
-			@endif
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Buat Jadwal')
 
-			{{-- 2 --}}
-			<div class="overflow-x-scroll sm:overflow-x-auto pb-10 text-xs">
-			    <form id="jadwalForm" action="{{ route('storeJadwalLeader') }}" method="POST">
-			        @csrf
-    				<table class="table table-xs table-zebra bg-slate-50 w-full">
-    					<thead>
-    						<tr>
-    							<th class="bg-slate-300 rounded-tl-2xl">#</th>
-    							<th class="bg-slate-300">Nama Lengkap</th>
-    							<th class="bg-slate-300">Centang</th>
-    							<th class="bg-slate-300 rounded-tr-2xl">Shift</th>
-    						</tr>
-    					</thead>
-    					<tbody>
-    						@php
-    							$no = 1;
-    						@endphp
-    						@forelse ($user as $us)
-    							@if ($us->nama_lengkap != 'admin' && $us->nama_lengkap != 'user')
-    								<tr>
-    									<td>{{ $no++ }}</td>
-    									<td>{{ $us->nama_lengkap }}</td>
-    									<td><input name="userID[]" value="{{ $us->id }}" type="checkbox" class="checkbox checkbox-sm"/></td>
-    									<td>
-    									    <select name="shift[]" class="input input-bordered">
-    									        <option selected disabled>Pilih Shift</option>
-    									        @forelse($shift as $i)
-    									        <option value="{{ $i->id }}">{{ $i->shift_name }} || {{ $i->jam_start }} - {{ $i->jam_end }}</option>
-    									        @empty
-    									        @endforelse
-    									    </select>
-    									</td>
-    							</tr>
-    						@endif
-        					@empty
-        
-        					@endforelse
-        				</tbody>
-        			</table>
-        			<input type="hidden" name="hari" value="{{ $hari }}"/>
-        			<button type="submit">Simpan</button>
-			    </form>
-    		</div>
-		<div class="flex justify-center sm:justify-end my-5">
-		    @if(Auth::user()->divisi->code_jabatan == "CO-CS")
-			    <a href="{{ route('leaderView') }}" class="btn btn-error">Kembali</a>
-		    @else
-			    <a href="{{ route('dashboard.index') }}" class="btn btn-error">Kembali</a>
-		    @endif
-		</div>
-	</div>
-</x-main-div>
+    <div class="mx-auto w-full max-w-screen-xl space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Jadwal Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Jadwal Hari {{ $hari }}</h1>
+                    <p class="mt-1 text-sm text-gray-600">Tetapkan shift harian untuk karyawan terpilih.</p>
+                </div>
+                <a href="{{ route('admin-jadwal.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50">Kembali</a>
+            </div>
+        </section>
 
-<script>
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <form id="jadwalForm" action="{{ route('storeJadwalLeader') }}" method="POST" class="space-y-4">
+                @csrf
+                <div class="w-full overflow-x-auto">
+                    <table class="w-full min-w-[680px] divide-y divide-gray-100">
+                        <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                            <tr>
+                                <th class="px-4 py-3">#</th>
+                                <th class="px-4 py-3">Nama Lengkap</th>
+                                <th class="px-4 py-3">Centang</th>
+                                <th class="px-4 py-3">Shift</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                            @php $no = 1; @endphp
+                            @forelse ($user as $us)
+                                @if ($us->nama_lengkap != 'admin' && $us->nama_lengkap != 'user')
+                                    <tr>
+                                        <td class="px-4 py-3">{{ $no++ }}</td>
+                                        <td class="px-4 py-3">{{ $us->nama_lengkap }}</td>
+                                        <td class="px-4 py-3"><input name="userID[]" value="{{ $us->id }}" type="checkbox" class="checkbox checkbox-sm"/></td>
+                                        <td class="px-4 py-3">
+                                            <select name="shift[]" class="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-2 text-xs text-gray-700">
+                                                <option selected disabled>Pilih Shift</option>
+                                                @forelse($shift as $i)
+                                                    <option value="{{ $i->id }}">{{ $i->shift_name }} || {{ $i->jam_start }} - {{ $i->jam_end }}</option>
+                                                @empty
+                                                @endforelse
+                                            </select>
+                                        </td>
+                                    </tr>
+                                @endif
+                            @empty
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-</script>
-
-</x-app-layout>
+                <input type="hidden" name="hari" value="{{ $hari }}"/>
+                <div class="flex justify-end gap-2">
+                    <a href="{{ route('admin-jadwal.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">Simpan</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</x-admin-layout>

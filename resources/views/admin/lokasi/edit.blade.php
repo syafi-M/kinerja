@@ -1,43 +1,52 @@
-<x-app-layout>
-    <x-main-div>
-        <form action="{{ route('lokasi.update', [$lokasiId->id]) }}" method="POST">
-        @method('put')
-        @csrf
-        <div>
-            <p class="text-center text-2xl font-bold my-10">Edit Lokasi, {{$lokasiId->client->name}}</p>
-            <div class="bg-slate-100 mx-10 my-10 px-10 py-5 rounded shadow">
-                <!--Client-->
-                <div class="flex flex-col">
-                    <x-input-label for="client_id" :value="__('Client')" />
-                    <select name="client_id" id="" class="select select-bordered w-full mt-1">
-    					<option disabled>~ Pilih Client ~</option>
-    					@foreach ($client as $i)
-    						<option name="client_id" {{ $lokasiId->client_id == $i->id ? 'selected' : '' }}  value="{{ $i->id }}" class="py-2">{{ $i->name }}</option>
-    					@endforeach
-    				</select>
-    				<x-input-error :messages="$errors->get('client_id')" class="mt-2" />
-				</div>
-				<!--lat-->
-				<div class="flex flex-col">
-                    <x-input-label for="latitude" :value="__('Latitude')" />
-                    <input name="latitude" class="block mt-1 w-full input" id="latitude" value="{{$lokasiId->latitude}}" placeholder="Input Latitude..."/>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Edit Lokasi')
+
+    <div class="mx-auto w-full max-w-screen-lg space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Lokasi Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Lokasi: {{ $lokasiId->client->name }}</h1>
+                    <p class="mt-1 text-sm text-gray-600">Perbarui koordinat dan radius lokasi client.</p>
                 </div>
-                <!--long-->
-                <div class="flex flex-col">
-                    <x-input-label for="longitude" :value="__('Longitude')" />
-                    <input name="longtitude" class="block mt-1 w-full input" id="longtitude" value="{{$lokasiId->longtitude}}" placeholder="Input Longitude..."/>
-                </div>
-                {{-- rad --}}
-                <div class="flex flex-col">
-                    <x-input-label for="radius" :value="__('Radius (meter)')" />
-                    <input  class="disabled block mt-1 w-full input input-bordered" value="{{$lokasiId->radius}}" placeholder="input radius satuan 'M', min 50..." id="radius" name="radius" type="number"/>
-                </div>
-                <div class="flex gap-2 my-5 justify-end">
-                    <button><a href="{{ route('lokasi.index') }}" class="btn btn-error">Back</a></button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
+                <a href="{{ route('lokasi.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a>
             </div>
-        </div>
+        </section>
+
+        <form action="{{ route('lokasi.update', [$lokasiId->id]) }}" method="POST" class="space-y-4">
+            @method('put')
+            @csrf
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label for="client_id" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Client</label>
+                        <select name="client_id" id="client_id" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none">
+                            <option disabled>~ Pilih Client ~</option>
+                            @foreach ($client as $i)
+                                <option {{ $lokasiId->client_id == $i->id ? 'selected' : '' }} value="{{ $i->id }}">{{ $i->name }}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('client_id')" class="mt-2" />
+                    </div>
+                    <div>
+                        <label for="latitude" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Latitude</label>
+                        <input name="latitude" id="latitude" value="{{ $lokasiId->latitude }}" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" placeholder="Input Latitude..."/>
+                    </div>
+                    <div>
+                        <label for="longtitude" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Longitude</label>
+                        <input name="longtitude" id="longtitude" value="{{ $lokasiId->longtitude }}" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" placeholder="Input Longitude..."/>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="radius" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Radius (meter)</label>
+                        <input id="radius" name="radius" type="number" value="{{ $lokasiId->radius }}" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:border-blue-300 focus:bg-white focus:outline-none" placeholder="Input radius min 50..."/>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex justify-end gap-2">
+                    <a href="{{ route('lokasi.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </section>
         </form>
-    </x-main-div>
-</x-app-layout>
+    </div>
+</x-admin-layout>

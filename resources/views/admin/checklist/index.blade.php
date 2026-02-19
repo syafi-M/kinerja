@@ -1,135 +1,136 @@
-<x-app-layout>
-    <x-main-div>
-        <div>
-            <p class="text-center text-2xl font-bold py-5 uppercase">Data Checklist</p>
-            <div class="mx-10">
-                <x-search/>
-            </div>
-            @if($startDate && $endDate)
-                <div class="flex justify-between my-5 mx-10">
-                    <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : route('leaderView') }}" class="btn btn-error">Back</a>
-                    <a href="{{  Auth::user()->role_id == 2 ? route('admin-checklist.create') : route('leader-checklist.create') }}" class="btn btn-warning hover:bg-yellow-600 border-none transition-all ease-in-out .2s">+ Checklist</a>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Data Checklist')
+
+    <div class="mx-auto w-full max-w-screen-xl space-y-4 px-2 sm:px-3 lg:px-4">
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Checklist Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Data Checklist</h1>
+                    <p class="mt-1 text-sm text-gray-600">Monitoring kebersihan area berdasarkan rentang tanggal.</p>
                 </div>
-                <div class="flex items-center justify-center flex-col mx-5 pb-10 gap-4">
+                <label class="flex h-10 w-full max-w-sm items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3">
+                    <i class="ri-search-2-line text-base text-gray-500"></i>
+                    <input type="search" id="searchInput" class="w-full border-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none" placeholder="Cari area atau sub area..." />
+                </label>
+            </div>
+        </section>
+
+        @if($startDate && $endDate)
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : route('leaderView') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50">Back</a>
+                    <a href="{{ Auth::user()->role_id == 2 ? route('admin-checklist.create') : route('leader-checklist.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">+ Checklist</a>
+                </div>
+            </section>
+
+            <div class="space-y-4">
+                @php
+                    $str = Carbon\Carbon::createFromFormat('Y-m-d', $startDate)->startOfDay();
+                    $end = Carbon\Carbon::createFromFormat('Y-m-d', $endDate)->endOfDay();
+                @endphp
+                @for($date = $str->copy(); $date->lte($end); $date->addDay())
                     @php
-                        $str = Carbon\Carbon::createFromFormat('Y-m-d', $startDate)->startOfDay();
-                        $end = Carbon\Carbon::createFromFormat('Y-m-d', $endDate)->endOfDay();
-                        $str1 = $str->isoFormat('dddd, MMM YYYY');
-                        $end1 = $end->isoFormat('dddd, MMM YYYY');
+                        $d = $date->isoFormat('dddd, D MMMM Y');
+                        $filteredChecklist = $checklist->where('created_at', '>=', $date)->where('created_at', '<', $date->copy()->addDay());
                     @endphp
-                    @for($date = $str->copy(); $date->lte($end); $date->addDay())
-                        @php
-                            $d = $date->isoFormat('dddd, D MMMM Y');
-                            $renderedC = [];
-                            $filteredChecklist = $checklist->where('created_at', '>=', $date)->where('created_at', '<', $date->copy()->addDay());
-                        @endphp
-                        @if($filteredChecklist->count() > 0)
-                            <table class="table table-xs w-full bg-slate-50" id="searchTable">
-                                <thead>
-                                    <tr>
-                                        <th colspan="4" style="border-top-left-radius: 1rem; border-top-right-radius: 1rem; font-size: 1rem;" class="bg-slate-300 py-3 text-center font-semibold">{{ $d }}</th>
-                                    </tr>
-                                    <tr>
-                                        <th class="bg-slate-300">#</th>
-                                        <th class="bg-slate-300">Area - Subarea</th>
-                                        <th class="bg-slate-300">Tingkat Bersih</th>
-                                        <th class="bg-slate-300 text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php $no = 1; @endphp
-                                    @foreach ($filteredChecklist as $c)
+                    @if($filteredChecklist->count() > 0)
+                        <section class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+                            <div class="border-b border-gray-100 bg-gray-50 px-4 py-3 text-center text-sm font-semibold text-gray-700">{{ $d }}</div>
+                            <div class="w-full overflow-x-auto">
+                                <table class="w-full min-w-[620px] divide-y divide-gray-100" id="searchTable">
+                                    <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
                                         <tr>
-                                            <td>{{ $no++ }}</td>
-                                            <td>{{ $c->area}} - {{ $c->sub_area }}</td>
-                                            <td>{{ $c->tingkat_bersih }}</td>
-                                            <td>
-                                                <form action="{{ route('admin-checklist.destroy', $c->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <div class="overflow-hidden">
-                                                        <button class="text-red-400 hover:text-red-500 text-xl transition-all ease-linear .2s"><i class="ri-delete-bin-5-line"></i></button>
-                                                    </div>
-                                                </form>
-                                            </td>
+                                            <th class="px-4 py-3 sm:px-5">#</th>
+                                            <th class="px-4 py-3 sm:px-5">Area - Subarea</th>
+                                            <th class="px-4 py-3 sm:px-5">Tingkat Bersih</th>
+                                            <th class="px-4 py-3 text-right sm:px-5">Action</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @endif
-                        
-                    @endfor
-                </div>
-                <div class="flex justify-start mx-10">
-                    @foreach($checklistApproved as $c)
-                        @php $hasMatch = false; @endphp
-                        @forelse($final as $fin)
-                            @if($c->id == $fin->checklist_id)
-                                @php $hasMatch = true; @endphp
-                                <img srcset="{{ asset('storage/'. Auth::user()->signature->getSignatureImagePath()) }}"/>
-                            @endif
-                            @break
-                        @empty
-                            @if (!$hasMatch && $filteredChecklist->count() > 0)
-                                @if (!Auth::user()->hasBeenSigned())
-                                <span class="w-full">
-                                    <form id="signForm" action="{{ Auth::user()->getSignatureRoute() }}" method="POST" id="uploadForm" class="flex justify-center items-center">
-                                        @csrf
-                                        <div style="text-align: center">
-                                            <x-creagia-signature-pad
-                                                border-color="#AFAFAF"
-                                                pad-classes="rounded-xl border-2"
-                                                button-classes="btn btn-primary mt-4"
-                                                clear-name="Hapus"
-                                                submit-name="Approve"
-                                                :disabled-without-signature="true"
-                                            />
-                                        </div>
-                                    </form>
-                                </span>
-                                    @break
-                                @else
-                                    <form id="hiddenForm" action="{{ route('admin-checklist.index')}}" method="GET" class="approvalForm w-full my-10">
-                                        @csrf
-                                        @foreach ($checklistApproved as $item)
-                                            <input name="allow" value="true" class="hidden"/>
-                                            <input type="text" name="checklist_id[]" value="{{ $item->id }}" class="hidden">
-                                            <input name="signature" id="approve" value="{{ Auth::user()->signature->getSignatureImagePath()}}" class="hidden"/>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                                        @php $no = 1; @endphp
+                                        @foreach ($filteredChecklist as $c)
+                                            <tr class="hover:bg-blue-50/40">
+                                                <td class="px-4 py-3 sm:px-5">{{ $no++ }}</td>
+                                                <td class="px-4 py-3 sm:px-5">{{ $c->area}} - {{ $c->sub_area }}</td>
+                                                <td class="px-4 py-3 sm:px-5">{{ $c->tingkat_bersih }}</td>
+                                                <td class="px-4 py-3 sm:px-5 text-right">
+                                                    <form action="{{ route('admin-checklist.destroy', $c->id) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="text-red-500 hover:text-red-600 text-xl transition"><i class="ri-delete-bin-5-line"></i></button>
+                                                    </form>
+                                                </td>
+                                            </tr>
                                         @endforeach
-                                        <div class="flex justify-center">
-                                            <button type="submit" class="btn btn-primary">Approve</button>
-                                        </div>
-                                    </form>
-                                    @break
-                                @endif
-                            @endif
-                        @endforelse
-                    @endforeach
-                </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    @endif
+                @endfor
             </div>
+
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <div class="flex flex-col items-center gap-4">
+                    @php
+                        $hasApprovedMatch = false;
+                        foreach($checklistApproved as $c){
+                            foreach($final as $fin){
+                                if($c->id == $fin->checklist_id){ $hasApprovedMatch = true; break 2; }
+                            }
+                        }
+                    @endphp
+
+                    @if($hasApprovedMatch)
+                        <img srcset="{{ asset('storage/'. Auth::user()->signature->getSignatureImagePath()) }}" class="max-h-28"/>
+                    @elseif (!Auth::user()->hasBeenSigned())
+                        <form id="signForm" action="{{ Auth::user()->getSignatureRoute() }}" method="POST" class="w-full flex justify-center">
+                            @csrf
+                            <div style="text-align: center">
+                                <x-creagia-signature-pad
+                                    border-color="#AFAFAF"
+                                    pad-classes="rounded-xl border-2"
+                                    button-classes="btn btn-primary mt-4"
+                                    clear-name="Hapus"
+                                    submit-name="Approve"
+                                    :disabled-without-signature="true"
+                                />
+                            </div>
+                        </form>
+                    @else
+                        <form id="hiddenForm" action="{{ route('admin-checklist.index')}}" method="GET" class="approvalForm w-full max-w-md">
+                            @csrf
+                            @foreach ($checklistApproved as $item)
+                                <input name="allow" value="true" class="hidden"/>
+                                <input type="text" name="checklist_id[]" value="{{ $item->id }}" class="hidden">
+                                <input name="signature" id="approve" value="{{ Auth::user()->signature->getSignatureImagePath()}}" class="hidden"/>
+                            @endforeach
+                            <div class="flex justify-center">
+                                <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">Approve</button>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+            </section>
         @else
-            <form action="{{ Auth::user()->role_id == 2 ? route('admin-checklist.index') : route('leader-checklist.index') }}" method="GET" class="my-10">
-                @csrf
-                <span class="flex justify-center items-center">
-                    <span class="w-fit bg-slate-50 rounded-lg p-10">
-                        <p class="text-center font-bold text-lg mb-5">Tanggal Mulai - Akhir</p>
-                        <div class="flex mr-2">
-                            <div class="mr-2">
-                                <input type="date" name="start_date" id="str1" placeholder="Tanggal Mulai" class="text-sm block px-3 py-2 rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
-                            </div>
-                            <div class="ml-2">
-                                <input type="date" name="end_date" id="end1" class="text-sm block px-3 py-2 rounded-lg bg-white border-2 border-gray-300 placeholder-gray-600 shadow-md focus:placeholder-gray-500 focus:bg-white focus:border-gray-600 focus:outline-none">
-                            </div>
-                        </div>
-                        <span class="flex justify-center">
-                            <button type="submit" class="btn btn-primary mt-3">Simpan</button>
-                        </span>
-                    </span
-                    </span>
-                </span>
-            </form>
+            <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <form action="{{ Auth::user()->role_id == 2 ? route('admin-checklist.index') : route('leader-checklist.index') }}" method="GET" class="mx-auto max-w-xl space-y-4">
+                    @csrf
+                    <p class="text-center text-lg font-semibold text-gray-800">Tanggal Mulai - Akhir</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <input type="date" name="start_date" id="str1" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:border-blue-300 focus:bg-white focus:outline-none">
+                        <input type="date" name="end_date" id="end1" class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 focus:border-blue-300 focus:bg-white focus:outline-none">
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">Simpan</button>
+                    </div>
+                </form>
+            </section>
         @endif
     </div>
-    <script src="{{ asset('vendor/sign-pad/sign-pad.min.js') }}"></script>
-</x-main-div>
-</x-app-layout>
+
+    @push('scripts')
+        <script src="{{ asset('vendor/sign-pad/sign-pad.min.js') }}"></script>
+    @endpush
+</x-admin-layout>

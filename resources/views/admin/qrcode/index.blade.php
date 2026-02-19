@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
 		<div class="py-10 px-5">
 			<p class="text-center text-2xl font-bold  uppercase">Data QR Code</p>
 			<div class="flex justify-end ">
@@ -95,7 +94,6 @@
 				</div>
 			
 		</div>
-	</x-main-div>
     	<script>
         $(document).ready(function () {
             var selectedItems = []; // Variable to store selected items
@@ -155,4 +153,4 @@
 
     </script>
 
-</x-app-layout>
+</x-admin-layout>

@@ -1,100 +1,107 @@
-<x-app-layout>
-    <x-main-div>
-        <div class="py-10 sm:mx-10">
-            <p class="text-center text-lg sm:text-2xl uppercase font-bold ">List Gaji Karyawan, <br>{{ $penempatan ? $mitra->firstWhere('id', $penempatan)->client->name : "Semua Mitra" }}, {{ $bulan ? Carbon\Carbon::parse($bulan)->isoFormat('MMMM Y') : Carbon\Carbon::now()->subMonth()->isoFormat('MMMM Y') }}</p>
-            <div class="flex flex-col items-center mx-2 my-2 sm:justify-center justify-start">
-                
-                <div class="flex items-center justify-center sm:justify-between gap-2 w-full mt-5">
-                    <div class="w-full">
-            		    <a href="{{ route('admin.index') }}" class="btn btn-error">Kembali</a>
-                    </div>
-                    <div class="mt-5 flex justify-end" style="min-width: 50%;">
-                        <form method="GET" class="flex flex-col gap-2 bg-slate-100 rounded p-2 mb-5" style="">
-                            <div style="width: 100%">
-                                <label class="label text-xs">Pilih Mitra</label>
-                                <select name="penempatan" class="select select-bordered text-black select-sm text-xs w-full">
-                                    <option class="disabled" disabled selected>~Pilih Mitra~</option>
-                                    <option value="semua" selected>semua mitra</option>
-                                    @forelse($mitra as $i)
-                                        <option value="{{ $i->id }}" {{ $penempatan == $i->id ? 'selected' : '' }}>{{ $i->client->name }}</option>
-                                    @empty
-                                        <option class="disabled">~Mitra Kosong~</option>
-                                    @endforelse
-                                </select>
-                            </div>
-                            <div class="join" style="Width: 100%;">
-                                <input type="month" name="bulan" value="{{ $bulan ? $bulan : Carbon\Carbon::now()->subMonth()->format('Y-m') }}" max="{{ Carbon\Carbon::now()->addMonth()->format('Y-m') }}" class="input input-sm input-bordered join-item" style="width: 75%;" />
-                                <button type="submit" class="btn btn-sm btn-info join-item" style="width: 25%;" ><i class="ri-search-2-line"></i></button>
-                            </div>
-                        </form>
-                    </div>
+<x-admin-layout :fullWidth="true">
+    @section('title', 'Slip Gaji')
+
+    <div class="w-full px-2 py-6 mx-auto space-y-4 max-w-screen-2xl sm:px-3 lg:px-4">
+        <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">Payroll Management</p>
+                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">List Gaji Karyawan</h1>
+                    <p class="mt-1 text-sm text-gray-600">
+                        {{ $penempatan ? $mitra->firstWhere('id', $penempatan)->client->name : 'Semua Mitra' }},
+                        {{ $bulan ? Carbon\Carbon::parse($bulan)->isoFormat('MMMM Y') : Carbon\Carbon::now()->subMonth()->isoFormat('MMMM Y') }}
+                    </p>
                 </div>
-                
-                <div class="overflow-x-scroll w-full mx-2 sm:mx-10  ">
-                    <table id="searchTable" class="table table-xs table-zebra text-xs bg-slate-50 font-semibold ">
-                        <thead>
-							<tr class="text-center">
-                                <th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">#</th>
-                                <th class="p-1 py-2 bg-slate-300 text-start">Nama Lengkap</th>
-                                <th class="p-1 py-2 bg-slate-300">Gj. Pokok</th>
-                                <th class="p-1 py-2 bg-slate-300">Gj. Lembur</th>
-                                <th class="p-1 py-2 bg-slate-300">Tj. Jabatan</th>
-                                <th class="p-1 py-2 bg-slate-300">Tj. Kehadiran</th>
-                                <th class="p-1 py-2 bg-slate-300">Tj. Kinerja</th>
-                                <th class="p-1 py-2 bg-slate-300">Tj. Lain-Lain</th>
-                                <th class="p-1 py-2 bg-slate-300">Pot. Bpjs</th>
-                                <th class="p-1 py-2 bg-slate-300">Pot. Pinjaman</th>
-                                <th class="p-1 py-2 bg-slate-300">Pot. Absen</th>
-                                <th class="p-1 py-2 bg-slate-300">Pot. Lain-Lain</th>
-                                <th class="p-1 py-2 bg-slate-300">Penghasilan</th>
-                                <th class="p-1 py-2 bg-slate-300">Potongan</th>
-                                <th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Total Penerimaan</th>
-							</tr>
-						</thead>
-                        <tbody>
-                            @php
-                                $n = 1;
-                                
-                            @endphp
-                            @forelse ($slip as $i)
-                                @php
-                                    $totalPenghasilan = $i?->gaji_pokok + $i?->gaji_lembur + $i?->tj_jabatan + $i?->tj_kehadiran + $i?->tj_kinerja + $i?->tj_lain;
-                                    $totalPotongan = $i?->bpjs + $i?->pinjaman + $i?->absen + $i?->lain_lain;
-                                    $totalBersih = 0;
-                                    if($totalPotongan > 0){
-                                        $totalBersih = $totalPenghasilan - $totalPotongan;
-                                    }else{
-                                        $totalBersih = $totalPenghasilan + $totalPotongan;
-                                    }
-                                @endphp
-                                <tr class="text-center">
-                                    <td>{{ $n++ }}.</td>
-                                    <td class="text-start">{{ $i?->karyawan }}</td>
-                                    <td>{{ toRupiah($i->gaji_pokok ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->gaji_lembur ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->tj_jabatan ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->tj_kehadiran ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->tj_kinerja ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->tj_lain ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->bpjs ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->pinjaman ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->absen ?: '-') }}</td>
-                                    <td>{{ toRupiah($i->lain_lain ?: '-') }}</td>
-                                    <td>{{ toRupiah($i?->gaji_pokok + $i?->gaji_lembur + $i?->tj_jabatan + $i?->tj_kehadiran + $i?->tj_kinerja + $i?->tj_lain) }}</td>
-                                    <td>{{ toRupiah($i?->bpjs + $i?->pinjaman + $i?->absen + $i?->lain_lain) }}</td>
-                                    <td>{{ toRupiah($totalBersih) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">
-                                        ~ Data Kosong ~
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                <a href="{{ route('admin.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Kembali</a>
             </div>
-        </div>
-    </x-main-div>
-</x-app-layout>
+        </section>
+
+        <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
+            <form method="GET" class="grid gap-3 md:grid-cols-12">
+                <div class="md:col-span-6">
+                    <label for="penempatan" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Pilih Mitra</label>
+                    <select id="penempatan" name="penempatan" class="h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 focus:border-blue-500 focus:outline-none">
+                        <option disabled selected>~ Pilih Mitra ~</option>
+                        <option value="semua" selected>Semua Mitra</option>
+                        @forelse($mitra as $i)
+                            <option value="{{ $i->id }}" {{ $penempatan == $i->id ? 'selected' : '' }}>{{ $i->client->name }}</option>
+                        @empty
+                            <option disabled>~ Mitra Kosong ~</option>
+                        @endforelse
+                    </select>
+                </div>
+                <div class="md:col-span-4">
+                    <label for="bulan" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Bulan</label>
+                    <input id="bulan" type="month" name="bulan" value="{{ $bulan ? $bulan : Carbon\Carbon::now()->subMonth()->format('Y-m') }}" max="{{ Carbon\Carbon::now()->addMonth()->format('Y-m') }}" class="h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 focus:border-blue-500 focus:outline-none" />
+                </div>
+                <div class="flex items-end md:col-span-2">
+                    <button type="submit" class="inline-flex h-10 w-full items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
+                        <i class="ri-search-2-line mr-1.5"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+            <div class="w-full overflow-x-auto">
+                <table id="searchTable" class="w-full min-w-[1280px] divide-y divide-gray-100 text-xs">
+                    <thead class="text-xs font-semibold tracking-wide text-center text-gray-600 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-2 py-3 text-center">#</th>
+                            <th class="px-2 py-3 text-left">Nama Lengkap</th>
+                            <th class="px-2 py-3 text-center">Gj. Pokok</th>
+                            <th class="px-2 py-3 text-center">Gj. Lembur</th>
+                            <th class="px-2 py-3 text-center">Tj. Jabatan</th>
+                            <th class="px-2 py-3 text-center">Tj. Kehadiran</th>
+                            <th class="px-2 py-3 text-center">Tj. Kinerja</th>
+                            <th class="px-2 py-3 text-center">Tj. Lain-Lain</th>
+                            <th class="px-2 py-3 text-center">Pot. Bpjs</th>
+                            <th class="px-2 py-3 text-center">Pot. Pinjaman</th>
+                            <th class="px-2 py-3 text-center">Pot. Absen</th>
+                            <th class="px-2 py-3 text-center">Pot. Lain-Lain</th>
+                            <th class="px-2 py-3 text-center">Penghasilan</th>
+                            <th class="px-2 py-3 text-center">Potongan</th>
+                            <th class="px-2 py-3 text-center">Total Penerimaan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-gray-700">
+                        @php $n = 1; @endphp
+                        @forelse ($slip as $i)
+                            @php
+                                $totalPenghasilan = $i?->gaji_pokok + $i?->gaji_lembur + $i?->tj_jabatan + $i?->tj_kehadiran + $i?->tj_kinerja + $i?->tj_lain;
+                                $totalPotongan = $i?->bpjs + $i?->pinjaman + $i?->absen + $i?->lain_lain;
+                                $totalBersih = 0;
+                                if ($totalPotongan > 0) {
+                                    $totalBersih = $totalPenghasilan - $totalPotongan;
+                                } else {
+                                    $totalBersih = $totalPenghasilan + $totalPotongan;
+                                }
+                            @endphp
+                            <tr class="text-center transition-colors hover:bg-blue-50/40">
+                                <td class="px-2 py-3">{{ $n++ }}.</td>
+                                <td class="px-2 py-3 text-left">{{ $i?->karyawan }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->gaji_pokok ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->gaji_lembur ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->tj_jabatan ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->tj_kehadiran ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->tj_kinerja ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->tj_lain ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->bpjs ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->pinjaman ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->absen ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($i->lain_lain ?: '-') }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($totalPenghasilan) }}</td>
+                                <td class="px-2 py-3">{{ toRupiah($totalPotongan) }}</td>
+                                <td class="px-2 py-3 font-semibold text-gray-900">{{ toRupiah($totalBersih) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="15" class="px-4 py-8 text-sm text-center text-gray-500">Data gaji kosong.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</x-admin-layout>

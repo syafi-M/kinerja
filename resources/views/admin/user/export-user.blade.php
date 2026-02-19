@@ -45,7 +45,7 @@
         <div class="title">
             <span class="sub-title" style="vertical-align: 20px; font-weight: bolder; font-size: 25px;">PT. Surya
                 Amanah Cendekia</span>
-            @forelse ($data as $items)
+            @forelse ($data->unique('kerjasama_id') as $items)
                 <p style="font-weight: 700;">User Mitra {{ $items->kerjasama->client->name }}</p>
             @empty
             @endforelse
@@ -69,16 +69,18 @@
                         <tr>
                             <td>{{ $n++ }}</td>
                             <td>{{ $items->id }}</td>
-                            <td>{{ $items->nama_lengkap }}</td>
+                            <td style="text-align: start;">{{ $items->nama_lengkap }}</td>
                             <td>{{ $items->name }}</td>
-                            <td>
-                                @forelse ($results as $dat)
-                                    <span
-                                        style="background-color: rgba(255,0,0,0.7); padding-x: 2px; border-radius: 5px;">{{ $items->kerjasama_id == 1 ? '12345678' : $dat['pw'] }}</span>
-                                @empty
-                                    <span
-                                        style="background-color: rgba(255,0,0,0.7); padding-x: 2px; border-radius: 5px;">{{ $items->kerjasama_id == 1 ? '12345678' : '123456' }}</span>
-                                @endforelse
+                            <td style="padding: 4px 0px;">
+                                @if( $items->pw_temp )
+                                    <span style="background-color: #fef08a; color: #854d0e; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #facc15; font-family: monospace;">
+                                        {{ $items->kerjasama_id == 1 ? '12345678' : $items->pw_temp }}
+                                    </span>
+                                @else
+                                    <span style="background-color: #fef08a; color: #854d0e; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #facc15; font-family: monospace;">
+                                        {{ $items->kerjasama_id == 1 ? '12345678' : '123456' }}
+                                    </span>
+                                @endif
                             </td>
                         </tr>
                     @empty

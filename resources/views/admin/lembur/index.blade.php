@@ -1,5 +1,4 @@
-<x-app-layout>
-	<x-main-div>
+<x-admin-layout :fullWidth="true">
 		@if (Auth::user()->divisi->jabatan->code_jabatan == "SPV-P")
 		<p class="text-center text-2xl font-bold py-10 uppercase">List Lembur {{ Auth::user()->kerjasama->client->name }}</p>
 		@else
@@ -87,5 +86,4 @@
 		<div class="flex justify-end py-5 mx-5 sm:pb-10">
 			<a href="{{ route('admin.index') }}" class="btn btn-error mx-2 sm:mx-10">Back</a>
 		</div>
-	</x-main-div>
-</x-app-layout>
+</x-admin-layout>

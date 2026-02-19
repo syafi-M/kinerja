@@ -1,5 +1,4 @@
-<x-app-layout>
-    <x-main-div>
+<x-admin-layout :fullWidth="true">
         <div class="px-5 py-10">
             <div>
                 <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">Qr Code</p>
@@ -44,7 +43,6 @@
         			</div>
                 </form>
             </div>
-    </x-main-div>
     
     <script>
         $(document).ready(function () {
@@ -87,4 +85,4 @@
         });
 
     </script>
-</x-app-layout>
+</x-admin-layout>
