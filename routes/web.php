@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\Admin\HandlingAttendanceToExcelPage;
+use App\Http\Controllers\Admin\RekapSettingsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\CheckPointController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\JadwalUserController;
 use App\Http\Controllers\KerjasamaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LEADER_Controller\MainController as LeaderController;
+use App\Http\Controllers\LEADER_Controller\DataRekapController;
 use App\Http\Controllers\LemburController;
 use App\Http\Controllers\LokasiController;
 use App\Http\Controllers\PerlengkapanController;
@@ -31,11 +33,22 @@ use App\Http\Controllers\SubareaController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\FinalisasiController;
+use App\Http\Controllers\LEADER_Controller\OvertimeApplicationController;
+use App\Http\Controllers\LEADER_Controller\PersonInController;
+use App\Http\Controllers\LEADER_Controller\PersonOutController;
+use App\Http\Controllers\LEADER_Controller\CuttingController;
+use App\Http\Controllers\LEADER_Controller\FinishedTrainingController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ListPekerjaanController;
 use App\Http\Controllers\SlipGajiController;
 use App\Http\Controllers\ReportSholatController;
 use App\Http\Controllers\MonevController;
+use App\Http\Controllers\SVP_Controller\Rekap\DashboardRekapController;
+use App\Http\Controllers\SVP_Controller\Rekap\PersonInController as RekapPersonInController;
+use App\Http\Controllers\SVP_Controller\Rekap\CuttingController as RekapCuttingController;
+use App\Http\Controllers\SVP_Controller\Rekap\FinishedTrainingController as RekapFinishedTrainingController;
+use App\Http\Controllers\SVP_Controller\Rekap\OvertimesController;
+use App\Http\Controllers\SVP_Controller\Rekap\PersonOutController as RekapPersonOutController;
 use App\Models\TempUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -92,10 +105,10 @@ Route::get('/seed-username-counter', function () {
     // FIX: Added COLLATE to the whereRaw clause to solve the collation mismatch error.
 
     $lastTempUserNumber = TempUser::whereRaw(
-            "json_unquote(json_extract(`data`, '$.\"username\"'))
+        "json_unquote(json_extract(`data`, '$.\"username\"'))
              COLLATE utf8mb3_unicode_ci LIKE ?",
-            ['SAC%']
-        )
+        ['SAC%']
+    )
         ->get()
         ->map(function ($tempUser) {
             $data = json_decode($tempUser->data);
@@ -116,6 +129,29 @@ Route::get('/seed-username-counter', function () {
 
     return "Username counter has been seeded to: " . $highestNumber;
 });
+
+Route::get('/notifications/{id}', function ($id) {
+    $notif = auth()->user()
+        ->notifications()
+        ->where('id', $id)
+        ->firstOrFail();
+
+    $notif->markAsRead();
+
+    return match ($notif->data['type']) {
+        'overtime' =>
+        redirect()->route('manajemen_rekap_indexOvertimes', $notif->data['kerjasama_id']),
+        'person_out' =>
+        redirect()->route('manajemen_rekap_indexPersonOut', $notif->data['kerjasama_id']),
+        'person_in' =>
+        redirect()->route('manajemen_rekap_indexPersonIn', $notif->data['kerjasama_id']),
+        'cutting' =>
+        redirect()->route('manajemen_rekap_indexCutting', $notif->data['kerjasama_id']),
+        'finished_training' =>
+        redirect()->route('manajemen_rekap_indexFinishedTraining', $notif->data['kerjasama_id']),
+        default => back(),
+    };
+})->middleware('auth')->name('notifications.redirect');
 
 // Only AUTH
 Route::middleware(['auth', 'apdt'])->group(function () {
@@ -218,6 +254,22 @@ Route::middleware(['auth', 'spv', 'apdt'])->group(function () {
 
 // untuk Manajemen
 Route::middleware(['auth', 'apdt'])->group(function () {
+    Route::middleware(['rekap.management'])->group(function () {
+        Route::get('/Management/rekap-data', [DashboardRekapController::class, 'index'])->name('manajemen_rekap');
+        Route::get('/Management/rekap-overtimes/{id}', [DashboardRekapController::class, 'indexOvertimes'])->name('manajemen_rekap_indexOvertimes');
+        Route::get('/Management/rekap-person-out/{id}', [DashboardRekapController::class, 'indexPersonOut'])->name('manajemen_rekap_indexPersonOut');
+        Route::get('/Management/rekap-person-in/{id}', [DashboardRekapController::class, 'indexPersonIn'])->name('manajemen_rekap_indexPersonIn');
+        Route::get('/Management/rekap-cutting/{id}', [DashboardRekapController::class, 'indexCutting'])->name('manajemen_rekap_indexCutting');
+        Route::get('/Management/rekap-finished-training/{id}', [DashboardRekapController::class, 'indexFinishedTraining'])->name('manajemen_rekap_indexFinishedTraining');
+
+        //API AJA
+        Route::get('/api/v1/overtimes-api/{kerjasama}', [OvertimesController::class, 'index'])->name('api-overtimes');
+        Route::get('/api/v1/person-out-api/{kerjasama}', [RekapPersonOutController::class, 'index'])->name('api-person-out');
+        Route::get('/api/v1/person-in-api/{kerjasama}', [RekapPersonInController::class, 'index'])->name('api-person-in');
+        Route::get('/api/v1/cutting-api/{kerjasama}', [RekapCuttingController::class, 'index'])->name('api-cutting');
+        Route::get('/api/v1/finished-training-api/{kerjasama}', [RekapFinishedTrainingController::class, 'index'])->name('api-finished-training');
+    });
+
     Route::get('/Management/spv-absensi', [MainController::class, 'indexAbsen'])->name('manajemen_absensi');
     Route::get('/Management/spv-laporan', [MainController::class, 'indexLaporan'])->name('manajemen_laporan');
     Route::get('/Management/spv-lembur', [MainController::class, 'indexLembur'])->name('manajemen_lembur');
@@ -252,6 +304,41 @@ Route::middleware(['auth', 'spv-w', 'apdt'])->group(function () {
     Route::get('/spvw-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('spvw-slip');
 
     Route::resource('/spvw-monev', MonevController::class);
+});
+
+Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {
+    Route::get('/rekap-data', [DataRekapController::class, 'index'])->name('index.rekap.data.leader');
+    Route::post('/rekap/exemption/self', [DataRekapController::class, 'exemptSelf'])->name('rekap.exemption.self');
+    Route::resource('/overtime-application', OvertimeApplicationController::class);
+    Route::get('/api/v1/get-overtime/{id}', [OvertimeApplicationController::class, 'fetchApi'])->name('get-overtime-id');
+    Route::patch('/overtime-change-status/{id}', [OvertimeApplicationController::class, 'changeStatus'])->name('overtime.change_status');
+    Route::patch('/overtime-change-bulk', [OvertimeApplicationController::class, 'bulkStatus'])->name('overtime-bulk.status');
+
+    Route::resource('/person-is-out', PersonOutController::class);
+    Route::get('/api/v1/get-person-is-out/{id}', [PersonOutController::class, 'fetchApi'])->name('person-is-out-id');
+    Route::patch('/person-is-out-change-status/{id}', [PersonOutController::class, 'changeStatus'])->name('person-is-out.change_status');
+    Route::patch('/person-is-out-bulk', [PersonOutController::class, 'bulkStatus'])->name('person-is-out-bulk.status');
+
+    Route::resource('/person-in', PersonInController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::get('/person-is-in/history', [PersonInController::class, 'history'])->name('person.in.history');
+    Route::get('/person-in/users/search', [PersonInController::class, 'searchUsers'])->name('person-in.users.search');
+    Route::get('/api/v1/get-person-in/{id}', [PersonInController::class, 'fetchApi'])->name('person-in-id');
+    Route::patch('/person-in-change-status/{id}', [PersonInController::class, 'changeStatus'])->name('person-in.change_status');
+    Route::patch('/person-in-bulk', [PersonInController::class, 'bulkStatus'])->name('person-in-bulk.status');
+
+    Route::get('/cutting/history', [CuttingController::class, 'history'])->name('cutting.history');
+    Route::resource('/cutting', CuttingController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::get('/cutting/users/search', [CuttingController::class, 'searchUsers'])->name('cutting.users.search');
+    Route::get('/api/v1/get-cutting/{id}', [CuttingController::class, 'fetchApi'])->name('cutting-id');
+    Route::patch('/cutting-change-status/{id}', [CuttingController::class, 'changeStatus'])->name('cutting.change_status');
+    Route::patch('/cutting-bulk', [CuttingController::class, 'bulkStatus'])->name('cutting-bulk.status');
+
+    Route::get('/finished-training/history', [FinishedTrainingController::class, 'history'])->name('finished-training.history');
+    Route::resource('/finished-training', FinishedTrainingController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::get('/finished-training/users/search', [FinishedTrainingController::class, 'searchUsers'])->name('finished-training.users.search');
+    Route::get('/api/v1/get-finished-training/{id}', [FinishedTrainingController::class, 'fetchApi'])->name('finished-training-id');
+    Route::patch('/finished-training-change-status/{id}', [FinishedTrainingController::class, 'changeStatus'])->name('finished-training.change_status');
+    Route::patch('/finished-training-bulk', [FinishedTrainingController::class, 'bulkStatus'])->name('finished-training-bulk.status');
 });
 
 // leader
@@ -307,6 +394,9 @@ Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
 
 // ADIMIN
 Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
+    Route::get('/admin/rekap/settings', [RekapSettingsController::class, 'index'])->name('admin.rekap.settings');
+    Route::post('/admin/rekap/settings', [RekapSettingsController::class, 'update'])->name('admin.rekap.settings.update');
+
     Route::get('/report/sholat/by-admin', [ReportSholatController::class, 'index'])->name('reportSholat.index');
     Route::get('/report/sholat/download-as-admin', [ReportSholatController::class, 'download'])->name('reportSholat.download');
     Route::resource('/admin/qrcode', QrCodeController::class);

@@ -4,8 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-use function Laravel\Prompts\table;
-
 return new class extends Migration
 {
     /**
@@ -13,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('shifts', function (Blueprint $table) {
-            $table->boolean('is_overnight')
-                ->default(false)
-                ->after('jam_end');
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -25,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('shifts', function (Blueprint $table) {
-            $table->dropColumn('is_overnight');
-        });
+        Schema::dropIfExists('notifications');
     }
 };

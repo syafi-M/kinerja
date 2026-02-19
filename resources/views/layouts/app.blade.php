@@ -28,7 +28,7 @@
             overflow-x: hidden;
         }
     </style>
-
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased bg-slate-400">
@@ -59,8 +59,7 @@
     </div>
     <!-- cdnjs -->
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.min.js') }}"></script>
-    <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}">
-    </script>
+    <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}"></script>
     <x-analytic-component />
     <script>
         $(document).ready(function() {
