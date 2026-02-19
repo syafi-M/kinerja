@@ -10,6 +10,8 @@ use App\Models\JadwalUser;
 use App\Models\Kerjasama;
 use App\Models\Lokasi;
 use App\Models\Point;
+use App\Models\RekapDueDateSetting;
+use App\Models\RekapPenaltyExemption;
 use App\Models\Shift;
 use App\Models\User;
 use Carbon\Carbon;
@@ -171,6 +173,20 @@ class AbsensiController extends Controller
 
     public function store(Request $request)
     {
+        $authUser = Auth::user();
+        $authCode = strtoupper((string) optional($authUser->jabatan)->code_jabatan);
+        if (in_array($authCode, ['CO-CS', 'CO-SCR'], true)) {
+            $dueDateSetting = RekapDueDateSetting::latest()->first();
+            $isExempted = RekapPenaltyExemption::where('user_id', $authUser->id)
+                ->where('is_active', true)
+                ->exists();
+
+            if ($dueDateSetting && Carbon::today()->gt(Carbon::parse($dueDateSetting->due_date)) && !$isExempted) {
+                toastr()->error('Periode pengajuan rekap sudah melewati due date. Anda tidak dapat membuat absensi baru.', 'error');
+                return redirect()->back();
+            }
+        }
+
         $rules = [
             'user_id' => 'required',
             'kerjasama_id' => 'required',

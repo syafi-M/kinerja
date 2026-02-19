@@ -11,8 +11,6 @@ class PersonOutController extends Controller
 {
     public function index(Request $request, $kerjasama)
     {
-        if (auth()->user()->kerjasama_id != 1) abort(403);
-
         $startDate = Carbon::now()->startOfMonth()->startOfDay();
         $endDate = Carbon::now()->startOfMonth()->addDays(24)->endOfDay();
 

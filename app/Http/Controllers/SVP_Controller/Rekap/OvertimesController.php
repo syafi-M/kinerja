@@ -14,7 +14,6 @@ class OvertimesController extends Controller
 {
     public function index($kerjasama)
     {
-        if (auth()->user()->kerjasama_id != 1) abort(403);
         if (! Kerjasama::where('id', $kerjasama)->exists()) {
             abort(404);
         }
@@ -30,15 +29,10 @@ class OvertimesController extends Controller
                     'user',
                     fn($q) =>
                     $q->where('kerjasama_id', $kerjasama)
-                        ->whereHas('jabatan', function ($j) {
-                            $j->where('type_jabatan', auth()->user()->jabatan_id == 14 ? 'CLEANING SERVICE' : 'SECURITY');
-                        })
                 )
                 ->get();
 
-            $employe = User::where('kerjasama_id', $kerjasama)->whereHas('Jabatan', function ($j) {
-                $j->where('type_jabatan', auth()->user()->jabatan_id == 14 ? 'CLEANING SERVICE' : 'SECURITY');
-            })->count();
+            $employe = User::where('kerjasama_id', $kerjasama)->count();
 
             // Group by user_id AND type_overtime
             $groupedOvertimes = $overtimes->groupBy(function ($item) {
@@ -141,7 +135,6 @@ class OvertimesController extends Controller
 
     public function show(string $id)
     {
-        if (auth()->user()->kerjasama_id != 1) abort(403);
         try {
             $overtime = Overtime::with('user')
                 ->where('id', $id)

@@ -413,6 +413,22 @@
                         ]
                     },
                     {
+                        key: 'rekap',
+                        title: 'Menu Rekap',
+                        icon: 'ri-file-chart-line',
+                        classes: {
+                            bg: 'bg-cyan-50',
+                            hoverBg: 'hover:bg-cyan-100',
+                            border: 'border-cyan-200',
+                            iconBg: 'bg-cyan-100',
+                            iconText: 'text-cyan-600',
+                        },
+                        items: [
+                            { label: 'Pengaturan Rekap', route: '{{ route("admin.rekap.settings") }}', icon: 'ri-settings-3-line' },
+                            { label: 'Data Rekap Management', route: '{{ route("manajemen_rekap") }}', icon: 'ri-database-2-line' },
+                        ]
+                    },
+                    {
                         key: 'slip',
                         title: 'Menu Slip Gaji',
                         icon: 'ri-file-text-line',

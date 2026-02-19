@@ -22,71 +22,36 @@ class PersonOut extends Model
 
     protected static function booted()
     {
-        static::creating(function ($personOut) {
-
-            DB::transaction(function () use ($personOut) {
-
-                // lock user row to prevent race conditions
-                $user = User::where('id', $personOut->user_id)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                // block if already soft deleted
-                if ($user->trashed()) {
-                    throw new \Exception('User already inactive');
-                }
-
-                // block duplicate PersonOut
-                $exists = self::where('user_id', $personOut->user_id)->exists();
-                if ($exists) {
-                    throw new \Exception('PersonOut already exists for this user');
-                }
-
-                // soft delete user safely
-                $user->delete();
-            });
-        });
 
         static::updating(function ($personOut) {
             DB::transaction(function () use ($personOut) {
 
-                // only act if user_id actually changed
-                if (! $personOut->isDirty('user_id')) {
+                if (! $personOut->isDirty('status')) {
                     return;
                 }
 
-                $oldUserId = $personOut->getOriginal('user_id');
-                $newUserId = $personOut->user_id;
-
-                // restore old user
-                $oldUser = User::withTrashed()
-                    ->where('id', $oldUserId)
-                    ->lockForUpdate()
-                    ->first();
-
-                if ($oldUser && $oldUser->trashed()) {
-                    $oldUser->restore();
-                }
-
-                // soft delete new user
-                $newUser = User::where('id', $newUserId)
+                $user = User::withTrashed()
+                    ->where('id', $personOut->user_id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                if ($newUser->trashed()) {
-                    throw new \Exception('New user already inactive');
-                }
+                if ($personOut->status === 'DI Ajukan') {
 
-                if (self::where('user_id', $newUserId)
-                    ->where('id', '!=', $personOut->id)
-                    ->exists()
-                ) {
-                    throw new \Exception('PersonOut already exists for this user');
-                }
+                    if ($user->trashed()) {
+                        throw new \Exception('User already inactive');
+                    }
 
-                $newUser->delete();
+                    $user->delete(); // soft delete
+
+                } else {
+
+                    if ($user->trashed()) {
+                        $user->restore(); // restore kalau status berubah
+                    }
+                }
             });
         });
+
 
         static::deleting(function ($personOut) {
 

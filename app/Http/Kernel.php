@@ -63,6 +63,7 @@ class Kernel extends HttpKernel
         'spv-w' => \App\Http\Middleware\SPVWMiddleware::class,
         'leader' => \App\Http\Middleware\LeaderMiddleware::class,
         'apdt' => \App\Http\Middleware\UpdateAbsenTelat::class,
+        'rekap.management' => \App\Http\Middleware\RekapManagementAccessMiddleware::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,

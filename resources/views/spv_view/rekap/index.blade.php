@@ -616,7 +616,7 @@
 
                             <!-- Action Button -->
                             <button
-                                onclick="openModal({{ $mitra->id }}, '{{ addslashes($mitra->name ?? 'Nama Mitra') }}')"
+                                onclick="openModal({{ $mitra->id }}, '{{ addslashes($mitra->client->name ?? 'Nama Mitra') }}')"
                                 class="w-full sm:w-auto flex-shrink-0 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 group">
                                 <span>Lihat Detail</span>
                                 <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
@@ -694,7 +694,7 @@
                                         M
                                     </div>
                                     <div>
-                                        <h3 class="text-lg font-semibold text-gray-900 leading-tight" id="modalTitle">
+                                        <h3 class="text-md font-semibold text-gray-900 leading-tight" id="modalTitle">
                                             Nama Mitra</h3>
                                         <p class="text-sm text-gray-500 mt-0.5">Pilih data yang ingin dilihat</p>
                                     </div>
@@ -765,6 +765,72 @@
                                         d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </a>
+
+                            <a href="#" id="linkPersonilMasuk"
+                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 rounded-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ri-user-follow-line text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4
+                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-blue-700 transition-colors">
+                                        Data Personil Masuk
+                                    </h4>
+                                    <p class="text-gray-600 text-xs">
+                                        Lihat data karyawan yang masuk
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <a href="#" id="linkCutting"
+                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-200 border border-rose-200 rounded-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ri-scissors-cut-line text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4
+                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-rose-700 transition-colors">
+                                        Data Cutting
+                                    </h4>
+                                    <p class="text-gray-600 text-xs">
+                                        Lihat data pengajuan cutting
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-rose-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <a href="#" id="linkFinishedTraining"
+                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-violet-50 to-violet-100 hover:from-violet-100 hover:to-violet-200 border border-violet-200 rounded-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ri-graduation-cap-line text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4
+                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-violet-700 transition-colors">
+                                        Data Lepas Training
+                                    </h4>
+                                    <p class="text-gray-600 text-xs">
+                                        Lihat data pengajuan lepas training
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-violet-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
                         </div>
 
                         <!-- Modal Footer -->
@@ -820,6 +886,9 @@
             const modalAvatar = document.getElementById('modalAvatar');
             const linkLembur = document.getElementById('linkLembur');
             const linkPersonilKeluar = document.getElementById('linkPersonilKeluar');
+            const linkPersonilMasuk = document.getElementById('linkPersonilMasuk');
+            const linkCutting = document.getElementById('linkCutting');
+            const linkFinishedTraining = document.getElementById('linkFinishedTraining');
 
             // Save current scroll position
             scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
@@ -831,6 +900,9 @@
             // Set links with mitra ID
             linkLembur.href = `/Management/rekap-overtimes/${mitraId}`;
             linkPersonilKeluar.href = `/Management/rekap-person-out/${mitraId}`;
+            linkPersonilMasuk.href = `/Management/rekap-person-in/${mitraId}`;
+            linkCutting.href = `/Management/rekap-cutting/${mitraId}`;
+            linkFinishedTraining.href = `/Management/rekap-finished-training/${mitraId}`;
 
             // Show modal
             modal.classList.remove('hidden');
