@@ -35,7 +35,9 @@ class PersonOut extends Model
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                if ($personOut->status === 'DI Ajukan') {
+                $isSubmitted = strcasecmp(trim((string) $personOut->status), 'Di Ajukan') === 0;
+
+                if ($isSubmitted) {
 
                     if ($user->trashed()) {
                         throw new \Exception('User already inactive');

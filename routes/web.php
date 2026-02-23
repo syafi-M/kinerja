@@ -2,6 +2,12 @@
 
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\Admin\HandlingAttendanceToExcelPage;
+use App\Http\Controllers\Admin\Rekap\CuttingController as AdminRekapCuttingController;
+use App\Http\Controllers\Admin\Rekap\DashboardRekapController as AdminDashboardRekapController;
+use App\Http\Controllers\Admin\Rekap\FinishedTrainingController as AdminRekapFinishedTrainingController;
+use App\Http\Controllers\Admin\Rekap\OvertimesController as AdminRekapOvertimesController;
+use App\Http\Controllers\Admin\Rekap\PersonInController as AdminRekapPersonInController;
+use App\Http\Controllers\Admin\Rekap\PersonOutController as AdminRekapPersonOutController;
 use App\Http\Controllers\Admin\RekapSettingsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AreaController;
@@ -394,6 +400,31 @@ Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
 
 // ADIMIN
 Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
+    Route::get('/admin/rekap', [AdminDashboardRekapController::class, 'index'])->name('admin.rekap.index');
+    Route::get('/admin/rekap/overtimes/{kerjasama}', [AdminDashboardRekapController::class, 'indexOvertimes'])->name('admin.rekap.overtimes');
+    Route::get('/admin/rekap/person-out/{kerjasama}', [AdminDashboardRekapController::class, 'indexPersonOut'])->name('admin.rekap.person-out');
+    Route::get('/admin/rekap/person-in/{kerjasama}', [AdminDashboardRekapController::class, 'indexPersonIn'])->name('admin.rekap.person-in');
+    Route::get('/admin/rekap/cutting/{kerjasama}', [AdminDashboardRekapController::class, 'indexCutting'])->name('admin.rekap.cutting');
+    Route::get('/admin/rekap/finished-training/{kerjasama}', [AdminDashboardRekapController::class, 'indexFinishedTraining'])->name('admin.rekap.finished-training');
+
+    Route::get('/admin/api/v1/rekap/overtimes/{kerjasama}', [AdminRekapOvertimesController::class, 'index'])->name('admin.rekap.api.overtimes');
+    Route::delete('/admin/api/v1/rekap/overtimes/{id}', [AdminRekapOvertimesController::class, 'destroy'])->name('admin.rekap.api.overtimes.destroy');
+    Route::get('/admin/api/v1/rekap/person-out/{kerjasama}', [AdminRekapPersonOutController::class, 'index'])->name('admin.rekap.api.person-out');
+    Route::delete('/admin/api/v1/rekap/person-out/{id}', [AdminRekapPersonOutController::class, 'destroy'])->name('admin.rekap.api.person-out.destroy');
+    Route::patch('/admin/api/v1/rekap/person-out/{id}/restore-user', [AdminRekapPersonOutController::class, 'restoreUser'])->name('admin.rekap.api.person-out.restore-user');
+    Route::get('/admin/api/v1/rekap/person-in/{kerjasama}', [AdminRekapPersonInController::class, 'index'])->name('admin.rekap.api.person-in');
+    Route::delete('/admin/api/v1/rekap/person-in/{id}', [AdminRekapPersonInController::class, 'destroy'])->name('admin.rekap.api.person-in.destroy');
+    Route::get('/admin/api/v1/rekap/cutting/{kerjasama}', [AdminRekapCuttingController::class, 'index'])->name('admin.rekap.api.cutting');
+    Route::delete('/admin/api/v1/rekap/cutting/{id}', [AdminRekapCuttingController::class, 'destroy'])->name('admin.rekap.api.cutting.destroy');
+    Route::get('/admin/api/v1/rekap/finished-training/{kerjasama}', [AdminRekapFinishedTrainingController::class, 'index'])->name('admin.rekap.api.finished-training');
+    Route::delete('/admin/api/v1/rekap/finished-training/{id}', [AdminRekapFinishedTrainingController::class, 'destroy'])->name('admin.rekap.api.finished-training.destroy');
+    Route::delete('/admin/rekap/actions/overtimes/{id}', [AdminRekapOvertimesController::class, 'destroyAction'])->name('admin.rekap.actions.overtimes.destroy');
+    Route::delete('/admin/rekap/actions/person-out/{id}', [AdminRekapPersonOutController::class, 'destroyAction'])->name('admin.rekap.actions.person-out.destroy');
+    Route::patch('/admin/rekap/actions/person-out/{id}/restore-user', [AdminRekapPersonOutController::class, 'restoreUserAction'])->name('admin.rekap.actions.person-out.restore-user');
+    Route::delete('/admin/rekap/actions/person-in/{id}', [AdminRekapPersonInController::class, 'destroyAction'])->name('admin.rekap.actions.person-in.destroy');
+    Route::delete('/admin/rekap/actions/cutting/{id}', [AdminRekapCuttingController::class, 'destroyAction'])->name('admin.rekap.actions.cutting.destroy');
+    Route::delete('/admin/rekap/actions/finished-training/{id}', [AdminRekapFinishedTrainingController::class, 'destroyAction'])->name('admin.rekap.actions.finished-training.destroy');
+
     Route::get('/admin/rekap/settings', [RekapSettingsController::class, 'index'])->name('admin.rekap.settings');
     Route::post('/admin/rekap/settings', [RekapSettingsController::class, 'update'])->name('admin.rekap.settings.update');
 
