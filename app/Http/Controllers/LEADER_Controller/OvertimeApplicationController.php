@@ -39,21 +39,16 @@ class OvertimeApplicationController extends Controller
 
     public function show(Request $request, $id)
     {
-        $month = $request->month ?? now()->month;
-        $year = $request->year ?? now()->year;
-        
-        $startDate = Carbon::create($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::create($year, $month, 1)->endOfMonth();
-        
-        $overtimes = Overtime::whereHas('user', function ($q) {
-                $q->where('kerjasama_id', auth()->user()->kerjasama_id);
-            })
-            ->whereBetween('date_overtime', [$startDate, $endDate])
-            ->when($request->status, function ($q) use ($request) {
-                $q->where('status', $request->status);
-            })
-            ->paginate(15)
-            ->withQueryString();
+       $startDate = Carbon::now()->subMonth()->day(26)->startOfDay(); 
+        $endDate = Carbon::now()->day(25)->endOfDay(); 
+        $overtimes = Overtime::whereHas('user', function ($q) { 
+            $q->where('kerjasama_id', auth()->user()->kerjasama_id); 
+        })->whereBetween('date_overtime', [$startDate, $endDate]) 
+        ->when($request->status, function ($q) use ($request) { 
+            $q->where('status', $request->status); 
+        })->when($request->month, function ($q) use ($request) { 
+            $q->whereMonth('date_overtime', $request->month); 
+        })->paginate(15) ->withQueryString();
 
         return view('leader_view.data_rekap.lembur.show', [
             'overtimes' => $overtimes
