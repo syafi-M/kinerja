@@ -19,8 +19,8 @@ class OvertimesController extends Controller
         }
 
         try {
-            $startDate = Carbon::now()->startOfMonth()->startOfDay();
-            $endDate = Carbon::now()->startOfMonth()->addDays(24)->endOfDay();
+            $startDate = Carbon::now()->subMonth()->day(26)->startOfDay();
+            $endDate = Carbon::now()->day(24)->endOfDay();
 
             $overtimes = Overtime::with(['user', 'user.jabatan', 'user.kerjasama.client'])
                 ->whereBetween('date_overtime', [$startDate, $endDate])
