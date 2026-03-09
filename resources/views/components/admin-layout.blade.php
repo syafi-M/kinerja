@@ -54,6 +54,7 @@
         }
     @endphp
     <div class="flex min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-100" x-data="{
+        isDashboardActive: {{ $isDashboardActive ? 'true' : 'false' }},
         sidebarOpen: {{ $isDashboardActive ? 'true' : 'false' }},
         openMenu: {!! $activeMenu ? '\'' . $activeMenu . '\'' : 'null' !!}
     }">

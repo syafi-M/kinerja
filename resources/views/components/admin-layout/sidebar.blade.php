@@ -17,7 +17,9 @@
 
 <!-- SIDEBAR -->
 <aside :class="sidebarOpen ? 'w-60' : 'w-24'"
-    class="fixed inset-y-0 left-0 z-50 transition-all duration-300 bg-white border-r shadow-xl border-gray-200/50 backdrop-blur-xl bg-white/80">
+    @mouseenter="if (!isDashboardActive) sidebarOpen = true"
+    @mouseleave="if (!isDashboardActive) sidebarOpen = false"
+    class="fixed inset-y-0 left-0 z-50 overflow-hidden transition-all duration-300 bg-white border-r shadow-xl border-gray-200/50 backdrop-blur-xl bg-white/80">
     <div class="flex flex-col h-full">
         <!-- Sidebar Header -->
         <div class="flex items-center h-16 px-4 border-b border-gray-100">
@@ -25,12 +27,7 @@
                 class="flex items-center justify-center w-10 h-10 shadow-lg bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shrink-0">
                 <i class="text-xl text-white ri-flashlight-fill"></i>
             </div>
-            <span x-show="sidebarOpen" class="ml-3 text-lg font-bold text-gray-800">KINERJA APP</span>
-            <!-- Toggle Sidebar Button -->
-            <button @click="sidebarOpen = !sidebarOpen"
-                class="p-2 ml-auto text-gray-600 transition rounded-lg shrink-0 hover:bg-gray-100">
-                <i class="text-xl" :class="sidebarOpen ? 'ri-indent-decrease' : 'ri-indent-increase'"></i>
-            </button>
+            <span x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="ml-3 text-lg font-bold text-gray-800 whitespace-nowrap">KINERJA APP</span>
         </div>
 
         <!-- Navigation Links -->
@@ -39,7 +36,7 @@
             <a href="{{ route('admin.index') }}"
                 class="flex items-center p-3 transition rounded-xl group {{ $isDashboardActive ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600' }}">
                 <i class="text-xl ri-dashboard-3-line"></i>
-                <span x-show="sidebarOpen" class="ml-3 text-sm font-medium">Dashboard</span>
+                <span x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="ml-3 text-sm font-medium whitespace-nowrap">Dashboard</span>
             </a>
 
             <!-- Menu User (Blue) -->
@@ -55,8 +52,8 @@
                         <i class="text-lg ri-folder-user-line"></i>
                     </div>
 
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">User</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">User</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'user' ? 'rotate-180' : ''"></i>
                     </div>
@@ -81,8 +78,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-organization-chart"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Divisi & Jabatan</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Divisi & Jabatan</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'divisi' ? 'rotate-180' : ''"></i>
                     </div>
@@ -110,8 +107,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-briefcase-4-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Klien & Lokasi</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Klien & Lokasi</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'klien' ? 'rotate-180' : ''"></i>
                     </div>
@@ -142,8 +139,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-calendar-event-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Shift & Jadwal</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Shift & Jadwal</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'shift' ? 'rotate-180' : ''"></i>
                     </div>
@@ -168,8 +165,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-list-check-3"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Absensi</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Absensi</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'absensi' ? 'rotate-180' : ''"></i>
                     </div>
@@ -200,8 +197,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-star-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Poin</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Poin</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'poin' ? 'rotate-180' : ''"></i>
                     </div>
@@ -226,8 +223,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-tools-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Perlengkapan</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Perlengkapan</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'perlengkapan' ? 'rotate-180' : ''"></i>
                     </div>
@@ -252,8 +249,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-task-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Laporan</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Laporan</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'laporan' ? 'rotate-180' : ''"></i>
                     </div>
@@ -278,8 +275,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-check-double-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Checkpoint</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Checkpoint</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'checkpoint' ? 'rotate-180' : ''"></i>
                     </div>
@@ -304,8 +301,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-newspaper-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Berita</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Berita</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'berita' ? 'rotate-180' : ''"></i>
                     </div>
@@ -327,8 +324,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-file-chart-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Rekapitulasi</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Rekapitulasi</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'rekap' ? 'rotate-180' : ''"></i>
                     </div>
@@ -353,8 +350,8 @@
                         class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0">
                         <i class="text-lg ri-file-text-line"></i>
                     </div>
-                    <div x-show="sidebarOpen" class="flex items-center justify-between flex-1 ml-3">
-                        <span class="text-sm font-semibold">Slip Gaji</span>
+                    <div x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="flex items-center justify-between flex-1 min-w-0 ml-3 overflow-hidden">
+                        <span class="text-sm font-semibold whitespace-nowrap">Slip Gaji</span>
                         <i class="transition-transform duration-200 ri-arrow-down-s-line"
                             :class="openMenu === 'gaji' ? 'rotate-180' : ''"></i>
                     </div>
@@ -374,7 +371,7 @@
                 <button type="submit"
                     class="flex items-center w-full p-3 text-red-500 transition hover:bg-red-50 rounded-xl">
                     <i class="text-xl ri-logout-box-r-line"></i>
-                    <span x-show="sidebarOpen" class="ml-3 text-sm font-medium">Logout</span>
+                    <span x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="ml-3 text-sm font-medium whitespace-nowrap">Logout</span>
                 </button>
             </form>
         </div>
