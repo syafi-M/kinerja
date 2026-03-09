@@ -27,7 +27,10 @@ class IzinController extends Controller
             $izin = Izin::latest()->whereHas('user')->where('kerjasama_id', $user)->paginate(30);
         }
 
-        return view('leader_view.absen.izin', ['izin' => $izin]);
+        $isMitra = Auth::user()->divisi->jabatan->code_jabatan === 'MITRA';
+        $view = $isMitra ? 'mitra_view.izin.index' : 'leader_view.absen.izin';
+
+        return view($view, ['izin' => $izin]);
     }
 
     public function indexAdmin()

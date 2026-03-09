@@ -117,6 +117,20 @@
                     <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-rose-400 group-hover:translate-x-1"></i>
                 </a>
             @endif
+
+            <!-- Rekap -->
+            @if (Route::has('mitra_rekap'))
+                <a href="{{ route('mitra_rekap') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-cyan-500/50 hover:bg-slate-600">
+                    <div class="flex items-center justify-center text-cyan-400 transition-all shadow-inner w-14 h-14 rounded-xl bg-cyan-500/10 group-hover:bg-cyan-600 group-hover:text-white group-hover:scale-110">
+                        <i class="text-2xl ri-bar-chart-grouped-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-lg font-bold text-white transition-colors group-hover:text-cyan-300">Rekap Data</p>
+                        <p class="text-xs italic text-slate-400">Pengajuan dan riwayat rekap</p>
+                    </div>
+                    <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-cyan-400 group-hover:translate-x-1"></i>
+                </a>
+            @endif
         </div>
     </div>
 </x-mitra-layout>

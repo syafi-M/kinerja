@@ -60,6 +60,9 @@ class MainController extends Controller
     {
         $kerjasama = Auth::user()->kerjasama_id;
         $lembur = Lembur::where('kerjasama_id', $kerjasama)->paginate(15);
-        return view('leader_view.lembur.index', compact('lembur'));
+        $isMitra = Auth::user()->divisi->jabatan->code_jabatan === 'MITRA';
+        $view = $isMitra ? 'mitra_view.lembur.index' : 'leader_view.lembur.index';
+
+        return view($view, compact('lembur'));
     }
 }

@@ -243,6 +243,7 @@ Route::middleware(['auth', 'mitra'])->group(function () {
     Route::get('/mitra-laporan/{id}', [LeaderController::class, 'showLaporan'])->name('mitra_laporan.show');
     Route::get('/mitra-lembur', [MainController::class, 'indexLembur'])->name('mitra_lembur');
     Route::get('/mitra-absensi-izin', [IzinController::class, 'indexLead'])->name('mitra_izin');
+    Route::get('/mitra-rekap', [MitraController::class, 'indexRekap'])->name('mitra_rekap');
     Route::get('/mitra-absensi', [MitraController::class, 'indexKehadiran'])->name('mitra_absensi');
     Route::get('/mitra-check-koordinat/{id}', [MitraController::class, "showLocation"])->name('mitra-lihatMap');
     Route::get('/mitra-jadwal', [JadwalUserController::class, 'index'])->name('mitra_jadwal');
