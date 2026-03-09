@@ -131,7 +131,10 @@ class MainController extends Controller
     {
         $kerjasama = Auth::user()->kerjasama->client_id;
         $laporan = UploadImage::where('clients_id', $kerjasama)->paginate(30);
-        return view('leader_view/laporan/index', compact('laporan'));
+        $isMitra = Auth::user()->divisi->jabatan->code_jabatan === 'MITRA';
+        $view = $isMitra ? 'mitra_view/laporan/index' : 'leader_view/laporan/index';
+
+        return view($view, compact('laporan'));
     }
     public function showLaporan($id)
     {
