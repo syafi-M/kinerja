@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "audit-website": {
+      "source": "squirrelscan/skills",
+      "sourceType": "github",
+      "computedHash": "82588484b29316f3106185374cc6aedf409c38a0698d49f7034c9b5ec07a1aa7"
+    },
+    "laravel-specialist": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "computedHash": "2392a35ec66d9778f988fe00251233c01175b8f35cb2cf38edbc018c9c7114e3"
+    },
+    "remix-icon": {
+      "source": "aia-11-hn-mib/mib-mockinterviewaibot",
+      "sourceType": "github",
+      "computedHash": "ee7180de06f80f7f7016fc2b9c8fd48cfee608d2aba6b7b873f1883cc99e41da"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "4cfe5e95a230616c17d92b44e3cd37bae543ce087a7756a446a62f77d7c58a37"
+    }
+  }
+}

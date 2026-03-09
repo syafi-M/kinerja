@@ -38,52 +38,60 @@ class AdminController extends Controller
 
     public function index(Request $request)
     {
+        $now = now();
+        $oneMonthsAgo = $now->copy()->subMonth()->startOfMonth();
 
-        $user = User::all();
-        $datas = DB::table('sessions')
-            ->where('last_seen_at', '>', now()->subMinutes(5))
+        $online = DB::table('sessions')
+            ->where('last_seen_at', '>', $now->subMinutes(5))
             ->whereNotNull('user_id')
-            ->get();
-        $oneMonthsAgo = Carbon::now()->subMonths()->startOfMonth();
+            ->count();
 
-        $notActiveUsers = User::select(
-                'users.id',
-                'users.nama_lengkap',
-                'users.name',
-                'users.devisi_id',
-                'latest_absensi.last_attendance' // Added so you can see the date
-            )
-            ->leftJoinSub(
-                DB::table('absensis')
-                    ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
-                    ->groupBy('user_id'), // <--- This fixes the 1140 error
-                'latest_absensi',
-                'users.id',
-                '=',
-                'latest_absensi.user_id'
-            )
-            ->where('users.kerjasama_id', '!=', 1)
-            ->whereNotIn('users.devisi_id', [8, 18])
-            ->whereDoesntHave('absensi', function ($q) use ($oneMonthsAgo) {
-                $q->where('created_at', '>=', $oneMonthsAgo);
-            })
-            ->orderBy('latest_absensi.last_attendance', 'asc')
-            ->limit(33)
-            ->get();
+        $latestAbsensi = DB::table('absensis')
+            ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
+            ->groupBy('user_id');
+        $notActiveUsers = Cache::remember('not_active_users', 60, function () use ($latestAbsensi, $oneMonthsAgo) {
+            return User::query()
+                ->select([
+                    'users.id',
+                    'users.nama_lengkap',
+                    'users.name',
+                    'users.devisi_id',
+                    'latest_absensi.last_attendance'
+                ])
+                ->leftJoinSub($latestAbsensi, 'latest_absensi', function ($join) {
+                    $join->on('users.id', '=', 'latest_absensi.user_id');
+                })
+                ->where('users.kerjasama_id', '!=', 1)
+                ->whereNotIn('users.devisi_id', [8, 18])
+                ->where(function ($q) use ($oneMonthsAgo) {
+                    $q->whereNull('latest_absensi.last_attendance')
+                        ->orWhere('latest_absensi.last_attendance', '<', $oneMonthsAgo);
+                })
+                ->orderBy('latest_absensi.last_attendance', 'asc')
+                ->limit(33)
+                ->get();
+        });
 
-        // $abs2 = Absensi::where('created_at', '<=', $threeMonthsAgo)
-        //     ->orderBy('created_at', 'desc')->first();
-
-        $online = count($datas);
-        $user = User::count();
+        $user   = User::count();
         $client = Client::count();
-        $izin = Izin::where('approve_status', 'process')->whereMonth('created_at', Carbon::now()->month)->count();
-        $ip = $request->ip();
 
-        $expert = Kerjasama::whereDate('experied', '<=', Carbon::now()->addMonths(2))->orderBy('experied', 'asc')->get();
+        $izin = Izin::where('approve_status', 'process')
+            ->whereMonth('created_at', $now->month)
+            ->count();
 
 
-        return view('admin.index', compact('user', 'client', 'izin', 'ip', 'expert', 'online', 'notActiveUsers'));
+        $expert = Kerjasama::with('client')->whereDate('experied', '<=', $now->addMonths(2))
+            ->orderBy('experied')
+            ->get();
+
+        return view('admin.index', compact(
+            'user',
+            'client',
+            'izin',
+            'online',
+            'expert',
+            'notActiveUsers'
+        ));
     }
     public function getUptime()
     {
