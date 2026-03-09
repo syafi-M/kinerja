@@ -21,8 +21,15 @@
         #sidebar { transition: width 0.25s ease, transform 0.3s ease; }
 
         @media (min-width: 1024px) {
+            #appContent {
+                padding-left: 18rem;
+                transition: padding-left 0.25s ease;
+            }
             body.sidebar-collapsed #sidebar {
                 width: 5.5rem !important;
+            }
+            body.sidebar-collapsed #appContent {
+                padding-left: 5.5rem;
             }
             body.sidebar-collapsed #sidebar .sidebar-text,
             body.sidebar-collapsed #sidebar .sidebar-section-title,
@@ -52,12 +59,13 @@
             ['label' => 'Laporan', 'route' => 'mitra_laporan', 'icon' => 'ri-file-list-3-line'],
             ['label' => 'Lembur', 'route' => 'mitra_lembur', 'icon' => 'ri-time-line'],
             ['label' => 'Izin', 'route' => 'mitra_izin', 'icon' => 'ri-article-line'],
+            ['label' => 'Rekap Bulanan', 'route' => 'mitra_rekap', 'icon' => 'ri-calendar-schedule-line'],
         ];
     @endphp
 
-    <div class="min-h-screen lg:flex">
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 p-4 border-r shadow-xl -translate-x-full bg-slate-900/95 border-slate-700 transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-auto lg:min-h-screen lg:flex lg:flex-col">
-            <div class="sidebar-brand flex items-center gap-3 px-2 py-3">
+    <div class="relative min-h-screen lg:flex">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex flex-col max-h-screen p-4 transition-transform duration-300 -translate-x-full border-r shadow-xl w-72 bg-slate-900/95 border-slate-700 lg:translate-x-0">
+            <div class="flex items-center gap-3 px-2 py-3 sidebar-brand">
                 <div class="flex items-center justify-center bg-blue-500 rounded-lg shadow-lg w-9 h-9 shadow-blue-500/20">
                     <i class="text-lg text-white ri-dashboard-3-fill"></i>
                 </div>
@@ -67,7 +75,7 @@
                 </div>
             </div>
 
-            <div class="sidebar-user-card px-3 py-3 mt-3 border rounded-2xl bg-slate-800/80 border-slate-700">
+            <div class="px-3 py-3 mt-3 border sidebar-user-card rounded-2xl bg-slate-800/80 border-slate-700">
                 <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Akun Aktif</p>
                 <p class="mt-1 text-sm font-semibold text-white truncate">{{ auth()->user()->nama_lengkap ?? auth()->user()->name }}</p>
                 <p class="text-xs truncate text-slate-400">{{ auth()->user()->email }}</p>
@@ -81,40 +89,29 @@
                             @php $isActive = request()->routeIs($menu['route']) || request()->routeIs($menu['route'] . '.*'); @endphp
                             <a href="{{ route($menu['route']) }}"
                                title="{{ $menu['label'] }}"
-                               class="sidebar-item relative flex items-center gap-3 px-3 py-2.5 rounded-xl border transition {{ $isActive ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                               class="sidebar-item relative flex items-center gap-3 px-3 py-2 rounded-xl border transition {{ $isActive ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                                 <span class="sidebar-indicator absolute left-0 w-1 rounded-r {{ $isActive ? 'h-6 bg-blue-400' : 'h-0' }}"></span>
                                 <i class="{{ $menu['icon'] }} text-lg"></i>
-                                <span class="sidebar-text text-sm font-semibold">{{ $menu['label'] }}</span>
+                                <span class="text-sm font-semibold sidebar-text">{{ $menu['label'] }}</span>
                             </a>
                         @endif
                     @endforeach
                 </div>
 
-                <p class="sidebar-section-title px-2 mt-5 mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Operasional</p>
+                <p class="sidebar-section-title px-2 mt-2.5 mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Operasional</p>
                 <div class="space-y-1">
                     @foreach($operationMenus as $menu)
                         @if(Route::has($menu['route']))
                             @php $isActive = request()->routeIs($menu['route']) || request()->routeIs($menu['route'] . '.*'); @endphp
                             <a href="{{ route($menu['route']) }}"
                                title="{{ $menu['label'] }}"
-                               class="sidebar-item relative flex items-center gap-3 px-3 py-2.5 rounded-xl border transition {{ $isActive ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                               class="sidebar-item relative flex items-center gap-3 px-3 py-2 rounded-xl border transition {{ $isActive ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                                 <span class="sidebar-indicator absolute left-0 w-1 rounded-r {{ $isActive ? 'h-6 bg-blue-400' : 'h-0' }}"></span>
                                 <i class="{{ $menu['icon'] }} text-lg"></i>
-                                <span class="sidebar-text text-sm font-semibold">{{ $menu['label'] }}</span>
+                                <span class="text-sm font-semibold sidebar-text">{{ $menu['label'] }}</span>
                             </a>
                         @endif
                     @endforeach
-
-                    @if(Route::has('mitra-laporan-bulanan.index'))
-                        @php $isActiveMonthly = request()->routeIs('mitra-laporan-bulanan.*'); @endphp
-                        <a href="{{ route('mitra-laporan-bulanan.index') }}"
-                           title="Rekap Bulanan"
-                           class="sidebar-item relative flex items-center gap-3 px-3 py-2.5 rounded-xl border transition {{ $isActiveMonthly ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                            <span class="sidebar-indicator absolute left-0 w-1 rounded-r {{ $isActiveMonthly ? 'h-6 bg-blue-400' : 'h-0' }}"></span>
-                            <i class="text-lg ri-calendar-schedule-line"></i>
-                            <span class="sidebar-text text-sm font-semibold">Rekap Bulanan</span>
-                        </a>
-                    @endif
                 </div>
             </nav>
 
@@ -131,7 +128,7 @@
 
         <div id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-black/50 lg:hidden"></div>
 
-        <div class="flex flex-col flex-1 min-h-screen">
+        <div id="appContent" class="flex flex-col flex-1 min-h-screen">
             <nav id="navbar" class="sticky top-0 z-30 border-b shadow-sm bg-slate-700 border-slate-600">
                 <div class="flex items-center justify-between h-16 px-4 lg:px-8">
                     <div class="flex items-center gap-3">

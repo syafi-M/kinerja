@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mitra_Controller;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\LaporanMitra;
 use App\Models\Lokasi;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -119,6 +120,8 @@ class MainController extends Controller
 
     public function indexRekap()
     {
-        return view('mitra_view.rekap.index');
+        $laporanMitra = LaporanMitra::where('kerjasama_id', auth()->user()->kerjasama_id)->latest()->get();
+
+        return view('mitra_view.rekap.index', compact('laporanMitra'));
     }
 }
