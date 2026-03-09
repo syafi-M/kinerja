@@ -15,6 +15,7 @@ use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\JadwalUserController;
 use App\Http\Controllers\KerjasamaController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\Mitra_Controller\MainController as MitraController;
 use App\Http\Controllers\LEADER_Controller\MainController as LeaderController;
 use App\Http\Controllers\LEADER_Controller\DataRekapController;
 use App\Http\Controllers\LemburController;
@@ -236,10 +237,10 @@ Route::middleware(['auth', 'mitra'])->group(function () {
     Route::get('/mitra-laporan/{id}', [LeaderController::class, 'showLaporan'])->name('mitra_laporan.show');
     Route::get('/mitra-lembur', [MainController::class, 'indexLembur'])->name('mitra_lembur');
     Route::get('/mitra-absensi-izin', [IzinController::class, 'indexLead'])->name('mitra_izin');
-    Route::get('/mitra-absensi', [LeaderController::class, 'indexAbsen'])->name('mitra_absensi');
-    Route::get('/mitra-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('mitra-lihatMap');
+    Route::get('/mitra-absensi', [MitraController::class, 'indexKehadiran'])->name('mitra_absensi');
+    Route::get('/mitra-check-koordinat/{id}', [MitraController::class, "showLocation"])->name('mitra-lihatMap');
     Route::get('/mitra-jadwal', [JadwalUserController::class, 'index'])->name('mitra_jadwal');
-    Route::get('/mitra-user', [LeaderController::class, 'indexUser'])->name('mitra_user');
+    Route::get('/mitra-user', [MitraController::class, 'indexKaryawan'])->name('mitra_user');
 
     Route::get('/mitra-laporan-bulanan', [LaporanController::class, 'indexLaporanMitra'])->name('mitra-laporan-bulanan.index');
 });

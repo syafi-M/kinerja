@@ -204,3 +204,8 @@ function normalizePhone($phone)
 
     return $phone;
 }
+
+function capitalizeWords($string)
+{
+    return ucwords(strtolower($string));
+}

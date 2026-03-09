@@ -8,6 +8,7 @@ use App\Models\Lokasi;
 use App\Models\Izin;
 use App\Models\CheckPoint;
 use App\Models\News;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -187,28 +188,49 @@ class DashboardController extends Controller
                     ->diffInHours(Carbon::now()) <= 20;
             }
         }
+        
+        // data untuk dashboard mitra
+        $jumlahKaryawan = User::where('kerjasama_id', $user->kerjasama_id)->count();
+        $jumlahAbsensiHariIni = Absensi::whereHas('user', function ($query) use ($user) {
+            $query->where('kerjasama_id', $user->kerjasama_id);
+        })->whereDate('created_at', Carbon::today())->count();
+        $jumlahIzinHariIni = Izin::whereHas('user', function ($query) use ($user) {
+            $query->where('kerjasama_id', $user->kerjasama_id);
+        })->whereDate('updated_at', Carbon::today())->count();
+        $jumlahLemburHariIni = Lembur::whereHas('user', function ($query) use ($user) {
+            $query->where('kerjasama_id', $user->kerjasama_id);
+        })->whereDate('created_at', Carbon::today())->count();
+        
+        if(Auth::user()->jabatan->code_jabatan == "MITRA") {
+            return view('mitra_view.index', compact(
+                'jumlahKaryawan',
+                'jumlahAbsensiHariIni',
+                'jumlahIzinHariIni',
+                'jumlahLemburHariIni'
+            ));
+        } else {
+            return view('dashboard', compact(
+                'absen',
+                'absenP',
+                'user',
+                'izin',
+                'sholat',
+                'hitungNews',
+                'cekAbsen',
+                'cex',
+                'cex2',
+                'totcex',
+                'lok',
+                'lokasiMitra',
+                'warn',
+                'sholatSaatIni',
+                'rillSholat',
+                'luweh1Dino',
+                'statusClass',
+                'statusMessage'
+            ));
+        }
 
-
-        return view('dashboard', compact(
-            'absen',
-            'absenP',
-            'user',
-            'izin',
-            'sholat',
-            'hitungNews',
-            'cekAbsen',
-            'cex',
-            'cex2',
-            'totcex',
-            'lok',
-            'lokasiMitra',
-            'warn',
-            'sholatSaatIni',
-            'rillSholat',
-            'luweh1Dino',
-            'statusClass',
-            'statusMessage'
-        ));
     }
 
     public function sendTestEmail()
