@@ -23,17 +23,17 @@ class Shift extends Model
         'is_overnight' => 'boolean',
     ];
 
-    public function Jabatan()
+    public function jabatan()
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');
     }
 
-    public function Client()
+    public function client()
     {
         return $this->belongsTo(Client::class, 'client_id', 'id');
     }
 
-    public function Absensi()
+    public function absensi()
     {
         return $this->hasMany(Absensi::class);
     }

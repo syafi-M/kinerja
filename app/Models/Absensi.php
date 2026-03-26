@@ -44,33 +44,33 @@ class Absensi extends Model
 
     ];
 
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class, 'kerjasama_id', 'id');
     }
 
-    public function Shift()
+    public function shift()
     {
         return $this->belongsTo(Shift::class, 'shift_id', 'id');
     }
 
-    public function TipeAbsensi()
+    public function tipeAbsensi()
     {
         return $this->belongsTo(TipeAbsensi::class, 'tipe_id', 'id');
     }
 
     
-    public function Perlengkapan()
+    public function perlengkapan()
     {
         return $this->belongsToMany(Perlengkapan::class, 'absensi_perlengkapan');
     }
 
-    public function Point()
+    public function point()
     {
         return $this->belongsTo(Point::class);
     }

@@ -18,7 +18,7 @@ class Image extends Model
         'image' => 'array',
     ];
 
-    public function CheckPoint()
+    public function checkPoint()
     {
         return $this->belongsTo(CheckPoint::class);
     }

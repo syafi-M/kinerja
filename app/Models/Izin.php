@@ -18,17 +18,17 @@ class Izin extends Model
         'status_aprrove'
     ];
 
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class);
     }
 
-    public function Shift()
+    public function shift()
     {
         return $this->belongsTo(Shift::class);
     }

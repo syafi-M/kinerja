@@ -38,7 +38,7 @@ class AbsensiController extends Controller
         $todayName = Carbon::now()->translatedFormat('l'); // Nama hari dalam bahasa lokal
 
         // Eager load only necessary fields
-        $dev = Divisi::with(['Perlengkapan:id,name'])
+        $dev = Divisi::with(['perlengkapan:id,name'])
             ->where('id', $user->devisi_id)
             ->get(['id']);
 
@@ -58,7 +58,7 @@ class AbsensiController extends Controller
         }
 
         // Absensi dan jadwal user
-        $absensi = Absensi::with(['User', 'Kerjasama', 'Shift'])
+        $absensi = Absensi::with(['user', 'kerjasama', 'shift'])
             ->where('user_id', $user->id)
             ->latest()
             ->limit(5)
@@ -109,8 +109,8 @@ class AbsensiController extends Controller
 
         // Lokasi terkait
         $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
-        $lokLok = Lokasi::with('Client')->whereHas('client')->get();
-        $penempatan = Kerjasama::with('Client')->get();
+        $lokLok = Lokasi::with('client')->whereHas('client')->get();
+        $penempatan = Kerjasama::with('client')->get();
 
         $matchedShifts = collect(); // default kosong
 
@@ -137,7 +137,7 @@ class AbsensiController extends Controller
 
     public function getShift($cli, $jab)
     {
-        $dev = Divisi::with(['Jabatan', 'Perlengkapan'])->get();
+        $dev = Divisi::with(['jabatan', 'perlengkapan'])->get();
         $shiftFirst = Shift::with(['jabatan'])->orderBy('jam_start', 'asc');
         $todayName = Carbon::now()->translatedFormat('l'); // Nama hari dalam bahasa lokal
         $shift1 = $shiftFirst->where('jam_start', '>=', '04:00')->where('client_id', $cli)->where('jabatan_id', $jab)->get();

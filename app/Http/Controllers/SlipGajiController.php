@@ -131,7 +131,7 @@ class SlipGajiController extends Controller
         }else {
             $user = User::where('kerjasama_id', '!=', 1)->orderBy('kerjasama_id', 'asc')->when($penempatan, function ($query, $penempatan) { return $query->where('kerjasama_id', $penempatan); })->whereNotIn('id', [289, 387])->pluck('id');
         }
-        $slip = SlipGaji::with('User')->whereIn('user_id', $user)->where('bulan_tahun', $bulan ? $bulan : Carbon::now()->subMonth()->format('Y-m'))->get();
+        $slip = SlipGaji::with('user')->whereIn('user_id', $user)->where('bulan_tahun', $bulan ? $bulan : Carbon::now()->subMonth()->format('Y-m'))->get();
         // dd($slip[0]->user);
         
         return view('leader_view.slip.index', compact('slip', 'bulan', 'mitra', 'penempatan'));

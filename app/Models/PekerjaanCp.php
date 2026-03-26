@@ -17,17 +17,17 @@ class PekerjaanCp extends Model
         'type_check'
     ];
     
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class);
     }
     
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
     
-    public function Divisi()
+    public function divisi()
     {
         return $this->belongsTo(Divisi::class);
     }

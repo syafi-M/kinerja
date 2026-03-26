@@ -14,7 +14,7 @@ class Ruangan extends Model
         'nama_ruangan'
     ];
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class);
     }

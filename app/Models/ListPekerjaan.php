@@ -14,7 +14,7 @@ class ListPekerjaan extends Model
         'ruangan_id'
     ];
     
-    public function Ruangan()
+    public function ruangan()
     {
         return $this->belongsTo(Ruangan::class);
     }

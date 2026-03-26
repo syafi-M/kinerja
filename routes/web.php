@@ -436,6 +436,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::POST('/admin/qrcode/export', [QrCodeController::class, 'exportPDF'])->name('qrcode.export');
 
     Route::get('/admin/data-absen', [AdminController::class, 'absen'])->name('admin.absen');
+    Route::get('/admin/data-absen/users/search', [AdminController::class, 'searchAbsenUsers'])->name('admin.absen.users.search');
     Route::get('/admin/export', [AdminController::class, 'export'])->name('admin.export');
     Route::get('/admin/exportV2', [AdminController::class, 'exportWith'])->name('admin.exportV2');
     Route::get('/admin/export-izin', [AdminController::class, 'exp'])->name('admin.export-izin');

@@ -33,7 +33,7 @@ class UserController extends Controller
         $kerjasama = Kerjasama::all();
         $client = Client::all();
         $dev = Divisi::all();
-        $user = User::with('Kerjasama')->orderBy('name', 'desc');
+        $user = User::with('kerjasama')->orderBy('name', 'desc');
         $user->when($request->filterKerjasama, function ($query) use ($request) {
             return $query->where('kerjasama_id', $request->filterKerjasama);
         });

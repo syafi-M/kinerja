@@ -23,17 +23,17 @@ class Laporan extends Model
         'nilai'
     ];
 
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function Client()
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function Ruangan()
+    public function ruangan()
     {
         return $this->belongsTo(Ruangan::class);
     }

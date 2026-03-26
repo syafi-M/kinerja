@@ -15,12 +15,12 @@ class QrCode extends Model
         'kerjasama_id'
     ];
 
-    public function Ruangan()
+    public function ruangan()
     {
         return $this->belongsTo(Ruangan::class);
     }
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class);
     }

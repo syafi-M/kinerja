@@ -12,11 +12,15 @@ class DashboardRekapController extends Controller
     public function index(Request $request)
     {
         $notifications = auth()->user()
-            ->unreadNotifications
+            ->unreadNotifications()
+            ->latest()
+            ->get()
             ->sortByDesc('created_at')
             ->groupBy('data.kerjasama_id');
 
-        $query = Kerjasama::with('client');
+        $query = Kerjasama::query()
+            ->select('id', 'client_id')
+            ->with('client:id,name,email,phone');
 
         if ($request->filled('search')) {
             $searchTerm = $request->search;

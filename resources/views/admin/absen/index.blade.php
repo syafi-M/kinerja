@@ -7,25 +7,43 @@
             </section>
 
             <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
-                <div class="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-                    <form id="filterForm" action="{{ route('admin.absen') }}" method="GET" class="grid w-full gap-2 sm:grid-cols-2 xl:max-w-4xl xl:grid-cols-4">
+                <div class="flex flex-col gap-3">
+                    <form id="filterForm" action="{{ route('admin.absen') }}" method="GET" data-user-search-url="{{ route('admin.absen.users.search') }}" class="grid w-full gap-2 sm:grid-cols-2 xl:max-w-6xl xl:grid-cols-5">
                         <select name="filterKerjasama" id="filterKerjasama" class="w-full text-sm select select-bordered">
-                            <option selected disabled>~ Nama Klien ~</option>
+                            <option value="" {{ $filter ? '' : 'selected' }}>~ Nama Klien ~</option>
                             @foreach ($absenSi as $i)
                                 <option value="{{ $i->id }}" {{ $filter == $i->id ? 'selected' : '' }}>{{ $i?->client?->panggilan ?? $i?->client?->name }}</option>
                             @endforeach
                         </select>
                         <select name="filterDevisi" id="filterDevisi" class="w-full text-sm select select-bordered">
-                            <option selected disabled>~ Devisi ~</option>
+                            <option value="" {{ $filterDivisi ? '' : 'selected' }}>~ Devisi ~</option>
                             @foreach ($divisi as $i)
                                 <option value="{{ $i->id }}" {{ $filterDivisi == $i->id ? 'selected' : '' }}>{{ $i?->name }}</option>
                             @endforeach
                         </select>
+                        <div id="searchUserWrapper" class="{{ $filter ? '' : 'hidden' }}">
+                            <div class="relative">
+                                <input
+                                    type="hidden"
+                                    name="searchUserId"
+                                    id="searchUserId"
+                                    value="{{ $searchUserId }}">
+                                <input
+                                    type="text"
+                                    name="searchUser"
+                                    id="searchUser"
+                                    value="{{ $searchUser }}"
+                                    autocomplete="off"
+                                    class="w-full pr-10 text-sm input input-bordered"
+                                    placeholder="Cari user di klien ini..." />
+                                <span class="absolute text-gray-400 -translate-y-1/2 pointer-events-none right-3 top-1/2">
+                                    <i class="ri-search-line"></i>
+                                </span>
+                                <div id="searchUserResults" class="absolute left-0 right-0 z-20 hidden mt-1 overflow-hidden bg-white border border-gray-200 shadow-lg rounded-xl"></div>
+                            </div>
+                        </div>
                         <button type="submit" class="btn btn-primary">Filter</button>
                     </form>
-                    <div class="w-full xl:w-auto">
-                        <x-search />
-                    </div>
                 </div>
             </section>
 
@@ -94,16 +112,15 @@
                         <th class="bg-slate-300 rounded-tl-2xl">#</th>
                         <th class="bg-slate-300 " style="padding: 0 24px;">Photo</th>
                         <th class="bg-slate-300 ">Nama User</th>
-                        <th class="bg-slate-300" style="padding: 0 34px;">Tanggal</th>
+                        <th class="bg-slate-300" style="padding: 0 25px;">Tanggal</th>
                         <th class="text-center bg-slate-300" style="padding: 0 58px">Shift</th>
-                        <th class="bg-slate-300 ">Client</th>
-                        <th class="bg-slate-300 ">Ibadah</th>
                         <th class="bg-slate-300 ">Jam Masuk</th>
                         <th class="bg-slate-300 ">Jam Pulang</th>
                         <th class="bg-slate-300 ">Lokasi Presensi</th>
                         <th class="bg-slate-300 ">Keterangan</th>
+                        <th class="bg-slate-300 ">Ibadah</th>
+                        <th class="bg-slate-300 rounded-tr-2xl">Client</th>
                         <th class="hidden bg-slate-300">Point</th>
-                        <th class="bg-slate-300 rounded-tr-2xl">Tipe Absen</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,30 +146,21 @@
                             <td class="break-words whitespace-pre-line">
                                 {{ $arr->user ? ucwords(strtolower($arr->user->nama_lengkap)) : 'user_id' . ' : ' . $arr->user_id . 'AKU KOSONG' }}
                             </td>
-                            <td>{{ $arr->tanggal_absen }}</td>
+                            <td class="text-center">{{ $arr->tanggal_absen }}</td>
                             @if ($arr->shift != null)
                                 <td id="mitra" class="text-center">{{ $arr->shift->shift_name }} <br /> <span
-                                        style="font-size: 10pt;">{{ $arr->shift->jam_start }} -
-                                        {{ $arr->shift->jam_end }}</span></td>
+                                        style="font-size: 10pt;">{{ Carbon\Carbon::parse($arr->shift->jam_start)->format('H:i') }} -
+                                        {{ Carbon\Carbon::parse($arr->shift->jam_end)->subHour()->format('H:i') }}</span></td>
                             @else
                                 <td class="font-semibold text-red-500 break-words whitespace-pre-wrap">Shift Kosong
                                 </td>
                             @endif
-                            <td class="break-words whitespace-pre-line">
-                                {{ $arr?->kerjasama?->client?->panggilan ? $arr?->kerjasama?->client?->panggilan : $arr?->kerjasama?->client?->name }}
-                            </td>
-                            <td class="break-words whitespace-pre-line">
-                                @if ($arr->subuh != 0 || $arr->dzuhur != 0 || $arr->asar != 0 || $arr->magrib != 0 || $arr->isya != 0)
-                                    <span>{{ $arr->subuh ? 'subuh,' : '' }} {{ $arr->dzuhur ? 'dzuhur,' : '' }}
-                                        {{ $arr->asar ? 'asar,' : '' }} {{ $arr->magrib ? 'magrib,' : '' }}
-                                        {{ $arr->isya ? 'isya' : '' }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $arr->absensi_type_masuk }}</td>
+                            
+                            <td class="text-center">{{ $arr->absensi_type_masuk }}</td>
                             {{-- Handle Absensi Type Pulang --}}
-                            <td>
+                            <td class="text-center">
                                 @if ($arr->absensi_type_pulang == null)
-                                    <span class="font-bold text-red-500 underline">Belum Absen Pulang</span>
+                                    <span class="font-bold text-red-500 underline">Belum</span>
                                 @else
                                     {{ $arr->absensi_type_pulang }}
                                 @endif
@@ -178,6 +186,8 @@
                                 @php
                                     $jamAbs = $arr->absensi_type_masuk ?? '00:00:00';
                                     $jamStr = $arr->shift?->jam_start ?? '00:00:00';
+                                    $jamPulang = $arr->absensi_type_pulang;
+                                    $jamEndShift = $arr->shift?->jam_end;
 
                                     // Determine time format
                                     $formatAbs = strlen($jamAbs) === 5 ? 'H:i' : 'H:i:s';
@@ -190,36 +200,76 @@
                                     // Calculate the difference
                                     $jDiff = $jAbs->diff($jJad);
 
-                                    // Build readable difference
-                                    $diffHasil = '';
-                                    if ($jDiff->h > 0) {
-                                        $diffHasil .= $jDiff->format('%h Jam ');
-                                    }
-                                    if ($jDiff->i > 0) {
-                                        $diffHasil .= $jDiff->format('%i Menit ');
-                                    }
-                                    if ($jDiff->s > 0) {
-                                        $diffHasil .= $jDiff->format('%s Detik');
-                                    }
+                                    $diffHasil = $jDiff->format('%h:%I:%S');
 
-                                    $diffHasil = trim($diffHasil);
+                                    $lebihPulangHasil = '';
+                                    $isPulangLebih = false;
+
+                                    if ($jamPulang && $jamEndShift) {
+                                        $formatPulang = strlen($jamPulang) === 5 ? 'H:i' : 'H:i:s';
+                                        $formatEndShift = strlen($jamEndShift) === 5 ? 'H:i' : 'H:i:s';
+
+                                        $jPulang = Carbon\Carbon::createFromFormat($formatPulang, $jamPulang);
+                                        $jEndShift = Carbon\Carbon::createFromFormat($formatEndShift, $jamEndShift)->subHour();
+
+                                        if ($jPulang->gt($jEndShift)) {
+                                            $isPulangLebih = true;
+                                            $lebihDiff = $jPulang->diff($jEndShift);
+                                            $lebihPulangHasil = $lebihDiff->format('%h:%I:%S');
+                                        }
+                                    }
                                 @endphp
-                                @if ($arr->keterangan == 'masuk')
-                                    <div class="gap-2 overflow-hidden badge badge-success">
-                                        {{ $arr->keterangan }}
-                                    </div>
-                                @elseif ($arr->keterangan == 'izin')
-                                    <div class="gap-2 overflow-hidden badge badge-warning">
-                                        {{ $arr->keterangan }}
-                                    </div>
-                                @else
-                                    <div class="gap-2 overflow-hidden text-xs text-center rounded-md badge badge-error"
-                                        style="height: 50pt; width: 60pt;">
-                                        Terlambat <br /> {{ $diffHasil }}
-                                    </div>
-                                @endif
+                                <div class="flex flex-col gap-2">
+                                    @if ($arr->keterangan == 'masuk')
+                                        <div class="gap-2 overflow-hidden badge badge-success">
+                                            {{ $arr->keterangan }}
+                                        </div>
+                                    @elseif ($arr->keterangan == 'izin')
+                                        <div class="gap-2 overflow-hidden badge badge-warning">
+                                            {{ $arr->keterangan }}
+                                        </div>
+                                    @else
+                                        <div class="gap-2 overflow-hidden text-xs text-center rounded-md badge badge-error">
+                                            - {{ $diffHasil }}
+                                        </div>
+                                    @endif
+
+                                    @if ($isPulangLebih)
+                                        <div class="gap-2 overflow-hidden text-xs text-center text-white rounded-md badge bg-emerald-500">
+                                            + {{ $lebihPulangHasil }}
+                                        </div>
+                                    @endif
+
+                                    @if ($arr->tipe_id)
+                                        @if ($arr->tipe_id == 1 && !$arr->terus)
+                                            <span
+                                                class="bg-[#02c9cc] text-black px-[.45rem] rounded-[5px] font-medium text-center">
+                                                {{ $arr->tipeAbsensi->name }}</span>
+                                        @elseif($arr->tipe_id == 1 && $arr->terus)
+                                            <span
+                                                class="bg-[#02c9cc] text-black px-[.45rem] rounded-[5px] font-medium text-center">
+                                                Nerus</span>
+                                        @else
+                                            <span
+                                                class="bg-[#cc0213] text-white px-[.45rem] rounded-[5px] font-medium text-center">
+                                                {{ $arr->tipeAbsensi->name }}</span>
+                                        @endif
+                                    @endif
+                                </div>
                             </td>
                             {{-- EndHandle Keterangan --}}
+
+                            <td class="break-words whitespace-pre-line">
+                                @if ($arr->subuh != 0 || $arr->dzuhur != 0 || $arr->asar != 0 || $arr->magrib != 0 || $arr->isya != 0)
+                                    <span>{{ $arr->subuh ? 'subuh,' : '' }} {{ $arr->dzuhur ? 'dzuhur,' : '' }}
+                                        {{ $arr->asar ? 'asar,' : '' }} {{ $arr->magrib ? 'magrib,' : '' }}
+                                        {{ $arr->isya ? 'isya' : '' }}</span>
+                                @endif
+                            </td>
+
+                            <td class="break-words whitespace-pre-line">
+                                {{ $arr?->kerjasama?->client?->panggilan ? $arr?->kerjasama?->client?->panggilan : $arr?->kerjasama?->client?->name }}
+                            </td>
 
                             <td class="hidden">
                                 @if ($arr->keterangan != 'telat' && $arr->keterangan != 'izin')
@@ -246,24 +296,6 @@
                                 @else
                                 @endif
                             </td>
-                            <td class="text-center">
-                                @if ($arr->tipe_id)
-                                    @if ($arr->tipe_id == 1 && !$arr->terus)
-                                        <span
-                                            style="background-color: #02c9cc; color: black; padding: .45rem; border-radius: 5px; font-weight: bold;">
-                                            {{ $arr->tipeAbsensi->name }}</span>
-                                    @elseif($arr->tipe_id == 1 && $arr->terus)
-                                        <span
-                                            style="background-color: #02c9cc; color: black; padding: .45rem; border-radius: 5px; font-weight: bold;">
-                                            Nerus</span>
-                                    @else
-                                        <span
-                                            style="background-color: #cc0213; color: white; padding: .45rem; border-radius: 5px; font-weight: bold;">
-                                            {{ $arr->tipeAbsensi->name }}</span>
-                                    @endif
-                                @endif
-                            </td>
-
                         </tr>
                     @empty
                         <tr>
@@ -280,6 +312,142 @@
         </div>
     <script>
         $(document).ready(function() {
+            const filterForm = $('#filterForm');
+            const filterKerjasama = $('#filterKerjasama');
+            const searchUserWrapper = $('#searchUserWrapper');
+            const searchUserInput = $('#searchUser');
+            const searchUserIdInput = $('#searchUserId');
+            const searchUserResults = $('#searchUserResults');
+            const userSearchUrl = filterForm.data('userSearchUrl');
+            let searchTimeout = null;
+            let activeSearchRequest = null;
+            let selectedUserLabel = (searchUserInput.val() || '').trim();
+
+            function toggleSearchUser() {
+                if (filterKerjasama.val()) {
+                    searchUserWrapper.removeClass('hidden');
+                    searchUserInput.prop('disabled', false);
+                    return;
+                }
+
+                searchUserWrapper.addClass('hidden');
+                searchUserInput.prop('disabled', true).val('');
+                searchUserIdInput.val('');
+                hideSearchResults();
+            }
+
+            function renderSearchResults(items) {
+                if (!Array.isArray(items) || items.length === 0) {
+                    searchUserResults
+                        .removeClass('hidden')
+                        .html('<div class="px-3 py-2 text-sm text-gray-500">User tidak ditemukan.</div>');
+                    return;
+                }
+
+                const rows = items.map(function(user) {
+                    const label = user.nama_lengkap || user.name || 'Tanpa Nama';
+                    const secondary = [user.name, user.email].filter(Boolean).join(' | ');
+
+                    return `
+                        <button
+                            type="button"
+                            class="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-slate-50"
+                            data-user-id="${user.id}"
+                            data-user-label="${$('<div>').text(label).html()}">
+                            <span class="text-sm font-medium text-gray-800">${$('<div>').text(label).html()}</span>
+                            <span class="text-xs text-gray-500">${$('<div>').text(secondary).html()}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                searchUserResults.removeClass('hidden').html(rows);
+            }
+
+            function hideSearchResults() {
+                searchUserResults.addClass('hidden').empty();
+            }
+
+            function searchUsers() {
+                const keyword = (searchUserInput.val() || '').trim();
+                const kerjasamaId = filterKerjasama.val();
+
+                if (activeSearchRequest) {
+                    activeSearchRequest.abort();
+                }
+
+                if (!kerjasamaId || keyword.length < 2) {
+                    hideSearchResults();
+                    return;
+                }
+
+                searchUserResults
+                    .removeClass('hidden')
+                    .html('<div class="px-3 py-2 text-sm text-gray-500">Mencari user...</div>');
+
+                activeSearchRequest = $.ajax({
+                    url: userSearchUrl,
+                    method: 'GET',
+                    data: {
+                        kerjasama_id: kerjasamaId,
+                        q: keyword
+                    },
+                    success: function(response) {
+                        renderSearchResults(response.data || []);
+                    },
+                    error: function(xhr, textStatus) {
+                        if (textStatus === 'abort') {
+                            return;
+                        }
+
+                        searchUserResults
+                            .removeClass('hidden')
+                            .html('<div class="px-3 py-2 text-sm text-red-500">Gagal mencari user.</div>');
+                    },
+                    complete: function() {
+                        activeSearchRequest = null;
+                    }
+                });
+            }
+
+            toggleSearchUser();
+            filterKerjasama.on('change', function() {
+                searchUserInput.val('');
+                searchUserIdInput.val('');
+                selectedUserLabel = '';
+                toggleSearchUser();
+            });
+
+            searchUserInput.on('input', function() {
+                const currentValue = (this.value || '').trim();
+
+                if (currentValue !== selectedUserLabel) {
+                    searchUserIdInput.val('');
+                }
+
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(searchUsers, 300);
+            });
+
+            searchUserInput.on('focus', function() {
+                if ((this.value || '').trim().length >= 2) {
+                    searchUsers();
+                }
+            });
+
+            $(document).on('click', '#searchUserResults button', function() {
+                const label = $(this).data('userLabel');
+                searchUserInput.val(label);
+                searchUserIdInput.val($(this).data('userId'));
+                selectedUserLabel = label;
+                hideSearchResults();
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#searchUserWrapper').length) {
+                    hideSearchResults();
+                }
+            });
+
             // Saat halaman dimuat, ambil semua elemen dengan class "lazy-image"
             var lazyImages = $('.lazy-image');
 

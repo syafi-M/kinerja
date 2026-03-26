@@ -20,17 +20,17 @@ class Kerjasama extends Model
         'approve3',
     ];
 
-    public function Client()
+    public function client()
     {
         return $this->belongsTo(Client::class, 'client_id', 'id');
     }
 
-    public function User()
+    public function user()
     {
         return $this->hasMany(User::class, 'user_id', 'id');
     }
     
-    public function Jabatan(): MorphTo
+    public function jabatan(): MorphTo
     {
         return $this->morphTo();
     }

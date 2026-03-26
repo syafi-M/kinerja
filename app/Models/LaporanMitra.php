@@ -14,7 +14,7 @@ class LaporanMitra extends Model
         'file_pdf'
         ];
     
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class);
     }    

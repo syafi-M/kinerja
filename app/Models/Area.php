@@ -14,12 +14,12 @@ class Area extends Model
         'nama_area'
     ];
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class);
     }
     
-    public function Subarea()
+    public function subarea()
     {
         return $this->belongsToMany(Subarea::class, 'area_sub');
     }

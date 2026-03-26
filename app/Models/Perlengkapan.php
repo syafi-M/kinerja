@@ -15,7 +15,7 @@ class Perlengkapan extends Model
         'divisi_id'
     ];
 
-    public function Divisi() : BelongsToMany
+    public function divisi() : BelongsToMany
     {
         return $this->belongsToMany(Divisi::class, 'divisi_perlengkapan');
     }

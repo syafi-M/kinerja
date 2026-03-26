@@ -25,7 +25,7 @@ class ReportBref extends Model
         'materi_breafing'
     ];
 
-    public function Client()
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }

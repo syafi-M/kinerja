@@ -34,17 +34,17 @@ class CheckPoint extends Model
         'tanggal',
     ];
 
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function Divisi()
+    public function divisi()
     {
         return $this->belongsTo(Divisi::class);
     }
 
-    public function PekerjaanCp()
+    public function pekerjaanCp()
     {
         return $this->belongsTo(PekerjaanCp::class);
     }

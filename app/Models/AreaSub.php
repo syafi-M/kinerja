@@ -15,12 +15,12 @@ class AreaSub extends Model
         'subarea_id'
     ];
     
-    public function Area()
+    public function area()
     {
         return $this->belongsTo(Area::class);
     }
     
-    public function Subarea()
+    public function subarea()
     {
         return $this->belongsTo(Subarea::class);
     }

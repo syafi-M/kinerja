@@ -21,12 +21,12 @@ class Client extends Model
         'fax',
         'logo',
     ];
-    public function Shift()
+    public function shift()
     {
         return $this->hasMany(Shift::class);
     }
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->hasMany(Kerjasama::class);
     }

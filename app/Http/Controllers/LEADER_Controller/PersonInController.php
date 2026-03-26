@@ -36,7 +36,7 @@ class PersonInController extends Controller
         }
 
         $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('Jabatan', function ($q) {
+            ->whereHas('jabatan', function ($q) {
                 $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
             })
             ->where('nama_lengkap', 'like', '%' . $query . '%')
@@ -227,7 +227,7 @@ class PersonInController extends Controller
     private function rules(Request $request): array
     {
         $allowedFullnames = User::where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('Jabatan', function ($q) {
+            ->whereHas('jabatan', function ($q) {
                 $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
             })
             ->pluck('nama_lengkap')

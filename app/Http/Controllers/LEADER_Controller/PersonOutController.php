@@ -16,7 +16,7 @@ class PersonOutController extends Controller
 {
     public function create()
     {
-        $users = User::where('id', '!=', auth()->user()->id)->where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('Jabatan', function ($q) {
+        $users = User::where('id', '!=', auth()->user()->id)->where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
             $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
         })->get();
         return view('leader_view.data_rekap.person_out.create', [
@@ -88,7 +88,7 @@ class PersonOutController extends Controller
     public function edit($id)
     {
         $personOut = PersonOut::findOrFail($id);
-        $users = User::where('id', '!=', auth()->user()->id)->where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('Jabatan', function ($q) {
+        $users = User::where('id', '!=', auth()->user()->id)->where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
             $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
         })->get();
         return view('leader_view.data_rekap.person_out.edit', [

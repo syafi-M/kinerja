@@ -16,7 +16,7 @@ class OvertimeApplicationController extends Controller
     public function create()
     {
 
-        $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('Jabatan', function ($q) {
+        $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
             $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
         })->get();
 
@@ -57,7 +57,7 @@ class OvertimeApplicationController extends Controller
 
     public function edit($id)
     {
-        $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('Jabatan', function ($q) {
+        $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
             $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
         })->get();
         $overtime = Overtime::findOrFail($id);

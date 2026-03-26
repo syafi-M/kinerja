@@ -160,15 +160,15 @@ class LaporanController extends Controller
         
         if($str1 != $end1 && !$request->has('ruangan_id') && !$request->has('nilai')){
             // $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('nilai', '!=', 'baik')->get();
-            $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->get();
+            $expPDF = Laporan::with(['user'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->get();
         }else if($str1 != $end1 && $request->has('ruangan_id') && !$request->has('nilai')){
-            $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();
+            $expPDF = Laporan::with(['user'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();
         }else if($str1 != $end1 && !$request->has('ruangan_id') && $request->has('nilai')){
-            $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->whereIn('nilai', $nilai)->get();
+            $expPDF = Laporan::with(['user'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->whereIn('nilai', $nilai)->get();
         }else if($str1 != $end1 && $request->has('ruangan_id') && $request->has('nilai')){
-            $expPDF = Laporan::with(['User'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();
+            $expPDF = Laporan::with(['user'])->whereBetween('created_at', [$str1, $end1])->where('client_id', $mitra)->where('ruangan_id', $ruangan)->get();
         }else{
-            $expPDF = Laporan::with(['User'])->whereDate('created_at', $str1)->where('client_id', $mitra)->get();
+            $expPDF = Laporan::with(['user'])->whereDate('created_at', $str1)->where('client_id', $mitra)->get();
         }
         
         // dd($expPDF);

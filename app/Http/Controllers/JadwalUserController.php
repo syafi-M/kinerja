@@ -57,7 +57,7 @@ class JadwalUserController extends Controller
     public function create(Request $request)
     {
         $hari = $request->hari;
-        $user = User::with('Kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->get();
+        $user = User::with('kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->get();
     
         $kerj = Kerjasama::all();
         if(Auth::user()->divisi->jabatan_id == 10) {
@@ -70,22 +70,22 @@ class JadwalUserController extends Controller
 
     public function processDate(Request $request)
     {
-        $area = Area::with('Kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->get();
+        $area = Area::with('kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->get();
         
         $str1 = $this->str;
         $end1 = $this->ended;
         $divisi = $this->divisi;
         
-        $kerj = Kerjasama::with('Devisi');
+        $kerj = Kerjasama::all();
         $totalHari =  Carbon::parse($this->ended)->diffInDays(Carbon::parse($this->str));
         if($request->has(['str1', 'end1', 'divisi'])){
             if (Auth::user()->divisi->jabatan->code_jabatan == "MITRA" || Auth::user()->divisi->jabatan->code_jabatan == "LEADER") {
-                $user = User::with('Kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->where('devisi_id', $divisi)->get();
+                $user = User::with('kerjasama')->where('kerjasama_id', Auth::user()->kerjasama_id)->where('devisi_id', $divisi)->get();
                 $filter = Auth::user()->kerjasama_id;
             } else {
                 $kerj = Kerjasama::all();
                 $filter = $request->filter;
-                $user = User::with('Kerjasama')->where('kerjasama_id', $filter)->where('devisi_id', $divisi)->get();
+                $user = User::with('kerjasama')->where('kerjasama_id', $filter)->where('devisi_id', $divisi)->get();
             }
             $jadwal = JadwalUser::all();
             $shift = Shift::all();

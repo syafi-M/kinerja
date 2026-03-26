@@ -19,11 +19,11 @@ class Lembur extends Model
         'image',
     ];
 
-    public function User(){
+    public function user(){
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function Kerjasama(){
+    public function kerjasama(){
         return $this->belongsTo(Kerjasama::class, 'kerjasama_id');
     }
 

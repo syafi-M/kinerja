@@ -88,46 +88,46 @@ class User extends Authenticatable implements CanBeSigned
         return $this->last_notification_date === Carbon::today()->toDateString();
     }
 
-    public function Role()
+    public function role()
     {
         return $this->belongsTo(Role::class, 'role_id', 'id');
     }
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class, 'kerjasama_id', 'id');
     }
 
-    public function Absensi()
+    public function absensi()
     {
         return $this->hasMany(Absensi::class);
     }
-    public function Divisi()
+    public function divisi()
     {
         return $this->belongsTo(Divisi::class, 'devisi_id', 'id');
     }
-    public function Jabatan()
+    public function jabatan()
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');
     }
-    public function JadwalUser(): HasMany
+    public function jadwalUser(): HasMany
     {
         return $this->hasMany(JadwalUser::class);
     }
 
-    public function CheckPoint()
+    public function checkPoint()
     {
         return $this->hasMany(User::class);
     }
-    public function Rating()
+    public function rating()
     {
         return $this->hasMany(Rating::class);
     }
-    public function Status()
+    public function status()
     {
         return $this->belongsTo(Status::class);
     }
-    public function SlipGaji()
+    public function slipGaji()
     {
         return $this->setConnection("mysql2")->hasMany(SlipGaji::class);
     }

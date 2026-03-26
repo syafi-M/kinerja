@@ -19,7 +19,7 @@ class Rating extends Model
         'rate_leader',
     ];
 
-    public function User(){
+    public function user(){
         return $this->belongsTo(User::class, 'user_id');
     }
 }

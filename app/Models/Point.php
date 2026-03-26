@@ -14,11 +14,11 @@ class Point extends Model
         'sac_point'
     ];
 
-    public function Client()
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }
-    public function Absensi()
+    public function absensi()
     {
         return $this->hasMany(Absensi::class);
     }

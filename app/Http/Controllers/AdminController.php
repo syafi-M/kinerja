@@ -80,9 +80,14 @@ class AdminController extends Controller
             ->count();
 
 
-        $expert = Kerjasama::with('client')->whereDate('experied', '<=', $now->addMonths(2))
-            ->orderBy('experied')
-            ->get();
+        $expert = Cache::remember('admin.dashboard.expiring-contracts', 300, function () use ($now) {
+            return Kerjasama::query()
+                ->select('id', 'client_id', 'experied')
+                ->with('client:id,name')
+                ->whereDate('experied', '<=', $now->copy()->addMonths(2))
+                ->orderBy('experied')
+                ->get();
+        });
 
         return view('admin.index', compact(
             'user',
@@ -123,56 +128,40 @@ class AdminController extends Controller
         $inMonth = Carbon::now()->month;
         $filter = $request->filterKerjasama;
 
-        $kerjasama = Kerjasama::all();
+        $kerjasama = Cache::remember('admin.checkpoint.kerjasama-options', 300, function () {
+            return Kerjasama::query()
+                ->select('id', 'client_id')
+                ->with('client:id,name')
+                ->get();
+        });
 
-        $awalMinggu = Carbon::now()->startOfWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
-
-        // Ambil data berdasarkan user_id dan bulan
-        $check_points_query = CheckPoint::whereMonth('created_at', $inMonth);
-
-        // Lakukan paginasi
-        $cek = (clone $check_points_query)->orderBy('created_at', 'asc')->paginate(15);
-
-        // Ambil data berdasarkan tipe
-        $typeHarian = (clone $check_points_query)->where('type_check', 'harian')->get();
-        $typeMingguan = (clone $check_points_query)->where('type_check', 'mingguan')->get();
-        $typeBulanan = (clone $check_points_query)->where('type_check', 'bulanan')->get();
-        $typeIsi = (clone $check_points_query)->where('type_check', 'isidental')->get();
-
-        $pkHarian = PekerjaanCP::where('type_check', 'harian')->get();
-        $pkMingguan = PekerjaanCP::where('type_check', 'mingguan')->get();
-        $pkBulanan = PekerjaanCP::where('type_check', 'bulanan')->get();
-        $pkIsi = PekerjaanCP::where('type_check', 'isidental')->get();
-
-        $awalMinggu = Carbon::now()->startOfMonth()->subMonth();
-        $akhirMinggu = Carbon::now()->endOfMonth(); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        $check_points_query = CheckPoint::query()
+            ->select([
+                'id',
+                'user_id',
+                'pekerjaan_cp_id',
+                'type_check',
+                'img',
+                'deskripsi',
+                'approve_status',
+                'note',
+                'created_at',
+            ])
+            ->with('user:id,nama_lengkap')
+            ->whereMonth('created_at', $inMonth);
 
         $cex2 = (clone $check_points_query)
             ->where('type_check', $type)
             ->latest()
             ->get();
 
-        $pcp = PekerjaanCp::get();
+        $pcp = Cache::remember('admin.checkpoint.pekerjaan-cp', 300, function () {
+            return PekerjaanCp::query()
+                ->select('id', 'name', 'type_check')
+                ->get();
+        });
 
-        if ($filter) {
-            $user = User::orderBy('kerjasama_id', 'asc')->where('kerjasama_id', $filter)->get();
-            $cek = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-                ->paginate(80);
-        } else {
-            if (Auth::user()->devisi_id == 18) {
-                # code...
-                $user = User::orderBy('kerjasama_id', 'asc')->where('kerjasama_id', 1)->get();
-            } else {
-                # code...
-                $user = User::orderBy('kerjasama_id', 'asc')->get();
-            }
-
-            $cek = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-                ->paginate(80);
-        }
-
-        return view('admin.check.index', compact('cek', 'cex2', 'pcp', 'typeHarian', 'typeMingguan', 'typeBulanan', 'typeIsi', 'pkHarian', 'pkMingguan', 'pkBulanan', 'pkIsi', 'user', 'type', 'kerjasama', 'filter'));
+        return view('admin.check.index', compact('cex2', 'pcp', 'type', 'kerjasama', 'filter'));
     }
     public function lihatCheck(Request $request, $id)
     {
@@ -272,9 +261,43 @@ class AdminController extends Controller
         // Retrieve filter values from the request
         $filter = $request->filterKerjasama;
         $filterDivisi = $request->filterDevisi;
+        $searchUser = trim((string) $request->searchUser);
+        $searchUserId = $request->filled('searchUserId') ? (int) $request->searchUserId : null;
 
         // Build the initial query
-        $absenQuery = Absensi::with(['User', 'Shift', 'Kerjasama', 'TipeAbsensi'])
+        $absenQuery = Absensi::query()
+            ->select([
+                'id',
+                'user_id',
+                'kerjasama_id',
+                'shift_id',
+                'tanggal_absen',
+                'absensi_type_masuk',
+                'absensi_type_pulang',
+                'image',
+                'point_id',
+                'subuh',
+                'dzuhur',
+                'asar',
+                'magrib',
+                'isya',
+                'msk_lat',
+                'msk_long',
+                'plg_lat',
+                'plg_long',
+                'keterangan',
+                'tipe_id',
+                'terus',
+                'created_at',
+            ])
+            ->with([
+                'user:id,nama_lengkap',
+                'shift:id,shift_name,jam_start,jam_end',
+                'kerjasama:id,client_id',
+                'kerjasama.client:id,name,panggilan',
+                'tipeAbsensi:id,name',
+                'point:id,client_id,sac_point',
+            ])
             ->orderBy('tanggal_absen', 'desc')
             ->orderBy('created_at', 'desc');
 
@@ -292,24 +315,106 @@ class AdminController extends Controller
             $absenQuery = $absenQuery->where('kerjasama_id', $filter);
         }
 
+        if ($filter && $searchUserId) {
+            $absenQuery = $absenQuery->where('user_id', $searchUserId);
+        } elseif ($filter && $searchUser !== '') {
+            $absenQuery = $absenQuery->whereHas('user', function ($query) use ($filter, $searchUser) {
+                $query->where('kerjasama_id', $filter)
+                    ->where(function ($userQuery) use ($searchUser) {
+                        $userQuery->where('name', 'like', '%' . $searchUser . '%')
+                            ->orWhere('nama_lengkap', 'like', '%' . $searchUser . '%')
+                            ->orWhere('email', 'like', '%' . $searchUser . '%');
+                    });
+            });
+        }
+
         // Paginate and include the filter values in the pagination links
         $absen = $absenQuery->paginate(50);
-        $absen->appends(['filterKerjasama' => $filter, 'filterDevisi' => $filterDivisi]);
+        $absen->appends([
+            'filterKerjasama' => $filter,
+            'filterDevisi' => $filterDivisi,
+            'searchUser' => $searchUser,
+            'searchUserId' => $searchUserId,
+        ]);
 
         // Other data retrieval
-        $absenSi = Kerjasama::all();
-        $point = Point::all();
-        $divisi = Divisi::all();
+        $absenSi = Cache::remember('admin.absen.kerjasama-options', 300, function () {
+            return Kerjasama::query()
+                ->select('id', 'client_id')
+                ->with('client:id,name,panggilan')
+                ->get();
+        });
 
-        $min1 = Absensi::orderBy('tanggal_absen', 'asc')->first();
-        $min2 = $min1->created_at->format('Y-m-d');
+        $point = Cache::remember('admin.absen.point-options', 300, function () {
+            return Point::query()
+                ->select('id', 'client_id', 'sac_point')
+                ->get();
+        });
 
-        $max1 = Absensi::orderBy('tanggal_absen', 'desc')->first();
-        $max2 = $max1->created_at->subMonth(3)->format('Y-m-d');
+        $divisi = Cache::remember('admin.absen.divisi-options', 300, function () {
+            return Divisi::query()
+                ->select('id', 'name')
+                ->get();
+        });
+
+        $absenBounds = Cache::remember('admin.absen.date-bounds', 300, function () {
+            $min = Absensi::query()->orderBy('tanggal_absen', 'asc')->first(['created_at']);
+            $max = Absensi::query()->orderBy('tanggal_absen', 'desc')->first(['created_at']);
+
+            return [
+                'min' => optional($min?->created_at)->format('Y-m-d'),
+                'max' => optional($max?->created_at)?->subMonth(3)->format('Y-m-d'),
+            ];
+        });
+
+        $min2 = $absenBounds['min'] ?? now()->format('Y-m-d');
+        $max2 = $absenBounds['max'] ?? now()->subMonth(3)->format('Y-m-d');
 
         // dd($max2);
 
-        return view('admin.absen.index', ['min' => $min2, 'max' => $max2, 'absen' => $absen, 'filterDivisi' => $filterDivisi, 'absenSi' => $absenSi, 'point' => $point, 'divisi' => $divisi, 'filter' => $filter]);
+        return view('admin.absen.index', [
+            'min' => $min2,
+            'max' => $max2,
+            'absen' => $absen,
+            'filterDivisi' => $filterDivisi,
+            'absenSi' => $absenSi,
+            'point' => $point,
+            'divisi' => $divisi,
+            'filter' => $filter,
+            'searchUser' => $searchUser,
+            'searchUserId' => $searchUserId,
+        ]);
+    }
+
+    public function searchAbsenUsers(Request $request)
+    {
+        $kerjasamaId = $request->filled('kerjasama_id') ? (int) $request->kerjasama_id : null;
+        $query = trim((string) $request->input('q', ''));
+
+        if (!$kerjasamaId || mb_strlen($query) < 2) {
+            return response()->json([
+                'message' => 'Query too short',
+                'data' => [],
+                'error' => ''
+            ]);
+        }
+
+        $users = User::query()
+            ->where('kerjasama_id', $kerjasamaId)
+            ->where(function ($builder) use ($query) {
+                $builder->where('nama_lengkap', 'like', '%' . $query . '%')
+                    ->orWhere('name', 'like', '%' . $query . '%')
+                    ->orWhere('email', 'like', '%' . $query . '%');
+            })
+            ->orderByRaw('COALESCE(nama_lengkap, name) asc')
+            ->limit(15)
+            ->get(['id', 'name', 'nama_lengkap', 'email']);
+
+        return response()->json([
+            'message' => 'User list',
+            'data' => $users,
+            'error' => ''
+        ]);
     }
 
     public function izin()

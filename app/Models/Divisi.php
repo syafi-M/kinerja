@@ -14,16 +14,16 @@ class Divisi extends Model
         'jabatan_id',
     ];
 
-    public function Perlengkapan()
+    public function perlengkapan()
     {
         return $this->belongsToMany(Perlengkapan::class, 'divisi_perlengkapan');
     }
-    public function Jabatan()
+    public function jabatan()
     {
         return $this->belongsTo(Jabatan::class);
     }
     
-    public function User()
+    public function user()
     {
         return $this->hasMany(User::class);
     }

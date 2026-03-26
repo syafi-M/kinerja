@@ -17,12 +17,12 @@ class Monev extends Model
     
     protected $guarded = ['user_id', 'kerjasama_id', 'foto'];
     
-    public function User()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
-    public function Kerjasama()
+    public function kerjasama()
     {
         return $this->belongsTo(Kerjasama::class, 'kerjasama_id', 'id');
     }

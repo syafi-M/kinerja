@@ -17,16 +17,16 @@ class JadwalUser extends Model
         'status'
     ];
 
-    public function User() {
+    public function user() {
         return $this->belongsTo(User::class);
     }
 
-    public function Shift()
+    public function shift()
     {
         return $this->belongsTo(Shift::class);
     }
     
-    public function Area()
+    public function area()
     {
         return $this->belongsTo(Area::class);
     }

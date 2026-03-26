@@ -36,22 +36,22 @@ class Jabatan extends Model
         'kerjasama_id' => 'array'
     ];
 
-    public function Divisi()
+    public function divisi()
     {
         return $this->belongsTo(Divisi::class);
     }
     
-    public function Shift()
+    public function shift()
     {
         return $this->hasMany(Shift::class);
     }
     
-    public function User()
+    public function user()
     {
         return $this->hasMany(User::class);
     }
     
-    public function Kerjasama(): MorphMany
+    public function kerjasama(): MorphMany
     {
         return $this->morphMany(Kerjasama::class, 'kerjasama');
     }

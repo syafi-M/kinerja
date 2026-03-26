@@ -38,7 +38,7 @@ class ReportSholatController extends Controller
         $filterDivisi = $request->filterDevisi;
         
         // Build the initial query
-        $absenQuery = Absensi::with(['User', 'Shift', 'Kerjasama', 'TipeAbsensi'])
+        $absenQuery = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
             ->orderBy('tanggal_absen', 'desc')
             ->orderBy('created_at', 'desc');
         

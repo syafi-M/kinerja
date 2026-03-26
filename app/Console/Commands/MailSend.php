@@ -43,9 +43,9 @@ class MailSend extends Command
      */
     public function handle()
     {
-        $kantor = Shift::with('Client')->where('client_id', 1)->first(); 
+        $kantor = Shift::with('client')->where('client_id', 1)->first(); 
         $shift = Shift::all();
-        $abs = Absensi::with(['Shift', 'Kerjasama', 'user'])->whereNot('user_id', 2)->where('kerjasama_id', 1)->get();
+        $abs = Absensi::with(['shift', 'kerjasama', 'user'])->whereNot('user_id', 2)->where('kerjasama_id', 1)->get();
         $user = User::whereNot('id', 2)->where('kerjasama_id', 1)->get();
         $apiKey = 'a5433eaea029fc2f3a148571a4b60e73';
         // $mailtrap = new MailtrapClient(new Config($apiKey));
