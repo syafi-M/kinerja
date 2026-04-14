@@ -51,6 +51,7 @@
                                                 data-preview-src="http://laporan-sac.sac-po.com/storage/{{ $item->img_before }}"
                                                 alt="Foto Before"
                                                 class="object-cover rounded cursor-pointer imeg w-14 h-14 md:w-20 md:h-20"
+                                                style="min-width: 3.5rem; min-height: 3.5rem;"
                                             >
                                         @else
                                             <x-no-img class="w-14 h-14 md:w-20 md:h-20" />
@@ -64,6 +65,7 @@
                                                 data-preview-src="http://laporan-sac.sac-po.com/storage/{{ $item->img_proccess }}"
                                                 alt="Foto Process"
                                                 class="object-cover rounded cursor-pointer imeg w-14 h-14 md:w-20 md:h-20"
+                                                style="min-width: 3.5rem; min-height: 3.5rem;"
                                             >
                                         @else
                                             <x-no-img class="w-14 h-14 md:w-20 md:h-20" />
@@ -77,6 +79,7 @@
                                                 data-preview-src="http://laporan-sac.sac-po.com/storage/{{ $item->img_final }}"
                                                 alt="Foto Final"
                                                 class="object-cover rounded cursor-pointer imeg w-14 h-14 md:w-20 md:h-20"
+                                                style="min-width: 3.5rem; min-height: 3.5rem;"
                                             >
                                         @else
                                             <x-no-img class="w-14 h-14 md:w-20 md:h-20" />

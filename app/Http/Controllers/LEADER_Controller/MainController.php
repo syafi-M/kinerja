@@ -130,7 +130,7 @@ class MainController extends Controller
     public function indexLaporan()
     {
         $kerjasama = Auth::user()->kerjasama->client_id;
-        $laporan = UploadImage::where('clients_id', $kerjasama)->paginate(30);
+        $laporan = UploadImage::where('clients_id', $kerjasama)->latest()->paginate(30);
         $isMitra = Auth::user()->divisi->jabatan->code_jabatan === 'MITRA';
         $view = $isMitra ? 'mitra_view/laporan/index' : 'leader_view/laporan/index';
 

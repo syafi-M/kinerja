@@ -73,7 +73,7 @@
                                         {{ Carbon\Carbon::createFromFormat('Y-m-d', $ex->experied)->isoFormat('DD MMMM YYYY') }}
                                     </p>
                                 </div>
-                                <a href="{{ url('kerjasamas/' . $ex->id . '/edit') }}"
+                                <a href="{{ url('kerjasama/' . $ex->id . '/edit') }}"
                                     class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
                                     Update
                                 </a>

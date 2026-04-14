@@ -259,9 +259,6 @@
                     <a href="{{ route('laporanMitra.index') }}"
                         class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('laporanMitra.index') ? 'text-red-700 bg-red-50' : 'text-gray-500 hover:text-red-600 hover:bg-red-50' }}"><i
                             class="mr-3 ri-file-text-line"></i>Laporan Mitra</a>
-                    <a href="{{ route('qrcode.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('qrcode.index') ? 'text-red-700 bg-red-50' : 'text-gray-500 hover:text-red-600 hover:bg-red-50' }}"><i
-                            class="mr-3 ri-qr-code-line"></i>Data QR Code</a>
                 </div>
             </div>
 
