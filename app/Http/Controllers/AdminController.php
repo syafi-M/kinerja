@@ -39,17 +39,20 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         $now = now();
-        $oneMonthsAgo = $now->copy()->subMonth()->startOfMonth();
+        $oneMonthAgo = $now->copy()->subMonth()->startOfMonth();
+        $today = $now->toDateString();
+        $twoMonthsFromNow = $now->copy()->addMonths(2)->toDateString();
 
         $online = DB::table('sessions')
-            ->where('last_seen_at', '>', $now->subMinutes(5))
+            ->where('last_seen_at', '>', $now->copy()->subMinutes(5))
             ->whereNotNull('user_id')
             ->count();
 
-        $latestAbsensi = DB::table('absensis')
-            ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
-            ->groupBy('user_id');
-        $notActiveUsers = Cache::remember('not_active_users', 60, function () use ($latestAbsensi, $oneMonthsAgo) {
+        $inactiveUsersQuery = function () use ($oneMonthAgo) {
+            $latestAbsensi = DB::table('absensis')
+                ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
+                ->groupBy('user_id');
+
             return User::query()
                 ->select([
                     'users.id',
@@ -63,11 +66,19 @@ class AdminController extends Controller
                 })
                 ->where('users.kerjasama_id', '!=', 1)
                 ->whereNotIn('users.devisi_id', [8, 18])
-                ->where(function ($q) use ($oneMonthsAgo) {
+                ->where(function ($q) use ($oneMonthAgo) {
                     $q->whereNull('latest_absensi.last_attendance')
-                        ->orWhere('latest_absensi.last_attendance', '<', $oneMonthsAgo);
-                })
-                ->orderBy('latest_absensi.last_attendance', 'asc')
+                        ->orWhere('latest_absensi.last_attendance', '<', $oneMonthAgo);
+                });
+        };
+
+        $inactiveUsersCount = Cache::remember('admin.dashboard.inactive-users-count', 60, function () use ($inactiveUsersQuery) {
+            return $inactiveUsersQuery()->count();
+        });
+
+        $notActiveUsers = Cache::remember('not_active_users', 60, function () use ($inactiveUsersQuery) {
+            return $inactiveUsersQuery()
+                ->orderBy('latest_absensi.last_attendance')
                 ->limit(33)
                 ->get();
         });
@@ -77,14 +88,22 @@ class AdminController extends Controller
 
         $izin = Izin::where('approve_status', 'process')
             ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
             ->count();
 
-
-        $expert = Cache::remember('admin.dashboard.expiring-contracts', 300, function () use ($now) {
+        $expiringContractsQuery = function () use ($today, $twoMonthsFromNow) {
             return Kerjasama::query()
                 ->select('id', 'client_id', 'experied')
                 ->with('client:id,name')
-                ->whereDate('experied', '<=', $now->copy()->addMonths(2))
+                ->whereBetween('experied', [$today, $twoMonthsFromNow]);
+        };
+
+        $expiringContractsCount = Cache::remember('admin.dashboard.expiring-contracts-upcoming-count', 300, function () use ($expiringContractsQuery) {
+            return $expiringContractsQuery()->count();
+        });
+
+        $expert = Cache::remember('admin.dashboard.expiring-contracts-upcoming', 300, function () use ($expiringContractsQuery) {
+            return $expiringContractsQuery()
                 ->orderBy('experied')
                 ->get();
         });
@@ -95,7 +114,9 @@ class AdminController extends Controller
             'izin',
             'online',
             'expert',
-            'notActiveUsers'
+            'notActiveUsers',
+            'inactiveUsersCount',
+            'expiringContractsCount'
         ));
     }
     public function getUptime()

@@ -137,8 +137,8 @@
                             @method('PUT')
                             <div class="flex flex-col justify-center">
                                 <div class="flex items-center justify-center">
-                                    <input id="lat" name="lat_user" value="" class="hidden lat" />
-                                    <input id="long" name="long_user" value="" class="hidden long" />
+                                    <input name="lat_user" value="" class="hidden lat" />
+                                    <input name="long_user" value="" class="hidden long" />
                                     <button type="submit"
                                         class="flex items-center justify-center px-3 py-1 mr-0 text-white capitalize transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all sm:mr-2"
                                         style="margin-top: 4pt; font-size: 12pt;">
@@ -154,8 +154,8 @@
                             @method('PUT')
                             <div class="flex flex-col justify-center">
                                 <div class="flex items-center justify-center">
-                                    <input id="lat" name="lat_user" value="" class="hidden lat" />
-                                    <input id="long" name="long_user" value="" class="hidden long" />
+                                    <input name="lat_user" value="" class="hidden lat" />
+                                    <input name="long_user" value="" class="hidden long" />
                                     <button type="submit"
                                         class="flex items-center justify-center px-3 py-1 mr-0 text-white uppercase transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all sm:mr-2"
                                         style="margin-top: 4pt; font-size: 12pt;">
@@ -618,10 +618,8 @@
                                                             <i class="font-sans text-3xl ri-run-line"></i>
                                                             <span class="font-bold">Pulang Sekarang</span>
                                                         </button>
-                                                        <input id="lat" name="lat_user" value=""
-                                                            class="hidden lat" />
-                                                        <input id="long" name="long_user" value=""
-                                                            class="hidden long" />
+                                                        <input name="lat_user" value="" class="hidden lat" />
+                                                        <input name="long_user" value="" class="hidden long" />
                                                         <div id="map" class="hidden"></div>
                                                     </div>
                                                 </div>
@@ -708,7 +706,8 @@
         @endif
     </div>
 
-    <script defer>
+    @if ($shouldTrackPulang)
+        <script defer>
         (function($) {
             // Cache DOM elements
             const elements = {
@@ -736,6 +735,7 @@
             let lastPosition = null;
             let positionCheckThrottle = null;
             const THROTTLE_DELAY = 1000;
+            const MAX_GPS_ACCURACY_METERS = 100;
 
             // Check if geolocation is supported
             if (!navigator.geolocation) {
@@ -746,8 +746,11 @@
             // Set up geolocation watching
             const watchOptions = {
                 enableHighAccuracy: true,
-                maximumAge: 0
+                maximumAge: 5000,
+                timeout: 15000
             };
+
+            updateButtonState(false, 'Mengambil GPS...');
 
             watchId = navigator.geolocation.watchPosition(
                 handlePositionUpdate,
@@ -775,8 +778,22 @@
             function processPositionUpdate(position) {
                 const {
                     latitude,
-                    longitude
+                    longitude,
+                    accuracy
                 } = position.coords;
+
+                if (accuracy > MAX_GPS_ACCURACY_METERS) {
+                    elements.lat.val(latitude);
+                    elements.long.val(longitude);
+                    elements.tutor.removeClass('hidden');
+                    elements.labelMap
+                        .text(`GPS belum akurat (${Math.round(accuracy)}m). Tunggu beberapa detik.`)
+                        .removeClass('hidden');
+                    updateButtonState(false, 'GPS Belum Akurat');
+                    return;
+                }
+
+                elements.labelMap.addClass('hidden');
 
                 // Skip if position hasn't changed significantly
                 if (lastPosition) {
@@ -803,7 +820,7 @@
                 // Handle different coop types
                 if (userCoopId === 1) {
                     // For coop 1, always enable the button without radius check
-                    updateButtonState(true);
+                    updateButtonState(true, 'Pulang');
                 } else {
                     // For other coops, check if user is within any location's radius
                     checkLocationRadius(latitude, longitude);
@@ -843,20 +860,20 @@
                     }
                 }
 
-                updateButtonState(withinAnyRadius);
+                updateButtonState(withinAnyRadius, withinAnyRadius ? 'Pulang' : 'Diluar Radius!');
             }
 
-            function updateButtonState(isWithinRadius) {
-                if (isWithinRadius) {
+            function updateButtonState(isEnabled, text) {
+                if (isEnabled) {
                     elements.pulangBtn
                         .prop('disabled', false)
                         .removeClass('btn-disabled');
-                    elements.pulangBtnText.html('Pulang');
+                    elements.pulangBtnText.html(text);
                 } else {
                     elements.pulangBtn
                         .prop('disabled', true)
                         .addClass('btn-disabled');
-                    elements.pulangBtnText.html('Diluar Radius!');
+                    elements.pulangBtnText.html(text);
                 }
             }
 
@@ -864,30 +881,33 @@
                 console.error("Geolocation error:", error);
 
                 // Show user-friendly error message based on error code
-                let errorMessage = "Location access error. ";
+                let errorMessage = "GPS bermasalah. ";
                 switch (error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMessage += "Please allow location access.";
+                        errorMessage += "Izinkan akses lokasi.";
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMessage += "Location information unavailable.";
+                        errorMessage += "Lokasi belum tersedia.";
                         break;
                     case error.TIMEOUT:
-                        errorMessage += "Location request timed out.";
+                        errorMessage += "Mengambil lokasi terlalu lama.";
                         break;
                     default:
-                        errorMessage += "Unknown error occurred.";
+                        errorMessage += "Coba refresh browser.";
                 }
 
                 elements.labelMap.text(errorMessage).removeClass('hidden');
+                updateButtonState(false, 'GPS Tidak Tersedia');
             }
 
             function handleGeolocationNotSupported() {
-                alert('Geolocation is not supported by your browser.');
-                elements.labelMap.text('Geolocation is not supported by your browser.').removeClass('hidden');
+                alert('Browser tidak mendukung geolocation.');
+                elements.labelMap.text('Browser tidak mendukung geolocation.').removeClass('hidden');
+                updateButtonState(false, 'GPS Tidak Tersedia');
             }
         })(jQuery);
     </script>
+    @endif
     <script>
         $(document).ready(function() {
             var waktuIzin = $("#waktuIzin").data('waktu');

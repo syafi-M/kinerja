@@ -2,8 +2,8 @@
     @section('title', 'Halaman Dashboard')
 
     @php
-        $expiringContracts = is_countable($expert) ? count($expert) : 0;
-        $inactiveUsers = count($notActiveUsers);
+        $expiringContracts = $expiringContractsCount ?? $expert->count();
+        $inactiveUsers = $inactiveUsersCount ?? $notActiveUsers->count();
     @endphp
 
     <div class="pb-10 space-y-6">
@@ -67,13 +67,15 @@
                         @foreach ($expert as $ex)
                             <div class="flex items-center justify-between gap-3 px-5 py-3">
                                 <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 truncate">{{ $ex->client->name }}</p>
+                                    <p class="text-sm font-semibold text-gray-900 truncate">
+                                        {{ $ex->client->name ?? 'Client tidak ditemukan' }}
+                                    </p>
                                     <p class="mt-0.5 text-xs text-gray-500">
                                         Berakhir:
                                         {{ Carbon\Carbon::createFromFormat('Y-m-d', $ex->experied)->isoFormat('DD MMMM YYYY') }}
                                     </p>
                                 </div>
-                                <a href="{{ url('kerjasama/' . $ex->id . '/edit') }}"
+                                <a href="{{ route('kerjasama.edit', $ex->id) }}"
                                     class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
                                     Update
                                 </a>

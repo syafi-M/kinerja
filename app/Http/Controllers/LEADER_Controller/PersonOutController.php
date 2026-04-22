@@ -24,7 +24,7 @@ class PersonOutController extends Controller
         ]);
     }
 
-    public function show(Request $request, $id)
+    public function history(Request $request)
     {
         $startDate = Carbon::now()->startOfMonth()->startOfDay();
         $endDate = Carbon::now()->startOfMonth()->addDays(24)->endOfDay();
@@ -44,8 +44,8 @@ class PersonOutController extends Controller
 
                     $q->whereYear('out_date', $date->year)
                         ->whereMonth('out_date', $date->month);
-                } catch (\Exception $e) {
-                    throw $e;
+                } catch (\Throwable $th) {
+                    // ignore invalid month
                 }
             })
 
@@ -57,6 +57,11 @@ class PersonOutController extends Controller
         return view('leader_view.data_rekap.person_out.show', [
             'personOut' => $personOut
         ]);
+    }
+
+    public function show(Request $request, $id)
+    {
+        return $this->history($request);
     }
 
     public function store(Request $request)

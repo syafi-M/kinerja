@@ -1,204 +1,270 @@
 <x-app-layout>
     <x-main-div>
-        <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-
-            <!-- Header -->
-            <div class="card-container mb-6">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
+        <div class="w-full px-3 py-4 mx-auto max-w-7xl sm:px-5 lg:px-6">
+            <div class="p-4 mb-4 bg-white border rounded-lg shadow-sm border-white/60 ring-1 ring-slate-900/5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center min-w-0 gap-3">
                         <a href="{{ route('index.rekap.data.leader') }}"
-                            class="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
-                            <i class="ri-arrow-left-line text-xl text-white"></i>
+                            class="inline-flex items-center justify-center w-10 h-10 ml-1 transition rounded-lg shrink-0 sm:ml-0 bg-slate-100 text-slate-700 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                            aria-label="Kembali ke rekapitulasi">
+                            <i class="text-xl ri-arrow-left-line"></i>
                         </a>
-                        <div>
-                            <h1 class="text-2xl sm:text-3xl font-bold text-white">Riwayat Personil Keluar</h1>
-                            <p class="text-slate-200 text-sm">History Pengajuan Personil Keluar</p>
+                        <div class="min-w-0">
+                            <p class="text-xs font-medium text-slate-500">Data Rekap</p>
+                            <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
+                                Riwayat Personil Keluar
+                            </h1>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan personil keluar.</p>
                         </div>
                     </div>
                     <a href="{{ route('person-is-out.create') }}"
-                        class="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap">
+                        class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-semibold transition rounded-lg min-h-10 bg-amber-400 text-slate-900 hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 sm:w-auto">
                         <i class="ri-add-line"></i>
                         <span>Pengajuan Baru</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Filter Section -->
-            <div class="card-white p-4 mb-6">
-                <form action="{{ route('person-is-out.show', 1) }}" method="GET"
-                    class="flex flex-col sm:flex-row gap-3">
-                    <div class="flex-1">
-                        <select name="status"
-                            class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm">
-                            <option value="">Semua Status</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending
-                            </option>
-                            <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan
-                            </option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
-                            </option>
-                        </select>
+            <div class="p-3 mb-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-4">
+                <form action="{{ route('person-is-out.history') }}" method="GET"
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                    <select name="status"
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
+                        <option value="">Semua Status</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan</option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                    </select>
+                    <input type="month" name="month" value="{{ request('month') }}"
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
+                    <div class="flex gap-2">
+                        <button type="submit"
+                            class="inline-flex items-center justify-center flex-1 gap-2 px-4 py-2 text-sm font-semibold text-white transition rounded-lg min-h-11 bg-sky-600 hover:bg-sky-700 sm:flex-none">
+                            <i class="ri-filter-3-line"></i>
+                            <span>Filter</span>
+                        </button>
+                        <a href="{{ route('person-is-out.history') }}"
+                            class="inline-flex items-center justify-center flex-1 gap-2 px-4 py-2 text-sm font-semibold transition bg-white border rounded-lg min-h-11 border-slate-300 text-slate-700 hover:bg-slate-50 sm:flex-none">
+                            <i class="ri-refresh-line"></i>
+                            <span>Reset</span>
+                        </a>
                     </div>
-                    <div class="flex-1">
-                        <input type="month" name="month" value="{{ request('month') }}"
-                            class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm">
-                    </div>
-                    <button type="submit"
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all flex items-center gap-2 justify-center">
-                        <i class="ri-filter-3-line"></i>
-                        <span>Filter</span>
-                    </button>
-                    <a href="{{ route('person-is-out.show', 1) }}"
-                        class="px-6 py-2 border-2 border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-all flex items-center gap-2 justify-center">
-                        <i class="ri-refresh-line"></i>
-                        <span>Reset</span>
-                    </a>
                 </form>
             </div>
 
-            <!-- Table Card -->
-            <div class="card-white overflow-hidden">
-                <div class="overflow-x-auto">
+            <div class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
+                <div class="p-3 space-y-3 sm:hidden">
+                    @forelse($personOut as $index => $person)
+                        @php
+                            $status = $person->status ?? 'pending';
+                            $reasonLabel = $person->reason === 'lainnya'
+                                ? ($person->reason_manual ?: 'Lainnya')
+                                : ucfirst((string) $person->reason);
+                            $imageUrl = $person->img ? asset('storage/images/' . $person->img) : null;
+                        @endphp
+                        <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold truncate text-slate-800">
+                                        {{ $person->user->nama_lengkap ?? '-' }}
+                                    </p>
+                                    <p class="mt-0.5 text-xs text-slate-500">
+                                        Keluar {{ \Carbon\Carbon::parse($person->out_date ?? now())->format('d M Y') }}
+                                    </p>
+                                </div>
+                                @if ($status == 'Di Ajukan')
+                                    <span
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                                        <i class="ri-checkbox-circle-fill"></i>Diajukan
+                                    </span>
+                                @elseif($status == 'rejected')
+                                    <span
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                                        <i class="ri-close-circle-fill"></i>Ditolak
+                                    </span>
+                                @else
+                                    <span
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700">
+                                        <i class="ri-time-fill"></i>Pending
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-slate-600">
+                                <div class="p-2 rounded-lg bg-slate-50">
+                                    <span class="block text-slate-400">Jumlah MK</span>
+                                    <span class="font-medium text-slate-700">{{ $person->total_mk ?? '-' }}</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-slate-50">
+                                    <span class="block text-slate-400">Alasan</span>
+                                    <span class="font-medium text-slate-700">{{ $reasonLabel }}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 p-2 mb-4 rounded-lg bg-slate-50">
+                                @if ($imageUrl)
+                                    <img src="{{ $imageUrl }}" class="object-cover w-14 h-14 rounded-lg border border-slate-200"
+                                        alt="Bukti">
+                                @else
+                                    <div
+                                        class="flex items-center justify-center w-14 h-14 text-xs rounded-lg bg-white text-slate-400 border border-slate-200">
+                                        No Image
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <span class="block text-xs text-slate-400">Bukti</span>
+                                    <span class="text-xs font-medium text-slate-700">{{ $person->img ?: 'Tidak ada bukti' }}</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="viewDetail({{ $person->id ?? 0 }})"
+                                    class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg min-h-10 bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                    type="button">
+                                    <i class="ri-eye-line"></i>Lihat
+                                </button>
+                                @if ($status == 'pending')
+                                    <button onclick="sendPersonOut({{ $person->id ?? 0 }})"
+                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100"
+                                        type="button">
+                                        <i class="ri-send-plane-fill"></i>Ajukan
+                                    </button>
+                                    <a href="{{ route('person-is-out.edit', $person->id) }}"
+                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-yellow-700 rounded-lg min-h-10 bg-yellow-50 hover:bg-yellow-100">
+                                        <i class="ri-edit-line"></i>Edit
+                                    </a>
+                                    <button onclick="deletePersonOut({{ $person->id ?? 0 }})"
+                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 rounded-lg min-h-10 bg-red-50 hover:bg-red-100"
+                                        type="button">
+                                        <i class="ri-delete-bin-line"></i>Hapus
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-4 py-10 text-center">
+                            <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-slate-100">
+                                <i class="text-3xl ri-inbox-line text-slate-400"></i>
+                            </div>
+                            <p class="mt-3 font-medium text-slate-600">Belum ada riwayat pengajuan personil keluar</p>
+                            <a href="{{ route('person-is-out.create') }}"
+                                class="inline-flex items-center gap-2 px-6 py-2 mt-3 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900">
+                                <i class="ri-add-line"></i>
+                                <span>Buat Pengajuan</span>
+                            </a>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="hidden overflow-x-auto sm:block">
                     <table class="w-full">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200">
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    No
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Nama Pegawai
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Tanggal Keluar
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Jumlah MK
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Alasan Keluar
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Bukti
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Status
-                                </th>
-                                <th
-                                    class="px-4 py-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
-                                    Aksi
-                                </th>
+                            <tr class="border-b border-slate-200 bg-slate-50">
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Pegawai</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal Keluar</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Jumlah MK</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Alasan</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Bukti</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Status</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-center text-slate-500">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @forelse($personOut as $index => $person)
-                                <tr class="hover:bg-slate-50 transition-colors">
+                                @php
+                                    $status = $person->status ?? 'pending';
+                                    $reasonLabel = $person->reason === 'lainnya'
+                                        ? ($person->reason_manual ?: 'Lainnya')
+                                        : ucfirst((string) $person->reason);
+                                    $imageUrl = $person->img ? asset('storage/images/' . $person->img) : null;
+                                @endphp
+                                <tr class="transition-colors hover:bg-slate-50">
                                     <td class="px-4 py-4 text-sm text-slate-700">
-                                        {{ $index + 1 }}
+                                        {{ method_exists($personOut, 'firstItem') ? $personOut->firstItem() + $index : $index + 1 }}
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                                <span class="text-blue-600 font-semibold text-sm">
+                                                class="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full bg-sky-100">
+                                                <span class="text-sm font-semibold text-sky-700">
                                                     {{ substr($person->user->nama_lengkap ?? 'N', 0, 1) }}
                                                 </span>
                                             </div>
-                                            <div>
-                                                <p class="font-medium text-slate-800 whitespace-nowrap">
-                                                    {{ $person->user->name ?? 'N/A' }}</p>
-                                                <p class="text-xs text-slate-500">
-                                                    {{ $person->user->nama_lengkap ?? '-' }}</p>
+                                            <div class="min-w-0">
+                                                <p class="font-medium truncate text-slate-800">
+                                                    {{ $person->user->name ?? 'N/A' }}
+                                                </p>
+                                                <p class="text-xs text-slate-500 whitespace-nowrap">
+                                                    {{ $person->user->nama_lengkap ?? '-' }}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
-                                        {{ \Carbon\Carbon::parse($person->out_date ?? now())->format('d M Y H:i') }}
+                                        {{ \Carbon\Carbon::parse($person->out_date ?? now())->format('d M Y') }}
                                     </td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
-                                        {{ $person->total_mk ?? 'N/A' }}
+                                        {{ $person->total_mk ?? '-' }}
                                     </td>
                                     <td class="px-4 py-4">
                                         <span
-                                            class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium whitespace-nowrap">
-                                            <i class="ri-time-line"></i>
-                                            {{ $person->reason }}
+                                            class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-sky-100 text-sky-700 whitespace-nowrap">
+                                            <i class="ri-logout-box-r-line"></i>
+                                            {{ $reasonLabel }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 max-w-xs">
-                                        <div class="line-clamp-2"></div>
-
-                                        @php
-                                            $imagePath = $person->img
-                                                ? storage_path('app/public/images/' . $person->img)
-                                                : null;
-                                        @endphp
-
-                                        @if ($person->img && file_exists($imagePath))
-                                            <img src="{{ asset('storage/images/' . $person->img) }}"
-                                                class="w-20 h-20 object-cover rounded" alt="Bukti">
+                                    <td class="px-4 py-4">
+                                        @if ($imageUrl)
+                                            <img src="{{ $imageUrl }}"
+                                                class="object-cover w-16 h-16 border rounded-lg border-slate-200" alt="Bukti">
                                         @else
                                             <div
-                                                class="w-20 h-20 flex items-center justify-center rounded bg-slate-100 text-slate-400 text-xs">
+                                                class="flex items-center justify-center w-16 h-16 text-xs rounded-lg bg-slate-100 text-slate-400">
                                                 No Image
                                             </div>
                                         @endif
                                     </td>
-
                                     <td class="px-4 py-4">
-                                        @if (($person->status ?? 'pending') == 'Di Ajukan')
+                                        @if ($status == 'Di Ajukan')
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium whitespace-nowrap">
-                                                <i class="ri-checkbox-circle-fill"></i>
-                                                Di Ajukan
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full whitespace-nowrap">
+                                                <i class="ri-checkbox-circle-fill"></i>Di Ajukan
                                             </span>
-                                        @elseif(($person->status ?? 'pending') == 'rejected')
+                                        @elseif($status == 'rejected')
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium whitespace-nowrap">
-                                                <i class="ri-close-circle-fill"></i>
-                                                Ditolak
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full whitespace-nowrap">
+                                                <i class="ri-close-circle-fill"></i>Ditolak
                                             </span>
                                         @else
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium whitespace-nowrap">
-                                                <i class="ri-time-fill"></i>
-                                                Pending
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full whitespace-nowrap">
+                                                <i class="ri-time-fill"></i>Pending
                                             </span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <button onclick="viewDetail({{ $person->id ?? 0 }})"
-                                                class="w-8 h-8 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center transition-all"
-                                                title="Lihat Detail">
+                                                class="flex items-center justify-center text-blue-600 transition bg-blue-100 rounded-lg w-9 h-9 hover:bg-blue-200"
+                                                title="Lihat Detail" type="button">
                                                 <i class="ri-eye-line"></i>
                                             </button>
-                                            @if (($person->status ?? 'pending') == 'pending')
+                                            @if ($status == 'pending')
                                                 <a href="{{ route('person-is-out.edit', $person->id) }}"
-                                                    class="w-8 h-8 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-600 flex items-center justify-center transition-all"
+                                                    class="flex items-center justify-center text-yellow-600 transition bg-yellow-100 rounded-lg w-9 h-9 hover:bg-yellow-200"
                                                     title="Edit">
                                                     <i class="ri-edit-line"></i>
                                                 </a>
-                                                <button onclick="deleteOvertime({{ $person->id ?? 0 }})"
-                                                    class="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-all"
-                                                    title="Hapus">
+                                                <button onclick="deletePersonOut({{ $person->id ?? 0 }})"
+                                                    class="flex items-center justify-center text-red-600 transition bg-red-100 rounded-lg w-9 h-9 hover:bg-red-200"
+                                                    title="Hapus" type="button">
                                                     <i class="ri-delete-bin-line"></i>
                                                 </button>
-                                                <button onclick="sendOvertime({{ $person->id ?? 0 }})" type="button"
-                                                    title="Send"
-                                                    class="w-8 h-8 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-all">
-                                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24" fill="currentColor">
-                                                        <path
-                                                            d="M19.4999 2C20.0945 1.99965 20.6988 2.15061 21.2499 2.46875C22.924 3.43525 23.4977 5.57598 22.5312 7.25L15.0312 20.2402C14.0647 21.9142 11.924 22.488 10.2499 21.5215C9.41368 21.0386 8.85171 20.2606 8.62005 19.3975L6.85345 12.8037L2.02533 7.97461C0.65837 6.60765 0.658729 4.39208 2.02533 3.02539C2.65755 2.39311 3.53385 2.00011 4.49994 2H19.4999ZM4.49994 4C4.08555 4.00011 3.71182 4.167 3.43939 4.43945C2.85354 5.0254 2.85378 5.97494 3.43939 6.56055L7.914 11.0352L14.8906 7.00684C15.3688 6.7308 15.9806 6.89487 16.2568 7.37305C16.5327 7.85124 16.3687 8.46312 15.8906 8.73926L8.914 12.7676L10.5517 18.8789C10.6515 19.2509 10.8913 19.5819 11.2499 19.7891C11.9673 20.2032 12.8845 19.9575 13.2988 19.2402L20.7988 6.25C21.213 5.53256 20.9674 4.61539 20.2499 4.20117C20.0128 4.06427 19.7555 3.99982 19.5009 4H4.49994Z">
-                                                        </path>
-                                                    </svg>
+                                                <button onclick="sendPersonOut({{ $person->id ?? 0 }})"
+                                                    class="flex items-center justify-center text-green-600 transition bg-green-100 rounded-lg w-9 h-9 hover:bg-green-200"
+                                                    title="Ajukan" type="button">
+                                                    <i class="ri-send-plane-fill"></i>
                                                 </button>
                                             @endif
                                         </div>
@@ -208,17 +274,15 @@
                                 <tr>
                                     <td colspan="8" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center gap-3">
-                                            <div
-                                                class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center">
-                                                <i class="ri-inbox-line text-3xl text-slate-400"></i>
+                                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100">
+                                                <i class="text-3xl ri-inbox-line text-slate-400"></i>
                                             </div>
                                             <div>
-                                                <p class="text-slate-600 font-medium">Tidak ada data</p>
-                                                <p class="text-slate-500 text-sm">Belum ada riwayat pengajuan lembur
-                                                </p>
+                                                <p class="font-medium text-slate-600">Tidak ada data</p>
+                                                <p class="text-sm text-slate-500">Belum ada riwayat pengajuan personil keluar</p>
                                             </div>
                                             <a href="{{ route('person-is-out.create') }}"
-                                                class="btn-primary px-6 py-2 rounded-lg flex items-center gap-2 mt-2">
+                                                class="inline-flex items-center gap-2 px-6 py-2 mt-2 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900">
                                                 <i class="ri-add-line"></i>
                                                 <span>Buat Pengajuan</span>
                                             </a>
@@ -230,126 +294,109 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
                 @if (isset($personOut) && $personOut->hasPages())
                     <div class="px-4 py-4 border-t border-slate-200">
                         {{ $personOut->links() }}
                     </div>
                 @endif
             </div>
-            <div class="w-full flex justify-end items-center">
-                <form action="{{ route('person-is-out-bulk.status') }}" method="post">
+
+            <div class="flex justify-end w-full">
+                <form action="{{ route('person-is-out-bulk.status') }}" method="post" class="w-full mt-3 sm:w-auto">
                     @csrf
                     @method('PATCH')
                     <button type="submit"
-                        class="m-2 btn btn-sm rounded-sm bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-all">
-                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                            fill="currentColor">
-                            <path
-                                d="M19.4999 2C20.0945 1.99965 20.6988 2.15061 21.2499 2.46875C22.924 3.43525 23.4977 5.57598 22.5312 7.25L15.0312 20.2402C14.0647 21.9142 11.924 22.488 10.2499 21.5215C9.41368 21.0386 8.85171 20.2606 8.62005 19.3975L6.85345 12.8037L2.02533 7.97461C0.65837 6.60765 0.658729 4.39208 2.02533 3.02539C2.65755 2.39311 3.53385 2.00011 4.49994 2H19.4999ZM4.49994 4C4.08555 4.00011 3.71182 4.167 3.43939 4.43945C2.85354 5.0254 2.85378 5.97494 3.43939 6.56055L7.914 11.0352L14.8906 7.00684C15.3688 6.7308 15.9806 6.89487 16.2568 7.37305C16.5327 7.85124 16.3687 8.46312 15.8906 8.73926L8.914 12.7676L10.5517 18.8789C10.6515 19.2509 10.8913 19.5819 11.2499 19.7891C11.9673 20.2032 12.8845 19.9575 13.2988 19.2402L20.7988 6.25C21.213 5.53256 20.9674 4.61539 20.2499 4.20117C20.0128 4.06427 19.7555 3.99982 19.5009 4H4.49994Z">
-                            </path>
-                        </svg>Ajukan Semua</button>
+                        class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-semibold text-green-700 transition bg-green-100 rounded-lg min-h-10 hover:bg-green-200 sm:w-auto">
+                        <i class="ri-send-plane-fill"></i>
+                        Ajukan Semua
+                    </button>
                 </form>
             </div>
         </div>
     </x-main-div>
 
-    <!-- Detail Modal -->
     <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
         class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black/50 transition-opacity" @click="open = false"></div>
+        <div class="fixed inset-0 transition-opacity bg-black/50" @click="open = false"></div>
 
-        <!-- Modal -->
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative bg-white rounded-xl shadow-xl max-w-2xl w-full p-6" @click.away="open = false"
-                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
-                x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
-
-                <!-- Header -->
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-slate-800">Detail Pengajuan Personil Keluar</h3>
+        <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
+            <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
+                @click.away="open = false" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Personil Keluar</h3>
                     <button @click="open = false"
-                        class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-all">
-                        <i class="ri-close-line text-xl text-slate-600"></i>
+                        class="flex items-center justify-center w-8 h-8 transition rounded-lg hover:bg-slate-100"
+                        type="button">
+                        <i class="text-xl ri-close-line text-slate-600"></i>
                     </button>
                 </div>
 
-                <!-- Content -->
                 <div class="space-y-4">
-                    <div class="grid grid-cols-3 gap-4 pb-4 border-b border-slate-200">
+                    <div class="grid grid-cols-2 gap-4 pb-4 border-b sm:grid-cols-3 border-slate-200">
                         <div>
-                            <p class="text-xs text-slate-500 mb-1">Nama Pegawai</p>
-                            <p class="text-xs font-semibold text-slate-800" x-text="detail.user?.nama_lengkap || '-'">
+                            <p class="mb-1 text-xs text-slate-500">Nama Pegawai</p>
+                            <p class="font-semibold text-slate-800" x-text="detail.user?.nama_lengkap || '-'"></p>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-xs text-slate-500">Tanggal Keluar</p>
+                            <p class="font-semibold text-slate-800"
+                                x-text="detail.out_date ? new Date(detail.out_date.replace(' ', 'T')).toLocaleDateString('id-ID') : '-'">
                             </p>
                         </div>
                         <div>
-                            <p class="text-xs text-slate-500 mb-1">Tanggal Keluar</p>
-                            <p class="text-xs font-semibold text-slate-800"
-                                x-text="
-                                    detail.out_date
-                                        ? new Date(detail.out_date.replace(' ', 'T'))
-                                            .toLocaleDateString('id-ID', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric'
-                                            })
-                                        : '-'
-                                ">
-                            </p>
-
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 mb-1">Alasan Keluar</p>
-                            {{-- <p class="text-xs font-semibold text-slate-800" x-text="detail.reason || '-'"></p> --}}
-                            <p class="font-semibold text-xs text-slate-800" x-text="detail.reason_manual || '-'">
-                            </p>
+                            <p class="mb-1 text-xs text-slate-500">Jumlah MK</p>
+                            <p class="font-semibold text-slate-800" x-text="detail.total_mk || '-'"></p>
                         </div>
                     </div>
-                    <div x-data="{
-                        imageUrl() {
-                            return this.detail.img ?
-                                `/storage/images/${this.detail.img}` :
-                                null
-                        }
-                    }">
-                        <p class="text-xs text-slate-500 mb-2">Bukti</p>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <p class="mb-1 text-xs text-slate-500">Alasan Keluar</p>
+                            <p class="font-semibold text-slate-800"
+                                x-text="detail.reason === 'lainnya' ? (detail.reason_manual || 'Lainnya') : (detail.reason || '-')">
+                            </p>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-xs text-slate-500">Status</p>
+                            <span x-text="detail.status ?? 'pending'"
+                                :class="{
+                                    'bg-green-100 text-green-700': detail.status == 'Di Ajukan',
+                                    'bg-yellow-100 text-yellow-700': !detail.status || detail.status == 'pending',
+                                    'bg-red-100 text-red-700': detail.status == 'rejected'
+                                }"
+                                class="inline-block px-3 py-1 text-xs font-medium rounded-full"></span>
+                        </div>
+                    </div>
+
+                    <div x-data="{ imageUrl() { return detail.img ? `/storage/images/${detail.img}` : null } }">
+                        <p class="mb-2 text-xs text-slate-500">Bukti</p>
                         <template x-if="imageUrl()">
-                            <img :src="imageUrl()" class="w-40 h-40 object-cover rounded border" alt="Bukti">
+                            <img :src="imageUrl()" class="object-cover w-full max-w-xs border rounded-lg h-44 border-slate-200"
+                                alt="Bukti">
                         </template>
 
                         <template x-if="!imageUrl()">
                             <div
-                                class="w-40 h-40 flex items-center justify-center bg-slate-100 text-slate-400 text-xs">
+                                class="flex items-center justify-center w-full max-w-xs text-xs rounded-lg h-44 bg-slate-100 text-slate-400">
                                 No Image
                             </div>
                         </template>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-xs text-slate-500 mb-1">Status</p>
-                            <span x-text="detail.status ?? '-'"
-                                :class="{
-                                    'bg-green-100 text-green-700': detail.status == 'Di Ajukan',
-                                    'bg-yellow-100 text-yellow-700': detail.status == 'pending',
-                                    'bg-red-100 text-red-700': detail.status == 'rejected'
-                                }"
-                                class="inline-block px-3 py-1 rounded-full text-xs font-medium"></span>
 
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 mb-1">Tanggal Pengisian</p>
-                            <p class="text-xs text-slate-800"
-                                x-text="detail.created_at?.replace('T', ' ').split('.')[0]"></p>
-                        </div>
+                    <div>
+                        <p class="mb-1 text-xs text-slate-500">Tanggal Pengisian</p>
+                        <p class="text-sm text-slate-800"
+                            x-text="detail.created_at ? new Date(detail.created_at).toLocaleString('id-ID') : '-'"></p>
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
+                <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-200">
                     <button @click="open = false"
-                        class="px-6 py-2 border-2 border-slate-300 hover:bg-slate-50 rounded-lg font-medium transition-all">
+                        class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-semibold transition bg-white border rounded-lg min-h-10 border-slate-300 text-slate-700 hover:bg-slate-50 sm:w-auto"
+                        type="button">
                         Tutup
                     </button>
                 </div>
@@ -364,7 +411,6 @@
                 const res = await fetch(url);
                 const response = await res.json();
 
-                // Dispatch event to Alpine modal
                 window.dispatchEvent(new CustomEvent('detail-modal', {
                     detail: response.data
                 }));
@@ -373,10 +419,8 @@
             }
         }
 
-
-        function deleteOvertime(id) {
+        function deletePersonOut(id) {
             if (confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')) {
-                // Submit delete form
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `/person-is-out/${id}`;
@@ -398,7 +442,7 @@
             }
         }
 
-        function sendOvertime(id) {
+        function sendPersonOut(id) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `/person-is-out-change-status/${id}`;
@@ -421,79 +465,8 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: #f1f5f9;
-        }
-
-        .card-container {
-            background: #64748b;
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .card-white {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 12px;
-        }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #1f2937;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #f59e0b;
-            transform: translateY(-1px);
-        }
-
-        /* Line clamp utility */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        /* Table styling */
-        table {
-            border-collapse: collapse;
-        }
-
-        /* Select dropdown arrow */
-        select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            appearance: none;
-        }
-
-        /* Alpine.js cloak */
         [x-cloak] {
             display: none !important;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .card-container {
-                padding: 16px;
-            }
         }
     </style>
 </x-app-layout>

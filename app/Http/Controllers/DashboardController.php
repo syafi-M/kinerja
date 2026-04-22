@@ -18,12 +18,13 @@ class DashboardController extends Controller
     {
         // Simpan waktu sekarang dan user dalam variabel
         $now = Carbon::now();
-        $today = $now->format('Y-m-d');
+        $today = $now->toDateString();
         $user = Auth::user();
 
         // Hitung news yang masih berlaku berdasarkan tanggal
-        $hitungNews = News::whereRaw('DATE(tanggal_lihat) <= ?', [$today])
-            ->whereRaw('DATE(tanggal_tutup) >= ?', [$today])
+        $hitungNews = News::query()
+            ->whereDate('tanggal_lihat', '<=', $today)
+            ->whereDate('tanggal_tutup', '>=', $today)
             ->get();
 
 
@@ -35,19 +36,19 @@ class DashboardController extends Controller
             ->where('user_id', $user->id);
 
         $tempAbsen = (clone $absenQueryBase)
-            ->whereBetween('created_at', [Carbon::yesterday()->startOfDay(), Carbon::now()])
+            ->whereBetween('created_at', [$now->copy()->subDay()->startOfDay(), $now])
             ->latest()
             ->first();
 
         if ($tempAbsen && $tempAbsen->shift) {
             // Ambil jam_end dari shift, set ke tanggal hari ini, lalu tambah 2 jam
-            $limitPulang = Carbon::today()->setTimeFromTimeString($tempAbsen->shift->jam_end)->addHours(1)->addMinutes(30);
+            $limitPulang = $now->copy()->startOfDay()->setTimeFromTimeString($tempAbsen->shift->jam_end)->addHours(1)->addMinutes(30);
 
             // Cek jika ini shift overnight (absen masuk kemarin, pulang pagi ini)
             // Jika sekarang masih sebelum jam pulang yang ditambah 2 jam, maka batasnya valid
         } else {
             // Default jika data shift tidak ditemukan
-            $limitPulang = Carbon::today()->setTime(12, 0, 0);
+            $limitPulang = $now->copy()->startOfDay()->setTime(12, 0, 0);
         }
 
         // Ambil data absensi yang belum melakukan absensi pulang
@@ -69,7 +70,15 @@ class DashboardController extends Controller
             ? Lokasi::with('client')->firstWhere('client_id', $absenP->kerjasama->client_id)
             : null;
 
-        $lokasiMitra = Lokasi::with('client')->get();
+        $shouldTrackPulang = $absenP &&
+            $absenP->user_id === $user->id &&
+            is_null($absenP->absensi_type_pulang);
+
+        $lokasiMitra = $shouldTrackPulang
+            ? Lokasi::query()
+                ->with('client:id,name')
+                ->get(['id', 'client_id', 'latitude', 'longtitude', 'radius'])
+            : collect();
 
         // Filter absensi untuk mengambil yang memiliki tipe "Tidak Absen Pulang"
         // dan terjadi di bulan berjalan. Jika memungkinkan, filter ini juga bisa dilakukan di query.
@@ -91,7 +100,7 @@ class DashboardController extends Controller
         // Ambil data izin untuk user terkait
         $izin = Izin::with('user')
             ->where('user_id', $user->id)
-            ->where('updated_at', Carbon::now()->format('Y-m-d'))
+            ->whereDate('updated_at', $today)
             ->latest()
             ->first();
         if ($izin) {
@@ -110,12 +119,12 @@ class DashboardController extends Controller
         $cpQuery = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
             ->where('user_id', $user->id);
 
-        $cex = $cpQuery->where('type_check', 'rencana')
+        $cex = (clone $cpQuery)->where('type_check', 'rencana')
             ->latest()
             ->first();
 
         // Ambil CheckPoint dengan tipe 'dikerjakan'
-        $cex2 = $cpQuery->where('type_check', 'dikerjakan')
+        $cex2 = (clone $cpQuery)->where('type_check', 'dikerjakan')
             ->latest()
             ->first();
 
@@ -176,7 +185,7 @@ class DashboardController extends Controller
         );
 
         $luweh1Dino = false;
-        if ($absenP) {
+        if ($absenP && $absenP->shift) {
             if ($absenP->shift->is_overnight) {
                 // Untuk shift lintas hari, hitung dari jam selesai shift kemarin
                 $shiftEndTime = Carbon::createFromFormat('Y-m-d H:i', $absenP->created_at->format('Y-m-d') . ' ' . $absenP->shift->jam_end)
@@ -188,18 +197,18 @@ class DashboardController extends Controller
                     ->diffInHours(Carbon::now()) <= 20;
             }
         }
-        
+
         // data untuk dashboard mitra
         $jumlahKaryawan = User::where('kerjasama_id', $user->kerjasama_id)->count();
         $jumlahAbsensiHariIni = Absensi::whereHas('user', function ($query) use ($user) {
             $query->where('kerjasama_id', $user->kerjasama_id);
-        })->whereDate('created_at', Carbon::today())->count();
+        })->whereDate('created_at', $today)->count();
         $jumlahIzinHariIni = Izin::whereHas('user', function ($query) use ($user) {
             $query->where('kerjasama_id', $user->kerjasama_id);
-        })->whereDate('updated_at', Carbon::today())->count();
+        })->whereDate('updated_at', $today)->count();
         $jumlahLemburHariIni = Lembur::whereHas('user', function ($query) use ($user) {
             $query->where('kerjasama_id', $user->kerjasama_id);
-        })->whereDate('created_at', Carbon::today())->count();
+        })->whereDate('created_at', $today)->count();
         
         if(Auth::user()->jabatan->code_jabatan == "MITRA") {
             return view('mitra_view.index', compact(
@@ -226,6 +235,7 @@ class DashboardController extends Controller
                 'sholatSaatIni',
                 'rillSholat',
                 'luweh1Dino',
+                'shouldTrackPulang',
                 'statusClass',
                 'statusMessage'
             ));

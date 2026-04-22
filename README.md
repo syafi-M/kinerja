@@ -1,66 +1,282 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Kinerja - SAC Changelog
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Dokumen ini berisi riwayat perubahan aplikasi Kinerja - SAC dengan format versioning berbasis **Semantic Versioning (SemVer)**.
 
-## About Laravel
+## Versioning Policy
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- `MAJOR` (`X.0.0`): perubahan besar / breaking changes.
+- `MINOR` (`0.X.0`): fitur baru tanpa breaking changes.
+- `PATCH` (`0.0.X`): perbaikan bug, optimasi kecil, dan polish UI.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Format rilis:
+- `## [vX.Y.Z] - YYYY-MM-DD`
+- Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## [v1.13.2] - 2026-04-22
 
-## Learning Laravel
+### Added
+- Menambahkan route untuk history overtime application dan person-out.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Changed
+- Memperbarui UI/UX pada halaman person in dan person out untuk konsistensi dan responsivitas.
+- Memperbarui hash pada skills-lock.json.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## [v1.13.1] - 2026-04-14
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Fixed
+- Memperbaiki perhitungan persentase absensi.
+- Menyesuaikan link laporan pada beberapa view agar mengarah ke halaman yang tepat.
 
-## Laravel Sponsors
+## [v1.13.0] - 2026-03-26
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### Changed
+- Merapikan relasi model untuk konsistensi akses data.
+- Menyesuaikan query controller agar lebih seragam dengan relasi model terbaru.
 
-### Premium Partners
+## [v1.12.1] - 2026-03-12
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+### Fixed
+- Menyesuaikan kalkulasi persentase absensi dengan mengeluarkan data keterlambatan dari perhitungan tertentu.
 
-## Contributing
+## [v1.12.0] - 2026-03-09
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Added
+- Menambahkan layout Mitra.
+- Menambahkan view Mitra untuk dashboard, absensi, manajemen karyawan, izin, lembur, dan laporan.
+- Menambahkan template laporan Mitra.
+- Menambahkan halaman rekap data untuk Mitra.
+- Menambahkan pencarian dan pengambilan data dinamis pada halaman rekap.
 
-## Code of Conduct
+### Changed
+- Membuat halaman laporan memilih view secara dinamis berdasarkan role user.
+- Menyesuaikan sidebar admin.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## [v1.11.2] - 2026-02-24
 
-## Security Vulnerabilities
+### Changed
+- Merapikan handling tanggal pada method `show`.
+- Menyesuaikan range tanggal untuk perhitungan lembur.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## [v1.11.1] - 2026-02-23
 
-## License
+### Fixed
+- Memperbaiki halaman rekap data yang sempat tidak tampil.
+- Memperbaiki beberapa bagian pada halaman daftar user admin.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## [v1.11.0] - 2026-02-19
+
+### Added
+- Menambahkan layout admin baru.
+- Menambahkan fitur data rekap.
+- Menambahkan modul `personIn`, `personOut`, `performanceCutt`, dan `lepasTraining`.
+- Menambahkan menu baru pada admin.
+- Menambahkan menu baru pada SPV dan Marketing Management.
+- Mengimplementasikan view rekap pada layout admin terbaru.
+
+## [v1.10.1] - 2026-02-06
+
+### Added
+- Menambahkan tabel notifikasi.
+
+### Changed
+- Menyesuaikan perbandingan nilai pada beberapa logic.
+
+### Fixed
+- Memperbaiki bug saat memilih minimum requirement hours.
+
+## [v1.10.0] - 2026-02-05
+
+### Added
+- Menambahkan section lembur pada Leader.
+- Menambahkan section personil keluar pada Leader.
+- Menambahkan halaman `personOut` pada SPV.
+- Menambahkan export Excel dan PDF untuk SPV dan MRT.
+- Menambahkan section rekap data.
+- Menambahkan middleware untuk pengecekan jabatan user yang sedang login.
+- Menambahkan group routing berdasarkan jabatan.
+
+### Changed
+- Mengubah format export PDF dan Excel pada modul lembur.
+- Mengubah konfigurasi shift menjadi satu hari.
+- Mengubah penggunaan `hari` menjadi `shift`.
+
+### Fixed
+- Menyesuaikan logic perform per section.
+
+## [v1.9.3] - 2026-01-30
+
+### Fixed
+- Menghapus logic tampilan client dari informasi user pada halaman index.
+
+## [v1.9.2] - 2026-01-29
+
+### Changed
+- Menyesuaikan logic user tidak aktif.
+- Menyesuaikan konstanta dashboard.
+- Mengoptimalkan pengambilan session pada method index.
+- Menyesuaikan limit data terbaru yang ditampilkan.
+
+### Fixed
+- Memperbaiki pengambilan data user.
+- Memperbaiki logic tampilan client pada halaman index.
+
+## [v1.9.1] - 2026-01-21
+
+### Added
+- Menambahkan field `is_overnight` pada shift.
+- Menambahkan dukungan shift overnight pada model, view create/edit shift, dan logic absensi.
+
+### Changed
+- Menyesuaikan tampilan status absensi.
+- Menyesuaikan logic batas akhir shift untuk supervisor.
+- Memperbarui konstanta `MINUTES_AFTER_SHIFT_END`.
+- Mengubah pesan pulang agar tidak lagi menampilkan indikasi lembur.
+
+### Fixed
+- Memperbaiki status tombol checkout.
+- Menambahkan fungsi tutup modal.
+- Menghapus event listener `beforeunload` yang tidak dipakai pada konfirmasi absensi.
+
+## [v1.9.0] - 2026-01-14
+
+### Added
+- Menambahkan seed counter username.
+- Menambahkan penghapusan client dengan transaction handling.
+- Menambahkan penguatan relasi model terkait client.
+
+### Changed
+- Menyederhanakan logic pembuatan username.
+- Merapikan route dan view Kerjasama.
+- Merapikan beberapa view dan controller untuk konsistensi UI dan fungsi.
+- Mengoptimalkan handling geolocation dan perhitungan jarak.
+- Mengurutkan lokasi terdekat pada pemilihan lokasi.
+
+### Fixed
+- Memperbaiki filter role pada query absensi.
+- Memperbaiki konfigurasi Redis cache.
+- Memperbaiki mismatch collation pada query username.
+- Menyesuaikan threshold jarak pada filtering lokasi.
+- Mengubah judul riwayat absensi agar memakai nama perusahaan statis.
+
+## [v1.8.0] - 2025-12-26
+
+### Added
+- Menambahkan template email notifikasi OTP baru.
+- Menambahkan peningkatan layout untuk email OTP.
+- Mengubah retrieval laporan agar memakai model `UploadImage`.
+
+### Changed
+- Meningkatkan deteksi kualitas gambar kamera.
+- Menyesuaikan handling environment pada kamera.
+- Memperbarui fungsi kamera.
+- Meningkatkan layout detail izin dan laporan.
+
+### Fixed
+- Memperbaiki referensi role user pada logic pengambilan shift.
+
+## [v1.7.0] - 2025-11-27
+
+### Changed
+- Meningkatkan handling upload image.
+- Meningkatkan deteksi kualitas snapshot.
+- Meningkatkan view user dan absensi dengan filter serta layout yang lebih baik.
+
+## [v1.6.0] - 2025-10-16
+
+### Added
+- Menambahkan export PDF pada report.
+- Menambahkan analytic.
+- Menambahkan field `hari` pada manajemen shift.
+- Menambahkan password untuk export PDF.
+
+### Changed
+- Memperbaiki struktur dan formatting beberapa view.
+- Merapikan struktur kode untuk maintainability.
+- Memperbarui workflow `main.yml`.
+- Meningkatkan UI/UX dashboard admin.
+- Memperbarui footer component.
+- Menyesuaikan opacity menu admin.
+- Menyesuaikan logic export ketika data bukan `kerjasama == 1`.
+- Memindahkan teks informasi shift.
+
+### Fixed
+- Memperbaiki filter shift.
+- Menghapus pembuatan `userAbsen` yang tidak dipakai pada `addKaryawanStore`.
+- Mencegah password ikut berubah ketika field password tidak diisi.
+- Menyesuaikan logic export user dan export name card pada `AdminController`.
+
+## [v1.5.0] - 2025-09-30
+
+### Added
+- Menambahkan field alamat pada form tambah karyawan.
+- Menambahkan field alamat pada `UserRequest`, `Employe`, dan `User`.
+- Menambahkan kontrak baru dan halaman pengecekan kontrak untuk direksi.
+- Menambahkan logic edit Excel pada halaman export.
+- Menambahkan export PDF pada report.
+
+### Changed
+- Meningkatkan struktur form create dan upload gambar.
+- Meningkatkan layout form export.
+- Merapikan tombol duplicate pada halaman QR code.
+- Menyesuaikan tampilan list pekerjaan ketika field `ruangan` kosong.
+- Menyesuaikan label dan layout halaman client, divisi, dan shift.
+- Melakukan refactor handling absensi dan komponen UI.
+
+### Fixed
+- Memperbaiki retrieval `jabatan_id` pada `addKaryawanStore`.
+- Memperbaiki `kerjasama_id` pada kontrak baru untuk `userAbsen`.
+- Memperbaiki halaman Excel.
+
+## [v1.4.0] - 2025-08-27
+
+### Added
+- Menambahkan request komplain pada slip gaji.
+- Menambahkan dukungan upload bukti dengan format gambar yang lebih luas.
+- Menambahkan alert kompatibilitas browser pada halaman login.
+- Menambahkan toggle visibilitas password pada login.
+
+### Changed
+- Mengoptimalkan dashboard direksi.
+- Mengoptimalkan CP dan tampilan nilai CP.
+- Memperbarui index slip user.
+- Menyesuaikan kondisi submit form absensi berdasarkan role user.
+- Meningkatkan error handling dan feedback UI pada form absensi.
+- Meningkatkan layout login dan guest layout dengan styling serta animasi.
+- Menyesuaikan placeholder input login.
+
+### Fixed
+- Memperbaiki error absen pulang.
+- Memperbaiki beberapa error pada history.
+- Memperbaiki index laporan.
+- Memperbaiki dashboard leader.
+- Menghapus `dd()` pada halaman user.
+- Memperbaiki name case dan foto absensi.
+- Memperbaiki absensi SPV utama.
+- Memperbaiki input file pada edit bukti.
+- Memperbaiki logic absensi untuk tambahan pengecekan role user.
+- Memperbaiki penempatan logo pada guest layout.
+
+## [v1.3.0] - 2025-08-08
+
+### Added
+- Mengimpor project awal dari cPanel.
+- Menambahkan workflow GitHub Actions `main.yml`.
+
+### Fixed
+- Melakukan beberapa perbaikan awal pada absensi, history, CP, dan dashboard.
+
+## [v1.2.0] - 2024-06-11
+
+### Added
+- Menambahkan sistem CP baru.
+- Menambahkan update QR Code.
+- Menambahkan Rencana Kerja V2.
+
+### Changed
+- Memperbarui tampilan direksi.
+- Menambahkan beberapa backup dan build update dari periode 2024.
+
+## [v1.0.0] - 2023-12-29
+
+### Added
+- Commit awal aplikasi Kinerja - SAC.

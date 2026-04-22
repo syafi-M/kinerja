@@ -20,3 +20,5 @@ yarn-error.log
 node_modules
 vite.config.js
 keybackup.text
+.agents
+skills-lock.json

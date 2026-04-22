@@ -1,144 +1,154 @@
 <x-app-layout>
     <x-main-div>
-        <div class="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
-            <div class="card-container mb-6">
-                <div class="mb-2 flex items-center gap-3">
-                    <a href="{{ route('index.rekap.data.leader') }}"
-                        class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 transition-all hover:bg-white/20">
-                        <i class="ri-arrow-left-line text-xl text-white"></i>
-                    </a>
-                    <div>
-                        <h1 class="text-2xl font-bold text-white sm:text-3xl">Pengajuan Cutting</h1>
-                        <p class="text-sm text-slate-200">Formulir Pengajuan Cutting</p>
+        <div class="w-full max-w-3xl px-3 py-4 mx-auto sm:px-5 lg:px-6">
+            <div class="p-4 mb-4 bg-white border rounded-lg shadow-sm border-white/60 ring-1 ring-slate-900/5">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center min-w-0 gap-3">
+                        <a href="{{ route('index.rekap.data.leader') }}"
+                            class="inline-flex items-center justify-center w-10 h-10 ml-1 transition rounded-lg shrink-0 sm:ml-0 bg-slate-100 text-slate-700 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                            aria-label="Kembali ke rekapitulasi">
+                            <i class="text-xl ri-arrow-left-line"></i>
+                        </a>
+                        <div class="min-w-0">
+                            <p class="text-xs font-medium text-slate-500">Data Rekap</p>
+                            <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
+                                Pengajuan Cutting
+                            </h1>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">
+                                Catat potongan performa personil dengan keterangan lengkap.
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <div class="mt-3">
                     <a href="{{ route('cutting.history') }}"
-                        class="btn btn-sm border-none bg-white/20 text-white hover:bg-white/30">
+                        class="items-center hidden gap-2 px-3 text-sm font-semibold transition bg-white border rounded-lg min-h-10 shrink-0 border-slate-200 text-slate-700 hover:bg-slate-50 sm:inline-flex">
                         <i class="ri-history-line"></i>
-                        Lihat Riwayat
+                        Riwayat
                     </a>
                 </div>
             </div>
 
             <div id="alertBox" class="mb-4"></div>
 
-            <div class="card-white p-6 sm:p-8">
-                <form id="cuttingForm" x-data="cuttingForm()" enctype="multipart/form-data"
-                    data-store-url="{{ route('cutting.store') }}"
-                    data-user-search-url="{{ route('cutting.users.search') }}">
-                    <input type="hidden" id="cutting_id" />
+            <form id="cuttingForm" x-data="cuttingForm()" enctype="multipart/form-data"
+                data-store-url="{{ route('cutting.store') }}"
+                data-user-search-url="{{ route('cutting.users.search') }}" class="space-y-4">
+                <input type="hidden" id="cutting_id" />
 
-                    <div class="mb-6">
-                        <label class="label">
-                            <span class="label-text font-semibold">
-                                Fullname <span class="text-error">*</span>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <label for="user_search" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                        Nama Pegawai <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-2" @click.outside="openSearch = false">
+                        <div class="relative">
+                            <input type="text" id="user_search" x-model="userQuery" @focus="openSearch = true"
+                                placeholder="Ketik minimal 2 huruf nama user..."
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                :class="showUserError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''">
+                            <span class="absolute pointer-events-none right-3 top-3 text-slate-400">
+                                <i class="ri-search-line"></i>
                             </span>
-                        </label>
+                        </div>
 
-                        <div class="space-y-2" @click.outside="openSearch = false">
-                            <div class="relative">
-                                <input type="text" x-model="userQuery" @focus="openSearch = true"
-                                    placeholder="Ketik minimal 2 huruf nama user..."
-                                    class="input input-bordered w-full pr-10"
-                                    :class="showUserError ? 'input-error' : ''">
-                                <span class="pointer-events-none absolute right-3 top-3 text-slate-400">
-                                    <i class="ri-search-line"></i>
+                        <div x-show="selectedUserName" class="px-3 py-2 border rounded-lg border-sky-100 bg-sky-50">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="min-w-0 text-sm truncate text-slate-700">Terpilih:
+                                    <span class="font-semibold" x-text="selectedUserName"></span>
                                 </span>
-                            </div>
-
-                            <div x-show="selectedUserName" class="rounded-lg border border-info/30 bg-info/10 px-3 py-2">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-sm text-slate-700">Terpilih: <span class="font-semibold"
-                                            x-text="selectedUserName"></span></span>
-                                    <button type="button" class="btn btn-ghost btn-xs" @click="clearSelectedUser()">
-                                        Ganti
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div x-show="shouldShowSearchPanel()" x-transition
-                                class="max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-                                <template x-if="isSearching">
-                                    <div class="px-4 py-3 text-sm text-slate-500">Mencari user...</div>
-                                </template>
-                                <template x-if="!isSearching && searchError">
-                                    <div class="px-4 py-3 text-sm text-error" x-text="searchError"></div>
-                                </template>
-                                <template x-if="!isSearching && !searchError && userQuery.trim().length >= 2 && userResults.length === 0">
-                                    <div class="px-4 py-3 text-sm text-slate-500">User tidak ditemukan.</div>
-                                </template>
-                                <template x-for="user in userResults" :key="user.id">
-                                    <button type="button"
-                                        class="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50"
-                                        @click="selectUser(user)">
-                                        <span x-text="user.nama_lengkap"></span>
-                                        <i class="ri-check-line text-info"
-                                            x-show="selectedUserName === user.nama_lengkap"></i>
-                                    </button>
-                                </template>
+                                <button type="button"
+                                    class="inline-flex items-center px-2 text-xs font-semibold rounded-lg min-h-8 text-sky-700 hover:bg-sky-100"
+                                    @click="clearSelectedUser()">
+                                    Ganti
+                                </button>
                             </div>
                         </div>
+
+                        <div x-show="shouldShowSearchPanel()" x-transition
+                            class="overflow-y-auto bg-white border rounded-lg shadow-sm max-h-64 border-slate-200">
+                            <template x-if="isSearching">
+                                <div class="px-4 py-3 text-sm text-slate-500">Mencari user...</div>
+                            </template>
+                            <template x-if="!isSearching && searchError">
+                                <div class="px-4 py-3 text-sm text-red-600" x-text="searchError"></div>
+                            </template>
+                            <template x-if="!isSearching && !searchError && userQuery.trim().length >= 2 && userResults.length === 0">
+                                <div class="px-4 py-3 text-sm text-slate-500">User tidak ditemukan.</div>
+                            </template>
+                            <template x-for="user in userResults" :key="user.id">
+                                <button type="button"
+                                    class="flex items-center justify-between w-full px-4 py-3 text-sm text-left min-h-11 hover:bg-slate-50"
+                                    @click="selectUser(user)">
+                                    <span x-text="user.nama_lengkap"></span>
+                                    <i class="ri-check-line text-sky-600" x-show="selectedUserName === user.nama_lengkap"></i>
+                                </button>
+                            </template>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="mb-6">
-                        <label for="date_cutting" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Tanggal Cutting <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" name="date_cutting" id="date_cutting"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            required>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="date_cutting" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Tanggal Cutting <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="date_cutting" id="date_cutting"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required>
+                        </div>
+
+                        <div>
+                            <label for="type_cutting" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Tipe Cutting <span class="text-red-500">*</span>
+                            </label>
+                            <select name="type_cutting" id="type_cutting" x-model="selectedTypeCutting"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required>
+                                <option value="">Pilih tipe cutting</option>
+                                <option value="Alpha">Alpha</option>
+                                <option value="Kinerja">Kinerja</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div x-show="selectedTypeCutting === 'Lainnya'" x-collapse class="sm:col-span-2">
+                            <label for="type_cutting_manual" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Tipe Cutting Manual <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="type_cutting_manual" id="type_cutting_manual"
+                                x-model="manualType" placeholder="Masukkan tipe cutting manual"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                :required="selectedTypeCutting === 'Lainnya'" :disabled="selectedTypeCutting !== 'Lainnya'">
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="desc" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Keterangan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="desc" id="desc" rows="4" placeholder="Masukkan keterangan cutting"
+                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required></textarea>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="mb-6">
-                        <label for="type_cutting" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Type Cutting <span class="text-red-500">*</span>
-                        </label>
-                        <select name="type_cutting" id="type_cutting"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            x-model="selectedTypeCutting" required>
-                            <option value="">-- Pilih Type Cutting --</option>
-                            <option value="Alpha">Alpha</option>
-                            <option value="Kinerja">Kinerja</option>
-                            <option value="Lainnya">Lainnya</option>
-                        </select>
-                    </div>
+                <div id="formErrors"></div>
 
-                    <div class="mb-6" x-show="selectedTypeCutting === 'Lainnya'" x-transition>
-                        <label for="type_cutting_manual" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Type Cutting Manual <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="type_cutting_manual" id="type_cutting_manual" x-model="manualType"
-                            placeholder="Masukkan type cutting manual"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            :required="selectedTypeCutting === 'Lainnya'">
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="desc" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Keterangan <span class="text-red-500">*</span>
-                        </label>
-                        <textarea name="desc" id="desc" rows="4" placeholder="Masukkan keterangan cutting"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            required></textarea>
-                    </div>
-
-                    <div id="formErrors" class="mb-6"></div>
-
-                    <div class="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row">
+                <div
+                    class="sticky sm:bottom-16 z-20 mx-1 border-t rounded-md border-slate-200 bg-white/95 p-3 shadow-[0_-8px_18px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm">
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <button type="submit" id="btnSave"
-                            class="btn-primary flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold">
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
                             <i class="ri-save-line"></i>
                             <span id="btnSaveText">Simpan Data</span>
                         </button>
                         <button type="button" id="btnReset"
-                            class="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-slate-300 px-6 py-3 font-semibold text-slate-700 transition-all hover:bg-slate-50">
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
                             <i class="ri-refresh-line"></i>
-                            <span>Reset Form</span>
+                            Reset Form
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </x-main-div>
 
@@ -153,7 +163,6 @@
                 isSearching: false,
                 searchError: '',
                 searchTimeout: null,
-
                 selectedTypeCutting: '',
                 manualType: '',
                 showUserError: false,
@@ -203,9 +212,7 @@
                             }
                         })
                         .then(async response => {
-                            if (!response.ok) {
-                                throw new Error('Gagal mencari user');
-                            }
+                            if (!response.ok) throw new Error('Gagal mencari user');
                             return response.json();
                         })
                         .then(result => {
@@ -230,7 +237,6 @@
 
                     this.$watch('userQuery', () => {
                         if (this.selectedUserId && this.userQuery.trim() === this.selectedUserName) return;
-
                         if (this.searchTimeout) clearTimeout(this.searchTimeout);
                         this.searchTimeout = setTimeout(() => this.searchUsers(), 300);
                     });
@@ -278,17 +284,17 @@
                 `);
 
                 setTimeout(() => $('#alertBox').html(''), 4000);
-                $('html, body').animate({
-                    scrollTop: 0
-                }, 300);
+                $('html, body').animate({ scrollTop: 0 }, 300);
             }
 
             function showFormErrors(errors) {
                 const errorList = errors.map(err => `<li>${err}</li>`).join('');
                 $('#formErrors').html(`
-                    <div class="alert alert-error rounded-lg shadow-sm">
-                        <i class="ri-error-warning-line"></i>
-                        <ul class="ml-6 list-disc pl-5">${errorList}</ul>
+                    <div class="px-4 py-3 text-sm border rounded-lg shadow-sm border-rose-200 bg-rose-50 text-rose-700">
+                        <div class="flex items-start gap-2">
+                            <i class="ri-error-warning-line mt-0.5"></i>
+                            <ul class="pl-5 list-disc">${errorList}</ul>
+                        </div>
                     </div>
                 `);
             }
@@ -313,7 +319,7 @@
 
                 if (!alpineData?.selectedUserId) {
                     if (alpineData) alpineData.showUserError = true;
-                    showFormErrors(['Fullname wajib dipilih dari user yang tersedia.']);
+                    showFormErrors(['Nama pegawai wajib dipilih dari user yang tersedia.']);
                     return;
                 }
 
@@ -353,56 +359,4 @@
             });
         });
     </script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: #f1f5f9;
-        }
-
-        .card-container {
-            background: #64748b;
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .card-white {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #1f2937;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #f59e0b;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
-        }
-
-        select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            appearance: none;
-        }
-
-        @media (max-width: 640px) {
-            .card-container {
-                padding: 16px;
-            }
-        }
-    </style>
 </x-app-layout>

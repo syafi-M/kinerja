@@ -317,11 +317,13 @@ Route::middleware(['auth', 'spv-w', 'apdt'])->group(function () {
 Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {
     Route::get('/rekap-data', [DataRekapController::class, 'index'])->name('index.rekap.data.leader');
     Route::post('/rekap/exemption/self', [DataRekapController::class, 'exemptSelf'])->name('rekap.exemption.self');
+    Route::get('/overtime-application/history', [OvertimeApplicationController::class, 'history'])->name('overtime-application.history');
     Route::resource('/overtime-application', OvertimeApplicationController::class);
     Route::get('/api/v1/get-overtime/{id}', [OvertimeApplicationController::class, 'fetchApi'])->name('get-overtime-id');
     Route::patch('/overtime-change-status/{id}', [OvertimeApplicationController::class, 'changeStatus'])->name('overtime.change_status');
     Route::patch('/overtime-change-bulk', [OvertimeApplicationController::class, 'bulkStatus'])->name('overtime-bulk.status');
 
+    Route::get('/person-is-out/history', [PersonOutController::class, 'history'])->name('person-is-out.history');
     Route::resource('/person-is-out', PersonOutController::class);
     Route::get('/api/v1/get-person-is-out/{id}', [PersonOutController::class, 'fetchApi'])->name('person-is-out-id');
     Route::patch('/person-is-out-change-status/{id}', [PersonOutController::class, 'changeStatus'])->name('person-is-out.change_status');

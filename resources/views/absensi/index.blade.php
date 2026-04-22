@@ -734,13 +734,6 @@
     </script>
     <!--Maps-->
     <script defer>
-        function detectDevice() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            if (/android/.test(userAgent)) return 'Android';
-            if (/iphone|ipad|ipod/.test(userAgent)) return 'iPhone';
-            return 'Unknown';
-        }
-
         var loc = @json($lokLok);
         var mitra = @json($penempatan);
         var defaultLocationId = "{{ Auth::user()->kerjasama_id }}";
@@ -751,68 +744,133 @@
 
         let userLocation = null;
         let userMarker = null;
-        const MIN_DISTANCE_FOR_MOVEMENT = 0.01;
-        var deviceType = detectDevice();
-        const latlngLength = deviceType === 'iPhone' ? 18 : 11;
-        // Example usage:
+        const MAX_GPS_ACCURACY_METERS = 100;
+        const GPS_OPTIONS = {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 15000
+        };
+        const canBypassRadius = @json(Auth::user()->jabatan->code_jabatan == 'SPV-W' || Auth::user()->devisi_id == 12);
         var lat = document.getElementById('lat')
         var long = document.getElementById('long')
         var labelMap = $('#labelMap')
         var tutor = $('#tutor')
         var getNewLoc = null;
         var map = L.map('map'); // ini adalah zoom level
+        var absenButton = $('.btnAbsen');
+        var gpsDebug = false;
+
+        function logGpsDebug(label, data = {}) {
+            if (!gpsDebug) {
+                return;
+            }
+
+            console.log(`[GPS DEBUG] ${label}`, data);
+        }
+
+        function setAbsenButton(enabled, text) {
+            logGpsDebug('button state', {
+                enabled,
+                text
+            });
+
+            absenButton
+                .text(text)
+                .prop('disabled', !enabled)
+                .toggleClass('btn-disabled', !enabled)
+                .toggleClass('bg-blue-500 hover:bg-blue-600', enabled)
+                .css('background-color', enabled ? '' : 'rgba(96, 165, 250, 0.5)');
+        }
+
+        function showGeolocationError(error) {
+            const messages = {
+                1: 'Izinkan akses lokasi untuk absen.',
+                2: 'Lokasi belum tersedia. Pastikan GPS aktif.',
+                3: 'Mengambil lokasi terlalu lama. Coba nyalakan GPS lalu refresh.'
+            };
+
+            logGpsDebug('geolocation error', {
+                code: error.code,
+                message: error.message,
+                label: messages[error.code] || 'Unknown error'
+            });
+
+            $('#resolver').text(messages[error.code] || 'Gagal mengambil lokasi. Coba refresh browser.');
+            labelMap.removeClass('hidden');
+            tutor.addClass('hidden');
+            setAbsenButton(false, 'GPS Tidak Tersedia');
+        }
 
         if (navigator.geolocation) {
+            setAbsenButton(false, 'Mengambil GPS...');
+            logGpsDebug('geolocation supported', GPS_OPTIONS);
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
             navigator.geolocation.getCurrentPosition(function(position) {
                 userLocation = [position.coords.latitude, position.coords.longitude];
+                logGpsDebug('initial position', {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    timestamp: position.timestamp
+                });
                 showPosition(position);
-            });
+                setupNearbyLocations(userLocation);
+            }, showGeolocationError, GPS_OPTIONS);
 
             const watchUser = navigator.geolocation.watchPosition(
                 (position) => {
                     const {
                         latitude,
-                        longitude
+                        longitude,
+                        accuracy
                     } = position.coords;
-                    const markerLocation = L.marker(userLocation).getLatLng();
                     labelMap.addClass('hidden');
                     tutor.removeClass('hidden');
 
+                    userLocation = [latitude, longitude];
                     lat.value = latitude;
                     long.value = longitude;
-                    getNewLoc = markerLocation;
+                    getNewLoc = L.latLng([latitude, longitude]);
 
                     var userLatLng = L.latLng([latitude, longitude]);
                     var circleLatLng = L.latLng([$('#lat_mitra').val(), $('#long_mitra').val()]);
                     var distanceFromCenter = userLatLng.distanceTo(circleLatLng); // in meters
-                    var distanceFromBorder = distanceFromCenter - $('#radius_mitra').val();
+                    var distanceFromBorder = distanceFromCenter - parseFloat($('#radius_mitra').val() || radi || 0);
+                    var hasAccurateGps = accuracy <= MAX_GPS_ACCURACY_METERS;
+                    var isInsideRadius = distanceFromBorder <= 1;
+                    logGpsDebug('watch position', {
+                        latitude,
+                        longitude,
+                        accuracy,
+                        maxAccuracy: MAX_GPS_ACCURACY_METERS,
+                        mitraLatitude: $('#lat_mitra').val(),
+                        mitraLongitude: $('#long_mitra').val(),
+                        mitraRadius: $('#radius_mitra').val(),
+                        distanceFromCenter: Number(distanceFromCenter.toFixed(2)),
+                        distanceFromBorder: Number(distanceFromBorder.toFixed(2)),
+                        hasAccurateGps,
+                        isInsideRadius,
+                        canBypassRadius
+                    });
 
-                    if ((@json(Auth::user()->jabatan->code_jabatan) == "SPV-W" || @json(Auth::user()->devisi_id == 12)) && markerLocation.lat
-                        .toString().length <=
-                        latlngLength) {
+                    if (!hasAccurateGps) {
                         $('#form-absen').attr('action', '{{ route('absensi.store') }}');
-                        $('#btnAbsen').text('Absen').prop('disabled', false).removeClass('btn-disabled').addClass(
-                            'bg-blue-500 hover:bg-blue-600').attr('id', 'btnAbsen');
-                        // console.log("iki spv");
+                        setAbsenButton(false, 'GPS Belum Akurat');
+                    } else if (canBypassRadius || isInsideRadius) {
+                        $('#form-absen').attr('action', '{{ route('absensi.store') }}');
+                        setAbsenButton(true, 'Absen');
                     } else {
-                        if (markerLocation.lat.toString().length > latlngLength || distanceFromBorder.toFixed() > 1) {
-                            $('#form-absen').attr('action', '#');
-                            $('#btnAbsen').text('Diluar Radius').prop('disabled', true).addClass('btn-disabled').css(
-                                'background-color', 'rgba(96, 165, 250, 0.5)').attr('id', '');
-                            // console.log("iki dudu spv");
-                        } else {
-                            $('#form-absen').attr('action', '{{ route('absensi.store') }}');
-                            $('#btnAbsen').text('Absen').prop('disabled', false).removeClass('btn-disabled').addClass(
-                                'bg-blue-500 hover:bg-blue-600').attr('id', 'btnAbsen');
-                            // console.log("iki spv");
-                        }
+                        $('#form-absen').attr('action', '#');
+                        setAbsenButton(false, `Diluar Radius ${Math.ceil(distanceFromBorder)}m`);
                     }
 
-                    $('#latlongLabel').html(`[${latitude}, ${longitude}, ${distanceFromBorder.toFixed(2)}]`);
+                    $('#latlongLabel').html(
+                        `[${latitude}, ${longitude}, jarak batas: ${distanceFromBorder.toFixed(2)}m, akurasi: ${accuracy.toFixed(0)}m]`
+                    );
 
                     // Check if marker exists
                     if (!userMarker) {
@@ -826,13 +884,19 @@
                 },
                 (error) => {
                     console.error("Geolocation error:", error);
-                    // alert("Unable to retrieve location updates.");
-                }, {
-                    enableHighAccuracy: true,
-                    maximumAge: 0,
-                }
+                    showGeolocationError(error);
+                },
+                GPS_OPTIONS
             );
-            $('#btnAbsen').click(function() {
+            $(document).on('click', '.btnAbsen', function() {
+                logGpsDebug('absen clicked', {
+                    latUser: lat.value,
+                    longUser: long.value,
+                    latMitra: $('#lat_mitra').val(),
+                    longMitra: $('#long_mitra').val(),
+                    radiusMitra: $('#radius_mitra').val(),
+                    formAction: $('#form-absen').attr('action')
+                });
                 navigator.geolocation.clearWatch(watchUser);
                 $(this).prop('disabled', true)
                     .text('Tunggu...')
@@ -840,6 +904,7 @@
                     .css('background-color', 'rgba(96, 165, 250, 0.5)');
             });
         } else {
+            logGpsDebug('geolocation unsupported');
             alert('Geo Location Not Supported By This Browser !!');
             labelMap.removeClass('hidden');
         }
@@ -847,6 +912,14 @@
         function showPosition(position) {
             var latitude = position.coords.latitude; // Ganti dengan latitude Anda
             var longitude = position.coords.longitude; // Ganti dengan longitude Anda
+            logGpsDebug('render map', {
+                latitude,
+                longitude,
+                mitraLatitude: $('#lat_mitra').val(),
+                mitraLongitude: $('#long_mitra').val(),
+                radius: radi,
+                client
+            });
 
             map.setView([latitude, longitude], 14); // ini adalah zoom level
 
@@ -870,6 +943,13 @@
             locations.forEach(function(location) {
                 var distance = getDistanceFromLatLng(userLatLng[0], userLatLng[1], location.latitude, location
                     .longtitude);
+                logGpsDebug('location distance', {
+                    locationId: location.id,
+                    client: location.client?.name,
+                    distance: Number(distance.toFixed(2)),
+                    radius: location.radius,
+                    threshold
+                });
                 // Add location to closestLocations array if it's within the threshold
                 // console.log(location.client.name + ' distance: ' + distance + ' meters' + 'with threshold: ' + threshold);
                 if (distance <= (parseInt(location.radius, 10) + threshold)) {
@@ -884,23 +964,26 @@
 
             return closestLocations;
         }
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                var userLatLng = [position.coords.latitude, position.coords.longitude];
+        function setupNearbyLocations(userLatLng) {
+            var threshold = 50;
 
-                // Set a distance threshold (e.g., 5000 meters = 5 km)
-                var threshold = 50; // 5 km
+            // Find the closest locations within the threshold distance
+            var closestLocations = findClosestLocation(userLatLng, loc, threshold);
+            logGpsDebug('closest locations', closestLocations.map(location => ({
+                id: location.id,
+                clientId: location.client_id,
+                client: location.client?.name,
+                distance: Number(location.distance.toFixed(2)),
+                radius: location.radius
+            })));
 
-                // Find the closest locations within the threshold distance
-                var closestLocations = findClosestLocation(userLatLng, loc, threshold);
+            // Get the select element
+            var selectMitra = $('.selectMitra');
 
-                // Get the select element
-                var selectMitra = $('.selectMitra');
+            // Clear existing options
+            selectMitra.html('');
 
-                // Clear existing options
-                selectMitra.html('');
-
-                if (@json(Auth::user()->id) == 10) {
+            if (@json(Auth::user()->id) == 10) {
                     // Add the default location to the select dropdown
                     loc.forEach(function(location) {
                         if (location.id == defaultLocationId) {
@@ -924,46 +1007,42 @@
                             option.value = selectedMit.id;
                             selectMitra.append(option);
 
-                            selectMitra.change(function() {
-                                // Get the selected client ID from the dropdown
-                                var selectedClientId = $(this).val();
-
-                                var selectedMit = mitra.find(mit => mit.client_id == location
-                                    .client_id);
-                                // console.log('iki miti: ', selectedMit);
-                                option.textContent = selectedMit.client.name;
-                                option.value = selectedMit.id;
-
-
-                                // Find the location corresponding to the selected client ID
-                                var selectedLocation = loc.find(location => location.client_id ==
-                                    selectedClientId);
-
-                                if (selectedLocation) {
-                                    // Create and open the popup at the selected location
-                                    $('#lat_mitra').val(selectedLocation.latitude);
-                                    $('#long_mitra').val(selectedLocation.longtitude);
-                                    $('#radius_mitra').val(selectedLocation.radius);
-
-                                    L.popup()
-                                        .setLatLng([selectedLocation.latitude, selectedLocation
-                                            .longtitude
-                                        ])
-                                        .setContent("Lokasi absen: <br>" + selectedLocation.client
-                                            .name) // Correct concatenation
-                                        .openOn(map);
-                                } else {
-                                    console.log("Location not found for selected client ID:",
-                                        selectedClientId);
-                                }
-                            });
-
                             L.circle([location.latitude, location.longtitude], {
                                 color: 'crimson',
                                 fillColor: '#f09',
                                 fillOpacity: 0.5,
                                 radius: location.radius
                             }).addTo(map);
+                        }
+                    });
+                    selectMitra.off('change.gpsLocation').on('change.gpsLocation', function() {
+                        var selectedKerjasamaId = Number($(this).val());
+                        var selectedMit = mitra.find(mit => Number(mit.id) === selectedKerjasamaId);
+
+                        if (!selectedMit) {
+                            console.log("Mitra not found for kerjasama ID:", selectedKerjasamaId);
+                            return;
+                        }
+
+                        var selectedLocation = loc.find(location => Number(location.client_id) === Number(
+                            selectedMit.client_id));
+                        logGpsDebug('mitra selected', {
+                            selectedKerjasamaId,
+                            selectedClientId: selectedMit.client_id,
+                            selectedLocation
+                        });
+
+                        if (selectedLocation) {
+                            $('#lat_mitra').val(selectedLocation.latitude);
+                            $('#long_mitra').val(selectedLocation.longtitude);
+                            $('#radius_mitra').val(selectedLocation.radius);
+
+                            L.popup()
+                                .setLatLng([selectedLocation.latitude, selectedLocation.longtitude])
+                                .setContent("Lokasi absen: <br>" + selectedLocation.client.name)
+                                .openOn(map);
+                        } else {
+                            console.log("Location not found for client ID:", selectedMit.client_id);
                         }
                     });
                 } else if (@json(Auth::user()->kerjasama->client_id) == 28) {
@@ -1030,10 +1109,7 @@
                     } else {
                         console.log("No locations found within the threshold.");
                     }
-                }
-            });
-        } else {
-            alert("Geolocation is not supported by this browser.");
+            }
         }
     </script>
     <!--Waktu-->
