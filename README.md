@@ -12,6 +12,22 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v1.13.3] - 2026-04-23
+
+### Added
+- Menambahkan peta mini pada modal absen pulang untuk menampilkan lokasi absen masuk, lokasi pulang saat ini, radius lokasi kerja, dan garis jarak antar titik.
+- Menambahkan informasi jarak dari lokasi absen masuk ke posisi pulang saat ini pada modal absen pulang.
+
+### Changed
+- Mengoptimalkan tracking GPS pulang agar koordinat yang dikirim selalu memakai posisi valid terbaru.
+- Membatasi data lokasi radius pulang berdasarkan client absensi terkait agar pengecekan radius lebih tepat.
+- Membuat tampilan modal absen pulang lebih compact dan informatif.
+- Memuat Leaflet hanya saat user berada pada kondisi yang membutuhkan tracking pulang.
+
+### Fixed
+- Memperbaiki input `lat_user` dan `long_user` yang dapat terkirim kosong saat absen pulang.
+- Menambahkan validasi backend untuk koordinat pulang dan memastikan `plg_lat` serta `plg_long` tersimpan pada jalur update pulang.
+
 ## [v1.13.2] - 2026-04-22
 
 ### Added

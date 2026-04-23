@@ -17,17 +17,62 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Leaflet --}}
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    @if ($shouldTrackPulang)
+        {{-- Leaflet --}}
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    @endif
 
 
     <style>
         #map {
             height: 180px;
+        }
+
+        #checkoutMap {
+            height: 170px;
+            min-height: 170px;
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #e5e7eb;
+        }
+
+        .checkout-marker {
+            align-items: center;
+            border: 2px solid #ffffff;
+            border-radius: 9999px;
+            box-shadow: 0 5px 14px rgb(15 23 42 / 0.28);
+            color: #ffffff;
+            display: flex;
+            font-size: 12px;
+            height: 24px;
+            justify-content: center;
+            width: 24px;
+        }
+
+        .checkout-marker-start {
+            background: #2563eb;
+        }
+
+        .checkout-marker-current {
+            background: #16a34a;
+        }
+
+        .checkout-distance-label {
+            background: #0f172a;
+            border: 1px solid rgb(255 255 255 / 0.72);
+            border-radius: 9999px;
+            box-shadow: 0 6px 18px rgb(15 23 42 / 0.28);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 5px 8px;
+            white-space: nowrap;
         }
 
         @media (min-width: 640px) {
@@ -591,37 +636,70 @@
                                         </button>
                                     </div>
                                     <div
-                                        class="fixed inset-0 hidden transition-all duration-300 ease-in-out modalp bg-slate-500/10 backdrop-blur-sm">
-                                        <div class="p-5 mx-2 rounded-md shadow bg-slate-200 w-fit">
-                                            <div class="flex justify-end mb-3">
-                                                <button class="scale-90 btn btn-error close">&times;</button>
+                                        class="fixed inset-0 z-[9000] hidden transition-all duration-300 ease-in-out modalp bg-slate-950/35 backdrop-blur-sm">
+                                        <div class="w-[min(94vw,420px)] max-h-[88vh] overflow-y-auto mx-2 rounded-lg shadow-2xl bg-slate-50 ring-1 ring-white/80">
+                                            <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-3 py-2.5">
+                                                <div>
+                                                    <p class="text-[10px] font-bold uppercase tracking-wide text-yellow-700">Konfirmasi Pulang</p>
+                                                    <p class="text-base font-black leading-tight text-slate-900">Pastikan titik lokasi benar</p>
+                                                </div>
+                                                <button type="button"
+                                                    class="flex items-center justify-center w-8 h-8 text-lg font-bold text-red-600 transition rounded-full shadow-sm close shrink-0 bg-red-50 hover:bg-red-100">&times;</button>
                                             </div>
-                                            <form action="{{ route('data.update', $absenP->id) }}" method="POST"
+                                            <form id="checkoutForm" action="{{ route('data.update', $absenP->id) }}" method="POST"
                                                 class="flex items-center justify-center">
                                                 @csrf
                                                 @method('PUT')
-                                                <div class="flex flex-col justify-center">
-                                                    <div class="flex flex-col gap-2">
-                                                        <p class="text-lg font-semibold text-center">Apakah Anda Yakin
-                                                            Ingin Pulang Sekarang?</p>
+                                                <div class="flex flex-col justify-center w-full p-3">
+                                                    <div class="rounded-md border border-yellow-200 bg-yellow-50 px-3 py-1.5 text-center">
+                                                        <p class="text-xs font-bold text-slate-900">Apakah Anda yakin ingin pulang sekarang?</p>
                                                         @if (Auth::user()->name != 'DIREKSI' && Auth::user()->jabatan_id != 35)
-                                                            <span id="labelWaktu" class="text-center"></span>
+                                                            <span id="labelWaktu" class="block text-[11px] font-semibold text-slate-600"></span>
                                                             <span class="flex justify-center">
                                                                 <span id="jam2"
-                                                                    class="text-sm font-semibold underline badge badge-info text-slate-800"></span>
+                                                                    class="mt-0.5 text-[11px] font-semibold underline badge badge-info text-slate-800"></span>
                                                             </span>
                                                         @endif
                                                     </div>
+                                                    <div class="mt-3 space-y-1.5">
+                                                        <div class="overflow-hidden rounded-md border border-slate-200 bg-white p-1.5 shadow-sm">
+                                                            <div id="checkoutMap"></div>
+                                                        </div>
+                                                        <div class="grid grid-cols-4 justify-evenly items-center gap-1.5 text-[10px] font-semibold text-slate-700">
+                                                            <span class="flex items-center justify-center gap-1">
+                                                                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                                                                Masuk
+                                                            </span>
+                                                            <span class="flex items-center justify-center gap-1">
+                                                                <span class="w-2.5 h-2.5 rounded-full bg-green-600"></span>
+                                                                Sekarang
+                                                            </span>
+                                                            <span class="flex items-center justify-center gap-1">
+                                                                <span class="w-2.5 h-2.5 rounded-full border border-amber-500 bg-amber-200"></span>
+                                                                Radius
+                                                            </span>
+                                                            <span class="flex items-center justify-center gap-1">
+                                                                <span class="h-0.5 w-4 rounded-full bg-slate-800"></span>
+                                                                Jarak
+                                                            </span>
+                                                        </div>
+                                                        <div id="checkoutDistanceInfo"
+                                                            class="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-center text-[11px] font-bold text-slate-700 shadow-sm">
+                                                            Menunggu lokasi sekarang...
+                                                        </div>
+                                                    </div>
                                                     <div class="flex items-center justify-center">
-                                                        <button type="submit"
-                                                            class="flex items-center justify-center px-3 py-1 mt-5 mr-0 text-xl text-white uppercase transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all sm:mr-2">
-                                                            <i class="font-sans text-3xl ri-run-line"></i>
+                                                        <button id="checkoutSubmitBtn" type="submit"
+                                                            class="flex items-center justify-center w-full gap-2 px-3 py-2 mt-3 text-base text-white uppercase transition duration-100 ease-out bg-yellow-600 rounded-md shadow-md hover:bg-yellow-700 hover:shadow-none all">
+                                                            <i class="font-sans text-2xl ri-run-line"></i>
                                                             <span class="font-bold">Pulang Sekarang</span>
                                                         </button>
-                                                        <input name="lat_user" value="" class="hidden lat" />
-                                                        <input name="long_user" value="" class="hidden long" />
+                                                        <input name="lat_user" value="" class="hidden lat checkout-lat" />
+                                                        <input name="long_user" value="" class="hidden long checkout-long" />
                                                         <div id="map" class="hidden"></div>
                                                     </div>
+                                                    <span id="checkoutGpsStatus"
+                                                        class="hidden mt-1.5 text-xs font-semibold text-center text-red-600"></span>
                                                 </div>
                                             </form>
                                         </div>
@@ -713,29 +791,52 @@
             const elements = {
                 lat: $('.lat'),
                 long: $('.long'),
-                labelMap: $('#labelMap'),
+                labelMap: $('#labelMap, #checkoutGpsStatus'),
                 tutor: $('#tutor'),
                 pulangBtn: $('#modalPulangBtn'),
-                pulangBtnText: $('#modalPulangBtn span')
+                pulangBtnText: $('#modalPulangBtn span'),
+                checkoutForm: $('#checkoutForm'),
+                checkoutSubmitBtn: $('#checkoutSubmitBtn'),
+                checkoutLat: $('#checkoutForm input[name="lat_user"]'),
+                checkoutLong: $('#checkoutForm input[name="long_user"]'),
+                checkoutMap: $('#checkoutMap'),
+                checkoutDistanceInfo: $('#checkoutDistanceInfo')
             };
 
             // Get location data from server
             const lokasiMitra = {!! json_encode($lokasiMitra) !!};
             const userCoopId = @json(Auth::user()->kerjasama_id);
+            const userName = @json(Auth::user()->name);
+            const initialAttendancePosition = {
+                lat: parseFloat(@json($absenP?->msk_lat)),
+                lng: parseFloat(@json($absenP?->msk_long))
+            };
+            const canSkipRadius = Number(userCoopId) === 1 || userName === 'DIREKSI';
 
             // pre calculated loc
             const processedLocations = lokasiMitra.map(loc => ({
-                lat: loc.latitude,
-                lng: loc.longtitude,
-                radius: parseFloat(loc.radius),
-                center: L.latLng(loc.latitude, loc.longtitude)
-            }));
+                lat: parseFloat(loc.latitude),
+                lng: parseFloat(loc.longtitude),
+                radius: parseFloat(loc.radius)
+            })).filter(loc => !Number.isNaN(loc.lat) && !Number.isNaN(loc.lng) && !Number.isNaN(loc.radius));
 
             let watchId = null;
             let lastPosition = null;
+            let lastValidPosition = null;
             let positionCheckThrottle = null;
+            let checkoutMap = null;
+            let startMarker = null;
+            let currentMarker = null;
+            let distanceLine = null;
+            let distanceLabel = null;
+            let radiusLayers = [];
             const THROTTLE_DELAY = 1000;
             const MAX_GPS_ACCURACY_METERS = 100;
+            const MAX_VALID_POSITION_AGE_MS = 15000;
+            const hasInitialAttendancePosition = hasValidCoordinates(
+                initialAttendancePosition.lat,
+                initialAttendancePosition.lng
+            );
 
             // Check if geolocation is supported
             if (!navigator.geolocation) {
@@ -757,6 +858,25 @@
                 handleGeolocationError,
                 watchOptions
             );
+
+            elements.pulangBtn.on('click', function() {
+                setTimeout(function() {
+                    initializeCheckoutMap();
+                    refreshCheckoutMap();
+                }, 150);
+            });
+
+            elements.checkoutForm.on('submit', function(event) {
+                if (lastValidPosition && Date.now() - lastValidPosition.timestamp <= MAX_VALID_POSITION_AGE_MS) {
+                    setCoordinateInputs(lastValidPosition.lat, lastValidPosition.lng);
+                    return true;
+                }
+
+                event.preventDefault();
+                requestCheckoutPosition();
+
+                return false;
+            });
 
             $(window).on('beforeunload', function() {
                 if (watchId !== null) {
@@ -783,8 +903,8 @@
                 } = position.coords;
 
                 if (accuracy > MAX_GPS_ACCURACY_METERS) {
-                    elements.lat.val(latitude);
-                    elements.long.val(longitude);
+                    setCoordinateInputs(latitude, longitude);
+                    updateCurrentMarker(latitude, longitude, accuracy);
                     elements.tutor.removeClass('hidden');
                     elements.labelMap
                         .text(`GPS belum akurat (${Math.round(accuracy)}m). Tunggu beberapa detik.`)
@@ -812,14 +932,19 @@
                     lng: longitude
                 };
 
-                // Update form fields
-                elements.lat.val(latitude);
-                elements.long.val(longitude);
+                setCoordinateInputs(latitude, longitude);
+                updateCurrentMarker(latitude, longitude, accuracy);
                 elements.tutor.removeClass('hidden');
 
                 // Handle different coop types
-                if (userCoopId === 1) {
+                if (canSkipRadius) {
                     // For coop 1, always enable the button without radius check
+                    lastValidPosition = {
+                        lat: latitude,
+                        lng: longitude,
+                        accuracy,
+                        timestamp: Date.now()
+                    };
                     updateButtonState(true, 'Pulang');
                 } else {
                     // For other coops, check if user is within any location's radius
@@ -845,8 +970,18 @@
 
             // Optimized radius checking
             function checkLocationRadius(userLat, userLng) {
-                let withinAnyRadius = false;
+                const withinAnyRadius = isWithinAnyRadius(userLat, userLng);
 
+                lastValidPosition = withinAnyRadius ? {
+                    lat: userLat,
+                    lng: userLng,
+                    timestamp: Date.now()
+                } : null;
+
+                updateButtonState(withinAnyRadius, withinAnyRadius ? 'Pulang' : 'Diluar Radius!');
+            }
+
+            function isWithinAnyRadius(userLat, userLng) {
                 // Use our pre-processed locations for faster checks
                 for (const location of processedLocations) {
                     const distance = calculateDistance(
@@ -855,12 +990,240 @@
                     );
 
                     if (distance <= location.radius) {
-                        withinAnyRadius = true;
-                        break; // Exit early if we find a match
+                        return true;
                     }
                 }
 
-                updateButtonState(withinAnyRadius, withinAnyRadius ? 'Pulang' : 'Diluar Radius!');
+                return false;
+            }
+
+            function hasValidCoordinates(latitude, longitude) {
+                return latitude !== '' &&
+                    longitude !== '' &&
+                    !Number.isNaN(parseFloat(latitude)) &&
+                    !Number.isNaN(parseFloat(longitude));
+            }
+
+            function setCoordinateInputs(latitude, longitude) {
+                elements.lat.val(latitude);
+                elements.long.val(longitude);
+            }
+
+            function initializeCheckoutMap() {
+                if (checkoutMap || !elements.checkoutMap.length || typeof L === 'undefined') {
+                    return;
+                }
+
+                const fallbackCenter = hasInitialAttendancePosition ?
+                    [initialAttendancePosition.lat, initialAttendancePosition.lng] :
+                    (processedLocations[0] ? [processedLocations[0].lat, processedLocations[0].lng] : [-7.868, 111.462]);
+
+                checkoutMap = L.map('checkoutMap', {
+                    attributionControl: false,
+                    zoomControl: false,
+                    dragging: true,
+                    scrollWheelZoom: false,
+                    tap: true
+                }).setView(fallbackCenter, 16);
+
+                L.control.zoom({
+                    position: 'bottomright'
+                }).addTo(checkoutMap);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(checkoutMap);
+
+                if (hasInitialAttendancePosition) {
+                    startMarker = L.marker([initialAttendancePosition.lat, initialAttendancePosition.lng], {
+                        icon: createCheckoutIcon('ri-login-circle-line', 'checkout-marker-start')
+                    }).addTo(checkoutMap).bindPopup('Lokasi Absen Masuk');
+                }
+
+                radiusLayers = processedLocations.map(location => L.circle([location.lat, location.lng], {
+                    color: '#d97706',
+                    fillColor: '#fbbf24',
+                    fillOpacity: 0.16,
+                    opacity: 0.7,
+                    radius: location.radius,
+                    weight: 2
+                }).addTo(checkoutMap));
+            }
+
+            function createCheckoutIcon(iconClass, markerClass) {
+                return L.divIcon({
+                    className: '',
+                    html: `<span class="checkout-marker ${markerClass}"><i class="${iconClass}"></i></span>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                    popupAnchor: [0, -14]
+                });
+            }
+
+            function updateCurrentMarker(latitude, longitude, accuracy) {
+                initializeCheckoutMap();
+
+                if (!checkoutMap || !hasValidCoordinates(latitude, longitude)) {
+                    return;
+                }
+
+                const latLng = [parseFloat(latitude), parseFloat(longitude)];
+
+                if (!currentMarker) {
+                    currentMarker = L.marker(latLng, {
+                        icon: createCheckoutIcon('ri-map-pin-user-line', 'checkout-marker-current')
+                    }).addTo(checkoutMap).bindPopup('Lokasi Sekarang');
+                } else {
+                    currentMarker.setLatLng(latLng);
+                }
+
+                currentMarker.bindPopup(`Lokasi Sekarang${accuracy ? ` (${Math.round(accuracy)}m)` : ''}`);
+                updateDistanceLine(latLng);
+                refreshCheckoutMap();
+            }
+
+            function updateDistanceLine(currentLatLng) {
+                if (!checkoutMap || !hasInitialAttendancePosition) {
+                    elements.checkoutDistanceInfo.text('Jarak belum tersedia karena titik absen masuk tidak ditemukan.');
+                    return;
+                }
+
+                const startLatLng = [initialAttendancePosition.lat, initialAttendancePosition.lng];
+                const distance = calculateDistance(
+                    initialAttendancePosition.lat,
+                    initialAttendancePosition.lng,
+                    currentLatLng[0],
+                    currentLatLng[1]
+                );
+                const distanceText = formatDistance(distance);
+                const midpoint = [
+                    (initialAttendancePosition.lat + currentLatLng[0]) / 2,
+                    (initialAttendancePosition.lng + currentLatLng[1]) / 2
+                ];
+
+                if (!distanceLine) {
+                    distanceLine = L.polyline([startLatLng, currentLatLng], {
+                        color: '#0f172a',
+                        dashArray: '7 7',
+                        opacity: 0.9,
+                        weight: 3
+                    }).addTo(checkoutMap);
+                } else {
+                    distanceLine.setLatLngs([startLatLng, currentLatLng]);
+                }
+
+                if (!distanceLabel) {
+                    distanceLabel = L.marker(midpoint, {
+                        interactive: false,
+                        icon: createDistanceIcon(distanceText)
+                    }).addTo(checkoutMap);
+                } else {
+                    distanceLabel.setLatLng(midpoint);
+                    distanceLabel.setIcon(createDistanceIcon(distanceText));
+                }
+
+                elements.checkoutDistanceInfo.text(`Jarak dari lokasi absen masuk ke posisi sekarang: ${distanceText}`);
+            }
+
+            function createDistanceIcon(text) {
+                return L.divIcon({
+                    className: '',
+                    html: `<span class="checkout-distance-label">${text}</span>`,
+                    iconSize: [1, 1],
+                    iconAnchor: [0, 0]
+                });
+            }
+
+            function formatDistance(distance) {
+                if (distance >= 1000) {
+                    return `${(distance / 1000).toFixed(2)} km`;
+                }
+
+                return `${Math.round(distance)} m`;
+            }
+
+            function refreshCheckoutMap() {
+                if (!checkoutMap) {
+                    return;
+                }
+
+                const bounds = [];
+
+                if (startMarker) {
+                    bounds.push(startMarker.getLatLng());
+                }
+
+                if (currentMarker) {
+                    bounds.push(currentMarker.getLatLng());
+                }
+
+                if (distanceLine) {
+                    bounds.push(distanceLine.getBounds().getNorthEast());
+                    bounds.push(distanceLine.getBounds().getSouthWest());
+                }
+
+                radiusLayers.forEach(function(layer) {
+                    bounds.push(layer.getBounds().getNorthEast());
+                    bounds.push(layer.getBounds().getSouthWest());
+                });
+
+                checkoutMap.invalidateSize();
+
+                if (bounds.length > 1) {
+                    checkoutMap.fitBounds(bounds, {
+                        padding: [22, 22],
+                        maxZoom: 17
+                    });
+                } else if (bounds.length === 1) {
+                    checkoutMap.setView(bounds[0], 16);
+                }
+            }
+
+            function requestCheckoutPosition() {
+                elements.labelMap.text('Mengambil lokasi terbaru sebelum absen pulang...').removeClass('hidden');
+                elements.checkoutSubmitBtn.prop('disabled', true).addClass('btn-disabled');
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const {
+                            latitude,
+                            longitude,
+                            accuracy
+                        } = position.coords;
+
+                        setCoordinateInputs(latitude, longitude);
+                        updateCurrentMarker(latitude, longitude, accuracy);
+
+                        if (accuracy > MAX_GPS_ACCURACY_METERS) {
+                            elements.labelMap
+                                .text(`GPS belum akurat (${Math.round(accuracy)}m). Tunggu beberapa detik lalu coba lagi.`)
+                                .removeClass('hidden');
+                            elements.checkoutSubmitBtn.prop('disabled', false).removeClass('btn-disabled');
+                            return;
+                        }
+
+                        if (!canSkipRadius && !isWithinAnyRadius(latitude, longitude)) {
+                            elements.labelMap.text('Lokasi Anda masih di luar radius.').removeClass('hidden');
+                            elements.checkoutSubmitBtn.prop('disabled', false).removeClass('btn-disabled');
+                            updateButtonState(false, 'Diluar Radius!');
+                            return;
+                        }
+
+                        lastValidPosition = {
+                            lat: latitude,
+                            lng: longitude,
+                            accuracy,
+                            timestamp: Date.now()
+                        };
+
+                        elements.checkoutForm[0].submit();
+                    },
+                    function(error) {
+                        handleGeolocationError(error);
+                        elements.checkoutSubmitBtn.prop('disabled', false).removeClass('btn-disabled');
+                    },
+                    watchOptions
+                );
             }
 
             function updateButtonState(isEnabled, text) {

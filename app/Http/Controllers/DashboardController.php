@@ -65,18 +65,15 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
-        // Jika absensiP ada, ambil lokasi berdasarkan client_id dari kerjasama
-        $lok = ($absenP && $absenP->kerjasama)
-            ? Lokasi::with('client')->firstWhere('client_id', $absenP->kerjasama->client_id)
-            : null;
-
         $shouldTrackPulang = $absenP &&
             $absenP->user_id === $user->id &&
             is_null($absenP->absensi_type_pulang);
 
-        $lokasiMitra = $shouldTrackPulang
+        $clientIdPulang = $absenP?->kerjasama?->client_id;
+
+        $lokasiMitra = $shouldTrackPulang && $clientIdPulang
             ? Lokasi::query()
-                ->with('client:id,name')
+                ->where('client_id', $clientIdPulang)
                 ->get(['id', 'client_id', 'latitude', 'longtitude', 'radius'])
             : collect();
 
@@ -229,7 +226,6 @@ class DashboardController extends Controller
                 'cex',
                 'cex2',
                 'totcex',
-                'lok',
                 'lokasiMitra',
                 'warn',
                 'sholatSaatIni',

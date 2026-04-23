@@ -624,6 +624,24 @@ class AbsensiController extends Controller
     public function updatePulang(Request $request, $id)
     {
         $absensi = Absensi::find($id);
+
+        if (!$absensi) {
+            toastr()->error('Gagal Absen Pulang !! Data absensi tidak ditemukan.', 'error');
+
+            return redirect()->back();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'lat_user' => 'required|numeric|between:-90,90',
+            'long_user' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            toastr()->error('Gagal Absen Pulang !! Lokasi GPS tidak valid.', 'error');
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         $waktuMasuk = Carbon::parse($absensi->absensi_type_masuk);
 
         $selisihWaktu = $waktuMasuk->diffInMinutes(Carbon::now());
@@ -645,7 +663,12 @@ class AbsensiController extends Controller
         $longUser = $request->long_user;
 
         $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
-        // dd($harLok);
+        if (!$harLok) {
+            toastr()->error('Gagal Absen Pulang !! Lokasi mitra belum tersedia.', 'error');
+
+            return redirect()->back();
+        }
+
         $latMitra = $harLok->latitude;
         $longMitra = $harLok->longtitude;
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
@@ -704,6 +727,8 @@ class AbsensiController extends Controller
                 }
 
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
 
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
@@ -806,6 +831,8 @@ class AbsensiController extends Controller
                 }
 
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
 
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'success');
@@ -838,6 +865,8 @@ class AbsensiController extends Controller
                 }
 
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
 
                 toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
