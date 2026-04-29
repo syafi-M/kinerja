@@ -66,7 +66,7 @@ class DashboardController extends Controller
             ->first();
 
         $shouldTrackPulang = $absenP &&
-            $absenP->user_id === $user->id &&
+            $absenP->user_id == $user->id &&
             is_null($absenP->absensi_type_pulang);
 
         $clientIdPulang = $absenP?->kerjasama?->client_id;

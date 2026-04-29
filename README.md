@@ -12,6 +12,29 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v1.13.4] - 2026-04-29
+
+### Added
+- Menambahkan toggle tema Mitra dengan mode `System`, `Light`, dan `Dark` yang tersimpan di `localStorage`.
+- Menambahkan transisi pergantian tema khusus layout Mitra dengan overlay animasi yang lebih halus.
+- Menambahkan styling scrollbar baru pada area Mitra untuk tabel, sidebar, dan halaman utama.
+- Menambahkan helper responsive image pada layout Mitra agar thumbnail hanya dimuat untuk viewport yang aktif.
+
+### Changed
+- Merapikan dan menyeragamkan UI/UX seluruh modul `mitra_view` agar lebih profesional, clean, dan konsisten pada light/dark mode.
+- Meningkatkan responsivitas halaman Mitra, termasuk card mode mobile untuk modul data utama dan polish sidebar, pagination, serta spacing layar kecil.
+- Memoles interaksi picker tema di desktop menjadi popover klik dengan tampilan yang lebih refined.
+- Mengoptimalkan halaman laporan, kehadiran, karyawan, dan lembur dengan lazy loading thumbnail, decoding async, serta pengurangan beban render untuk daftar panjang.
+- Menyederhanakan efek visual pada layout Mitra agar biaya render lebih ringan tanpa mengorbankan kualitas tampilan.
+
+### Fixed
+- Memperbaiki animasi overlay pergantian tema yang sempat tidak muncul atau terasa bertabrakan dengan perubahan warna elemen halaman.
+- Memperbaiki komponen Blade yang salah referensi pada halaman `brief/create`.
+- Memperbaiki pengalaman mobile pada beberapa halaman Mitra yang sebelumnya masih terasa padat atau kurang stabil.
+
+### Removed
+- Menghapus pemanggilan `jqueryNew.min.js` yang redundan pada layout Mitra.
+
 ## [v1.13.3] - 2026-04-23
 
 ### Added

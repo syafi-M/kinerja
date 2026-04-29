@@ -22,3 +22,5 @@ vite.config.js
 keybackup.text
 .agents
 skills-lock.json
+.superpowers
+docs

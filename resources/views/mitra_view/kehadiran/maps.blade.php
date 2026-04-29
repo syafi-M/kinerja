@@ -8,45 +8,45 @@
         }
     </style>
 
-    <div class="p-6 border shadow-xl bg-gradient-to-r from-slate-700 to-slate-800 border-slate-600 rounded-3xl">
+    <div class="p-6 rounded-3xl mitra-panel mitra-mobile-card">
         <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-blue-400">Detail Koordinat Absensi</p>
-                <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-white">
+                <p class="text-[11px] font-black uppercase tracking-[0.25em] mitra-accent">Detail Koordinat Absensi</p>
+                <h1 class="mt-1 text-2xl font-extrabold tracking-tight mitra-text-strong">
                     Lokasi Absen {{ $absen?->user?->nama_lengkap ?? '-' }}
                 </h1>
-                <p class="mt-1 text-sm text-slate-300">Pantau titik masuk dan pulang pada tanggal yang dipilih secara real-time.</p>
+                <p class="mt-1 text-sm mitra-text-soft">Pantau titik masuk dan pulang pada tanggal yang dipilih secara real-time.</p>
                 <div class="flex flex-wrap gap-2 mt-3">
                     <span class="px-3 py-1 text-xs font-semibold text-blue-300 rounded-full bg-blue-500/20">Masuk: Pin Biru</span>
                     <span class="px-3 py-1 text-xs font-semibold rounded-full bg-amber-500/20 text-amber-300">Pulang: Pin Oranye</span>
                 </div>
             </div>
             <form method="get" action="{{ $absen ? route('mitra-lihatMap', $absen->id) : '' }}"
-                class="w-full p-3 border md:w-auto rounded-2xl border-slate-600 bg-slate-800/70">
-                <p class="mb-2 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">Filter Tanggal</p>
-                <div class="flex flex-wrap items-center gap-2">
+                class="w-full p-3 border md:w-auto rounded-2xl mitra-panel-soft">
+                <p class="mb-2 text-[10px] font-black tracking-[0.2em] uppercase mitra-text-muted">Filter Tanggal</p>
+                <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                     <input type="date" value="{{ $tgl ?: $absen?->tanggal_absen }}" name="tgl"
-                        class="text-sm input input-sm input-bordered bg-slate-200 text-slate-800 border-slate-300" />
-                <input type="hidden" name="user" value="{{ $us ?: $absen?->user_id }}" />
+                        class="text-sm input input-sm input-bordered mitra-input" />
+                    <input type="hidden" name="user" value="{{ $us ?: $absen?->user_id }}" />
                     <button class="text-white btn btn-sm btn-info">Terapkan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="p-5 mt-6 border shadow-sm bg-slate-700/50 rounded-2xl border-slate-600/50">
+    <div class="p-5 mt-6 rounded-2xl mitra-panel-soft">
         <div class="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-3">
-            <div class="p-3 border rounded-xl bg-slate-800/70 border-slate-600">
-                <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Tanggal</p>
-                <p class="mt-1 text-sm font-semibold text-white">{{ $tgl ?: $absen?->tanggal_absen ?: '-' }}</p>
+            <div class="p-3 border rounded-xl mitra-panel-soft">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-black mitra-text-muted">Tanggal</p>
+                <p class="mt-1 text-sm font-semibold mitra-text-strong">{{ $tgl ?: $absen?->tanggal_absen ?: '-' }}</p>
             </div>
-            <div class="p-3 border rounded-xl bg-slate-800/70 border-slate-600">
-                <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Latitude Masuk</p>
-                <p class="mt-1 text-sm font-semibold text-white">{{ $absen?->msk_lat ?: '-' }}</p>
+            <div class="p-3 border rounded-xl mitra-panel-soft">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-black mitra-text-muted">Latitude Masuk</p>
+                <p class="mt-1 text-sm font-semibold mitra-text-strong">{{ $absen?->msk_lat ?: '-' }}</p>
             </div>
-            <div class="p-3 border rounded-xl bg-slate-800/70 border-slate-600">
-                <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Longitude Masuk</p>
-                <p class="mt-1 text-sm font-semibold text-white">{{ $absen?->msk_long ?: '-' }}</p>
+            <div class="p-3 border rounded-xl mitra-panel-soft">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-black mitra-text-muted">Longitude Masuk</p>
+                <p class="mt-1 text-sm font-semibold mitra-text-strong">{{ $absen?->msk_long ?: '-' }}</p>
             </div>
         </div>
 
@@ -57,18 +57,18 @@
         @endif
 
         @if($absen?->msk_lat && $absen?->msk_long)
-            <div class="p-2 border rounded-2xl bg-slate-800/60 border-slate-600">
+            <div class="p-2 border rounded-2xl mitra-panel-soft">
                 <div id="map" class="rounded-xl"></div>
             </div>
         @else
-            <div class="flex items-center justify-center font-semibold rounded-xl bg-slate-600/60 text-slate-200"
+            <div class="flex items-center justify-center font-semibold rounded-xl mitra-panel-soft mitra-text-soft"
                 style="height: 360px;">
                 <span>~ Tidak Ada Koordinat ~</span>
             </div>
         @endif
 
         <div class="flex flex-wrap gap-4 mt-4 font-medium {{ $absen ? '' : 'hidden' }}">
-            <div class="w-full px-4 py-3 rounded-lg sm:w-auto bg-slate-200 text-slate-800">
+            <div class="w-full px-4 py-3 rounded-lg sm:w-auto mitra-info-panel">
                 <p class="text-sm font-bold">Keterangan Peta</p>
                 <table class="mt-1">
                     <tbody>
@@ -82,7 +82,7 @@
                         </tr>
                         <tr>
                             <td><p>Jarak</p></td>
-                            <td><p id="jarak" class="font-bold text-blue-700">: -</p></td>
+                            <td><p id="jarak" class="font-bold mitra-link-accent">: -</p></td>
                         </tr>
                     </tbody>
                 </table>
