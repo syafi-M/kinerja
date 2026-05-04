@@ -43,7 +43,7 @@ class PekerjaanCpController extends Controller
             
        ];
        PekerjaanCp::create($pcp);
-       toastr()->success('Data Berhasil Di Tambahkan', 'success');
+       toastr()->success('Data Berhasil Di Tambahkan', [], 'success');
        return to_route('pekerjaanCp.index');
    }
    
@@ -68,7 +68,7 @@ class PekerjaanCpController extends Controller
        ];
         $Datapcp = PekerjaanCp::findOrFail($id);
         $Datapcp->update($pcp);
-        toastr()->success('Data Berhasil Di Edit', 'success');
+        toastr()->success('Data Berhasil Di Edit', [], 'success');
         return to_route('pekerjaanCp.index');
    }
    
@@ -76,7 +76,7 @@ class PekerjaanCpController extends Controller
    {
     $pcpId = PekerjaanCp::findOrFail($id);
     $pcpId->delete();
-    toastr()->warning('Data Berhasil Di Deleted', 'warning');
+    toastr()->warning('Data Berhasil Di Deleted', [], 'warning');
     return redirect()->back();
    }
    
@@ -84,7 +84,7 @@ class PekerjaanCpController extends Controller
     {
         try {
             Excel::import(new PekerjaanImport,  $request->file);
-            toastr()->success('Data Berhasil Di Upload', 'success');
+            toastr()->success('Data Berhasil Di Upload', [], 'success');
             return redirect()->back();
         } catch (\Exception $e) {
             // Handle other exceptions
@@ -100,7 +100,7 @@ class PekerjaanCpController extends Controller
                         $duplicateValue = $matches[1];
         
                         // Handle the duplicate value as needed
-                        toastr()->error('Data Gagal Di Upload', 'Error');
+                        toastr()->error('Data Gagal Di Upload', [], 'Error');
                         return redirect()->back()->with('failures', $duplicateValue);
                     }
                 }

@@ -132,7 +132,7 @@ class PersonInController extends Controller
             ]);
         }
 
-        toastr()->warning('Personil masuk berhasil dihapus!', 'warning');
+        toastr()->warning('Personil masuk berhasil dihapus!', [], 'warning');
         return redirect()->back();
     }
 
@@ -150,7 +150,7 @@ class PersonInController extends Controller
 
         $this->notifyApproverForSubmission($personIn);
 
-        toastr()->success('Personil masuk berhasil diajukan!', 'success');
+        toastr()->success('Personil masuk berhasil diajukan!', [], 'success');
         return redirect()->back();
     }
 
@@ -177,7 +177,7 @@ class PersonInController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua personil masuk sesuai filter!', 'success');
+        toastr()->success('Berhasil mengajukan semua personil masuk sesuai filter!', [], 'success');
         return back();
     }
 

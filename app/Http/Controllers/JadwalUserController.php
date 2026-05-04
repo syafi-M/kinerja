@@ -91,7 +91,7 @@ class JadwalUserController extends Controller
             $shift = Shift::all();
             return view('admin.jadwalUser.create', compact('user', 'shift', 'totalHari', 'area', 'jadwal', 'str1', 'end1', 'kerj', 'filter'));
         }else{
-            toastr()->error('Mohon Masukkan Taggal', 'Error');
+            toastr()->error('Mohon Masukkan Taggal', [], 'Error');
             return redirect()->back();
         }
 
@@ -132,7 +132,7 @@ class JadwalUserController extends Controller
     {
         $jadwalId = JadwalUser::findOrFail($id);
         $jadwalId->delete();
-        toastr()->warning('Jadwal Telah Dihapus', 'warning');
+        toastr()->warning('Jadwal Telah Dihapus', [], 'warning');
         return redirect()->back();
 
     }
@@ -187,7 +187,7 @@ class JadwalUserController extends Controller
             ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
                     
         }else{
-            toastr()->error('Mohon Masukkan Filter Export', 'error');
+            toastr()->error('Mohon Masukkan Filter Export', [], 'error');
             return redirect()->back();
         }
     }
@@ -224,7 +224,7 @@ class JadwalUserController extends Controller
         
         
         // JadwalUser::create($jadwal);
-        toastr('Data Success To Add', 'success', 'Success !');
+        toastr()->success('Data Success To Add', [], 'Success !');
         return redirect()->back();
     }
     
@@ -237,7 +237,7 @@ class JadwalUserController extends Controller
     public function import(Request $request)
     {
         Excel::import(new JadwalImport,  $request->file);
-        toastr('Data Success To Add', 'success', 'Success !');
+        toastr()->success('Data Success To Add', [], 'Success !');
         return redirect()->back();
         
     }

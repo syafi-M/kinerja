@@ -239,7 +239,7 @@ class AdminController extends Controller
         ];
         // dd($appCheck);
         CheckPoint::findOrFail($id)->update($appCheck);
-        toastr()->success('Check Point Has Approve', 'success');
+        toastr()->success('Check Point Has Approve', [], 'success');
         return redirect()->back();
     }
 
@@ -251,7 +251,7 @@ class AdminController extends Controller
         ];
         // dd($appCheck);
         CheckPoint::findOrFail($id)->update($appCheck);
-        toastr()->warning('Check Point Has Denied', 'success');
+        toastr()->warning('Check Point Has Denied', [], 'success');
         return redirect()->back();
     }
 
@@ -265,13 +265,13 @@ class AdminController extends Controller
                 Storage::disk('public')->delete('images/' . $cek->img);
 
                 $cek->delete();
-                toastr()->warning('Data Telah Dihapus', 'warning');
+                toastr()->warning('Data Telah Dihapus', [], 'warning');
                 return redirect()->back();
             } else {
-                toastr()->error('Foto Tidak Ditemukan', 'error');
+                toastr()->error('Foto Tidak Ditemukan', [], 'error');
             }
         } catch (\Illuminate\Database\QueryException $e) {
-            toastr()->error('Data Tidak Ditemukan', 'error');
+            toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
     }
@@ -495,7 +495,7 @@ class AdminController extends Controller
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
         } else {
-            toastr()->error('Mohon Masukkan Hari Libur', 'error');
+            toastr()->error('Mohon Masukkan Hari Libur', [], 'error');
             return redirect()->back();
         }
     }
@@ -758,7 +758,7 @@ class AdminController extends Controller
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
         } else {
-            toastr()->error('Mohon Masukkan Filter Export', 'error');
+            toastr()->error('Mohon Masukkan Filter Export', [], 'error');
             return redirect()->back();
         }
     }
@@ -848,7 +848,7 @@ class AdminController extends Controller
             // dd($check, $request->all());
             User::destroy($check);
 
-            toastr()->success('User berhasil dihapus', 'success');
+            toastr()->success('User berhasil dihapus', [], 'success');
             return redirect()->back();
         } else {
             $options = new Options();
@@ -902,7 +902,7 @@ class AdminController extends Controller
             $abs->delete();
         }
 
-        toastr()->warning('Data Sudah Dihapus', 'success');
+        toastr()->warning('Data Sudah Dihapus', [], 'success');
         return redirect()->back();
     }
 

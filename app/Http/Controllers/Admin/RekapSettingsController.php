@@ -28,7 +28,7 @@ class RekapSettingsController extends Controller
             'updated_by' => auth()->id(),
         ]);
 
-        toastr()->success('Due date rekap berhasil diperbarui.', 'success');
+        toastr()->success('Due date rekap berhasil diperbarui.', [], 'success');
         return back();
     }
 }

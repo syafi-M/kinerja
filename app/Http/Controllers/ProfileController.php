@@ -55,7 +55,7 @@ class ProfileController extends Controller
         if ($dataUser != null) {
             return view('profile.edit', compact('dataUser', 'datas'));
         }
-        toastr()->error('Data tidak tidak ditemukan', 'error');
+        toastr()->error('Data tidak tidak ditemukan', [], 'error');
         return redirect()->back();
     }
 
@@ -86,7 +86,7 @@ class ProfileController extends Controller
         }
         User::findOrFail($id)->update($user);
     
-        toastr()->success('Data Berhasil diupdate', 'success');
+        toastr()->success('Data Berhasil diupdate', [], 'success');
         return to_route('profile.index');
     }
 
@@ -216,7 +216,7 @@ class ProfileController extends Controller
         
         Kontrak::create($kontrak);
     
-        toastr()->success('Form Pengajuan berhasil dikirim', 'success');
+        toastr()->success('Form Pengajuan berhasil dikirim', [], 'success');
         return to_route('profile.index');
     }
     
@@ -266,7 +266,7 @@ class ProfileController extends Controller
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
         }else {
-            toastr()->error('Data tidak valid', 'error');
+            toastr()->error('Data tidak valid', [], 'error');
             return to_route('profile.index');
         }
         // return $pdf->stream('profile.previewKontrak');
@@ -291,7 +291,7 @@ class ProfileController extends Controller
         
         Kontrak::findOrFail($id)->update($kontrak);
     
-        toastr()->success('Form kontrak berhasil dikirim', 'success');
+        toastr()->success('Form kontrak berhasil dikirim', [], 'success');
         return to_route('profile.index');
     }
     
@@ -320,7 +320,7 @@ class ProfileController extends Controller
             }
         }
         
-        toastr()->success('Kontrak Berhasil di ' . ($acc ? 'Acc' : 'Tolak'), 'success');
+        toastr()->success('Kontrak Berhasil di ' . ($acc ? 'Acc' : 'Tolak'), [], 'success');
         return redirect()->back();
     }
 }

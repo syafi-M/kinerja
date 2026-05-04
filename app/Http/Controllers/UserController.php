@@ -146,10 +146,10 @@ class UserController extends Controller
             User::create($user);
         } catch (\Illuminate\Database\QueryException $e) {
             // dd($e);
-            toastr()->error('Data Sudah Ada', 'error');
+            toastr()->error('Data Sudah Ada', [], 'error');
             return redirect()->back();
         }
-        toastr()->success('User Berhasil Ditambahkan', 'succes');
+        toastr()->success('User Berhasil Ditambahkan', [], 'succes');
         return redirect()->back();
     }
 
@@ -167,7 +167,7 @@ class UserController extends Controller
         if ($user != null) {
             return view('admin.user.edit', compact('user', 'kerjasama', 'dev', 'dataUser', 'jabatan'));
         }
-        toastr()->error('Data tidak tidak ditemukan', 'error');
+        toastr()->error('Data tidak tidak ditemukan', [], 'error');
         return redirect()->back();
     }
 
@@ -206,12 +206,12 @@ class UserController extends Controller
             User::findOrFail($id)->update($user);
         } catch (\Illuminate\Database\QueryException $e) {
             // dd($e);
-            toastr()->error($e, 'error');
+            toastr()->error($e, [], 'error');
             return redirect()->back();
         }
 
 
-        toastr()->success('Data Berhasil diupdate', 'success');
+        toastr()->success('Data Berhasil diupdate', [], 'success');
         return to_route('users.index');
         // return redirect()->back();
     }
@@ -233,7 +233,7 @@ class UserController extends Controller
             User::where($field, $oldValue)->where('devisi_id', $devisi)->update([$field => $newValue]);
         }
 
-        toastr()->success('Data ' . $field . ' Berhasil diupdate', 'success');
+        toastr()->success('Data ' . $field . ' Berhasil diupdate', [], 'success');
         return redirect()->back();
     }
 
@@ -250,7 +250,7 @@ class UserController extends Controller
 
         if ($user != null) {
             if ($user->image == null) {
-                toastr()->error('Image Tidak Ditemukan', 'error');
+                toastr()->error('Image Tidak Ditemukan', [], 'error');
             }
             if ($user->image) {
                 Storage::disk('public')->delete('images/' . $user->image);
@@ -263,10 +263,10 @@ class UserController extends Controller
             }
 
             $user->delete();
-            toastr()->warning('Data User Telah Dihapus', 'warning');
+            toastr()->warning('Data User Telah Dihapus', [], 'warning');
             return to_route('users.index');
         } else {
-            toastr()->error('Data Tidak Ditemukan', 'error');
+            toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
     }
@@ -286,7 +286,7 @@ class UserController extends Controller
             $newUsername = 'SAC' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
         } catch (\Throwable $th) {
             Log::error('Username generation failed. Ensure your cache driver supports atomic operations (e.g., Redis). ' . $th->getMessage());
-            toastr()->error('System is busy, please try again in a moment.', 'Error');
+            toastr()->error('System is busy, please try again in a moment.', [], 'Error');
             return redirect()->back();
         }
 
@@ -324,7 +324,7 @@ class UserController extends Controller
             return view('admin.user.addKaryawan.wait');
         } catch (\Throwable $th) {
             Log::error('Failed to create temp user: ' . $th->getMessage());
-            toastr()->error('An error occurred while saving your data. Please try again.', 'Error');
+            toastr()->error('An error occurred while saving your data. Please try again.', [], 'Error');
             return redirect()->back();
         }
     }

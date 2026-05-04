@@ -131,12 +131,12 @@ class CheckPointController extends Controller
         try {
             $cek->create($data);
             DB::commit();
-            toastr()->success('Data Berhasil Ditambahkan', 'success');
+            toastr()->success('Data Berhasil Ditambahkan', [], 'success');
             return to_route('checkpoint-user.index');
         } catch (\Exception $e) {
             DB::rollback();
             dd($e);
-            toastr()->error('Error in storing data', 'error');
+            toastr()->error('Error in storing data', [], 'error');
             return redirect()->back();
         }
 
@@ -205,13 +205,13 @@ class CheckPointController extends Controller
         try {
 
             $cex2->save();
-            toastr()->success('Data berhasil diedit', 'success');
+            toastr()->success('Data berhasil diedit', [], 'success');
             return redirect()->back();
             // return to_route('checkpoint-user.index', 'type=dikerjakan');
 
         } catch (\Illuminate\Database\QueryException $e) {
             dd($e);
-            toastr()->error('Data Tidak Ada', 'error');
+            toastr()->error('Data Tidak Ada', [], 'error');
             return redirect()->back();
         }
     }
@@ -323,11 +323,11 @@ class CheckPointController extends Controller
                 $cex2->save();
             }
 
-            toastr()->success('Data Berhasil Diupload', 'success');
+            toastr()->success('Data Berhasil Diupload', [], 'success');
             return to_route('checkpoint-user.index', 'type=dikerjakan');
 
         } catch (\Illuminate\Database\QueryException $e) {
-            toastr()->error('Data Tidak Berhasil Dikirim', 'error');
+            toastr()->error('Data Tidak Berhasil Dikirim', [], 'error');
             return redirect()->back();
         }
     }
@@ -366,9 +366,9 @@ class CheckPointController extends Controller
 
         try {
             $cex2->save();
-            toastr()->success('Data berhasil diedit', 'success');
+            toastr()->success('Data berhasil diedit', [], 'success');
         } catch (\Throwable $e) {
-            toastr()->error('Gagal menyimpan data', 'error');
+            toastr()->error('Gagal menyimpan data', [], 'error');
         }
 
         return redirect()->back();
@@ -403,18 +403,18 @@ class CheckPointController extends Controller
                     // Save the changes to the model
                     $cek->save();
 
-                    toastr()->warning('Data Telah Dihapus', 'warning');
+                    toastr()->warning('Data Telah Dihapus', [], 'warning');
                     return redirect()->back();
                 } else {
-                    toastr()->error('Index Tidak Valid', 'error');
+                    toastr()->error('Index Tidak Valid', [], 'error');
                     return redirect()->back();
                 }
             } else {
-                toastr()->error('Parameter arrKe Tidak Ditemukan', 'error');
+                toastr()->error('Parameter arrKe Tidak Ditemukan', [], 'error');
                 return redirect()->back();
             }
         } catch (\Illuminate\Database\QueryException $e) {
-            toastr()->error('Data Tidak Ditemukan', 'error');
+            toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
 
@@ -429,13 +429,13 @@ class CheckPointController extends Controller
                 Storage::disk('public')->delete('images/' . $cek->img);
 
                 $cek->delete();
-                toastr()->warning('Data Telah Dihapus', 'warning');
+                toastr()->warning('Data Telah Dihapus', [], 'warning');
                 return redirect()->back();
             } else {
-                toastr()->error('Foto Tidak Ditemukan', 'error');
+                toastr()->error('Foto Tidak Ditemukan', [], 'error');
             }
         } catch (\Illuminate\Database\QueryException $e) {
-            toastr()->error('Data Tidak Ditemukan', 'error');
+            toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
 
@@ -485,7 +485,7 @@ class CheckPointController extends Controller
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
 
         } else {
-            toastr()->error('Mohon Masukkan Filter Export', 'error');
+            toastr()->error('Mohon Masukkan Filter Export', [], 'error');
             return redirect()->back();
         }
     }

@@ -22,7 +22,10 @@
             let preference = 'system';
 
             try {
-                preference = localStorage.getItem(storageKey) || 'system';
+                const storedPreference = localStorage.getItem(storageKey);
+                preference = storedPreference === 'light' || storedPreference === 'dark'
+                    ? storedPreference
+                    : 'system';
             } catch (error) {}
 
             const resolvedTheme = preference === 'system'
@@ -38,12 +41,14 @@
     <style>
         :root {
             --mitra-bg: #f8fafc;
-            --mitra-bg-accent: radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 38%);
-            --mitra-surface: rgba(255, 255, 255, 0.92);
+            --mitra-bg-accent: rgba(37, 99, 235, 0.08);
+            --mitra-bg-shape: rgba(37, 99, 235, 0.06);
+            --mitra-bg-shape-soft: rgba(15, 23, 42, 0.04);
+            --mitra-surface: rgba(255, 255, 255, 0.96);
             --mitra-surface-strong: #ffffff;
-            --mitra-surface-soft: rgba(248, 250, 252, 0.9);
-            --mitra-border: rgba(148, 163, 184, 0.24);
-            --mitra-border-strong: rgba(148, 163, 184, 0.32);
+            --mitra-surface-soft: rgba(248, 250, 252, 0.94);
+            --mitra-border: rgba(148, 163, 184, 0.18);
+            --mitra-border-strong: rgba(148, 163, 184, 0.28);
             --mitra-text: #0f172a;
             --mitra-text-soft: #334155;
             --mitra-text-muted: #64748b;
@@ -53,15 +58,18 @@
             --mitra-success: #059669;
             --mitra-warning: #d97706;
             --mitra-danger: #e11d48;
-            --mitra-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            --mitra-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+            --mitra-shadow-soft: 0 10px 26px rgba(15, 23, 42, 0.04);
         }
 
         :root[data-mitra-theme="dark"] {
             --mitra-bg: #020617;
-            --mitra-bg-accent: radial-gradient(circle at top, rgba(56, 189, 248, 0.14), transparent 34%);
-            --mitra-surface: rgba(15, 23, 42, 0.9);
+            --mitra-bg-accent: rgba(56, 189, 248, 0.08);
+            --mitra-bg-shape: rgba(56, 189, 248, 0.08);
+            --mitra-bg-shape-soft: rgba(148, 163, 184, 0.06);
+            --mitra-surface: rgba(15, 23, 42, 0.94);
             --mitra-surface-strong: #0f172a;
-            --mitra-surface-soft: rgba(15, 23, 42, 0.72);
+            --mitra-surface-soft: rgba(15, 23, 42, 0.86);
             --mitra-border: rgba(148, 163, 184, 0.16);
             --mitra-border-strong: rgba(148, 163, 184, 0.24);
             --mitra-text: #e2e8f0;
@@ -73,16 +81,44 @@
             --mitra-success: #34d399;
             --mitra-warning: #fbbf24;
             --mitra-danger: #fb7185;
-            --mitra-shadow: 0 28px 60px rgba(2, 6, 23, 0.38);
+            --mitra-shadow: 0 24px 52px rgba(2, 6, 23, 0.24);
+            --mitra-shadow-soft: 0 12px 28px rgba(2, 6, 23, 0.18);
         }
 
         body {
+            position: relative;
             overflow-x: hidden;
             color: var(--mitra-text);
-            background:
-                var(--mitra-bg-accent),
-                linear-gradient(180deg, var(--mitra-bg) 0%, color-mix(in srgb, var(--mitra-bg) 92%, #000 8%) 100%);
+            background: var(--mitra-bg);
             transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -8rem;
+            right: -6rem;
+            width: 24rem;
+            height: 24rem;
+            border-radius: 42% 58% 55% 45% / 38% 42% 58% 62%;
+            background: var(--mitra-bg-shape);
+            opacity: 0.9;
+        }
+
+        body::after {
+            left: -7rem;
+            top: 12rem;
+            width: 18rem;
+            height: 28rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--mitra-bg-accent) 0%, var(--mitra-bg-shape-soft) 100%);
+            opacity: 0.55;
         }
 
         html,
@@ -159,20 +195,14 @@
             transition: opacity 0.24s ease;
         }
 
-        #sidebar,
-        #navbar {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
         #sidebar {
-            background: color-mix(in srgb, var(--mitra-surface-strong) 92%, transparent);
+            background: color-mix(in srgb, var(--mitra-surface-strong) 98%, transparent);
             border-color: var(--mitra-border);
             box-shadow: var(--mitra-shadow);
         }
 
         #navbar {
-            background: color-mix(in srgb, var(--mitra-surface) 92%, transparent);
+            background: color-mix(in srgb, var(--mitra-surface-strong) 96%, transparent);
             border-color: var(--mitra-border);
         }
 
@@ -183,13 +213,14 @@
         }
 
         .mitra-panel-soft {
-            background: color-mix(in srgb, var(--mitra-surface) 82%, transparent);
+            background: color-mix(in srgb, var(--mitra-surface-strong) 94%, transparent);
             border: 1px solid var(--mitra-border);
+            box-shadow: var(--mitra-shadow-soft);
         }
 
         .mitra-nav-card:hover {
             border-color: color-mix(in srgb, var(--mitra-accent) 24%, var(--mitra-border)) !important;
-            box-shadow: 0 18px 35px color-mix(in srgb, var(--mitra-accent) 8%, transparent);
+            box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
         }
 
         .mitra-theme-button {
@@ -217,13 +248,10 @@
             padding: 0.7rem;
             border-radius: 1rem;
             border: 1px solid color-mix(in srgb, var(--mitra-border) 88%, transparent);
-            background:
-                linear-gradient(180deg, color-mix(in srgb, var(--mitra-surface-strong) 98%, transparent) 0%, color-mix(in srgb, var(--mitra-surface) 94%, transparent) 100%);
+            background: color-mix(in srgb, var(--mitra-surface-strong) 98%, transparent);
             box-shadow:
                 0 18px 40px rgba(15, 23, 42, 0.12),
                 0 2px 8px rgba(15, 23, 42, 0.06);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             opacity: 0;
             transform: translateY(-8px) scale(0.985);
             transform-origin: top right;
@@ -649,6 +677,126 @@
             border-radius: 1rem;
         }
 
+        .mitra-editorial-hero {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-editorial-hero::before {
+            content: "";
+            position: absolute;
+            inset: 1.25rem auto 1.25rem 1.25rem;
+            width: 0.45rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--mitra-accent) 28%, transparent);
+        }
+
+        .mitra-editorial-hero::after {
+            content: "";
+            position: absolute;
+            right: -2rem;
+            top: -1.5rem;
+            width: 13rem;
+            height: 13rem;
+            border-radius: 44% 56% 60% 40% / 40% 42% 58% 60%;
+            background: color-mix(in srgb, var(--mitra-accent-soft) 92%, transparent);
+            opacity: 0.9;
+            z-index: -1;
+        }
+
+        .mitra-editorial-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(to right, color-mix(in srgb, var(--mitra-border) 30%, transparent) 1px, transparent 1px),
+                linear-gradient(to bottom, color-mix(in srgb, var(--mitra-border) 18%, transparent) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.28), transparent 68%);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .mitra-stat-card {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-stat-card::before {
+            content: "";
+            position: absolute;
+            inset: auto 1rem 1rem auto;
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 1.25rem;
+            background: var(--mitra-accent-soft);
+            opacity: 0.8;
+            z-index: -1;
+        }
+
+        .mitra-stat-card::after {
+            content: "";
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 2rem;
+            height: 0.28rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--mitra-accent) 32%, transparent);
+        }
+
+        .mitra-nav-card {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-nav-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 1px solid transparent;
+            pointer-events: none;
+        }
+
+        .mitra-nav-card::after {
+            content: "";
+            position: absolute;
+            right: -1.25rem;
+            bottom: -1.65rem;
+            width: 6.5rem;
+            height: 6.5rem;
+            border-radius: 46% 54% 58% 42% / 42% 44% 56% 58%;
+            background: color-mix(in srgb, var(--mitra-accent-soft) 84%, transparent);
+            opacity: 0.6;
+            z-index: -1;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+
+        .mitra-nav-card:hover::after {
+            transform: translate(-0.35rem, -0.35rem);
+            opacity: 0.9;
+        }
+
+        .mitra-nav-card-icon {
+            position: relative;
+            overflow: hidden;
+            box-shadow: none;
+        }
+
+        .mitra-nav-card-icon::after {
+            content: "";
+            position: absolute;
+            right: -0.35rem;
+            top: -0.35rem;
+            width: 1.3rem;
+            height: 1.3rem;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.42);
+        }
+
         .mitra-deferred-card {
             content-visibility: auto;
             contain-intrinsic-size: 300px;
@@ -855,6 +1003,25 @@
                 box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
             }
 
+            body::before {
+                width: 16rem;
+                height: 16rem;
+                top: -5rem;
+                right: -5rem;
+            }
+
+            body::after {
+                width: 10rem;
+                height: 18rem;
+                left: -4rem;
+            }
+
+            .mitra-editorial-hero::after {
+                width: 9.5rem;
+                height: 9.5rem;
+                right: -2.5rem;
+            }
+
             .mitra-panel-soft .p-4,
             .mitra-panel .p-4 {
                 padding: 0.9rem;
@@ -1029,47 +1196,6 @@
                                 <i id="themeToggleIcon" class="text-base ri-computer-line"></i>
                                 <span class="hidden sm:inline">Tema</span>
                             </button>
-                            <div id="themeMenu" class="mitra-theme-menu">
-                                <p class="px-3 pb-2 text-[10px] font-black uppercase tracking-[0.24em] mitra-text-muted">Pilih Tema</p>
-                                <div class="space-y-2">
-                                    <button type="button" class="mitra-theme-option" data-theme-choice="system">
-                                        <span class="mitra-theme-option-label">
-                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl" style="background: color-mix(in srgb, var(--mitra-accent-soft) 70%, transparent); color: var(--mitra-accent);">
-                                                <i class="text-base ri-computer-line"></i>
-                                            </span>
-                                            <span>
-                                                <span class="block text-sm font-semibold">System</span>
-                                                <span class="mitra-theme-option-note">Ikuti tema browser</span>
-                                            </span>
-                                        </span>
-                                        <i class="ri-check-line"></i>
-                                    </button>
-                                    <button type="button" class="mitra-theme-option" data-theme-choice="light">
-                                        <span class="mitra-theme-option-label">
-                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">
-                                                <i class="text-base ri-sun-line"></i>
-                                            </span>
-                                            <span>
-                                                <span class="block text-sm font-semibold">Light</span>
-                                                <span class="mitra-theme-option-note">Tampilan terang</span>
-                                            </span>
-                                        </span>
-                                        <i class="ri-check-line"></i>
-                                    </button>
-                                    <button type="button" class="mitra-theme-option" data-theme-choice="dark">
-                                        <span class="mitra-theme-option-label">
-                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl" style="background: rgba(15, 23, 42, 0.10); color: var(--mitra-text-strong);">
-                                                <i class="text-base ri-moon-clear-line"></i>
-                                            </span>
-                                            <span>
-                                                <span class="block text-sm font-semibold">Dark</span>
-                                                <span class="mitra-theme-option-note">Tampilan gelap</span>
-                                            </span>
-                                        </span>
-                                        <i class="ri-check-line"></i>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1090,15 +1216,22 @@
         const themeToggle = document.getElementById('themeToggle');
         const themeToggleIcon = document.getElementById('themeToggleIcon');
         const themeModeLabel = document.getElementById('themeModeLabel');
-        const themePicker = document.getElementById('themePicker');
-        const themeMenu = document.getElementById('themeMenu');
-        const themeOptions = Array.from(document.querySelectorAll('[data-theme-choice]'));
-        const desktopThemeMediaQuery = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 1024px)');
         const themeTransition = document.getElementById('themeTransition');
         const themeTransitionDuration = 1580;
         const themeTransitionSwapDelay = 340;
         let themeTransitionTimer = null;
         let themeTransitionSwapTimer = null;
+
+        function getStoredThemePreference() {
+            try {
+                const storedPreference = localStorage.getItem(themeStorageKey);
+                return storedPreference === 'light' || storedPreference === 'dark'
+                    ? storedPreference
+                    : null;
+            } catch (error) {
+                return null;
+            }
+        }
 
         function getResolvedTheme(preference) {
             return preference === 'system'
@@ -1109,26 +1242,35 @@
         function updateThemeToggle(preference, resolvedTheme) {
             if (!themeToggle || !themeToggleIcon || !themeModeLabel) return;
 
+            const displayTheme = preference === 'system' ? resolvedTheme : preference;
             const iconMap = {
-                system: 'ri-computer-line',
                 light: 'ri-sun-line',
                 dark: 'ri-moon-clear-line',
             };
 
             const labelMap = {
-                system: 'System',
                 light: 'Light',
                 dark: 'Dark',
             };
 
-            themeToggleIcon.className = `text-base ${iconMap[preference] || iconMap.system}`;
-            themeModeLabel.textContent = labelMap[preference] || labelMap.system;
-            themeToggle.setAttribute('aria-label', `Tema saat ini ${labelMap[preference] || labelMap.system}, klik untuk mengganti`);
-            themeToggle.setAttribute('title', `Tema ${labelMap[preference] || labelMap.system} (${resolvedTheme})`);
+            const displayLabel = labelMap[displayTheme] || labelMap.light;
+            const isFollowingSystem = preference === 'system';
 
-            themeOptions.forEach(function (option) {
-                option.classList.toggle('is-active', option.dataset.themeChoice === preference);
-            });
+            themeToggleIcon.className = `text-base ${iconMap[displayTheme] || iconMap.light}`;
+            themeModeLabel.textContent = displayLabel;
+            themeToggle.setAttribute(
+                'aria-label',
+                isFollowingSystem
+                    ? `Tema mengikuti sistem, saat ini ${displayLabel}, klik untuk mengganti`
+                    : `Tema saat ini ${displayLabel}, klik untuk mengganti`
+            );
+            themeToggle.setAttribute(
+                'title',
+                isFollowingSystem
+                    ? `Tema mengikuti sistem (${displayLabel})`
+                    : `Tema ${displayLabel}`
+            );
+
         }
 
         function getThemeTransitionPalette(theme) {
@@ -1182,7 +1324,11 @@
 
             if (persist) {
                 try {
-                    localStorage.setItem(themeStorageKey, preference);
+                    if (preference === 'system') {
+                        localStorage.removeItem(themeStorageKey);
+                    } else {
+                        localStorage.setItem(themeStorageKey, preference);
+                    }
                 } catch (error) {}
             }
 
@@ -1234,28 +1380,10 @@
         }
 
         function cycleThemePreference() {
-            const currentPreference = root.dataset.mitraThemePreference || 'system';
-            const nextPreference = currentPreference === 'system'
-                ? 'light'
-                : (currentPreference === 'light' ? 'dark' : 'system');
+            const currentTheme = root.dataset.mitraTheme || getResolvedTheme(root.dataset.mitraThemePreference || 'system');
+            const nextPreference = currentTheme === 'light' ? 'dark' : 'light';
 
             applyTheme(nextPreference, { persist: true, withTransition: true });
-        }
-
-        function isDesktopThemeMenuMode() {
-            return desktopThemeMediaQuery.matches;
-        }
-
-        function openThemeMenu() {
-            if (!themeMenu || !isDesktopThemeMenuMode()) return;
-            themeMenu.classList.add('is-open');
-            themeToggle.setAttribute('aria-expanded', 'true');
-        }
-
-        function closeThemeMenu() {
-            if (!themeMenu) return;
-            themeMenu.classList.remove('is-open');
-            themeToggle.setAttribute('aria-expanded', 'false');
         }
 
         function syncResponsiveImages() {
@@ -1344,43 +1472,8 @@
         }
 
         if (themeToggle) {
-            themeToggle.addEventListener('click', function (event) {
-                if (isDesktopThemeMenuMode()) {
-                    event.preventDefault();
-                    if (themeMenu && themeMenu.classList.contains('is-open')) {
-                        closeThemeMenu();
-                    } else {
-                        openThemeMenu();
-                    }
-                    return;
-                }
-
+            themeToggle.addEventListener('click', function () {
                 cycleThemePreference();
-            });
-        }
-
-        themeOptions.forEach(function (option) {
-            option.addEventListener('click', function () {
-                const preference = option.dataset.themeChoice || 'system';
-                applyTheme(preference, { persist: true, withTransition: true });
-                closeThemeMenu();
-            });
-        });
-
-        document.addEventListener('click', function (event) {
-            if (!themePicker || !isDesktopThemeMenuMode()) return;
-            if (!themePicker.contains(event.target)) {
-                closeThemeMenu();
-            }
-        });
-
-        if (typeof desktopThemeMediaQuery.addEventListener === 'function') {
-            desktopThemeMediaQuery.addEventListener('change', function () {
-                closeThemeMenu();
-            });
-        } else if (typeof desktopThemeMediaQuery.addListener === 'function') {
-            desktopThemeMediaQuery.addListener(function () {
-                closeThemeMenu();
             });
         }
 
@@ -1393,19 +1486,19 @@
 
         if (typeof themeMediaQuery.addEventListener === 'function') {
             themeMediaQuery.addEventListener('change', function () {
-                if ((root.dataset.mitraThemePreference || 'system') === 'system') {
+                if (!getStoredThemePreference()) {
                     applyTheme('system');
                 }
             });
         } else if (typeof themeMediaQuery.addListener === 'function') {
             themeMediaQuery.addListener(function () {
-                if ((root.dataset.mitraThemePreference || 'system') === 'system') {
+                if (!getStoredThemePreference()) {
                     applyTheme('system');
                 }
             });
         }
 
-        applyTheme(root.dataset.mitraThemePreference || 'system');
+        applyTheme(getStoredThemePreference() || 'system');
     </script>
 </body>
 </html>

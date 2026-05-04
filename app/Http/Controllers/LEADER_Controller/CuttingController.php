@@ -132,7 +132,7 @@ class CuttingController extends Controller
             ]);
         }
 
-        toastr()->warning('Data cutting berhasil dihapus!', 'warning');
+        toastr()->warning('Data cutting berhasil dihapus!', [], 'warning');
         return redirect()->back();
     }
 
@@ -148,7 +148,7 @@ class CuttingController extends Controller
 
         $cutting->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($cutting->fresh('user'));
-        toastr()->success('Cutting berhasil diajukan!', 'success');
+        toastr()->success('Cutting berhasil diajukan!', [], 'success');
         return redirect()->back();
     }
 
@@ -175,7 +175,7 @@ class CuttingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua data cutting sesuai filter!', 'success');
+        toastr()->success('Berhasil mengajukan semua data cutting sesuai filter!', [], 'success');
         return back();
     }
 

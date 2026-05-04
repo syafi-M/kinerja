@@ -174,7 +174,7 @@ class ReportSholatController extends Controller
             ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
                     
         }else{
-            toastr()->error('Mohon Masukkan Filter Export', 'error');
+            toastr()->error('Mohon Masukkan Filter Export', [], 'error');
             return redirect()->back();
         }
     }

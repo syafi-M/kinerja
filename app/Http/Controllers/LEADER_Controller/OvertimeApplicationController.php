@@ -30,7 +30,7 @@ class OvertimeApplicationController extends Controller
         try {
             $data = $request->validated();
             Overtime::create($data);
-            toastr()->success('Lembur Berhasil Disimpan!', 'success');
+            toastr()->success('Lembur Berhasil Disimpan!', [], 'success');
             return redirect()->back();
         } catch (\Throwable $th) {
             throw $th;
@@ -88,14 +88,14 @@ class OvertimeApplicationController extends Controller
             'type_overtime_manual'
         ]);
         Overtime::findOrFail($id)->update($data);
-        toastr()->success('Lembur Berhasil Diupdate!', 'success');
+        toastr()->success('Lembur Berhasil Diupdate!', [], 'success');
         return to_route('overtime-application.show', 1);
     }
 
     public function destroy($id)
     {
         Overtime::findOrFail($id)->delete();
-        toastr()->warning('Lembur Berhasil Dihapus!', 'warning');
+        toastr()->warning('Lembur Berhasil Dihapus!', [], 'warning');
         return redirect()->back();
     }
 
@@ -117,7 +117,7 @@ class OvertimeApplicationController extends Controller
             'status' => 'Di Ajukan'
         ]);
 
-        toastr()->success('Lembur Berhasil Di Ajukan!', 'success');
+        toastr()->success('Lembur Berhasil Di Ajukan!', [], 'success');
 
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
@@ -184,7 +184,7 @@ class OvertimeApplicationController extends Controller
         }
 
 
-        toastr()->success('Berhasil mengajukan semua lembur!', 'success');
+        toastr()->success('Berhasil mengajukan semua lembur!', [], 'success');
         return back();
     }
 }

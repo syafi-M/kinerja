@@ -368,6 +368,17 @@
     </div>
     <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
     <script src="{{ URL::asset('js/moment.min.js') }}"></script>
+    <script>
+        window.toastr = window.toastr || {
+            options: {},
+            success: function () {},
+            error: function () {},
+            info: function () {},
+            warning: function () {},
+            remove: function () {},
+            clear: function () {}
+        };
+    </script>
     <x-flasher />
 
     @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
@@ -1168,12 +1179,14 @@
 
             $('#shift_id').change(calculatedJamStart);
 
-            toastr.options = {
-                closeButton: true,
-                progressBar: true,
-                positionClass: "toast-top-right",
-                timeOut: 3500
-            };
+            if (typeof window.toastr !== 'undefined') {
+                window.toastr.options = {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: "toast-top-right",
+                    timeOut: 3500
+                };
+            }
 
             $('#btnAbsen').click(function() {
                 $(this).prop('disabled', true)

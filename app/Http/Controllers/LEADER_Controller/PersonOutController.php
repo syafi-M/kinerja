@@ -83,7 +83,7 @@ class PersonOutController extends Controller
 
             PersonOut::create($validated);
 
-            toastr()->success('Berhasil mengajukan data!', 'success');
+            toastr()->success('Berhasil mengajukan data!', [], 'success');
             return redirect()->back();
         } catch (\Throwable $th) {
             throw $th;
@@ -144,11 +144,11 @@ class PersonOutController extends Controller
                 $personOut->update($validated);
             });
 
-            toastr()->success('Berhasil update data!', 'success');
+            toastr()->success('Berhasil update data!', [], 'success');
             return redirect()->back();
         } catch (\Throwable $th) {
             report($th);
-            toastr()->error('Gagal update data', 'error');
+            toastr()->error('Gagal update data', [], 'error');
             return redirect()->back()->withInput();
         }
     }
@@ -157,7 +157,7 @@ class PersonOutController extends Controller
     {
         $personOut->delete();
 
-        toastr()->success('Personil berhasil direcover', 'success');
+        toastr()->success('Personil berhasil direcover', [], 'success');
         return redirect()->back();
     }
 
@@ -165,7 +165,7 @@ class PersonOutController extends Controller
     {
         $personOut = PersonOut::findOrFail($id);
         $personOut->update(["status" => "Di Ajukan"]);
-        toastr()->success('Personil Keluar Berhasil Di Ajukan!', 'success');
+        toastr()->success('Personil Keluar Berhasil Di Ajukan!', [], 'success');
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
             : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
@@ -224,7 +224,7 @@ class PersonOutController extends Controller
             );
         }
 
-        toastr()->success('Berhasil mengajukan semua personil keluar!', 'success');
+        toastr()->success('Berhasil mengajukan semua personil keluar!', [], 'success');
         return back();
     }
 
