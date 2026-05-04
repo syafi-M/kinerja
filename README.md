@@ -12,6 +12,19 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.1] - 2026-05-04
+
+### Added
+- Menambahkan skill `playwright` ke environment Codex untuk membantu verifikasi UI dashboard dan layout browser-based.
+
+### Changed
+- Mendesain ulang dashboard Mitra dengan layout yang lebih sederhana dan fokus pada ringkasan utama, statistik inti, dan akses modul operasional.
+- Menyederhanakan bahasa visual dashboard Mitra dengan mengurangi shape dekoratif berlebihan dan merapikan hierarki panel agar lebih selaras dengan sidebar.
+- Memoles palet warna dan komposisi panel Mitra agar terasa lebih tenang, editorial, dan cocok untuk dashboard operasional.
+
+### Fixed
+- Memperbaiki responsivitas dashboard Mitra pada mobile dengan menyusun ulang summary, statistik, dan grid menu agar tidak lagi bertumpuk sempit atau terasa berantakan.
+
 ## [v2.0.0] - 2026-04-30
 
 ### Added

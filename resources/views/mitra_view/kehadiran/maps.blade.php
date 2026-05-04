@@ -6,6 +6,18 @@
         #map {
             height: 360px;
         }
+
+        @media (max-width: 768px) {
+            #map {
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #map {
+                height: 260px;
+            }
+        }
     </style>
 
     <div class="p-6 rounded-3xl mitra-panel mitra-mobile-card">
@@ -16,26 +28,26 @@
                     Lokasi Absen {{ $absen?->user?->nama_lengkap ?? '-' }}
                 </h1>
                 <p class="mt-1 text-sm mitra-text-soft">Pantau titik masuk dan pulang pada tanggal yang dipilih secara real-time.</p>
-                <div class="flex flex-wrap gap-2 mt-3">
-                    <span class="px-3 py-1 text-xs font-semibold text-blue-300 rounded-full bg-blue-500/20">Masuk: Pin Biru</span>
-                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-amber-500/20 text-amber-300">Pulang: Pin Oranye</span>
+                <div class="flex flex-col items-stretch gap-2 mt-3 sm:flex-row sm:flex-wrap">
+                    <span class="px-3 py-1 text-xs font-semibold text-center text-blue-300 rounded-full bg-blue-500/20 sm:text-left">Masuk: Pin Biru</span>
+                    <span class="px-3 py-1 text-xs font-semibold text-center rounded-full bg-amber-500/20 text-amber-300 sm:text-left">Pulang: Pin Oranye</span>
                 </div>
             </div>
             <form method="get" action="{{ $absen ? route('mitra-lihatMap', $absen->id) : '' }}"
-                class="w-full p-3 border md:w-auto rounded-2xl mitra-panel-soft">
+                class="w-full p-3 border lg:w-auto rounded-2xl mitra-panel-soft">
                 <p class="mb-2 text-[10px] font-black tracking-[0.2em] uppercase mitra-text-muted">Filter Tanggal</p>
                 <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                     <input type="date" value="{{ $tgl ?: $absen?->tanggal_absen }}" name="tgl"
-                        class="text-sm input input-sm input-bordered mitra-input" />
+                        class="w-full text-sm input input-sm input-bordered mitra-input" />
                     <input type="hidden" name="user" value="{{ $us ?: $absen?->user_id }}" />
-                    <button class="text-white btn btn-sm btn-info">Terapkan</button>
+                    <button class="w-full text-white sm:w-auto btn btn-sm btn-info">Terapkan</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div class="p-5 mt-6 rounded-2xl mitra-panel-soft">
-        <div class="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2 xl:grid-cols-3">
             <div class="p-3 border rounded-xl mitra-panel-soft">
                 <p class="text-[10px] uppercase tracking-[0.2em] font-black mitra-text-muted">Tanggal</p>
                 <p class="mt-1 text-sm font-semibold mitra-text-strong">{{ $tgl ?: $absen?->tanggal_absen ?: '-' }}</p>
@@ -68,9 +80,9 @@
         @endif
 
         <div class="flex flex-wrap gap-4 mt-4 font-medium {{ $absen ? '' : 'hidden' }}">
-            <div class="w-full px-4 py-3 rounded-lg sm:w-auto mitra-info-panel">
+            <div class="w-full px-4 py-3 rounded-lg mitra-info-panel lg:w-auto">
                 <p class="text-sm font-bold">Keterangan Peta</p>
-                <table class="mt-1">
+                <table class="w-full mt-1">
                     <tbody>
                         <tr>
                             <td class="pr-2"><img src="{{ URL::asset('logo/pin-biru.png') }}" alt="Pin Masuk"></td>
@@ -88,8 +100,8 @@
                 </table>
             </div>
         </div>
-        <div class="flex justify-end mt-5">
-            <a href="{{ route('mitra_absensi') }}" class="btn btn-error">Kembali</a>
+        <div class="flex justify-stretch mt-5 sm:justify-end">
+            <a href="{{ route('mitra_absensi') }}" class="w-full sm:w-auto btn btn-error">Kembali</a>
         </div>
     </div>
 

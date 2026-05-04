@@ -40,23 +40,23 @@
 
     <style>
         :root {
-            --mitra-bg: #f8fafc;
-            --mitra-bg-accent: rgba(37, 99, 235, 0.08);
-            --mitra-bg-shape: rgba(37, 99, 235, 0.06);
-            --mitra-bg-shape-soft: rgba(15, 23, 42, 0.04);
+            --mitra-bg: #f6f8fc;
+            --mitra-bg-accent: rgba(31, 78, 177, 0.08);
+            --mitra-bg-shape: rgba(31, 78, 177, 0.07);
+            --mitra-bg-shape-soft: rgba(71, 85, 105, 0.06);
             --mitra-surface: rgba(255, 255, 255, 0.96);
             --mitra-surface-strong: #ffffff;
-            --mitra-surface-soft: rgba(248, 250, 252, 0.94);
-            --mitra-border: rgba(148, 163, 184, 0.18);
-            --mitra-border-strong: rgba(148, 163, 184, 0.28);
+            --mitra-surface-soft: rgba(246, 248, 252, 0.96);
+            --mitra-border: rgba(148, 163, 184, 0.17);
+            --mitra-border-strong: rgba(100, 116, 139, 0.26);
             --mitra-text: #0f172a;
             --mitra-text-soft: #334155;
-            --mitra-text-muted: #64748b;
-            --mitra-accent: #2563eb;
-            --mitra-accent-strong: #1d4ed8;
-            --mitra-accent-soft: rgba(37, 99, 235, 0.12);
-            --mitra-success: #059669;
-            --mitra-warning: #d97706;
+            --mitra-text-muted: #6b7280;
+            --mitra-accent: #1f4eb1;
+            --mitra-accent-strong: #183a84;
+            --mitra-accent-soft: rgba(31, 78, 177, 0.11);
+            --mitra-success: #0f8a63;
+            --mitra-warning: #b7791f;
             --mitra-danger: #e11d48;
             --mitra-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
             --mitra-shadow-soft: 0 10px 26px rgba(15, 23, 42, 0.04);
@@ -64,22 +64,22 @@
 
         :root[data-mitra-theme="dark"] {
             --mitra-bg: #020617;
-            --mitra-bg-accent: rgba(56, 189, 248, 0.08);
-            --mitra-bg-shape: rgba(56, 189, 248, 0.08);
-            --mitra-bg-shape-soft: rgba(148, 163, 184, 0.06);
+            --mitra-bg-accent: rgba(96, 165, 250, 0.08);
+            --mitra-bg-shape: rgba(96, 165, 250, 0.1);
+            --mitra-bg-shape-soft: rgba(148, 163, 184, 0.08);
             --mitra-surface: rgba(15, 23, 42, 0.94);
-            --mitra-surface-strong: #0f172a;
-            --mitra-surface-soft: rgba(15, 23, 42, 0.86);
+            --mitra-surface-strong: #0b1528;
+            --mitra-surface-soft: rgba(15, 23, 42, 0.9);
             --mitra-border: rgba(148, 163, 184, 0.16);
             --mitra-border-strong: rgba(148, 163, 184, 0.24);
             --mitra-text: #e2e8f0;
-            --mitra-text-soft: #cbd5e1;
-            --mitra-text-muted: #94a3b8;
-            --mitra-accent: #38bdf8;
-            --mitra-accent-strong: #0ea5e9;
-            --mitra-accent-soft: rgba(56, 189, 248, 0.14);
-            --mitra-success: #34d399;
-            --mitra-warning: #fbbf24;
+            --mitra-text-soft: #d2dae8;
+            --mitra-text-muted: #8fa0b8;
+            --mitra-accent: #60a5fa;
+            --mitra-accent-strong: #3b82f6;
+            --mitra-accent-soft: rgba(96, 165, 250, 0.14);
+            --mitra-success: #34c38f;
+            --mitra-warning: #f0b44c;
             --mitra-danger: #fb7185;
             --mitra-shadow: 0 24px 52px rgba(2, 6, 23, 0.24);
             --mitra-shadow-soft: 0 12px 28px rgba(2, 6, 23, 0.18);
@@ -102,23 +102,24 @@
         }
 
         body::before {
-            top: -8rem;
-            right: -6rem;
-            width: 24rem;
-            height: 24rem;
-            border-radius: 42% 58% 55% 45% / 38% 42% 58% 62%;
+            top: -7rem;
+            right: -5rem;
+            width: 26rem;
+            height: 18rem;
+            border-radius: 2.75rem;
             background: var(--mitra-bg-shape);
             opacity: 0.9;
+            transform: rotate(-12deg);
         }
 
         body::after {
             left: -7rem;
             top: 12rem;
-            width: 18rem;
-            height: 28rem;
+            width: 14rem;
+            height: 30rem;
             border-radius: 999px;
             background: linear-gradient(180deg, var(--mitra-bg-accent) 0%, var(--mitra-bg-shape-soft) 100%);
-            opacity: 0.55;
+            opacity: 0.45;
         }
 
         html,
@@ -236,7 +237,7 @@
 
         .mitra-theme-badge {
             color: var(--mitra-accent-strong);
-            background: var(--mitra-accent-soft);
+            background: color-mix(in srgb, var(--mitra-accent-soft) 82%, var(--mitra-surface-strong) 18%);
             border: 1px solid color-mix(in srgb, var(--mitra-accent) 35%, transparent);
         }
 
@@ -752,6 +753,211 @@
             isolation: isolate;
         }
 
+        .mitra-shell-header {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .mitra-shell-actions {
+            display: grid;
+            gap: 0.75rem;
+            align-content: start;
+        }
+
+        .mitra-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 2.75rem;
+        }
+
+        .mitra-nav-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .mitra-dashboard-summary {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-dashboard-summary::before {
+            content: "";
+            position: absolute;
+            inset: 1.1rem auto 1.1rem 1.1rem;
+            width: 0.38rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--mitra-accent) 34%, transparent);
+        }
+
+        .mitra-dashboard-summary::after {
+            content: "";
+            position: absolute;
+            right: 1.1rem;
+            top: 1.1rem;
+            width: 5.25rem;
+            height: 5.25rem;
+            border-radius: 1.4rem;
+            background:
+                linear-gradient(135deg, color-mix(in srgb, var(--mitra-accent-soft) 80%, transparent) 0%, transparent 100%);
+            border: 1px solid color-mix(in srgb, var(--mitra-accent) 14%, transparent);
+            transform: rotate(12deg);
+            opacity: 0.85;
+            z-index: -1;
+        }
+
+        .mitra-stat-strip-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mitra-stat-strip-item::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 0.28rem;
+            background: color-mix(in srgb, var(--mitra-accent) 24%, transparent);
+        }
+
+        .mitra-stat-strip-item::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            width: 1.65rem;
+            height: 1.65rem;
+            border-radius: 0.85rem;
+            border: 1px solid color-mix(in srgb, var(--mitra-border-strong) 70%, transparent);
+            opacity: 0.7;
+        }
+
+        .mitra-brief-panel {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-brief-panel::before {
+            content: "";
+            position: absolute;
+            inset: 1.2rem auto 1.2rem 1.2rem;
+            width: 0.42rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--mitra-accent) 32%, transparent);
+        }
+
+        .mitra-brief-panel::after {
+            content: "";
+            position: absolute;
+            right: 1.15rem;
+            top: 1.15rem;
+            width: 6rem;
+            height: 6rem;
+            border-radius: 1.6rem;
+            border: 1px solid color-mix(in srgb, var(--mitra-accent) 14%, transparent);
+            background:
+                linear-gradient(135deg, color-mix(in srgb, var(--mitra-accent-soft) 72%, transparent) 0%, transparent 100%);
+            transform: rotate(10deg);
+            opacity: 0.72;
+            z-index: -1;
+        }
+
+        .mitra-rail-card {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-rail-card::after {
+            content: "";
+            position: absolute;
+            right: -1rem;
+            bottom: -1rem;
+            width: 4.5rem;
+            height: 4.5rem;
+            border-radius: 1.2rem;
+            border: 1px solid color-mix(in srgb, var(--mitra-border-strong) 72%, transparent);
+            opacity: 0.42;
+            transform: rotate(16deg);
+        }
+
+        .mitra-metric-card {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-metric-card::before {
+            content: "";
+            position: absolute;
+            left: 1.1rem;
+            top: 1.1rem;
+            width: 2.4rem;
+            height: 0.24rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--mitra-accent) 28%, transparent);
+        }
+
+        .mitra-metric-card::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            width: 3.6rem;
+            height: 3.6rem;
+            border-radius: 1rem;
+            background: color-mix(in srgb, var(--mitra-accent-soft) 55%, transparent);
+            border: 1px solid color-mix(in srgb, var(--mitra-accent) 10%, transparent);
+            opacity: 0.68;
+            z-index: -1;
+        }
+
+        .mitra-module-card {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .mitra-module-card::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 1.25rem;
+            border: 1px solid color-mix(in srgb, var(--mitra-accent) 14%, transparent);
+            background: linear-gradient(145deg, color-mix(in srgb, var(--mitra-accent-soft) 56%, transparent), transparent);
+            opacity: 0.72;
+            z-index: -1;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+
+        .mitra-module-card:hover::after {
+            transform: translate(-0.15rem, -0.15rem) rotate(10deg);
+            opacity: 0.92;
+        }
+
+        .mitra-card-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 999px;
+            color: var(--mitra-text-muted);
+            background: color-mix(in srgb, var(--mitra-surface-strong) 84%, transparent);
+            border: 1px solid var(--mitra-border);
+            transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .mitra-nav-card:hover .mitra-card-arrow {
+            transform: translateX(0.2rem);
+            color: var(--mitra-accent-strong);
+            border-color: color-mix(in srgb, var(--mitra-accent) 36%, var(--mitra-border) 64%);
+        }
+
         .mitra-nav-card::before {
             content: "";
             position: absolute;
@@ -764,20 +970,21 @@
         .mitra-nav-card::after {
             content: "";
             position: absolute;
-            right: -1.25rem;
-            bottom: -1.65rem;
-            width: 6.5rem;
-            height: 6.5rem;
-            border-radius: 46% 54% 58% 42% / 42% 44% 56% 58%;
-            background: color-mix(in srgb, var(--mitra-accent-soft) 84%, transparent);
-            opacity: 0.6;
+            right: 1rem;
+            bottom: 1rem;
+            width: 4.25rem;
+            height: 4.25rem;
+            border-radius: 1.4rem;
+            background: color-mix(in srgb, var(--mitra-accent-soft) 66%, transparent);
+            border: 1px solid color-mix(in srgb, var(--mitra-accent) 14%, transparent);
+            opacity: 0.55;
             z-index: -1;
             transition: transform 0.25s ease, opacity 0.25s ease;
         }
 
         .mitra-nav-card:hover::after {
-            transform: translate(-0.35rem, -0.35rem);
-            opacity: 0.9;
+            transform: translate(-0.2rem, -0.2rem) rotate(8deg);
+            opacity: 0.82;
         }
 
         .mitra-nav-card-icon {
@@ -789,12 +996,12 @@
         .mitra-nav-card-icon::after {
             content: "";
             position: absolute;
-            right: -0.35rem;
-            top: -0.35rem;
-            width: 1.3rem;
-            height: 1.3rem;
-            border-radius: 0.75rem;
-            background: rgba(255, 255, 255, 0.42);
+            right: 0.35rem;
+            top: 0.35rem;
+            width: 0.85rem;
+            height: 0.85rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.28);
         }
 
         .mitra-deferred-card {
@@ -961,6 +1168,74 @@
             }
         }
 
+        @media (max-width: 1023px) {
+            #navbar > div {
+                min-height: 4.25rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+                align-items: center;
+            }
+
+            #navbar > div > div:first-child,
+            #navbar > div > div:last-child {
+                min-width: 0;
+            }
+
+            #navbar .text-sm.font-bold {
+                max-width: min(14rem, 52vw);
+                line-height: 1.1rem;
+                white-space: normal;
+            }
+
+            #appContent main > div {
+                padding-top: 1.5rem;
+                padding-bottom: 4.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                width: min(20rem, calc(100vw - 1rem));
+                margin: 0.5rem 0 0.5rem 0.5rem;
+                border-radius: 1.5rem;
+            }
+
+            #navbar > div {
+                gap: 0.75rem;
+            }
+
+            #navbar .text-sm.font-bold {
+                max-width: min(12rem, 48vw);
+                font-size: 0.78rem;
+                letter-spacing: 0.04em;
+            }
+
+            #navbar .mitra-theme-button {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .mitra-mobile-table {
+                min-width: 620px;
+            }
+
+            .mitra-mobile-table-wide {
+                min-width: 760px;
+            }
+
+            .mitra-nav-card {
+                gap: 1rem;
+            }
+
+            .mitra-shell-header {
+                gap: 0.9rem;
+            }
+
+            .mitra-shell-actions {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 640px) {
             .mitra-mobile-card {
                 padding: 1.1rem;
@@ -972,18 +1247,16 @@
                 align-items: flex-start;
             }
 
+            .mitra-shell-actions {
+                grid-template-columns: 1fr;
+            }
+
             .mitra-mobile-table {
-                min-width: 680px;
+                min-width: 560px;
             }
 
             .mitra-mobile-table-wide {
-                min-width: 840px;
-            }
-
-            #sidebar {
-                width: min(20rem, calc(100vw - 1rem));
-                margin: 0.5rem 0 0.5rem 0.5rem;
-                border-radius: 1.5rem;
+                min-width: 700px;
             }
 
             #appContent main > div {
@@ -991,10 +1264,15 @@
                 padding-bottom: 5rem;
             }
 
+            #navbar > div {
+                min-height: 4rem;
+                gap: 0.5rem;
+            }
+
             #navbar .text-sm.font-bold {
-                font-size: 0.78rem;
-                line-height: 1.15rem;
-                letter-spacing: 0.04em;
+                max-width: min(10rem, 42vw);
+                font-size: 0.72rem;
+                line-height: 1rem;
             }
 
             .mitra-panel,
@@ -1020,6 +1298,10 @@
                 width: 9.5rem;
                 height: 9.5rem;
                 right: -2.5rem;
+            }
+
+            .mitra-editorial-hero::before {
+                inset: 1rem auto 1rem 1rem;
             }
 
             .mitra-panel-soft .p-4,
