@@ -18,7 +18,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('area_id')->references('id')->on('areas')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('subarea_id')->references('id')->on('subareas')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

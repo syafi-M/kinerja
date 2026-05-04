@@ -19,7 +19,6 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet" href="{{ URL::asset('css/toastr.min.css') }}">
     <style>
         #map {
             height: 180px;
@@ -368,8 +367,8 @@
         </div>
     </div>
     <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
-    <script src="{{ URL::asset('js/toastr.min.js') }}"></script>
     <script src="{{ URL::asset('js/moment.min.js') }}"></script>
+    <x-flasher />
 
     @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
         <!-- Configure a few settings and attach camera -->

@@ -12,6 +12,30 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.0] - 2026-04-30
+
+### Added
+- Menambahkan job `test` pada GitHub Actions untuk validasi install dependency, migrate fresh, dan full test suite sebelum deploy.
+- Menambahkan self-profile route compatibility untuk flow update dan delete profile bawaan auth.
+- Menambahkan rendering notifikasi PHP Flasher pada layout utama, guest, dan halaman absensi.
+
+### Changed
+- Meng-upgrade framework aplikasi ke Laravel 12 dan menyesuaikan dependency pendukung agar kompatibel dengan PHP 8.4.
+- Mengembalikan flow login agar tetap memakai `name` dan `password` sesuai kebutuhan production.
+- Mengarahkan route `/register` ke flow `kontrak-baru` agar entry point registrasi sesuai proses bisnis yang aktif.
+- Memperbarui workflow deploy agar asset frontend dibuild setelah test lolos.
+- Memigrasikan integrasi notifikasi dari package `yoeunes/toastr` ke `php-flasher/flasher-toastr-laravel`.
+
+### Fixed
+- Memperbaiki beberapa migration lama agar `migrate:fresh` dan test environment kembali stabil.
+- Memperbaiki autoload PSR-4 untuk class response dan notification controller.
+- Memperbaiki compat auth/profile setelah upgrade agar test Breeze tetap berjalan tanpa mengubah flow utama production.
+- Memperbaiki tampilan profile agar tidak crash saat relasi user tertentu kosong.
+
+### Removed
+- Menghapus dependency `yoeunes/toastr` yang sudah abandoned.
+- Menghapus jalur register bawaan Breeze sebagai entry point utama registrasi.
+
 ## [v1.13.4] - 2026-04-29
 
 ### Added

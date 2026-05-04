@@ -16,6 +16,14 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
+
+        Schema::table('area_sub', function (Blueprint $table) {
+            $table->foreign('subarea_id')
+                ->references('id')
+                ->on('subareas')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+        });
     }
 
     /**

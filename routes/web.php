@@ -170,6 +170,8 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::resource('/dashboard', DashboardController::class);
     Route::resource('/absensi', AbsensiController::class);
     Route::get('/historyAbsensi', [AbsensiController::class, 'historyAbsensi']);
+    Route::patch('/profile', [ProfileController::class, 'updateSelf'])->name('profile.self.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.self.destroy');
     Route::resource('/profile', ProfileController::class);
     Route::resource('/lembur', LemburController::class)->only('index', 'store', 'update');
     Route::get('/lembur-history', [LemburController::class, 'lemburIndexUser'])->name('lemburIndexUser');

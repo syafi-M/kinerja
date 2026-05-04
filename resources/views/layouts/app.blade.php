@@ -60,6 +60,7 @@
     <!-- cdnjs -->
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}"></script>
+    <x-flasher />
     <x-analytic-component />
     <script>
         $(document).ready(function() {

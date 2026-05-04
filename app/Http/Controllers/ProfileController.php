@@ -79,6 +79,27 @@ class ProfileController extends Controller
         return to_route('profile.index');
     }
 
+    public function updateSelf(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        if ($validated['email'] !== $user->getOriginal('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return Redirect::to('/profile');
+    }
+
     /**
      * Delete the user's account.
      */

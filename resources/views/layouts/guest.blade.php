@@ -187,6 +187,7 @@
     <footer class="absolute w-full text-xs text-center text-stone-500 bottom-4">
         © {{ date('Y') }} {{ config('app.name', 'Kinerja SAC-PO') }}
     </footer>
+    <x-flasher />
     <x-analytic-component />
 
 </body>
