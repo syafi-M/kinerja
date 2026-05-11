@@ -37,7 +37,7 @@
                                 @forelse($users as $user)
                                     <option value="{{ $user->id }}"
                                         {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }} - {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
+                                        {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
                                     </option>
                                 @empty
                                     <option value="" disabled>Tidak ada data pegawai</option>
@@ -283,5 +283,11 @@
                 }
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.initTomUserSelect?.('user_id', {
+                placeholder: 'Pilih nama pegawai'
+            });
+        });
     </script>
 </x-app-layout>

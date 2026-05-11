@@ -4,6 +4,7 @@ namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Controller;
 use App\Models\PerformanceCuts;
+use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\CuttingSubmitted;
 use Carbon\Carbon;
@@ -15,7 +16,13 @@ class CuttingController extends Controller
 {
     public function index()
     {
-        return view('leader_view.data_rekap.cutting.index');
+        $users = $this->allowedUsersQuery()
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap']);
+
+        return view('leader_view.data_rekap.cutting.index', [
+            'users' => $users,
+        ]);
     }
 
     public function searchUsers(Request $request)
@@ -45,6 +52,8 @@ class CuttingController extends Controller
 
     public function history(Request $request)
     {
+        $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+
         $allowedPerPage = [10, 15, 25, 50];
         $perPage = (int) $request->input('per_page', 15);
         if (!in_array($perPage, $allowedPerPage, true)) {
@@ -64,6 +73,12 @@ class CuttingController extends Controller
             'users' => $users,
             'perPage' => $perPage,
             'allowedPerPage' => $allowedPerPage,
+            'isSubmissionLocked' => $isSubmissionLocked,
+            'canBulkSubmit' => !$isSubmissionLocked && $this->filteredHistoryQuery($request)
+                ->where(function ($q) {
+                    $q->whereNull('status')
+                        ->orWhereRaw('LOWER(status) = ?', ['pending']);
+                })->exists(),
         ]);
     }
 
@@ -81,42 +96,60 @@ class CuttingController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules($request));
+        try {
+            $validated = $request->validate($this->rules($request));
 
-        $cutting = PerformanceCuts::create([
-            'user_id' => $validated['user_id'],
-            'date_cut' => $validated['date_cutting'],
-            'type_cut' => $validated['type_cutting'],
-            'manual_type_cut' => $validated['type_cutting_manual'] ?? '',
-            'desc' => $validated['desc'],
-            'status' => 'pending',
-        ]);
+            $cutting = PerformanceCuts::create([
+                'user_id' => $validated['user_id'],
+                'date_cut' => $validated['date_cutting'],
+                'type_cut' => $validated['type_cutting'],
+                'manual_type_cut' => $validated['type_cutting_manual'] ?? '',
+                'desc' => $validated['desc'],
+                'status' => 'pending',
+            ]);
 
-        return response()->json([
-            'message' => 'Data cutting disimpan !',
-            'data' => $cutting,
-            'error' => ''
-        ], 201);
+            return response()->json([
+                'message' => 'Data cutting berhasil disimpan!',
+                'data' => $cutting,
+                'error' => ''
+            ], 201);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan data cutting.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $cutting = $this->baseQuery()->findOrFail($id);
-        $validated = $request->validate($this->rules($request));
+        try {
+            $cutting = $this->baseQuery()->findOrFail($id);
+            $validated = $request->validate($this->rules($request));
 
-        $cutting->update([
-            'user_id' => $validated['user_id'],
-            'date_cut' => $validated['date_cutting'],
-            'type_cut' => $validated['type_cutting'],
-            'manual_type_cut' => $validated['type_cutting_manual'] ?? '',
-            'desc' => $validated['desc'],
-        ]);
+            $cutting->update([
+                'user_id' => $validated['user_id'],
+                'date_cut' => $validated['date_cutting'],
+                'type_cut' => $validated['type_cutting'],
+                'manual_type_cut' => $validated['type_cutting_manual'] ?? '',
+                'desc' => $validated['desc'],
+            ]);
 
-        return response()->json([
-            'message' => 'Cutting updated',
-            'data' => $cutting->fresh('user'),
-            'error' => ''
-        ]);
+            return response()->json([
+                'message' => 'Data cutting berhasil diperbarui!',
+                'data' => $cutting->fresh('user'),
+                'error' => ''
+            ]);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui data cutting.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy($id)
@@ -132,39 +165,65 @@ class CuttingController extends Controller
             ]);
         }
 
-        toastr()->warning('Data cutting berhasil dihapus!', [], 'warning');
-        return redirect()->back();
+        toastr()->warning('Data cutting berhasil dihapus!', 'warning');
+        return redirect()->back()->with('toast', [
+            'type' => 'warning',
+            'message' => 'Data cutting berhasil dihapus!',
+        ]);
     }
 
     public function changeStatus($id)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $cutting = $this->baseQuery()->findOrFail($id);
         $currentStatus = $cutting->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
             toastr()->info('Data ini tidak dapat diajukan lagi.');
-            return redirect()->back();
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Data ini tidak dapat diajukan lagi.',
+            ]);
         }
 
         $cutting->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($cutting->fresh('user'));
-        toastr()->success('Cutting berhasil diajukan!', [], 'success');
-        return redirect()->back();
+        toastr()->success('Cutting berhasil diajukan!', 'success');
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Cutting berhasil diajukan!',
+        ]);
     }
 
     public function bulkStatus(Request $request)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $query = $this->filteredHistoryQuery($request)
             ->where(function ($q) {
                 $q->whereNull('status')
-                    ->orWhere('status', 'pending');
+                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
             });
 
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
             toastr()->info('Tidak ada data cutting yang bisa diajukan.');
-            return back();
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Tidak ada data cutting yang bisa diajukan.',
+            ]);
         }
 
         PerformanceCuts::whereIn('id', $items->pluck('id'))
@@ -175,8 +234,19 @@ class CuttingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua data cutting sesuai filter!', [], 'success');
-        return back();
+        toastr()->success('Berhasil mengajukan semua data cutting sesuai filter!', 'success');
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Berhasil mengajukan semua data cutting sesuai filter!',
+        ]);
+    }
+
+    private function isSubmissionLockedByDueDate(): bool
+    {
+        $dueDate = RekapDueDateSetting::latest()->first();
+
+        return $dueDate !== null
+            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     public function fetchApi($id)
@@ -216,7 +286,8 @@ class CuttingController extends Controller
 
     private function baseQuery()
     {
-        return PerformanceCuts::with('user')
+        return PerformanceCuts::with('user:id,name,nama_lengkap')
+            ->select(['id', 'user_id', 'date_cut', 'type_cut', 'manual_type_cut', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
                 $q->where('kerjasama_id', auth()->user()->kerjasama_id)
                     ->whereHas('jabatan', function ($jabatanQuery) {

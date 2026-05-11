@@ -6,3 +6,116 @@
     content: "*";
     color: red;
 }
+
+select.ts-hidden-accessible {
+    border: 0 !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    height: 1px !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    width: 1px !important;
+    white-space: nowrap !important;
+}
+
+select.tomselected.ts-hidden-accessible,
+.tomselected.ts-hidden-accessible {
+    display: none !important;
+}
+
+.ts-wrapper {
+    width: 100%;
+}
+
+.ts-wrapper.single .ts-control,
+.ts-wrapper.multi .ts-control {
+    min-height: 2.75rem;
+    border: 1px solid rgb(203 213 225);
+    border-radius: 0.5rem;
+    background: #ffffff;
+    padding: 0.35rem 0.75rem;
+    color: rgb(30 41 59);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    box-shadow: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.ts-wrapper.single .ts-control .item {
+    background: transparent;
+    border: 0;
+    color: rgb(30 41 59);
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.ts-wrapper.focus .ts-control {
+    border-color: rgb(14 165 233);
+    box-shadow: 0 0 0 3px rgb(224 242 254);
+}
+
+.ts-wrapper.single .ts-control::after {
+    border-color: rgb(100 116 139) transparent transparent transparent;
+    right: 0.875rem;
+}
+
+.ts-control input {
+    color: rgb(30 41 59);
+    font-size: 0.875rem;
+}
+
+.ts-control input::placeholder {
+    color: rgb(148 163 184);
+    opacity: 1;
+}
+
+.ts-dropdown {
+    border-radius: 0.5rem;
+    border: 1px solid rgb(203 213 225);
+    background: #ffffff;
+    box-shadow: 0 18px 40px -24px rgb(15 23 42 / 0.55), 0 8px 18px -14px rgb(15 23 42 / 0.35);
+    margin-top: 0.35rem;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.ts-dropdown-content {
+    max-height: 16rem;
+    padding: 0.25rem;
+}
+
+.ts-dropdown .option,
+.ts-dropdown .no-results,
+.ts-dropdown .create {
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    color: rgb(51 65 85);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    cursor: pointer;
+    transition: background-color 100ms ease, color 100ms ease;
+}
+
+.ts-dropdown .active {
+    background: rgb(224 242 254);
+    color: rgb(12 74 110);
+}
+
+.ts-dropdown .selected {
+    background: rgb(186 230 253);
+    color: rgb(7 89 133);
+    font-weight: 600;
+}
+
+.ts-dropdown .option:hover {
+    background: rgb(240 249 255);
+}
+
+.ts-dropdown .active.selected {
+    background: rgb(186 230 253);
+    color: rgb(7 89 133);
+}

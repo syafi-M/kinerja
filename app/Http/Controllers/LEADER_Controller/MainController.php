@@ -38,21 +38,21 @@ class MainController extends Controller
         // --- 3. Start Building the Query ---
         $query = Absensi::with('user.divisi.jabatan')->latest();
 
-        if($filterMitra) {
-            if(Auth::user()->jabatan_id == 20) {
+        if ($filterMitra) {
+            if (Auth::user()->jabatan_id == 20) {
                 $jabatanCodes = ['OCS', 'CO-CS', 'TMN', 'PTR', 'KSR', 'PG', 'TKS'];
             } else {
                 $jabatanCodes = ['SCR', 'CO-SCR', 'JM', 'DRV', 'FO', 'RCP', 'JK'];
             }
             $users = User::where('kerjasama_id', $filterMitra)
-                        ->select('id', 'nama_lengkap')
-                        ->whereHas('divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $jabatanCodes))
-                        ->orderBy('nama_lengkap', 'asc')
-                        ->get();
-            if($request->user) {
+                ->select('id', 'nama_lengkap')
+                ->whereHas('divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', $jabatanCodes))
+                ->orderBy('nama_lengkap', 'asc')
+                ->get();
+            if ($request->user) {
                 $query->where('user_id', $request->user);
             }
-        }else {
+        } else {
             $users = collect(); // Empty collection if no mitra is selected
         }
 
@@ -93,7 +93,7 @@ class MainController extends Controller
             if ($isSPV) {
                 if ($filterMitra) {
                     $query->where('kerjasama_id', $filterMitra);
-                }else {
+                } else {
                     $query;
                 }
             } else {
@@ -155,10 +155,10 @@ class MainController extends Controller
         // 3. Optimize queries for dropdowns (select only what's needed)
         $divisi = Divisi::orderBy('name', 'asc')->pluck('name', 'id');
         $mitra = Kerjasama::select('kerjasamas.*') // 1. Select columns only from the main table
-                   ->join('clients', 'kerjasamas.client_id', '=', 'clients.id') // 2. Join the tables
-                   ->orderBy('clients.name', 'asc') // 3. Order by the joined table's column
-                   ->with('client:id,name') // 4. Still eager load the relationship for the model
-                   ->get();
+            ->join('clients', 'kerjasamas.client_id', '=', 'clients.id') // 2. Join the tables
+            ->orderBy('clients.name', 'asc') // 3. Order by the joined table's column
+            ->with('client:id,name') // 4. Still eager load the relationship for the model
+            ->get();
 
         // 4. Start with a base query
         $query = User::query();
@@ -188,7 +188,7 @@ class MainController extends Controller
         // CO-CS Role
         if ($authUser->divisi->jabatan->code_jabatan === "CO-CS" || $authUser->jabatan_id == 20) {
             $query->whereHas('divisi.jabatan', fn($q) => $q->whereIn('code_jabatan', ['OCS', 'CO-CS']))
-            ->orderBy('nama_lengkap', 'asc');
+                ->orderBy('nama_lengkap', 'asc');
         }
         // MITRA Role
         elseif ($authUser->divisi->jabatan->code_jabatan === "MITRA") {
@@ -243,18 +243,17 @@ class MainController extends Controller
     public function indexLembur()
     {
         $kerjasama = Auth::user()->kerjasama_id;
-        if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS"){
-                $codeJabatan = ['OCS', 'CO-CS'];
-                $lembur = Lembur::latest()->where('kerjasama_id', $kerjasama)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        })->paginate(31);
-        }else if(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR"){
-                $codeJabatan = ['SCR', 'CO-SCR'];
-                $lembur = Lembur::latest()->where('kerjasama_id', $kerjasama)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        })->paginate(31);
-
-        }else{
+        if (Auth::user()->divisi->jabatan->code_jabatan == "CO-CS") {
+            $codeJabatan = ['OCS', 'CO-CS'];
+            $lembur = Lembur::latest()->where('kerjasama_id', $kerjasama)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
+                $query->whereIn('code_jabatan', $codeJabatan);
+            })->paginate(31);
+        } else if (Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR") {
+            $codeJabatan = ['SCR', 'CO-SCR'];
+            $lembur = Lembur::latest()->where('kerjasama_id', $kerjasama)->whereHas('user.divisi.jabatan', function ($query) use ($codeJabatan) {
+                $query->whereIn('code_jabatan', $codeJabatan);
+            })->paginate(31);
+        } else {
             $lembur = Lembur::where('kerjasama_id', $kerjasama)->paginate(30);
         }
         return view('leader_view/lembur/index', compact('lembur'));
@@ -263,16 +262,16 @@ class MainController extends Controller
     public function indexAbsenSholat()
     {
         $kerjasama = Auth::user()->kerjasama_id;
-        if(Auth::user()->divisi->jabatan->code_jabatan == "CO-CS"){
-                $codeJabatan = ['OCS', 'CO-CS'];
-                $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        })->get();
-        }else if(Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR"){
-                $codeJabatan = ['SCR', 'CO-SCR'];
-                $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                            $query->whereIn('code_jabatan', $codeJabatan);
-                        })->get();
+        if (Auth::user()->divisi->jabatan->code_jabatan == "CO-CS") {
+            $codeJabatan = ['OCS', 'CO-CS'];
+            $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
+                $query->whereIn('code_jabatan', $codeJabatan);
+            })->get();
+        } else if (Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR") {
+            $codeJabatan = ['SCR', 'CO-SCR'];
+            $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
+                $query->whereIn('code_jabatan', $codeJabatan);
+            })->get();
         }
         $absen = Absensi::where('kerjasama_id', $kerjasama)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->get();
         return view('leader_view/absenSholat/index', compact('user', 'absen'));
@@ -282,7 +281,7 @@ class MainController extends Controller
     {
         $absenRecords = Absensi::whereIn('user_id', $request->user)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->orderBy('user_id', 'asc')->get();
         foreach ($absenRecords as $absen) {
-            if(Carbon::now()->format('H:i:s') >= '11:20:00' && Carbon::now()->format('H:i:s') <= '14:10:00'){
+            if (Carbon::now()->format('H:i:s') >= '11:20:00' && Carbon::now()->format('H:i:s') <= '14:10:00') {
                 $img = $request->fotoSholat;
 
                 $folderPath = "public/images/";
@@ -298,7 +297,7 @@ class MainController extends Controller
                 $absen->fotoDzuhur = $fileName;
 
                 $absen->dzuhur = 1;
-            }else if(Carbon::now()->format('H:i:s') >= '17:20:00' && Carbon::now()->format('H:i:s') <= '18:45:00'){
+            } else if (Carbon::now()->format('H:i:s') >= '17:20:00' && Carbon::now()->format('H:i:s') <= '18:45:00') {
                 $img = $request->fotoSholat;
 
                 $folderPath = "public/images/";
@@ -319,7 +318,7 @@ class MainController extends Controller
             $absen->save();
         }
         // dd($request->all(), $absenRecords);
-        toastr()->success('Berhasil Absen Sholat', [], 'sukses');
+        toastr()->success('Berhasil Absen Sholat', 'sukses');
         return to_route('dashboard.index');
     }
 }

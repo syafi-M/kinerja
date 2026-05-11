@@ -14,7 +14,8 @@
                             <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
                                 Riwayat Cutting
                             </h1>
-                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan cutting.</p>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan cutting.
+                            </p>
                         </div>
                     </div>
                     <a href="{{ route('cutting.index') }}"
@@ -26,13 +27,16 @@
             </div>
 
             <div class="p-3 mb-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-4">
-                <form action="{{ route('cutting.history') }}" method="GET" class="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                <form action="{{ route('cutting.history') }}" method="GET"
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-4">
                     <select name="status"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         <option value="">Semua Status</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan</option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan
+                        </option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
+                        </option>
                     </select>
                     <input type="month" name="month" value="{{ request('month') }}"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
@@ -57,7 +61,8 @@
                         <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
                             <div class="flex items-start justify-between gap-3 mb-3">
                                 <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">{{ $cutting->user->nama_lengkap ?? '-' }}</p>
+                                    <p class="text-sm font-semibold text-slate-800">
+                                        {{ $cutting->user->nama_lengkap ?? '-' }}</p>
                                     <p class="mt-0.5 text-xs text-slate-500">{{ $cutting->type_cut }}</p>
                                 </div>
                                 @if (($cutting->status ?? 'pending') == 'Di Ajukan')
@@ -77,11 +82,13 @@
                             <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-slate-600">
                                 <div class="p-2 rounded-lg bg-slate-50">
                                     <span class="block text-slate-400">Tanggal Cutting</span>
-                                    <span class="font-medium text-slate-700">{{ \Carbon\Carbon::parse($cutting->date_cut)->format('d M Y') }}</span>
+                                    <span
+                                        class="font-medium text-slate-700">{{ \Carbon\Carbon::parse($cutting->date_cut)->format('d M Y') }}</span>
                                 </div>
                                 <div class="p-2 rounded-lg bg-slate-50">
                                     <span class="block text-slate-400">Tipe Manual</span>
-                                    <span class="font-medium text-slate-700">{{ $cutting->manual_type_cut ?: '-' }}</span>
+                                    <span
+                                        class="font-medium text-slate-700">{{ $cutting->manual_type_cut ?: '-' }}</span>
                                 </div>
                             </div>
                             <div class="mb-4">
@@ -93,7 +100,7 @@
                                     class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg min-h-10 bg-sky-50 text-sky-700 hover:bg-sky-100">
                                     <i class="ri-eye-line"></i>Lihat
                                 </button>
-                                @if (($cutting->status ?? 'pending') === 'pending')
+                                @if (($cutting->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                     <button onclick="sendCutting({{ $cutting->id }})"
                                         class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100">
                                         <i class="ri-send-plane-fill"></i>Ajukan
@@ -147,7 +154,8 @@
                                         {{ $cutting->user->nama_lengkap ?? '-' }}</td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($cutting->date_cut)->format('d M Y') }}</td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">{{ $cutting->type_cut }}
+                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                        {{ $cutting->type_cut }}
                                     </td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $cutting->manual_type_cut ?: '-' }}</td>
@@ -171,7 +179,7 @@
                                             <button onclick="viewDetail({{ $cutting->id }})"
                                                 class="flex items-center justify-center text-blue-600 bg-blue-100 rounded-lg w-9 h-9 hover:bg-blue-200"
                                                 title="Lihat"><i class="ri-eye-line"></i></button>
-                                            @if (($cutting->status ?? 'pending') === 'pending')
+                                            @if (($cutting->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                                 <button onclick="editData({{ $cutting->id }})"
                                                     class="flex items-center justify-center text-yellow-600 bg-yellow-100 rounded-lg w-9 h-9 hover:bg-yellow-200"
                                                     title="Edit"><i class="ri-edit-line"></i></button>
@@ -232,22 +240,22 @@
                 @endif
             </div>
 
-            <div class="flex justify-end w-full">
-                <form action="{{ route('cutting-bulk.status') }}" method="post" class="w-full mt-3 sm:w-auto">
+            <div class="flex justify-end w-full my-2">
+                <form id="bulkCuttingForm" action="{{ route('cutting-bulk.status') }}" method="post"
+                    style="display:none;">
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="status" value="{{ request('status') }}">
                     <input type="hidden" name="month" value="{{ request('month') }}">
                     <input type="hidden" name="search" value="{{ request('search') }}">
                     <input type="hidden" name="per_page" value="{{ request('per_page', $perPage ?? 15) }}">
-                    <button type="submit"
-                        class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-semibold text-green-700 transition bg-green-100 rounded-lg min-h-10 hover:bg-green-200 sm:w-auto"><i
-                            class="ri-send-plane-fill"></i>Ajukan Semua</button>
                 </form>
+                <button type="button" @disabled(!($canBulkSubmit ?? false)) onclick="openBulkCuttingModal()"
+                    class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 mt-3 text-sm font-semibold rounded-lg min-h-10 sm:mt-0 sm:w-auto {{ $canBulkSubmit ?? false ? 'bg-green-100 text-green-700 hover:bg-green-200 transition' : 'cursor-not-allowed bg-slate-100 text-slate-400' }}"><i
+                        class="ri-send-plane-fill"></i>Ajukan Semua</button>
             </div>
         </div>
     </x-main-div>
-
     <input type="checkbox" id="modal-edit" class="modal-toggle" />
     <div class="modal">
         <div class="modal-box max-h-[90vh] w-11/12 max-w-2xl overflow-y-auto rounded-lg p-4 sm:p-6">
@@ -261,7 +269,8 @@
                 <div class="mb-4"><label for="user_id"
                         class="block mb-2 text-sm font-semibold text-slate-700">Fullname <span
                             class="text-red-500">*</span></label><select name="user_id" id="user_id"
-                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" required>
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                        required>
                         <option value="">-- Pilih Fullname --</option>
                         @foreach ($users as $user)
                             <option value="{{ $user->id }}">{{ $user->nama_lengkap }}</option>
@@ -270,12 +279,15 @@
                 <div class="mb-4"><label for="date_cutting"
                         class="block mb-2 text-sm font-semibold text-slate-700">Tanggal Cutting <span
                             class="text-red-500">*</span></label><input type="date" name="date_cutting"
-                        id="date_cutting" class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" required></div>
+                        id="date_cutting"
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                        required></div>
                 <div class="mb-4">
                     <label for="type_cutting" class="block mb-2 text-sm font-semibold text-slate-700">Type Cutting
                         <span class="text-red-500">*</span></label>
                     <select name="type_cutting" id="type_cutting" x-model="selectedTypeCutting"
-                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" required>
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                        required>
                         <option value="">-- Pilih Type Cutting --</option>
                         <option value="Alpha">Alpha</option>
                         <option value="Kinerja">Kinerja</option>
@@ -292,26 +304,28 @@
                 <div class="mb-4">
                     <label for="desc" class="block mb-2 text-sm font-semibold text-slate-700">Keterangan
                         <span class="text-red-500">*</span></label>
-                    <textarea name="desc" id="desc" rows="4" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm" required></textarea>
+                    <textarea name="desc" id="desc" rows="4"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm" required></textarea>
                 </div>
                 <div id="formErrors" class="mb-4"></div>
             </form>
             <div class="grid grid-cols-1 gap-2 modal-action sm:flex"><label for="modal-edit"
                     class="inline-flex items-center justify-center px-4 text-sm font-semibold border rounded-lg min-h-10 border-slate-300 text-slate-700">Batal</label><button
                     id="btnSave"
-                    class="inline-flex items-center justify-center gap-2 px-4 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900"><i class="ri-save-line"></i>Update Data</button>
+                    class="inline-flex items-center justify-center gap-2 px-4 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900"><i
+                        class="ri-save-line"></i>Update Data</button>
             </div>
         </div>
     </div>
 
     <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
         class="fixed inset-0 z-50 overflow-y-auto" style="display:none;">
-        <div class="fixed inset-0 bg-black/50" @click="open = false"></div>
+        <div class="fixed inset-0 bg-black/50"></div>
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
-            <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6" @click.away="open = false">
+            <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
+                @click.away="open = false">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Pengajuan Cutting</h3><button
-                        @click="open = false"
                         class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100"><i
                             class="text-xl ri-close-line text-slate-600"></i></button>
                 </div>
@@ -411,11 +425,26 @@
             }
         }
 
+        let pendingDeleteCuttingId = null;
+        let pendingSubmitCuttingId = null;
+
         function deleteCutting(id) {
-            if (!confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')) return;
+            pendingDeleteCuttingId = id;
+            window.openConfirmModal({
+                title: 'Hapus Pengajuan',
+                message: 'Apakah Anda yakin ingin menghapus pengajuan ini? Data yang dihapus tidak dapat dikembalikan.',
+                confirmText: 'Ya, Hapus',
+                cancelText: 'Batal',
+                type: 'danger',
+                onConfirm: deleteCuttingConfirmed,
+            });
+        }
+
+        function deleteCuttingConfirmed() {
+            if (!pendingDeleteCuttingId) return;
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/cutting/${id}`;
+            form.action = `/cutting/${pendingDeleteCuttingId}`;
             form.innerHTML =
                 `<input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="DELETE">`;
             document.body.appendChild(form);
@@ -423,13 +452,46 @@
         }
 
         function sendCutting(id) {
+            pendingSubmitCuttingId = id;
+            window.openConfirmModal({
+                title: 'Ajukan Pengajuan',
+                message: 'Apakah Anda yakin ingin mengajukan pengajuan ini?',
+                confirmText: 'Ya, Ajukan',
+                cancelText: 'Batal',
+                type: 'warning',
+                onConfirm: submitCuttingConfirmed,
+            });
+        }
+
+        function openBulkCuttingModal() {
+            if (!{{ $canBulkSubmit ?? false ? 'true' : 'false' }}) {
+                return;
+            }
+
+            window.openConfirmModal({
+                title: 'Ajukan Semua Pengajuan',
+                message: 'Apakah Anda yakin ingin mengajukan semua pengajuan yang belum diajukan?',
+                confirmText: 'Ya, Ajukan Semua',
+                cancelText: 'Batal',
+                type: 'warning',
+                onConfirm: submitBulkCuttingConfirmed,
+            });
+        }
+
+        function submitCuttingConfirmed() {
+            if (!pendingSubmitCuttingId) return;
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/cutting-change-status/${id}`;
+            form.action = `/cutting-change-status/${pendingSubmitCuttingId}`;
             form.innerHTML =
                 `<input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="PATCH">`;
             document.body.appendChild(form);
             form.submit();
+        }
+
+        function submitBulkCuttingConfirmed() {
+            const form = document.getElementById('bulkCuttingForm');
+            if (form) form.submit();
         }
 
         function editData(id) {
@@ -485,7 +547,8 @@
                         $('#formErrors').html(
                             `<div class="px-4 py-3 text-sm border rounded-lg shadow-sm border-rose-200 bg-rose-50 text-rose-700"><div class="flex items-start gap-2"><i class="ri-error-warning-line mt-0.5"></i><ul class="pl-5 list-disc">${errors.map(err => `<li>${err}</li>`).join('')}</ul></div></div>`
                         );
-                    } else showAlert('error', 'Gagal menyimpan data');
+                    } else showAlert('error', xhr.responseJSON?.message ||
+                        'Terjadi kesalahan saat memperbarui data cutting. Silakan coba lagi.');
                 });
         }
 

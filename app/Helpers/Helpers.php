@@ -11,47 +11,65 @@ use Intervention\Image\ImageManager;
 
 function UploadImage($request, $NameFile)
 {
-    Image::configure(['driver' => 'imagick']);
     $file = $request->file($NameFile);
-    if ($file != null && $file->isValid()) {
-
-        $img = Image::make($file);
-        $imageSize = $img->filesize();
-
-        $image = Image::make($file);
-        $extensions = $file->getClientOriginalExtension();
-        $randomNumber = mt_rand(1, 999999);
-        $rename = 'data' . $randomNumber . '.' . $extensions;
-
-        $path = public_path('storage/images/' . $rename);
-        $img = Image::make($file->getRealPath());
-        $img->resize(450, 450);
-        $img->save($path, 13);
-
-        return $rename;
+    if (!$file || !$file->isValid()) {
+        return null;
     }
+
+    $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'jpg'));
+    $rename = 'data' . mt_rand(1, 999999) . '.' . $extension;
+
+    $targetDir = storage_path('app/public/images');
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    if (!is_writable($targetDir)) {
+        @chmod($targetDir, 0755);
+    }
+
+    $targetPath = $targetDir . DIRECTORY_SEPARATOR . $rename;
+
+    $img = Image::make($file->getRealPath());
+    $img->resize(450, 450);
+    $img->save($targetPath, 13);
+
+    if (!file_exists($targetPath)) {
+        throw new \RuntimeException("Can't write image data to path ({$targetPath})");
+    }
+
+    return $rename;
 }
 
 function UploadImageV2($request, $NameFile)
 {
-
     $file = $request->file($NameFile);
-    if ($file != null && $file->isValid()) {
-
-        $img = Image::make($file);
-        $imageSize = $img->filesize();
-
-        $image = Image::make($file);
-        $extensions = $file->getClientOriginalExtension();
-        $randomNumber = mt_rand(1, 999999);
-        $rename = 'data' . $randomNumber . '.' . $extensions;
-
-        $path = public_path('storage/images/' . $rename);
-        $img = Image::make($file->getRealPath());
-        $img->save($path, 85);
-
-        return $rename;
+    if (!$file || !$file->isValid()) {
+        return null;
     }
+
+    $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'jpg'));
+    $rename = 'data' . mt_rand(1, 999999) . '.' . $extension;
+
+    $targetDir = storage_path('app/public/images');
+    if (!is_dir($targetDir)) {
+        mkdir($targetDir, 0755, true);
+    }
+
+    if (!is_writable($targetDir)) {
+        @chmod($targetDir, 0755);
+    }
+
+    $targetPath = $targetDir . DIRECTORY_SEPARATOR . $rename;
+
+    $img = Image::make($file->getRealPath());
+    $img->save($targetPath, 85);
+
+    if (!file_exists($targetPath)) {
+        throw new \RuntimeException("Can't write image data to path ({$targetPath})");
+    }
+
+    return $rename;
 }
 
 function UploadImageUser($request, $NameFile)
