@@ -5,6 +5,7 @@ namespace App\Http\Controllers\LEADER_Controller;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
 use App\Models\PersonIn;
+use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\PersonInSubmitted;
 use Carbon\Carbon;
@@ -16,10 +17,22 @@ class PersonInController extends Controller
 {
     public function index()
     {
-        $jabatans = Jabatan::where('type_jabatan', auth()->user()->jabatan->type_jabatan)->get();
+        $jabatans = Jabatan::select(['id', 'name_jabatan'])
+            ->where('type_jabatan', auth()->user()->jabatan->type_jabatan)
+            ->orderBy('name_jabatan')
+            ->get();
+
+        $users = User::select(['id', 'nama_lengkap'])
+            ->where('kerjasama_id', auth()->user()->kerjasama_id)
+            ->whereHas('jabatan', function ($q) {
+                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
 
         return view('leader_view.data_rekap.person_in.index', [
             'jabatans' => $jabatans,
+            'users' => $users,
         ]);
     }
 
@@ -53,6 +66,8 @@ class PersonInController extends Controller
 
     public function history(Request $request)
     {
+        $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+
         $allowedPerPage = [10, 15, 25, 50];
         $perPage = (int) $request->input('per_page', 15);
         if (!in_array($perPage, $allowedPerPage, true)) {
@@ -62,13 +77,22 @@ class PersonInController extends Controller
         $personIn = $this->filteredHistoryQuery($request)
             ->paginate($perPage)
             ->withQueryString();
-        $jabatans = Jabatan::where('type_jabatan', auth()->user()->jabatan->type_jabatan)->get();
+        $jabatans = Jabatan::select(['id', 'name_jabatan'])
+            ->where('type_jabatan', auth()->user()->jabatan->type_jabatan)
+            ->orderBy('name_jabatan')
+            ->get();
 
         return view('leader_view.data_rekap.person_in.history', [
             'personIn' => $personIn,
             'jabatans' => $jabatans,
             'perPage' => $perPage,
             'allowedPerPage' => $allowedPerPage,
+            'isSubmissionLocked' => $isSubmissionLocked,
+            'canBulkSubmit' => !$isSubmissionLocked && $this->filteredHistoryQuery($request)
+                ->where(function ($q) {
+                    $q->whereNull('status')
+                        ->orWhereRaw('LOWER(status) = ?', ['pending']);
+                })->exists(),
         ]);
     }
 
@@ -87,36 +111,54 @@ class PersonInController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules($request));
-        unset($validated['has_account']);
+        try {
+            $validated = $request->validate($this->rules($request));
+            unset($validated['has_account']);
 
-        $validated['client_id'] = auth()->user()->kerjasama->client_id;
-        $validated['status'] = 'pending';
+            $validated['client_id'] = auth()->user()->kerjasama->client_id;
+            $validated['status'] = 'pending';
 
-        $personIn = PersonIn::create($validated);
-        return response()->json([
-            'message' => 'Data personil masuk disimpan !',
-            'data' => $personIn,
-            'error' => ''
-        ], 201);
+            $personIn = PersonIn::create($validated);
+            return response()->json([
+                'message' => 'Data personil masuk berhasil disimpan!',
+                'data' => $personIn,
+                'error' => ''
+            ], 201);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan data personil masuk.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $personIn = $this->baseQuery()->findOrFail($id);
+        try {
+            $personIn = $this->baseQuery()->findOrFail($id);
 
-        $validated = $request->validate($this->rules($request));
-        unset($validated['has_account']);
+            $validated = $request->validate($this->rules($request));
+            unset($validated['has_account']);
 
-        $validated['client_id'] = auth()->user()->kerjasama->client_id;
+            $validated['client_id'] = auth()->user()->kerjasama->client_id;
 
-        $personIn->update($validated);
+            $personIn->update($validated);
 
-        return response()->json([
-            'message' => 'Person in updated',
-            'data' => $personIn->fresh(),
-            'error' => ''
-        ]);
+            return response()->json([
+                'message' => 'Data personil masuk berhasil diperbarui!',
+                'data' => $personIn->fresh(),
+                'error' => ''
+            ]);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui data personil masuk.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy($id)
@@ -132,41 +174,67 @@ class PersonInController extends Controller
             ]);
         }
 
-        toastr()->warning('Personil masuk berhasil dihapus!', [], 'warning');
-        return redirect()->back();
+        toastr()->warning('Personil masuk berhasil dihapus!', 'warning');
+        return redirect()->back()->with('toast', [
+            'type' => 'warning',
+            'message' => 'Personil masuk berhasil dihapus!',
+        ]);
     }
 
     public function changeStatus($id)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $personIn = $this->baseQuery()->findOrFail($id);
         $currentStatus = $personIn->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
             toastr()->info('Data ini tidak dapat diajukan lagi.');
-            return redirect()->back();
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Data ini tidak dapat diajukan lagi.',
+            ]);
         }
 
         $personIn->update(['status' => 'Di Ajukan']);
 
         $this->notifyApproverForSubmission($personIn);
 
-        toastr()->success('Personil masuk berhasil diajukan!', [], 'success');
-        return redirect()->back();
+        toastr()->success('Personil masuk berhasil diajukan!', 'success');
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Personil masuk berhasil diajukan!',
+        ]);
     }
 
     public function bulkStatus(Request $request)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $query = $this->filteredHistoryQuery($request)
             ->where(function ($q) {
                 $q->whereNull('status')
-                    ->orWhere('status', 'pending');
+                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
             });
 
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
             toastr()->info('Tidak ada data personil masuk yang bisa diajukan.');
-            return back();
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Tidak ada data personil masuk yang bisa diajukan.',
+            ]);
         }
 
         PersonIn::whereIn('id', $items->pluck('id'))
@@ -177,8 +245,19 @@ class PersonInController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua personil masuk sesuai filter!', [], 'success');
-        return back();
+        toastr()->success('Berhasil mengajukan semua personil masuk sesuai filter!', 'success');
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Berhasil mengajukan semua personil masuk sesuai filter!',
+        ]);
+    }
+
+    private function isSubmissionLockedByDueDate(): bool
+    {
+        $dueDate = RekapDueDateSetting::latest()->first();
+
+        return $dueDate !== null
+            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     public function fetchApi($id)
@@ -218,7 +297,9 @@ class PersonInController extends Controller
 
     private function baseQuery()
     {
-        return PersonIn::where('client_id', auth()->user()->kerjasama->client_id)
+        return PersonIn::with('jabatan:id,name_jabatan')
+            ->select(['id', 'fullname', 'client_id', 'jabatan_id', 'date_in', 'method_salary', 'method_salary_manual', 'status', 'created_at'])
+            ->where('client_id', auth()->user()->kerjasama->client_id)
             ->whereHas('jabatan', function ($q) {
                 $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
             });

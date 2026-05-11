@@ -4,21 +4,29 @@ namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Controller;
 use App\Models\PersonOut;
+use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\PersonOutSubmitted;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PersonOutController extends Controller
 {
     public function create()
     {
-        $users = User::where('id', '!=', auth()->user()->id)->where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
-            $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-        })->get();
+        $users = User::select(['id', 'name', 'nama_lengkap'])
+            ->where('id', '!=', auth()->user()->id)
+            ->where('kerjasama_id', auth()->user()->kerjasama_id)
+            ->whereHas('jabatan', function ($q) {
+                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
         return view('leader_view.data_rekap.person_out.create', [
             'users' => $users
         ]);
@@ -26,15 +34,16 @@ class PersonOutController extends Controller
 
     public function history(Request $request)
     {
-        $startDate = Carbon::now()->startOfMonth()->startOfDay();
-        $endDate = Carbon::now()->startOfMonth()->addDays(24)->endOfDay();
-        $personOut = PersonOut::with([
-            'user' => function ($q) {
-                $q->withTrashed();
-            }
-        ])->whereHas('user', function ($q) {
-            $q->withTrashed()->where('kerjasama_id', auth()->user()->kerjasama_id);
-        })->whereBetween('out_date', [$startDate, $endDate])
+        $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+
+        $personOut = PersonOut::select(['id', 'user_id', 'total_mk', 'reason', 'reason_manual', 'out_date', 'img', 'status', 'created_at'])
+            ->with([
+                'user' => function ($q) {
+                    $q->withTrashed()->select(['id', 'name', 'nama_lengkap']);
+                }
+            ])->whereHas('user', function ($q) {
+                $q->withTrashed()->where('kerjasama_id', auth()->user()->kerjasama_id);
+            })
             ->when($request->status, function ($q) use ($request) {
                 $q->where('status', $request->status);
             })
@@ -48,14 +57,20 @@ class PersonOutController extends Controller
                     // ignore invalid month
                 }
             })
-
-
+            ->latest()
             ->paginate(15)
             ->withQueryString();
         // dd($request->month, $personOut[0]);
 
         return view('leader_view.data_rekap.person_out.show', [
-            'personOut' => $personOut
+            'personOut' => $personOut,
+            'isSubmissionLocked' => $isSubmissionLocked,
+            'canBulkSubmit' => !$isSubmissionLocked && PersonOut::whereHas('user', function ($q) {
+                $q->withTrashed()->where('kerjasama_id', auth()->user()->kerjasama_id);
+            })->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
+            })->exists(),
         ]);
     }
 
@@ -66,36 +81,87 @@ class PersonOutController extends Controller
 
     public function store(Request $request)
     {
-
         try {
             $validated = $request->validate([
-                'user_id' => ['required', 'exists:users,id'],
+                'user_id' => ['required', 'exists:users,id', Rule::unique('person_outs', 'user_id')],
                 'total_mk' => ['required'],
                 'reason' => ['required', 'string', 'max:255'],
                 'reason_manual' => ['nullable', 'string', 'max:255'],
                 'out_date' => ['required', 'date'],
                 'img' => ['required', 'image', 'max:2048'],
+            ], [
+                'user_id.required' => 'Nama personil wajib dipilih.',
+                'user_id.exists' => 'Nama personil tidak valid.',
+                'user_id.unique' => 'User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.',
+                'total_mk.required' => 'Masa kerja wajib diisi.',
+                'reason.required' => 'Alasan keluar wajib dipilih.',
+                'reason.max' => 'Alasan keluar maksimal 255 karakter.',
+                'reason_manual.max' => 'Alasan manual maksimal 255 karakter.',
+                'out_date.required' => 'Tanggal keluar wajib diisi.',
+                'out_date.date' => 'Format tanggal keluar tidak valid.',
+                'img.required' => 'Bukti pendukung wajib diunggah.',
+                'img.image' => 'File bukti harus berupa gambar.',
+                'img.max' => 'Ukuran gambar maksimal 2MB.',
             ]);
 
-            if ($request->hasFile('img')) {
-                $validated['img'] = UploadImageV2($request, 'img');
-            }
+                if ($request->hasFile('img')) {
+                    try {
+                        $validated['img'] = UploadImageV2($request, 'img');
+                        if (empty($validated['img'])) {
+                            toastr()->error('Gagal mengunggah gambar. Silakan coba lagi.', 'error');
+                            return redirect()->back()->withInput()->with('toast', [
+                                'type' => 'error',
+                                'message' => 'Gagal mengunggah gambar. Silakan coba lagi.',
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        report($e);
+                        toastr()->error('Gagal mengunggah gambar. Silakan coba lagi.', 'error');
+                        return redirect()->back()->withInput()->with('toast', [
+                            'type' => 'error',
+                            'message' => 'Gagal mengunggah gambar. Silakan coba lagi.',
+                        ]);
+                    }
+                }
 
             PersonOut::create($validated);
 
-            toastr()->success('Berhasil mengajukan data!', [], 'success');
-            return redirect()->back();
-        } catch (\Throwable $th) {
+            toastr()->success('Berhasil mengajukan data!', 'success');
+            return redirect()->back()->with('toast', [
+                'type' => 'success',
+                'message' => 'Berhasil mengajukan data!',
+            ]);
+        } catch (QueryException $th) {
+            if ((int) $th->getCode() === 23000 && str_contains(strtolower($th->getMessage()), 'person_outs_user_id_unique')) {
+                toastr()->error('User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.', 'error');
+                return redirect()->back()->withInput()->with('toast', [
+                    'type' => 'error',
+                    'message' => 'User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.',
+                ]);
+            }
+
             throw $th;
+        } catch (\Throwable $th) {
+            report($th);
+            toastr()->error('Terjadi kesalahan saat menyimpan data personil keluar. Silakan coba lagi.', 'error');
+            return redirect()->back()->withInput()->with('toast', [
+                'type' => 'error',
+                'message' => 'Terjadi kesalahan saat menyimpan data personil keluar. Silakan coba lagi.',
+            ]);
         }
     }
 
     public function edit($id)
     {
         $personOut = PersonOut::findOrFail($id);
-        $users = User::where('id', '!=', auth()->user()->id)->where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
-            $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-        })->get();
+        $users = User::select(['id', 'name', 'nama_lengkap'])
+            ->where('id', '!=', auth()->user()->id)
+            ->where('kerjasama_id', auth()->user()->kerjasama_id)
+            ->whereHas('jabatan', function ($q) {
+                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
         return view('leader_view.data_rekap.person_out.edit', [
             'users' => $users,
             'personOut' => $personOut
@@ -117,6 +183,7 @@ class PersonOutController extends Controller
             DB::transaction(function () use ($validated, $request, $id) {
 
                 $personOut = PersonOut::findOrFail($id);
+                $oldImageName = $personOut->img;
 
                 // prevent user_id mutation if you decided it must be immutable
                 if ($personOut->user_id !== (int) $validated['user_id']) {
@@ -124,32 +191,46 @@ class PersonOutController extends Controller
                 }
 
                 // handle image replacement
-                if ($request->hasFile('img')) {
-
-                    // delete old image if exists
-                    if ($personOut->img) {
-                        $oldPath = 'public/images/' . $personOut->img;
-                        if (Storage::exists($oldPath)) {
-                            Storage::delete($oldPath);
-                        }
+                if ($request->hasFile('img') && $request->file('img')->isValid()) {
+                    try {
+                        $newImageName = UploadImageV2($request, 'img');
+                    } catch (\Exception $e) {
+                        report($e);
+                        throw new \Exception('Gagal mengunggah gambar. Silakan coba lagi.');
                     }
 
-                    // upload new image
-                    $validated['img'] = UploadImageV2($request, 'img');
+                    if (empty($newImageName)) {
+                        throw new \Exception('Gagal mengunggah gambar. Silakan coba lagi.');
+                    }
+
+                    $validated['img'] = $newImageName;
                 } else {
                     // keep old image
                     unset($validated['img']);
                 }
 
                 $personOut->update($validated);
+
+                if (isset($validated['img']) && $oldImageName && $oldImageName !== $validated['img']) {
+                    $oldPath = 'public/images/' . $oldImageName;
+                    if (Storage::exists($oldPath)) {
+                        Storage::delete($oldPath);
+                    }
+                }
             });
 
-            toastr()->success('Berhasil update data!', [], 'success');
-            return redirect()->back();
+            toastr()->success('Berhasil update data!', 'success');
+            return redirect()->back()->with('toast', [
+                'type' => 'success',
+                'message' => 'Berhasil update data!',
+            ]);
         } catch (\Throwable $th) {
             report($th);
-            toastr()->error('Gagal update data', [], 'error');
-            return redirect()->back()->withInput();
+            toastr()->error('Gagal memperbarui data personil keluar. Silakan coba lagi.', 'error');
+            return redirect()->back()->withInput()->with('toast', [
+                'type' => 'error',
+                'message' => 'Gagal memperbarui data personil keluar. Silakan coba lagi.',
+            ]);
         }
     }
 
@@ -157,15 +238,25 @@ class PersonOutController extends Controller
     {
         $personOut->delete();
 
-        toastr()->success('Personil berhasil direcover', [], 'success');
-        return redirect()->back();
+        toastr()->success('Personil berhasil direcover', 'success');
+        return redirect()->back()->with('toast', [
+            'type' => 'warning',
+            'message' => 'Data personil keluar berhasil dihapus!',
+        ]);
     }
 
     public function changeStatus($id)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $personOut = PersonOut::findOrFail($id);
         $personOut->update(["status" => "Di Ajukan"]);
-        toastr()->success('Personil Keluar Berhasil Di Ajukan!', [], 'success');
+        toastr()->success('Personil Keluar Berhasil Di Ajukan!', 'success');
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
             : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
@@ -184,18 +275,28 @@ class PersonOutController extends Controller
                 new PersonOutSubmitted($personOut)
             );
         }
-        return redirect()->back();
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Personil keluar berhasil diajukan!',
+        ]);
     }
 
     public function bulkStatus()
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $personOuts = PersonOut::whereHas('user', function ($q) {
             $q->withTrashed()
                 ->where('kerjasama_id', auth()->user()->kerjasama_id);
         })
             ->where(function ($q) {
                 $q->whereNull('status')
-                    ->orWhere('status', 'pending');
+                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
             })
             ->get();
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
@@ -205,7 +306,10 @@ class PersonOutController extends Controller
                 : null);
         if ($personOuts->isEmpty()) {
             toastr()->info('Tidak ada pengajuan personil keluar.');
-            return back();
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Tidak ada pengajuan personil keluar.',
+            ]);
         }
 
         PersonOut::whereIn('id', $personOuts->pluck('id'))
@@ -224,8 +328,19 @@ class PersonOutController extends Controller
             );
         }
 
-        toastr()->success('Berhasil mengajukan semua personil keluar!', [], 'success');
-        return back();
+        toastr()->success('Berhasil mengajukan semua personil keluar!', 'success');
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Berhasil mengajukan semua personil keluar!',
+        ]);
+    }
+
+    private function isSubmissionLockedByDueDate(): bool
+    {
+        $dueDate = RekapDueDateSetting::latest()->first();
+
+        return $dueDate !== null
+            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
 

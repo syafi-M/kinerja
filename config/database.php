@@ -163,7 +163,9 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => (env('REDIS_CLIENT') === 'phpredis' && !extension_loaded('redis'))
+            ? 'predis'
+            : env('REDIS_CLIENT', extension_loaded('redis') ? 'phpredis' : 'predis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
@@ -180,10 +182,14 @@ return [
         ],
 
         'cache' => [
-            'scheme' => 'unix',
-            'host' => '/home/sacpocom/tmp/redis.sock',
-            'port' => 0,
+            'scheme' => env('REDIS_CACHE_SCHEME') ?: 'tcp',
+            'path' => env('REDIS_CACHE_PATH'),
+            'host' => env('REDIS_CACHE_HOST', env('REDIS_HOST', '127.0.0.1')),
+            'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
+            'port' => (int) (env('REDIS_CACHE_PORT', env('REDIS_PORT', 6379))) > 0
+                ? (int) env('REDIS_CACHE_PORT', env('REDIS_PORT', 6379))
+                : ((int) env('REDIS_PORT', 6379) > 0 ? (int) env('REDIS_PORT', 6379) : 6379),
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
 

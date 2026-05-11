@@ -57,12 +57,111 @@
             <x-menu-mobile />
         </div>
     </div>
+    <div id="global-confirm-modal" class="fixed inset-0 z-[99999] hidden items-center justify-center px-4 py-6">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" data-confirm-overlay></div>
+        <div class="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-slate-900/5">
+            <div class="p-5">
+                <div class="flex items-start gap-4">
+                    <div id="global-confirm-icon-wrap" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                        <i id="global-confirm-icon" class="ri-alert-line text-xl text-amber-600"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h3 id="global-confirm-title" class="text-base font-semibold text-slate-900">Konfirmasi</h3>
+                        <p id="global-confirm-message" class="mt-2 text-sm leading-6 text-slate-600">Apakah Anda yakin?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4">
+                <button type="button" id="global-confirm-cancel"
+                    class="inline-flex flex-1 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                    Batal
+                </button>
+                <button type="button" id="global-confirm-ok"
+                    class="inline-flex flex-1 items-center justify-center rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600">
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- cdnjs -->
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}"></script>
     <x-flasher />
+    <x-session-toast />
+    <x-flasher-theme />
     <x-analytic-component />
     <script>
+        window.openConfirmModal = function(config = {}) {
+            const modal = document.getElementById('global-confirm-modal');
+            if (!modal) return;
+
+            const title = document.getElementById('global-confirm-title');
+            const message = document.getElementById('global-confirm-message');
+            const okBtn = document.getElementById('global-confirm-ok');
+            const cancelBtn = document.getElementById('global-confirm-cancel');
+            const overlay = modal.querySelector('[data-confirm-overlay]');
+            const iconWrap = document.getElementById('global-confirm-icon-wrap');
+            const icon = document.getElementById('global-confirm-icon');
+
+            const themes = {
+                danger: {
+                    wrap: 'bg-rose-100',
+                    icon: 'ri-error-warning-line text-rose-600',
+                    button: 'bg-rose-600 hover:bg-rose-700'
+                },
+                warning: {
+                    wrap: 'bg-amber-100',
+                    icon: 'ri-alert-line text-amber-600',
+                    button: 'bg-amber-500 hover:bg-amber-600'
+                },
+                info: {
+                    wrap: 'bg-sky-100',
+                    icon: 'ri-information-line text-sky-600',
+                    button: 'bg-sky-600 hover:bg-sky-700'
+                },
+                success: {
+                    wrap: 'bg-emerald-100',
+                    icon: 'ri-checkbox-circle-line text-emerald-600',
+                    button: 'bg-emerald-600 hover:bg-emerald-700'
+                }
+            };
+
+            const theme = themes[config.type || 'warning'] || themes.warning;
+            title.textContent = config.title || 'Konfirmasi';
+            message.textContent = config.message || 'Apakah Anda yakin?';
+            okBtn.textContent = config.confirmText || 'Ya, Lanjutkan';
+            cancelBtn.textContent = config.cancelText || 'Batal';
+
+            iconWrap.className = 'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + theme.wrap;
+            icon.className = theme.icon + ' text-xl';
+            okBtn.className = 'inline-flex flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition ' + theme.button;
+
+            const close = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+                overlay.onclick = null;
+                document.onkeydown = null;
+            };
+
+            okBtn.onclick = () => {
+                close();
+                if (typeof config.onConfirm === 'function') {
+                    config.onConfirm();
+                }
+            };
+
+            cancelBtn.onclick = close;
+            overlay.onclick = close;
+            document.onkeydown = (event) => {
+                if (event.key === 'Escape') close();
+            };
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
         $(document).ready(function() {
             $("#searchInput").on("keyup", function() {
                 let value = $(this).val().toLowerCase();
@@ -379,101 +478,6 @@
             });
         });
 
-        (function() {
-            const toastThemes = {
-                success: {
-                    background: 'linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)',
-                    border: '#059669',
-                    text: '#0f172a',
-                    muted: '#475569',
-                },
-                error: {
-                    background: 'linear-gradient(135deg, #ffe4e6 0%, #fff1f2 100%)',
-                    border: '#e11d48',
-                    text: '#0f172a',
-                    muted: '#475569',
-                },
-                warning: {
-                    background: 'linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%)',
-                    border: '#d97706',
-                    text: '#0f172a',
-                    muted: '#475569',
-                },
-                info: {
-                    background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)',
-                    border: '#0284c7',
-                    text: '#0f172a',
-                    muted: '#475569',
-                },
-            };
-
-            const getToastType = (toast) => {
-                if (toast.classList.contains('fl-success') || toast.classList.contains('toast-success')) return 'success';
-                if (toast.classList.contains('fl-error') || toast.classList.contains('toast-error')) return 'error';
-                if (toast.classList.contains('fl-warning') || toast.classList.contains('toast-warning')) return 'warning';
-                if (toast.classList.contains('fl-info') || toast.classList.contains('toast-info')) return 'info';
-                return null;
-            };
-
-            const paintToast = (toast) => {
-                const type = getToastType(toast);
-                const theme = toastThemes[type];
-
-                if (!theme || toast.dataset.themePainted === type) {
-                    return;
-                }
-
-                toast.dataset.themePainted = type;
-                toast.style.setProperty('background', theme.background, 'important');
-                toast.style.setProperty('background-color', 'transparent', 'important');
-                toast.style.setProperty('border-left-color', theme.border, 'important');
-                toast.style.setProperty('border-left-width', '4px', 'important');
-                toast.style.setProperty('border-radius', '12px', 'important');
-                toast.style.setProperty('box-shadow', '0 18px 42px rgb(15 23 42 / 0.12), 0 2px 8px rgb(15 23 42 / 0.06)', 'important');
-                toast.style.setProperty('color', theme.text, 'important');
-
-                toast.querySelectorAll('.fl-title, .toast-title').forEach((title) => {
-                    title.style.setProperty('color', theme.text, 'important');
-                    title.style.setProperty('font-size', '0.8125rem', 'important');
-                    title.style.setProperty('font-weight', '700', 'important');
-                });
-
-                toast.querySelectorAll('.fl-message, .toast-message').forEach((message) => {
-                    message.style.setProperty('color', theme.muted, 'important');
-                    message.style.setProperty('font-size', '0.765rem', 'important');
-                    message.style.setProperty('font-weight', '500', 'important');
-                });
-            };
-
-            const refreshToasts = (root = document) => {
-                if (!root.querySelectorAll) {
-                    return;
-                }
-
-                root.querySelectorAll('.fl-main-container .fl-container, #toast-container > div').forEach(paintToast);
-            };
-
-            document.addEventListener('DOMContentLoaded', () => refreshToasts());
-
-            new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    mutation.addedNodes.forEach((node) => {
-                        if (!(node instanceof HTMLElement)) {
-                            return;
-                        }
-
-                        if (node.matches('.fl-container, #toast-container > div')) {
-                            paintToast(node);
-                        }
-
-                        refreshToasts(node);
-                    });
-                });
-            }).observe(document.documentElement, {
-                childList: true,
-                subtree: true,
-            });
-        })();
     </script>
 </body>
 

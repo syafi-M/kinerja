@@ -188,6 +188,8 @@
         © {{ date('Y') }} {{ config('app.name', 'Kinerja SAC-PO') }}
     </footer>
     <x-flasher />
+    <x-session-toast />
+    <x-flasher-theme />
     <x-analytic-component />
 
 </body>

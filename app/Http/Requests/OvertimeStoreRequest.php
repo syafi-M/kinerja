@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OvertimeStoreRequest extends FormRequest
 {
@@ -25,8 +26,8 @@ class OvertimeStoreRequest extends FormRequest
             'user_id' => 'required|exists:users,id',
             'date_overtime' => 'required|date',
             'desc' => 'required|string',
-            'type_overtime' => 'required',
-            'type_overtime_manual' => 'nullable'
+            'type_overtime' => ['required', Rule::in(['shift', 'jam', 'lainnya'])],
+            'type_overtime_manual' => ['nullable', 'string', 'max:255', Rule::requiredIf(fn() => in_array($this->type_overtime, ['jam', 'lainnya'], true))],
         ];
     }
 }

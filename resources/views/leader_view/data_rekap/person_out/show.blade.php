@@ -14,7 +14,8 @@
                             <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
                                 Riwayat Personil Keluar
                             </h1>
-                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan personil keluar.</p>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan personil
+                                keluar.</p>
                         </div>
                     </div>
                     <a href="{{ route('person-is-out.create') }}"
@@ -32,8 +33,10 @@
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         <option value="">Semua Status</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan</option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan
+                        </option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
+                        </option>
                     </select>
                     <input type="month" name="month" value="{{ request('month') }}"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
@@ -57,9 +60,11 @@
                     @forelse($personOut as $index => $person)
                         @php
                             $status = $person->status ?? 'pending';
-                            $reasonLabel = $person->reason === 'lainnya'
-                                ? ($person->reason_manual ?: 'Lainnya')
-                                : ucfirst((string) $person->reason);
+                            $reasonLabel =
+                                $person->reason === 'lainnya'
+                                    ? ($person->reason_manual ?:
+                                    'Lainnya')
+                                    : ucfirst((string) $person->reason);
                             $imageUrl = $person->img ? asset('storage/images/' . $person->img) : null;
                         @endphp
                         <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
@@ -103,7 +108,8 @@
 
                             <div class="flex items-center gap-3 p-2 mb-4 rounded-lg bg-slate-50">
                                 @if ($imageUrl)
-                                    <img src="{{ $imageUrl }}" class="object-cover w-14 h-14 rounded-lg border border-slate-200"
+                                    <img src="{{ $imageUrl }}"
+                                        class="object-cover w-14 h-14 rounded-lg border border-slate-200"
                                         alt="Bukti">
                                 @else
                                     <div
@@ -113,7 +119,8 @@
                                 @endif
                                 <div class="min-w-0">
                                     <span class="block text-xs text-slate-400">Bukti</span>
-                                    <span class="text-xs font-medium text-slate-700">{{ $person->img ?: 'Tidak ada bukti' }}</span>
+                                    <span
+                                        class="text-xs font-medium text-slate-700">{{ $person->img ?: 'Tidak ada bukti' }}</span>
                                 </div>
                             </div>
 
@@ -123,7 +130,7 @@
                                     type="button">
                                     <i class="ri-eye-line"></i>Lihat
                                 </button>
-                                @if ($status == 'pending')
+                                @if ($status == 'pending' && !($isSubmissionLocked ?? false))
                                     <button onclick="sendPersonOut({{ $person->id ?? 0 }})"
                                         class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100"
                                         type="button">
@@ -174,9 +181,11 @@
                             @forelse($personOut as $index => $person)
                                 @php
                                     $status = $person->status ?? 'pending';
-                                    $reasonLabel = $person->reason === 'lainnya'
-                                        ? ($person->reason_manual ?: 'Lainnya')
-                                        : ucfirst((string) $person->reason);
+                                    $reasonLabel =
+                                        $person->reason === 'lainnya'
+                                            ? ($person->reason_manual ?:
+                                            'Lainnya')
+                                            : ucfirst((string) $person->reason);
                                     $imageUrl = $person->img ? asset('storage/images/' . $person->img) : null;
                                 @endphp
                                 <tr class="transition-colors hover:bg-slate-50">
@@ -217,7 +226,8 @@
                                     <td class="px-4 py-4">
                                         @if ($imageUrl)
                                             <img src="{{ $imageUrl }}"
-                                                class="object-cover w-16 h-16 border rounded-lg border-slate-200" alt="Bukti">
+                                                class="object-cover w-16 h-16 border rounded-lg border-slate-200"
+                                                alt="Bukti">
                                         @else
                                             <div
                                                 class="flex items-center justify-center w-16 h-16 text-xs rounded-lg bg-slate-100 text-slate-400">
@@ -250,7 +260,7 @@
                                                 title="Lihat Detail" type="button">
                                                 <i class="ri-eye-line"></i>
                                             </button>
-                                            @if ($status == 'pending')
+                                            @if ($status == 'pending' && !($isSubmissionLocked ?? false))
                                                 <a href="{{ route('person-is-out.edit', $person->id) }}"
                                                     class="flex items-center justify-center text-yellow-600 transition bg-yellow-100 rounded-lg w-9 h-9 hover:bg-yellow-200"
                                                     title="Edit">
@@ -274,12 +284,14 @@
                                 <tr>
                                     <td colspan="8" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center gap-3">
-                                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100">
+                                            <div
+                                                class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100">
                                                 <i class="text-3xl ri-inbox-line text-slate-400"></i>
                                             </div>
                                             <div>
                                                 <p class="font-medium text-slate-600">Tidak ada data</p>
-                                                <p class="text-sm text-slate-500">Belum ada riwayat pengajuan personil keluar</p>
+                                                <p class="text-sm text-slate-500">Belum ada riwayat pengajuan personil
+                                                    keluar</p>
                                             </div>
                                             <a href="{{ route('person-is-out.create') }}"
                                                 class="inline-flex items-center gap-2 px-6 py-2 mt-2 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900">
@@ -301,23 +313,23 @@
                 @endif
             </div>
 
-            <div class="flex justify-end w-full">
-                <form action="{{ route('person-is-out-bulk.status') }}" method="post" class="w-full mt-3 sm:w-auto">
+            <div class="flex justify-end w-full my-2">
+                <form id="bulkPersonOutForm" action="{{ route('person-is-out-bulk.status') }}" method="post"
+                    style="display:none;">
                     @csrf
                     @method('PATCH')
-                    <button type="submit"
-                        class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-semibold text-green-700 transition bg-green-100 rounded-lg min-h-10 hover:bg-green-200 sm:w-auto">
-                        <i class="ri-send-plane-fill"></i>
-                        Ajukan Semua
-                    </button>
                 </form>
+                <button type="button" @disabled(!($canBulkSubmit ?? false)) onclick="openBulkPersonOutModal()"
+                    class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 mt-3 text-sm font-semibold rounded-lg min-h-10 sm:mt-0 sm:w-auto {{ $canBulkSubmit ?? false ? 'bg-green-100 text-green-700 hover:bg-green-200 transition' : 'cursor-not-allowed bg-slate-100 text-slate-400' }}">
+                    <i class="ri-send-plane-fill"></i>
+                    Ajukan Semua
+                </button>
             </div>
         </div>
     </x-main-div>
-
     <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
         class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-        <div class="fixed inset-0 transition-opacity bg-black/50" @click="open = false"></div>
+        <div class="fixed inset-0 transition-opacity bg-black/50"></div>
 
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
             <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
@@ -327,8 +339,7 @@
                 x-transition:leave-end="opacity-0 scale-95">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Personil Keluar</h3>
-                    <button @click="open = false"
-                        class="flex items-center justify-center w-8 h-8 transition rounded-lg hover:bg-slate-100"
+                    <button class="flex items-center justify-center w-8 h-8 transition rounded-lg hover:bg-slate-100"
                         type="button">
                         <i class="text-xl ri-close-line text-slate-600"></i>
                     </button>
@@ -374,7 +385,8 @@
                     <div x-data="{ imageUrl() { return detail.img ? `/storage/images/${detail.img}` : null } }">
                         <p class="mb-2 text-xs text-slate-500">Bukti</p>
                         <template x-if="imageUrl()">
-                            <img :src="imageUrl()" class="object-cover w-full max-w-xs border rounded-lg h-44 border-slate-200"
+                            <img :src="imageUrl()"
+                                class="object-cover w-full max-w-xs border rounded-lg h-44 border-slate-200"
                                 alt="Bukti">
                         </template>
 
@@ -394,7 +406,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-200">
-                    <button @click="open = false"
+                    <button
                         class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-semibold transition bg-white border rounded-lg min-h-10 border-slate-300 text-slate-700 hover:bg-slate-50 sm:w-auto"
                         type="button">
                         Tutup
@@ -405,6 +417,9 @@
     </div>
 
     <script>
+        let pendingDeletePersonOutId = null;
+        let pendingSubmitPersonOutId = null;
+
         async function viewDetail(id) {
             const url = "{{ route('person-is-out-id', ':id') }}".replace(':id', id);
             try {
@@ -420,32 +435,71 @@
         }
 
         function deletePersonOut(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/person-is-out/${id}`;
+            pendingDeletePersonOutId = id;
+            window.openConfirmModal({
+                title: 'Hapus Pengajuan',
+                message: 'Apakah Anda yakin ingin menghapus pengajuan ini? Data yang dihapus tidak dapat dikembalikan.',
+                confirmText: 'Ya, Hapus',
+                cancelText: 'Batal',
+                type: 'danger',
+                onConfirm: deletePersonOutConfirmed,
+            });
+        }
 
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = '{{ csrf_token() }}';
+        function deletePersonOutConfirmed() {
+            if (!pendingDeletePersonOutId) return;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/person-is-out/${pendingDeletePersonOutId}`;
 
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'DELETE';
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
 
-                form.appendChild(csrfInput);
-                form.appendChild(methodInput);
-                document.body.appendChild(form);
-                form.submit();
-            }
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+
+            form.appendChild(csrfInput);
+            form.appendChild(methodInput);
+            document.body.appendChild(form);
+            form.submit();
         }
 
         function sendPersonOut(id) {
+            pendingSubmitPersonOutId = id;
+            window.openConfirmModal({
+                title: 'Ajukan Pengajuan',
+                message: 'Apakah Anda yakin ingin mengajukan pengajuan ini?',
+                confirmText: 'Ya, Ajukan',
+                cancelText: 'Batal',
+                type: 'warning',
+                onConfirm: submitPersonOutConfirmed,
+            });
+        }
+
+        function openBulkPersonOutModal() {
+            if (!{{ $canBulkSubmit ?? false ? 'true' : 'false' }}) {
+                return;
+            }
+
+            window.openConfirmModal({
+                title: 'Ajukan Semua Pengajuan',
+                message: 'Apakah Anda yakin ingin mengajukan semua pengajuan yang belum diajukan?',
+                confirmText: 'Ya, Ajukan Semua',
+                cancelText: 'Batal',
+                type: 'warning',
+                onConfirm: submitBulkPersonOutConfirmed,
+            });
+        }
+
+        function submitPersonOutConfirmed() {
+            if (!pendingSubmitPersonOutId) return;
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/person-is-out-change-status/${id}`;
+            form.action = `/person-is-out-change-status/${pendingSubmitPersonOutId}`;
 
             const csrfInput = document.createElement('input');
             csrfInput.type = 'hidden';
@@ -461,6 +515,11 @@
             form.appendChild(methodInput);
             document.body.appendChild(form);
             form.submit();
+        }
+
+        function submitBulkPersonOutConfirmed() {
+            const form = document.getElementById('bulkPersonOutForm');
+            if (form) form.submit();
         }
     </script>
 
