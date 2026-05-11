@@ -9,8 +9,6 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -31,7 +29,7 @@ class AuthenticatedSessionController extends Controller
         $cekUser = User::where('name', $request->name)->where('status_id', 6)->first();
 
         if($cekUser) {
-            toastr()->error('Akun Anda Belum Di Verifikasi', 'error');
+            toastr()->error('Akun Anda Belum Di Verifikasi', [], 'error');
             return redirect()->back();
         }
 

@@ -134,7 +134,7 @@ class FinishedTrainingController extends Controller
             ]);
         }
 
-        toastr()->warning('Data lepas training berhasil dihapus!', 'warning');
+        toastr()->warning('Data lepas training berhasil dihapus!', [], 'warning');
         return redirect()->back();
     }
 
@@ -150,7 +150,7 @@ class FinishedTrainingController extends Controller
 
         $finishedTraining->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($finishedTraining->fresh('user'));
-        toastr()->success('Lepas training berhasil diajukan!', 'success');
+        toastr()->success('Lepas training berhasil diajukan!', [], 'success');
         return redirect()->back();
     }
 
@@ -177,7 +177,7 @@ class FinishedTrainingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua data lepas training sesuai filter!', 'success');
+        toastr()->success('Berhasil mengajukan semua data lepas training sesuai filter!', [], 'success');
         return back();
     }
 

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-div-main>
+    <x-main-div>
       
-    </x-div-main>
+    </x-main-div>
 </x-app-layout>

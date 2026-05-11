@@ -1,244 +1,232 @@
 <x-app-layout>
     <x-main-div>
-        <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-
-            <!-- Header -->
-            <div class="card-container mb-6">
-                <div class="flex items-center gap-3 mb-2">
+        <div class="w-full max-w-3xl px-3 py-4 mx-auto sm:px-5 lg:px-6">
+            <div class="p-4 mb-4 bg-white border rounded-lg shadow-sm border-white/60 ring-1 ring-slate-900/5">
+                <div class="flex items-center gap-3">
                     <a href="{{ route('index.rekap.data.leader') }}"
-                        class="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
-                        <i class="ri-arrow-left-line text-xl text-white"></i>
+                        class="inline-flex items-center justify-center w-10 h-10 ml-1 transition rounded-lg sm:ml-0 shrink-0 bg-slate-100 text-slate-700 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                        aria-label="Kembali ke rekapitulasi">
+                        <i class="text-xl ri-arrow-left-line"></i>
                     </a>
-                    <div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-white">Pengajuan Personil Keluar</h1>
-                        <p class="text-slate-200 text-sm">Formulir Pengajuan Personil Keluar</p>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-slate-500">Data Rekap</p>
+                        <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
+                            Pengajuan Personil Keluar
+                        </h1>
+                        <p class="mt-1 text-sm leading-5 text-slate-500">
+                            Lengkapi data personil keluar dan unggah bukti pendukung.
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Form Card -->
-            <div class="card-white p-6 sm:p-8">
-                <form action="{{ route('person-is-out.store') }}" method="POST" x-data="overtimeForm()"
-                    enctype="multipart/form-data">
-                    @csrf
+            <form action="{{ route('person-is-out.store') }}" method="POST" enctype="multipart/form-data"
+                x-data="personOutForm()" class="space-y-4">
+                @csrf
 
-                    <!-- Name Selection -->
-                    <div class="mb-6">
-                        <label for="user_id" class="block text-sm font-semibold text-slate-700 mb-2">
-                            Nama Pegawai <span class="text-red-500">*</span>
-                        </label>
-                        <select name="user_id" id="user_id"
-                            class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                            required>
-                            <option value="">-- Pilih Nama Pegawai --</option>
-                            @forelse($users as $user)
-                                <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }} - {{ $user->nama_lengkap ?? 'N/A' }}
-                                </option>
-                            @empty
-                                <option value="" disabled>Tidak ada data pegawai</option>
-                            @endforelse
-                        </select>
-                        @error('user_id')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label for="user_id" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Nama Pegawai <span class="text-red-500">*</span>
+                            </label>
+                            <select name="user_id" id="user_id"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required>
+                                <option value="">Pilih nama pegawai</option>
+                                @forelse($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }} - {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
+                                    </option>
+                                @empty
+                                    <option value="" disabled>Tidak ada data pegawai</option>
+                                @endforelse
+                            </select>
+                            @error('user_id')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="out_date" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Tanggal Keluar <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="out_date" id="out_date" value="{{ old('out_date') }}"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required>
+                            @error('out_date')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="total_mk" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Jumlah MK <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="total_mk" id="total_mk" value="{{ old('total_mk') }}"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required placeholder="Contoh: 12 bulan">
+                            @error('total_mk')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
+                </section>
 
-                    <!-- Date Overtime -->
-                    <div class="mb-6">
-                        <label for="out_date" class="block text-sm font-semibold text-slate-700 mb-2">
-                            Tanggal Keluar <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" name="out_date" id="out_date" value="{{ old('out_date') }}"
-                            class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                            required>
-                        @error('out_date')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Type Overtime -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-semibold text-slate-700 mb-3">
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-semibold text-slate-800">
                             Alasan Keluar <span class="text-red-500">*</span>
+                        </h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Pilih alasan yang sesuai dengan kondisi personil.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2.5">
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="selectedReason === 'resign' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="reason" value="resign" x-model="selectedReason"
+                                class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500"
+                                {{ old('reason') == 'resign' ? 'checked' : '' }} required>
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Resign</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Personil mengundurkan diri.</span>
+                            </span>
                         </label>
 
-                        <div class="space-y-3">
-                            <!-- Radio: Shift -->
-                            <label
-                                class="flex items-start gap-3 p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all"
-                                :class="selectedType === 'resign' ? 'border-blue-500 bg-blue-50' : ''">
-                                <input type="radio" name="reason" value="resign" x-model="selectedType"
-                                    class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500"
-                                    {{ old('reason') == 'resign' ? 'checked' : '' }} required>
-                                <div class="flex-1">
-                                    <p class="font-medium text-slate-800">Resign</p>
-                                    <p class="text-xs text-slate-500 mt-1">Keluar karena resign</p>
-                                </div>
-                            </label>
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="selectedReason === 'evaluasi' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="reason" value="evaluasi" x-model="selectedReason"
+                                class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500"
+                                {{ old('reason') == 'evaluasi' ? 'checked' : '' }} required>
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Evaluasi</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Personil keluar berdasarkan evaluasi.</span>
+                            </span>
+                        </label>
 
-                            <!-- Radio: Jam -->
-                            <label
-                                class="flex items-start gap-3 p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all"
-                                :class="selectedType === 'evaluasi' ? 'border-blue-500 bg-blue-50' : ''">
-                                <input type="radio" name="reason" value="evaluasi" x-model="selectedType"
-                                    class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500"
-                                    {{ old('reason') == 'evaluasi' ? 'checked' : '' }} required>
-                                <div class="flex-1">
-                                    <p class="font-medium text-slate-800">Evaluasi</p>
-                                    <p class="text-xs text-slate-500 mt-1">Keluar karena di Evaluasi</p>
-                                </div>
-                            </label>
-                            <!-- Radio: Lainnya -->
-                            <label
-                                class="flex items-start gap-3 p-4 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all"
-                                :class="selectedType === 'lainnya' ? 'border-blue-500 bg-blue-50' : ''">
-                                <input type="radio" name="reason" value="lainnya" x-model="selectedType"
-                                    class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500"
-                                    {{ old('reason') == 'lainnya' ? 'checked' : '' }} required>
-                                <div class="flex-1">
-                                    <p class="font-medium text-slate-800">Lainnya</p>
-                                    <p class="text-xs text-slate-500 mt-1">Jenis keluar lainnya (sebutkan manual)</p>
-                                </div>
-                            </label>
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="selectedReason === 'lainnya' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="reason" value="lainnya" x-model="selectedReason"
+                                class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500"
+                                {{ old('reason') == 'lainnya' ? 'checked' : '' }} required>
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Lainnya</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi alasan manual jika tidak ada di pilihan.</span>
+                            </span>
+                        </label>
 
-                            <!-- Manual Input (shown when Lainnya selected) -->
-                            <div x-show="selectedType === 'lainnya'"
-                                x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100 translate-y-0"
-                                x-transition:leave-end="opacity-0 -translate-y-2" class="mt-2">
-                                <input type="text" name="reason_manual" x-model="manualType"
-                                    placeholder="Masukan Alasannya..." value="{{ old('reason_manual') }}"
-                                    class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                                    :required="selectedType === 'lainnya'">
-                                <p class="text-xs text-slate-500 mt-1">Contoh: meninggal, cacat fisik permanen,
-                                    dll.</p>
-                            </div>
+                        <div x-show="selectedReason === 'lainnya'" x-collapse class="pl-0 sm:pl-7">
+                            <label for="reason_manual" class="mb-1.5 block text-xs font-medium text-slate-600">
+                                Alasan lainnya
+                            </label>
+                            <input type="text" name="reason_manual" id="reason_manual" x-model="manualReason"
+                                value="{{ old('reason_manual') }}" placeholder="Contoh: meninggal, cacat permanen"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                :required="selectedReason === 'lainnya'" :disabled="selectedReason !== 'lainnya'">
+                            <p class="mt-1 text-xs text-slate-500">Isi singkat dan jelas sesuai kondisi sebenarnya.</p>
                         </div>
-
-                        @error('reason')
-                            <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
-                        @enderror
-                        @error('reason_manual')
-                            <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
-                        @enderror
                     </div>
 
-                    <!-- MK -->
-                    <div class="mb-6">
-                        <label for="total_mk" class="block text-sm font-semibold text-slate-700 mb-2">
-                            Jumlah MK <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="total_mk" id="total_mk" value="{{ old('total_mk') }}"
-                            class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                            required placeholder="Masukan jumlah mk karyawan...">
-                        @error('total_mk')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    @error('reason')
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('reason_manual')
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </section>
 
-                    <!-- Description -->
-                    <div class="mb-6" x-data="imagePreview()">
-                        <label for="img" class="block text-sm font-semibold text-slate-700 mb-2">
-                            Unggah Bukti <span class="text-red-500">*</span>
-                        </label>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5" x-data="imagePreview()">
+                    <label for="img" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                        Unggah Bukti <span class="text-red-500">*</span>
+                    </label>
+                    <p class="mb-3 text-xs text-slate-500">Format PNG, JPG, atau JPEG. Maksimal 2MB.</p>
 
-                        <!-- Drag & Drop Zone -->
-                        <div @click="$refs.fileInput.click()" @drop.prevent="handleDrop($event)"
-                            @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
-                            :class="{ 'border-blue-500 bg-blue-50': isDragging, 'border-slate-300': !isDragging }"
-                            class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all hover:border-blue-400 hover:bg-slate-50">
-
+                    <div @click="$refs.fileInput.click()" @drop.prevent="handleDrop($event)"
+                        @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
+                        :class="isDragging ? 'border-sky-500 bg-sky-50' : 'border-slate-300 bg-slate-50'"
+                        class="p-4 text-center transition border-2 border-dashed rounded-lg cursor-pointer hover:border-sky-400 hover:bg-sky-50 sm:p-6">
+                        <template x-if="!imageUrl">
                             <div class="flex flex-col items-center gap-3">
-                                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center">
-                                    <i class="ri-upload-cloud-2-line text-3xl text-slate-400"></i>
+                                <div class="inline-flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-sm text-slate-500 ring-1 ring-slate-200">
+                                    <i class="text-2xl ri-upload-cloud-2-line"></i>
                                 </div>
-
                                 <div>
-                                    <p class="text-sm font-medium text-slate-700">
-                                        <span class="text-blue-600 hover:underline">Klik untuk unggah</span> atau seret
-                                        & lepas
-                                    </p>
-                                    <p class="text-xs text-slate-500 mt-1">PNG, JPG, JPEG hingga 2MB</p>
+                                    <p class="text-sm font-semibold text-slate-700">Ketuk untuk unggah bukti</p>
+                                    <p class="mt-1 text-xs text-slate-500">Di desktop juga bisa seret dan lepas file.</p>
                                 </div>
-                            </div>
-
-                            <!-- Hidden file input -->
-                            <input type="file" name="img" id="img" accept="image/*" x-ref="fileInput"
-                                @change="previewImage" class="hidden">
-                        </div>
-
-                        <!-- Preview -->
-                        <template x-if="imageUrl">
-                            <div class="mt-4 relative inline-block">
-                                <p class="text-xs text-slate-500 mb-2">Preview</p>
-                                <div class="relative group">
-                                    <img :src="imageUrl" alt="Preview image"
-                                        class="w-40 h-40 object-cover rounded-lg border border-slate-200">
-
-                                    <!-- Remove button -->
-                                    <button type="button" @click.stop="removeImage"
-                                        class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <i class="ri-close-line text-sm"></i>
-                                    </button>
-                                </div>
-                                <p class="text-xs text-slate-600 mt-1" x-text="fileName"></p>
                             </div>
                         </template>
 
-                        @error('img')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <template x-if="imageUrl">
+                            <div class="flex flex-col items-center gap-3">
+                                <img :src="imageUrl" alt="Preview bukti"
+                                    class="object-cover w-full h-40 max-w-xs border rounded-lg border-slate-200">
+                                <div class="max-w-full">
+                                    <p class="text-xs font-medium truncate text-slate-700" x-text="fileName"></p>
+                                    <button type="button" @click.stop="removeImage"
+                                        class="inline-flex items-center justify-center gap-1 px-3 mt-2 text-xs font-semibold text-red-700 rounded-lg min-h-9 bg-red-50 ring-1 ring-red-100">
+                                        <i class="ri-delete-bin-line"></i>
+                                        Hapus file
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <input type="file" name="img" id="img" accept="image/*" x-ref="fileInput"
+                            @change="previewImage" class="hidden" required>
                     </div>
 
+                    @error('img')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </section>
 
-                    <!-- Action Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200">
+                <div
+                    class="sticky sm:bottom-16 z-20 mx-0.5 rounded-md border-t border-slate-200 bg-white/95 p-3 shadow-[0_-8px_18px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm">
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <button type="submit"
-                            class="flex-1 btn-primary px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
                             <i class="ri-save-line"></i>
-                            <span>Simpan Pengajuan</span>
+                            Simpan Pengajuan
                         </button>
                         <a href="{{ route('index.rekap.data.leader') }}"
-                            class="flex-1 px-6 py-3 rounded-lg font-semibold border-2 border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
                             <i class="ri-close-line"></i>
-                            <span>Batal</span>
+                            Batal
                         </a>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
 
-            <!-- Info Card -->
-            <div class="card-white p-4 mt-4 border-l-4 border-blue-500">
+            <div class="p-4 mt-4 border rounded-lg border-sky-100 bg-sky-50">
                 <div class="flex items-start gap-3">
-                    <i class="ri-information-line text-blue-500 text-xl mt-0.5"></i>
+                    <i class="ri-information-line mt-0.5 text-xl text-sky-600"></i>
                     <div>
-                        <p class="font-semibold text-slate-800 text-sm">Informasi Penting</p>
-                        <ul class="text-xs text-slate-600 mt-2 space-y-1 list-disc list-inside">
-                            <li>Pastikan semua data yang diisi sudah benar</li>
-                            <li>Pastikan sebelum akhir bulan untuk finalisasi data</li>
+                        <p class="text-sm font-semibold text-slate-800">Informasi Penting</p>
+                        <ul class="mt-2 space-y-1 text-xs leading-5 list-disc list-inside text-slate-600">
+                            <li>Pastikan nama pegawai, tanggal keluar, dan jumlah MK sudah benar.</li>
+                            <li>Bukti wajib diunggah dengan ukuran maksimal 2MB.</li>
                         </ul>
                     </div>
                 </div>
             </div>
-
         </div>
     </x-main-div>
 
     <script>
-        function overtimeForm() {
+        function personOutForm() {
             return {
-                selectedType: '{{ old('type_overtime') ?? '' }}',
-                manualType: '{{ old('type_overtime_manual') ?? '' }}',
+                selectedReason: '{{ old('reason') ?? '' }}',
+                manualReason: '{{ old('reason_manual') ?? '' }}',
 
                 init() {
-                    // Watch for changes
-                    this.$watch('selectedType', value => {
+                    this.$watch('selectedReason', value => {
                         if (value !== 'lainnya') {
-                            this.manualType = '';
+                            this.manualReason = '';
                         }
                     });
                 }
@@ -252,39 +240,40 @@
                 isDragging: false,
 
                 previewImage(event) {
-                    const file = event.target.files[0];
-                    this.processFile(file);
+                    this.processFile(event.target.files[0]);
                 },
 
                 handleDrop(event) {
                     this.isDragging = false;
                     const file = event.dataTransfer.files[0];
 
-                    if (file && file.type.startsWith('image/')) {
-                        // Update the file input
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        this.$refs.fileInput.files = dataTransfer.files;
-
-                        this.processFile(file);
+                    if (!file || !file.type.startsWith('image/')) {
+                        return;
                     }
+
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    this.$refs.fileInput.files = dataTransfer.files;
+                    this.processFile(file);
                 },
 
                 processFile(file) {
-                    if (file && file.type.startsWith('image/')) {
-                        // Check file size (5MB)
-                        if (file.size > 2 * 1024 * 1024) {
-                            alert('Ukuran file terlalu besar. Maksimal 2MB');
-                            return;
-                        }
-
-                        this.fileName = file.name;
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.imageUrl = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
+                    if (!file || !file.type.startsWith('image/')) {
+                        return;
                     }
+
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('Ukuran file terlalu besar. Maksimal 2MB.');
+                        this.removeImage();
+                        return;
+                    }
+
+                    this.fileName = file.name;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imageUrl = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
                 },
 
                 removeImage() {
@@ -295,74 +284,4 @@
             }
         }
     </script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: #f1f5f9;
-        }
-
-        .card-container {
-            background: #64748b;
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .card-white {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #1f2937;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #f59e0b;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
-        }
-
-        /* Radio button custom styling */
-        input[type="radio"]:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-        }
-
-        /* Date input styling */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(0.5);
-        }
-
-        input[type="date"]:hover::-webkit-calendar-picker-indicator {
-            filter: invert(0.3);
-        }
-
-        /* Select dropdown arrow */
-        select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            appearance: none;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .card-container {
-                padding: 16px;
-            }
-        }
-    </style>
 </x-app-layout>

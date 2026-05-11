@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => env('TIMEZONE', 'wib'),
+    'timezone' => env('TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------

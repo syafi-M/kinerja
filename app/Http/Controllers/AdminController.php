@@ -39,17 +39,20 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         $now = now();
-        $oneMonthsAgo = $now->copy()->subMonth()->startOfMonth();
+        $oneMonthAgo = $now->copy()->subMonth()->startOfMonth();
+        $today = $now->toDateString();
+        $twoMonthsFromNow = $now->copy()->addMonths(2)->toDateString();
 
         $online = DB::table('sessions')
-            ->where('last_seen_at', '>', $now->subMinutes(5))
+            ->where('last_seen_at', '>', $now->copy()->subMinutes(5))
             ->whereNotNull('user_id')
             ->count();
 
-        $latestAbsensi = DB::table('absensis')
-            ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
-            ->groupBy('user_id');
-        $notActiveUsers = Cache::remember('not_active_users', 60, function () use ($latestAbsensi, $oneMonthsAgo) {
+        $inactiveUsersQuery = function () use ($oneMonthAgo) {
+            $latestAbsensi = DB::table('absensis')
+                ->select('user_id', DB::raw('MAX(created_at) as last_attendance'))
+                ->groupBy('user_id');
+
             return User::query()
                 ->select([
                     'users.id',
@@ -63,11 +66,19 @@ class AdminController extends Controller
                 })
                 ->where('users.kerjasama_id', '!=', 1)
                 ->whereNotIn('users.devisi_id', [8, 18])
-                ->where(function ($q) use ($oneMonthsAgo) {
+                ->where(function ($q) use ($oneMonthAgo) {
                     $q->whereNull('latest_absensi.last_attendance')
-                        ->orWhere('latest_absensi.last_attendance', '<', $oneMonthsAgo);
-                })
-                ->orderBy('latest_absensi.last_attendance', 'asc')
+                        ->orWhere('latest_absensi.last_attendance', '<', $oneMonthAgo);
+                });
+        };
+
+        $inactiveUsersCount = Cache::remember('admin.dashboard.inactive-users-count', 60, function () use ($inactiveUsersQuery) {
+            return $inactiveUsersQuery()->count();
+        });
+
+        $notActiveUsers = Cache::remember('not_active_users', 60, function () use ($inactiveUsersQuery) {
+            return $inactiveUsersQuery()
+                ->orderBy('latest_absensi.last_attendance')
                 ->limit(33)
                 ->get();
         });
@@ -77,14 +88,22 @@ class AdminController extends Controller
 
         $izin = Izin::where('approve_status', 'process')
             ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
             ->count();
 
-
-        $expert = Cache::remember('admin.dashboard.expiring-contracts', 300, function () use ($now) {
+        $expiringContractsQuery = function () use ($today, $twoMonthsFromNow) {
             return Kerjasama::query()
                 ->select('id', 'client_id', 'experied')
                 ->with('client:id,name')
-                ->whereDate('experied', '<=', $now->copy()->addMonths(2))
+                ->whereBetween('experied', [$today, $twoMonthsFromNow]);
+        };
+
+        $expiringContractsCount = Cache::remember('admin.dashboard.expiring-contracts-upcoming-count', 300, function () use ($expiringContractsQuery) {
+            return $expiringContractsQuery()->count();
+        });
+
+        $expert = Cache::remember('admin.dashboard.expiring-contracts-upcoming', 300, function () use ($expiringContractsQuery) {
+            return $expiringContractsQuery()
                 ->orderBy('experied')
                 ->get();
         });
@@ -95,7 +114,9 @@ class AdminController extends Controller
             'izin',
             'online',
             'expert',
-            'notActiveUsers'
+            'notActiveUsers',
+            'inactiveUsersCount',
+            'expiringContractsCount'
         ));
     }
     public function getUptime()
@@ -218,7 +239,7 @@ class AdminController extends Controller
         ];
         // dd($appCheck);
         CheckPoint::findOrFail($id)->update($appCheck);
-        toastr()->success('Check Point Has Approve', 'success');
+        toastr()->success('Check Point Has Approve', [], 'success');
         return redirect()->back();
     }
 
@@ -230,7 +251,7 @@ class AdminController extends Controller
         ];
         // dd($appCheck);
         CheckPoint::findOrFail($id)->update($appCheck);
-        toastr()->warning('Check Point Has Denied', 'success');
+        toastr()->warning('Check Point Has Denied', [], 'success');
         return redirect()->back();
     }
 
@@ -244,13 +265,13 @@ class AdminController extends Controller
                 Storage::disk('public')->delete('images/' . $cek->img);
 
                 $cek->delete();
-                toastr()->warning('Data Telah Dihapus', 'warning');
+                toastr()->warning('Data Telah Dihapus', [], 'warning');
                 return redirect()->back();
             } else {
-                toastr()->error('Foto Tidak Ditemukan', 'error');
+                toastr()->error('Foto Tidak Ditemukan', [], 'error');
             }
         } catch (\Illuminate\Database\QueryException $e) {
-            toastr()->error('Data Tidak Ditemukan', 'error');
+            toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
     }
@@ -474,7 +495,7 @@ class AdminController extends Controller
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
         } else {
-            toastr()->error('Mohon Masukkan Hari Libur', 'error');
+            toastr()->error('Mohon Masukkan Hari Libur', [], 'error');
             return redirect()->back();
         }
     }
@@ -737,7 +758,7 @@ class AdminController extends Controller
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
         } else {
-            toastr()->error('Mohon Masukkan Filter Export', 'error');
+            toastr()->error('Mohon Masukkan Filter Export', [], 'error');
             return redirect()->back();
         }
     }
@@ -827,7 +848,7 @@ class AdminController extends Controller
             // dd($check, $request->all());
             User::destroy($check);
 
-            toastr()->success('User berhasil dihapus', 'success');
+            toastr()->success('User berhasil dihapus', [], 'success');
             return redirect()->back();
         } else {
             $options = new Options();
@@ -881,7 +902,7 @@ class AdminController extends Controller
             $abs->delete();
         }
 
-        toastr()->warning('Data Sudah Dihapus', 'success');
+        toastr()->warning('Data Sudah Dihapus', [], 'success');
         return redirect()->back();
     }
 

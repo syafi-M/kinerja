@@ -56,10 +56,10 @@ class ChecklistController extends Controller
         }
             if($request->signature != "Not Approve")
             {
-                toastr()->success('Success to Approve Checklist', 'success');
+                toastr()->success('Success to Approve Checklist', [], 'success');
                 return redirect()->back();
             }else{
-                toastr()->error('Checklist Not Approve', 'warning');
+                toastr()->error('Checklist Not Approve', [], 'warning');
             }
         
     }
@@ -77,10 +77,10 @@ class ChecklistController extends Controller
         }
             if($request->signature != "Not Approve")
             {
-                toastr()->success('Success to Approve Checklist', 'success');
+                toastr()->success('Success to Approve Checklist', [], 'success');
                 return redirect()->back();
             }else{
-                toastr()->error('Checklist Not Approve', 'warning');
+                toastr()->error('Checklist Not Approve', [], 'warning');
             }
         
     }
@@ -103,12 +103,12 @@ class ChecklistController extends Controller
             ];
             
             Checklist::create($check);
-            toastr()->success('Success to create Checklist', 'success');
+            toastr()->success('Success to create Checklist', [], 'success');
             return to_route('admin-checklist.index');
             
         }catch (\Exception $e) 
         {
-            toastr()->error('Some Field Cannot Blank', 'error');
+            toastr()->error('Some Field Cannot Blank', [], 'error');
             return redirect()->back();
         }
     }
@@ -136,12 +136,12 @@ class ChecklistController extends Controller
             
             $checkId = Checklist::findOrFail($id);
             $checkId->update($check);
-            toastr()->success('Success to update Checklist', 'success');
+            toastr()->success('Success to update Checklist', [], 'success');
             return to_route('admin-checklist.index');
             
         }catch (\Exception $e) 
         {
-            toastr()->error('Some Field Cannot Blank', 'error');
+            toastr()->error('Some Field Cannot Blank', [], 'error');
             return redirect()->back();
         }
     }
@@ -150,7 +150,7 @@ class ChecklistController extends Controller
     {
         $checkId = Checklist::findOrFail($id);
         $checkId->delete();
-        toastr()->warning('Data Chelist Has Been Remove', 'warning');
+        toastr()->warning('Data Chelist Has Been Remove', [], 'warning');
         return redirect()->back();
     }
 }

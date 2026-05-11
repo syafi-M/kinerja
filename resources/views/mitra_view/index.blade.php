@@ -4,133 +4,159 @@
         $hour = \Carbon\Carbon::now()->format('H');
         $greeting = $hour < 12 ? 'Selamat Pagi' : ($hour < 15 ? 'Selamat Siang' : ($hour < 18 ? 'Selamat Sore' : 'Selamat Malam'));
         $jabatan = auth()->user()->divisi->jabatan->code_jabatan ?? auth()->user()->divisi->code_jabatan ?? '-';
+        $menuCards = [
+            [
+                'route' => 'mitra_absensi',
+                'title' => 'Kehadiran',
+                'description' => 'Riwayat absensi tim, status hadir, dan akses cepat ke detail lokasi.',
+                'icon' => 'ri-fingerprint-line',
+                'icon_style' => 'color: var(--mitra-accent); background: var(--mitra-accent-soft);',
+                'eyebrow' => 'Operasional harian',
+            ],
+            [
+                'route' => 'mitra_laporan',
+                'title' => 'Laporan Kerja',
+                'description' => 'Pantau dokumentasi harian dan progres pekerjaan tim dalam satu daftar.',
+                'icon' => 'ri-file-list-3-line',
+                'icon_style' => 'color: var(--mitra-success); background: color-mix(in srgb, var(--mitra-success) 14%, transparent);',
+                'eyebrow' => 'Dokumentasi kerja',
+            ],
+            [
+                'route' => 'mitra_lembur',
+                'title' => 'Data Lembur',
+                'description' => 'Kelola jam lembur berjalan dan cek kebutuhan operasional tambahan.',
+                'icon' => 'ri-time-line',
+                'icon_style' => 'color: var(--mitra-warning); background: color-mix(in srgb, var(--mitra-warning) 16%, transparent);',
+                'eyebrow' => 'Tambahan jam kerja',
+            ],
+            [
+                'route' => 'mitra_user',
+                'title' => 'Data Karyawan',
+                'description' => 'Daftar personel mitra, identitas dasar, dan data yang aktif saat ini.',
+                'icon' => 'ri-group-line',
+                'icon_style' => 'color: #6366f1; background: rgba(99, 102, 241, 0.12);',
+                'eyebrow' => 'Basis personel',
+            ],
+            [
+                'route' => 'mitra_rekap',
+                'title' => 'Rekap Bulanan',
+                'description' => 'Lihat ringkasan performa dan laporan bulanan tim secara terpusat.',
+                'icon' => 'ri-calendar-schedule-line',
+                'icon_style' => 'color: #e11d48; background: rgba(225, 29, 72, 0.12);',
+                'eyebrow' => 'Ringkasan periode',
+            ],
+        ];
     @endphp
 
-    <!-- Header Section (Lebih Terang dari Background) -->
-    <div class="p-6 border shadow-xl bg-slate-700 border-slate-600 rounded-3xl">
-        <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <section class="p-5 rounded-3xl mitra-panel mitra-mobile-card sm:p-6">
+        <div class="flex flex-col gap-4">
+            <div class="min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-[0.24em] mitra-accent">Dashboard Mitra</p>
+                <h1 class="mt-2 text-[1.85rem] font-extrabold leading-tight tracking-tight sm:text-[2.15rem] mitra-text-strong">
+                    {{ $greeting }}, {{ auth()->user()->name }}
+                </h1>
+                <p class="mt-3 max-w-2xl text-sm leading-6 mitra-text-soft">
+                    Akses cepat ke kehadiran, laporan kerja, lembur, dan data personel dalam satu tampilan yang lebih ringkas.
+                </p>
+            </div>
+            <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                <div class="px-4 py-3 rounded-2xl border mitra-panel-soft mitra-text-soft">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Tanggal</p>
+                    <p class="mt-2 flex items-center gap-2 text-sm font-semibold">
+                        <i class="ri-calendar-line mitra-accent"></i>
+                        <span>{{ $today }}</span>
+                    </p>
+                </div>
+                <div class="px-4 py-3 rounded-2xl border mitra-panel-soft mitra-text-soft">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Posisi</p>
+                    <p class="mt-2 flex items-center gap-2 text-sm font-semibold">
+                        <i class="ri-shield-user-line mitra-accent"></i>
+                        <span>{{ $jabatan }}</span>
+                    </p>
+                </div>
+                <div class="px-4 py-3 rounded-2xl border mitra-panel-soft">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Status</p>
+                    <p class="mt-2 flex items-center gap-2 text-sm font-semibold mitra-accent">
+                        <span class="inline-flex w-2.5 h-2.5 rounded-full" style="background: var(--mitra-accent);"></span>
+                        ONLINE
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-6">
+        <div class="flex items-end justify-between gap-4">
             <div>
-                <p class="text-[11px] font-black uppercase tracking-[0.25em] text-blue-400">Portal Mitra System</p>
-                <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-white">{{ $greeting }}, {{ auth()->user()->name }}</h1>
-                <p class="mt-1 text-sm text-slate-300">Kelola operasional dan pantau kinerja tim Anda dalam satu dasbor.</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-                <div class="px-3 py-1.5 text-xs font-bold border rounded-xl bg-slate-800/50 text-slate-300 border-slate-600">
-                    <i class="mr-1 text-blue-400 ri-calendar-line"></i> {{ $today }}
-                </div>
-                <div class="px-3 py-1.5 text-xs font-bold text-blue-300 rounded-xl bg-blue-500/10 border border-blue-500/30">
-                    <i class="mr-1 ri-shield-user-line"></i> {{ $jabatan }}
-                </div>
+                <p class="text-[11px] font-black uppercase tracking-[0.24em] mitra-accent">Statistik Inti</p>
+                <h2 class="mt-1 text-xl font-extrabold tracking-tight mitra-text-strong">Ringkasan Operasional</h2>
             </div>
         </div>
-    </div>
 
-    <!-- Quick Stats (Informative & Clean) -->
-    <div class="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4">
-        <div class="p-5 border shadow-sm bg-slate-700/50 rounded-2xl border-slate-600/50">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Karyawan</p>
-            <p class="mt-1 text-2xl font-black text-white">{{ $jumlahKaryawan }}</p>
+        <div class="grid grid-cols-1 gap-3 mt-5 sm:grid-cols-2">
+            <article class="p-4 rounded-2xl mitra-panel-soft">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Total Karyawan</p>
+                <div class="flex items-end justify-between gap-3 mt-5">
+                    <p class="text-3xl font-black leading-none mitra-text-strong">{{ $jumlahKaryawan }}</p>
+                    <p class="text-xs font-semibold text-right mitra-text-soft">Personel aktif</p>
+                </div>
+            </article>
+            <article class="p-4 rounded-2xl mitra-panel-soft">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Hadir Hari Ini</p>
+                <div class="flex items-end justify-between gap-3 mt-5">
+                    <p class="text-3xl font-black leading-none" style="color: var(--mitra-success);">{{ $jumlahAbsensiHariIni }}</p>
+                    <p class="text-xs font-semibold text-right mitra-text-soft">Absensi masuk</p>
+                </div>
+            </article>
+            <article class="p-4 rounded-2xl mitra-panel-soft">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Lembur Berjalan</p>
+                <div class="flex items-end justify-between gap-3 mt-5">
+                    <p class="text-3xl font-black leading-none" style="color: var(--mitra-warning);">{{ $jumlahLemburHariIni }}</p>
+                    <p class="text-xs font-semibold text-right mitra-text-soft">Jadwal aktif</p>
+                </div>
+            </article>
+            <article class="p-4 rounded-2xl mitra-panel-soft">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">Status Sistem</p>
+                <div class="flex items-end justify-between gap-3 mt-5">
+                    <p class="text-2xl font-black leading-none mitra-accent">ONLINE</p>
+                    <p class="text-xs font-semibold text-right mitra-text-soft">Normal</p>
+                </div>
+            </article>
         </div>
-        <div class="p-5 border shadow-sm bg-slate-700/50 rounded-2xl border-slate-600/50">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Hadir Hari Ini</p>
-            <p class="mt-1 text-2xl font-black text-emerald-400">{{ $jumlahAbsensiHariIni }}</p>
+    </section>
+
+    <section class="mt-8">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-[11px] font-black uppercase tracking-[0.24em] mitra-accent">Menu Utama</p>
+                <h2 class="mt-1 text-xl font-extrabold tracking-tight mitra-text-strong">Workspace Operasional</h2>
+                <p class="mt-2 text-sm leading-6 mitra-text-soft">Pilih modul yang paling relevan untuk pengawasan tim dan aktivitas harian.</p>
+            </div>
+            <p class="hidden text-xs font-semibold uppercase tracking-[0.16em] sm:block mitra-text-muted">Lima modul aktif</p>
         </div>
-        <div class="p-5 border shadow-sm bg-slate-700/50 rounded-2xl border-slate-600/50">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Lembur Berjalan</p>
-            <p class="mt-1 text-2xl font-black text-amber-400">{{ $jumlahLemburHariIni }}</p>
-        </div>
-        <div class="p-5 border shadow-sm bg-slate-700/50 rounded-2xl border-slate-600/50">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Sistem Status</p>
-            <p class="flex items-center gap-2 mt-1 text-sm font-black text-blue-400">
-                <span class="relative flex w-2 h-2">
-                    <span class="absolute inline-flex w-full h-full bg-blue-400 rounded-full opacity-75 animate-ping"></span>
-                    <span class="relative inline-flex w-2 h-2 bg-blue-500 rounded-full"></span>
-                </span>
-                ONLINE
-            </p>
-        </div>
-    </div>
 
-    <!-- Menu Grid (Interactive Cards) -->
-    <div class="mt-10">
-        <h2 class="mb-4 ml-1 text-xs font-black tracking-[0.3em] uppercase text-slate-500">Navigasi Utama</h2>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            
-            <!-- Kehadiran -->
-            <a href="{{ route('mitra_absensi') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-blue-500/50 hover:bg-slate-600">
-                <div class="flex items-center justify-center text-blue-400 transition-all shadow-inner w-14 h-14 rounded-xl bg-blue-500/10 group-hover:bg-blue-500 group-hover:text-white group-hover:scale-110">
-                    <i class="text-2xl ri-fingerprint-line"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-white transition-colors group-hover:text-blue-300">Kehadiran</p>
-                    <p class="text-xs italic text-slate-400">Riwayat absensi tim</p>
-                </div>
-                <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-blue-400 group-hover:translate-x-1"></i>
-            </a>
-
-            <!-- Laporan -->
-            <a href="{{ route('mitra_laporan') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-emerald-500/50 hover:bg-slate-600">
-                <div class="flex items-center justify-center transition-all shadow-inner w-14 h-14 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white group-hover:scale-110">
-                    <i class="text-2xl ri-file-list-3-line"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-white transition-colors group-hover:text-emerald-300">Laporan Kerja</p>
-                    <p class="text-xs italic text-slate-400">Review aktivitas harian</p>
-                </div>
-                <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-emerald-400 group-hover:translate-x-1"></i>
-            </a>
-
-            <!-- Lembur -->
-            <a href="{{ route('mitra_lembur') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-amber-500/50 hover:bg-slate-600">
-                <div class="flex items-center justify-center transition-all shadow-inner w-14 h-14 rounded-xl bg-amber-500/10 text-amber-400 group-hover:bg-amber-600 group-hover:text-white group-hover:scale-110">
-                    <i class="text-2xl ri-time-line"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-white transition-colors group-hover:text-amber-300">Data Lembur</p>
-                    <p class="text-xs italic text-slate-400">Kelola lembur karyawan</p>
-                </div>
-                <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-amber-400 group-hover:translate-x-1"></i>
-            </a>
-
-            <!-- Data User -->
-            <a href="{{ route('mitra_user') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-indigo-500/50 hover:bg-slate-600">
-                <div class="flex items-center justify-center text-indigo-400 transition-all shadow-inner w-14 h-14 rounded-xl bg-indigo-500/10 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-110">
-                    <i class="text-2xl ri-group-line"></i>
-                </div>
-                <div>
-                    <p class="text-lg font-bold text-white transition-colors group-hover:text-indigo-300">Data Karyawan</p>
-                    <p class="text-xs italic text-slate-400">Daftar personel mitra</p>
-                </div>
-                <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-indigo-400 group-hover:translate-x-1"></i>
-            </a>
-
-            <!-- Laporan Bulanan -->
-            @if (Route::has('mitra_rekap'))
-                <a href="{{ route('mitra_rekap') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-rose-500/50 hover:bg-slate-600">
-                    <div class="flex items-center justify-center transition-all shadow-inner w-14 h-14 rounded-xl bg-rose-500/10 text-rose-400 group-hover:bg-rose-600 group-hover:text-white group-hover:scale-110">
-                        <i class="text-2xl ri-calendar-schedule-line"></i>
+        <div class="grid gap-3 mt-5 lg:grid-cols-2">
+            @foreach ($menuCards as $menu)
+                @continue(!Route::has($menu['route']))
+                <a href="{{ route($menu['route']) }}" class="p-4 transition-all border group rounded-2xl mitra-panel-soft hover:-translate-y-0.5">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-start gap-4 min-w-0">
+                            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-xl" style="{{ $menu['icon_style'] }}">
+                                <i class="text-xl {{ $menu['icon'] }}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-black uppercase tracking-[0.18em] mitra-text-muted">{{ $menu['eyebrow'] }}</p>
+                                <p class="mt-1 text-lg font-bold tracking-tight mitra-text-strong">{{ $menu['title'] }}</p>
+                            </div>
+                        </div>
+                        <i class="flex-shrink-0 mt-1 text-lg ri-arrow-right-line mitra-text-muted"></i>
                     </div>
-                    <div>
-                        <p class="text-lg font-bold text-white transition-colors group-hover:text-rose-300">Rekap Bulanan</p>
-                        <p class="text-xs italic text-slate-400">Performa bulanan tim</p>
+                    <p class="mt-4 text-sm leading-6 mitra-text-soft">{{ $menu['description'] }}</p>
+                    <div class="pt-4 mt-4 border-t" style="border-color: var(--mitra-border);">
+                        <span class="text-xs font-bold uppercase tracking-[0.16em] mitra-accent">Buka modul</span>
                     </div>
-                    <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-rose-400 group-hover:translate-x-1"></i>
                 </a>
-            @endif
-
-            <!-- Rekap -->
-            {{-- @if (Route::has('mitra_rekap'))
-                <a href="{{ route('mitra_rekap') }}" class="relative flex items-center gap-5 p-6 transition-all border shadow-sm bg-slate-700 group rounded-2xl border-slate-600 hover:border-cyan-500/50 hover:bg-slate-600">
-                    <div class="flex items-center justify-center transition-all shadow-inner text-cyan-400 w-14 h-14 rounded-xl bg-cyan-500/10 group-hover:bg-cyan-600 group-hover:text-white group-hover:scale-110">
-                        <i class="text-2xl ri-bar-chart-grouped-line"></i>
-                    </div>
-                    <div>
-                        <p class="text-lg font-bold text-white transition-colors group-hover:text-cyan-300">Rekap Data</p>
-                        <p class="text-xs italic text-slate-400">Pengajuan dan riwayat rekap</p>
-                    </div>
-                    <i class="absolute transition-all text-slate-600 right-6 ri-arrow-right-s-line group-hover:text-cyan-400 group-hover:translate-x-1"></i>
-                </a>
-            @endif --}}
+            @endforeach
         </div>
-    </div>
+    </section>
 </x-mitra-layout>

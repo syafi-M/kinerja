@@ -30,14 +30,14 @@ class OvertimeApplicationController extends Controller
         try {
             $data = $request->validated();
             Overtime::create($data);
-            toastr()->success('Lembur Berhasil Disimpan!', 'success');
+            toastr()->success('Lembur Berhasil Disimpan!', [], 'success');
             return redirect()->back();
         } catch (\Throwable $th) {
             throw $th;
         }
     }
 
-    public function show(Request $request, $id)
+    public function history(Request $request)
     {
         $overtimes = Overtime::whereHas('user', function ($q) {
             $q->where('kerjasama_id', auth()->user()->kerjasama_id)
@@ -66,6 +66,11 @@ class OvertimeApplicationController extends Controller
         ]);
     }
 
+    public function show(Request $request, $id)
+    {
+        return $this->history($request);
+    }
+
     public function edit($id)
     {
         $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)->whereHas('jabatan', function ($q) {
@@ -82,14 +87,14 @@ class OvertimeApplicationController extends Controller
     {
         $data = $request->validated();
         Overtime::findOrFail($id)->update($data);
-        toastr()->success('Lembur Berhasil Diupdate!', 'success');
+        toastr()->success('Lembur Berhasil Diupdate!', [], 'success');
         return to_route('overtime-application.show', 1);
     }
 
     public function destroy($id)
     {
         Overtime::findOrFail($id)->delete();
-        toastr()->warning('Lembur Berhasil Dihapus!', 'warning');
+        toastr()->warning('Lembur Berhasil Dihapus!', [], 'warning');
         return redirect()->back();
     }
 
@@ -111,7 +116,7 @@ class OvertimeApplicationController extends Controller
             'status' => 'Di Ajukan'
         ]);
 
-        toastr()->success('Lembur Berhasil Di Ajukan!', 'success');
+        toastr()->success('Lembur Berhasil Di Ajukan!', [], 'success');
 
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
@@ -178,7 +183,7 @@ class OvertimeApplicationController extends Controller
         }
 
 
-        toastr()->success('Berhasil mengajukan semua lembur!', 'success');
+        toastr()->success('Berhasil mengajukan semua lembur!', [], 'success');
         return back();
     }
 }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('code_jabatan');
             $table->string('type_jabatan');
             $table->string('name_jabatan');
-            $table->foreignIdFor('mitra_id')->nullable;
+            $table->foreignId('mitra_id')->nullable();
             $table->timestamps();
         });
     }

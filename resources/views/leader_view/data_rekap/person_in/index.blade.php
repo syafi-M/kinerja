@@ -1,213 +1,231 @@
 <x-app-layout>
     <x-main-div>
-        <div class="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
-            <div class="card-container mb-6">
-                <div class="mb-2 flex items-center gap-3">
-                    <a href="{{ route('index.rekap.data.leader') }}"
-                        class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 transition-all hover:bg-white/20">
-                        <i class="ri-arrow-left-line text-xl text-white"></i>
-                    </a>
-                    <div>
-                        <h1 class="text-2xl font-bold text-white sm:text-3xl">Pengajuan Personil Masuk</h1>
-                        <p class="text-sm text-slate-200">Formulir Pengajuan Personil Masuk</p>
+        <div class="w-full max-w-3xl px-3 py-4 mx-auto sm:px-5 lg:px-6">
+            <div class="p-4 mb-4 bg-white border rounded-lg shadow-sm border-white/60 ring-1 ring-slate-900/5">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center min-w-0 gap-3">
+                        <a href="{{ route('index.rekap.data.leader') }}"
+                            class="inline-flex items-center justify-center w-10 h-10 ml-1 transition rounded-lg shrink-0 sm:ml-0 bg-slate-100 text-slate-700 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                            aria-label="Kembali ke rekapitulasi">
+                            <i class="text-xl ri-arrow-left-line"></i>
+                        </a>
+                        <div class="min-w-0">
+                            <p class="text-xs font-medium text-slate-500">Data Rekap</p>
+                            <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
+                                Pengajuan Personil Masuk
+                            </h1>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">
+                                Tambahkan personil masuk dan lengkapi detail awalnya.
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <div class="mt-3">
                     <a href="{{ route('person.in.history') }}"
-                        class="btn btn-sm border-none bg-white/20 text-white hover:bg-white/30">
+                        class="items-center hidden gap-2 px-3 text-sm font-semibold transition bg-white border rounded-lg min-h-10 shrink-0 border-slate-200 text-slate-700 hover:bg-slate-50 sm:inline-flex">
                         <i class="ri-history-line"></i>
-                        Lihat Riwayat
+                        Riwayat
                     </a>
                 </div>
             </div>
 
             <div id="alertBox" class="mb-4"></div>
 
-            <div class="card-white p-6 sm:p-8">
-                <form id="personInForm" x-data="personInForm()" enctype="multipart/form-data"
-                    data-store-url="{{ route('person-in.store') }}"
-                    data-user-search-url="{{ route('person-in.users.search') }}">
-                    <input type="hidden" id="person_in_id" />
-                    <input type="hidden" name="has_account" :value="hasAccount">
-                    <input type="hidden" name="fullname" :value="getResolvedFullname()">
+            <form id="personInForm" x-data="personInForm()" enctype="multipart/form-data"
+                data-store-url="{{ route('person-in.store') }}"
+                data-user-search-url="{{ route('person-in.users.search') }}" class="space-y-4">
+                <input type="hidden" id="person_in_id" />
+                <input type="hidden" name="has_account" :value="hasAccount">
+                <input type="hidden" name="fullname" :value="getResolvedFullname()">
 
-                    <div class="mb-6">
-                        <label class="label">
-                            <span class="label-text font-semibold">Status Akun</span>
-                        </label>
-
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-                            <label class="flex cursor-pointer items-center gap-2">
-                                <input type="radio" name="has_account_option" value="yes" class="radio radio-primary"
-                                    x-model="hasAccount" @change="setAccountMode('yes')">
-                                <span>Sudah Memiliki Akun</span>
-                            </label>
-                            <label class="flex cursor-pointer items-center gap-2">
-                                <input type="radio" name="has_account_option" value="no" class="radio radio-primary"
-                                    x-model="hasAccount" @change="setAccountMode('no')">
-                                <span>Belum Memiliki Akun</span>
-                            </label>
-                        </div>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-semibold text-slate-800">Status Akun</h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Pilih apakah personil sudah memiliki akun di sistem.</p>
                     </div>
 
-                    <div class="mb-6" x-show="hasAccount === 'yes'" x-transition>
-                        <label class="label">
-                            <span class="label-text font-semibold">
-                                Cari User <span class="text-error">*</span>
+                    <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="hasAccount === 'yes' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="has_account_option" value="yes" x-model="hasAccount"
+                                @change="setAccountMode('yes')" class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500">
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Sudah memiliki akun</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Cari dari data user yang tersedia.</span>
                             </span>
                         </label>
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="hasAccount === 'no' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="has_account_option" value="no" x-model="hasAccount"
+                                @change="setAccountMode('no')" class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500">
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Belum memiliki akun</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi nama lengkap secara manual.</span>
+                            </span>
+                        </label>
+                    </div>
 
+                    <div class="mt-4" x-show="hasAccount === 'yes'" x-collapse>
+                        <label for="user_search" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                            Cari User <span class="text-red-500">*</span>
+                        </label>
                         <div class="space-y-2" @click.outside="openSearch = false">
                             <div class="relative">
-                                <input type="text" x-model="userQuery" @focus="openSearch = true"
+                                <input type="text" id="user_search" x-model="userQuery" @focus="openSearch = true"
                                     placeholder="Ketik minimal 2 huruf nama user..."
-                                    class="input input-bordered w-full pr-10"
-                                    :class="showFullnameError ? 'input-error' : ''">
-                                <span class="pointer-events-none absolute right-3 top-3 text-slate-400">
+                                    class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                    :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''">
+                                <span class="absolute pointer-events-none right-3 top-3 text-slate-400">
                                     <i class="ri-search-line"></i>
                                 </span>
                             </div>
+                            <p class="text-xs text-slate-500">Pilih user dari hasil pencarian yang muncul.</p>
 
-                            <p class="text-xs text-slate-500">Masukkan kata kunci untuk menampilkan daftar user.</p>
-
-                            <div x-show="selectedUserName" class="rounded-lg border border-info/30 bg-info/10 px-3 py-2">
+                            <div x-show="selectedUserName" class="px-3 py-2 border rounded-lg border-sky-100 bg-sky-50">
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="text-sm text-slate-700">Terpilih: <span class="font-semibold"
-                                            x-text="selectedUserName"></span></span>
-                                    <button type="button" class="btn btn-ghost btn-xs" @click="clearSelectedUser()">
+                                    <span class="min-w-0 text-sm truncate text-slate-700">Terpilih:
+                                        <span class="font-semibold" x-text="selectedUserName"></span>
+                                    </span>
+                                    <button type="button"
+                                        class="inline-flex items-center px-2 text-xs font-semibold rounded-lg min-h-8 text-sky-700 hover:bg-sky-100"
+                                        @click="clearSelectedUser()">
                                         Ganti
                                     </button>
                                 </div>
                             </div>
 
                             <div x-show="shouldShowSearchPanel()" x-transition
-                                class="max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+                                class="overflow-y-auto bg-white border rounded-lg shadow-sm max-h-64 border-slate-200">
                                 <template x-if="isSearching">
                                     <div class="px-4 py-3 text-sm text-slate-500">Mencari user...</div>
                                 </template>
                                 <template x-if="!isSearching && searchError">
-                                    <div class="px-4 py-3 text-sm text-error" x-text="searchError"></div>
+                                    <div class="px-4 py-3 text-sm text-red-600" x-text="searchError"></div>
                                 </template>
                                 <template x-if="!isSearching && !searchError && userQuery.trim().length >= 2 && userResults.length === 0">
                                     <div class="px-4 py-3 text-sm text-slate-500">User tidak ditemukan.</div>
                                 </template>
                                 <template x-for="user in userResults" :key="user.id">
                                     <button type="button"
-                                        class="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50"
+                                        class="flex items-center justify-between w-full px-4 py-3 text-sm text-left min-h-11 hover:bg-slate-50"
                                         @click="selectUser(user)">
                                         <span x-text="user.nama_lengkap"></span>
-                                        <i class="ri-check-line text-info"
-                                            x-show="selectedUserName === user.nama_lengkap"></i>
+                                        <i class="ri-check-line text-sky-600" x-show="selectedUserName === user.nama_lengkap"></i>
                                     </button>
                                 </template>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-6" x-show="hasAccount === 'no'" x-transition>
-                        <label for="fullname_manual" class="mb-2 block text-sm font-semibold text-slate-700">
+                    <div class="mt-4" x-show="hasAccount === 'no'" x-collapse>
+                        <label for="fullname_manual" class="mb-1.5 block text-sm font-semibold text-slate-700">
                             Nama Lengkap <span class="text-red-500">*</span>
                         </label>
-
                         <input type="text" id="fullname_manual" placeholder="Masukkan nama lengkap"
-                            class="input input-bordered w-full" :class="showFullnameError ? 'input-error' : ''"
+                            class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                            :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''"
                             x-model="manualName">
                     </div>
+                </section>
 
-                    <div class="mb-6">
-                        <label for="jabatan_id" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Jabatan <span class="text-red-500">*</span>
-                        </label>
-                        <select name="jabatan_id" id="jabatan_id"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            required>
-                            <option value="">-- Pilih Jabatan --</option>
-                            @foreach ($jabatans as $jabatan)
-                                <option value="{{ $jabatan->id }}">{{ $jabatan->name_jabatan }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="date_in" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Tanggal Masuk <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" name="date_in" id="date_in"
-                            class="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                            required>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="mb-3 block text-sm font-semibold text-slate-700">
-                            Metode Gaji <span class="text-red-500">*</span>
-                        </label>
-
-                        <div class="space-y-3">
-                            <label
-                                class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-4 transition-all hover:bg-slate-50"
-                                :class="selectedMethod === 'transfer' ? 'border-blue-500 bg-blue-50' : ''">
-                                <input type="radio" name="method_salary" value="transfer" x-model="selectedMethod"
-                                    class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500" required>
-                                <div class="flex-1">
-                                    <p class="font-medium text-slate-800">Transfer</p>
-                                    <p class="mt-1 text-xs text-slate-500">Pembayaran melalui transfer bank</p>
-                                </div>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="jabatan_id" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Jabatan <span class="text-red-500">*</span>
                             </label>
+                            <select name="jabatan_id" id="jabatan_id"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required>
+                                <option value="">Pilih jabatan</option>
+                                @foreach ($jabatans as $jabatan)
+                                    <option value="{{ $jabatan->id }}">{{ $jabatan->name_jabatan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                            <label
-                                class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-4 transition-all hover:bg-slate-50"
-                                :class="selectedMethod === 'cash' ? 'border-blue-500 bg-blue-50' : ''">
-                                <input type="radio" name="method_salary" value="cash" x-model="selectedMethod"
-                                    class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500" required>
-                                <div class="flex-1">
-                                    <p class="font-medium text-slate-800">Manual / Cash</p>
-                                    <p class="mt-1 text-xs text-slate-500">Pembayaran tunai/manual tanpa transfer
-                                        rekening</p>
-                                </div>
+                        <div>
+                            <label for="date_in" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Tanggal Masuk <span class="text-red-500">*</span>
                             </label>
-
-                            <div x-show="selectedMethod === 'transfer'"
-                                x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 -translate-y-2"
-                                x-transition:enter-end="opacity-100 translate-y-0"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100 translate-y-0"
-                                x-transition:leave-end="opacity-0 -translate-y-2" class="mt-2">
-                                <input type="text" name="method_salary_manual" id="method_salary_manual"
-                                    x-model="manualMethod" placeholder="Masukkan nomor rekening..."
-                                    class="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    :required="selectedMethod === 'transfer'">
-                                <p class="mt-1 text-xs text-slate-500">Wajib diisi jika metode gaji Transfer.</p>
-                            </div>
+                            <input type="date" name="date_in" id="date_in"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required>
                         </div>
                     </div>
+                </section>
 
-                    <div id="formErrors" class="mb-6"></div>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-semibold text-slate-800">
+                            Metode Gaji <span class="text-red-500">*</span>
+                        </h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Pilih metode pembayaran yang disepakati.</p>
+                    </div>
 
-                    <div class="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row">
+                    <div class="grid grid-cols-1 gap-2.5">
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="selectedMethod === 'transfer' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="method_salary" value="transfer" x-model="selectedMethod"
+                                class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500" required>
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Transfer</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran melalui transfer bank.</span>
+                            </span>
+                        </label>
+
+                        <div x-show="selectedMethod === 'transfer'" x-collapse class="pl-0 sm:pl-7">
+                            <label for="method_salary_manual" class="mb-1.5 block text-xs font-medium text-slate-600">
+                                Nomor rekening
+                            </label>
+                            <input type="text" name="method_salary_manual" id="method_salary_manual"
+                                x-model="manualMethod" placeholder="Masukkan nomor rekening"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                :required="selectedMethod === 'transfer'" :disabled="selectedMethod !== 'transfer'">
+                        </div>
+
+                        <label
+                            class="flex items-start gap-3 p-3 transition border rounded-lg cursor-pointer min-h-14 border-slate-200 hover:bg-slate-50"
+                            :class="selectedMethod === 'cash' ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-200' : ''">
+                            <input type="radio" name="method_salary" value="cash" x-model="selectedMethod"
+                                class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500" required>
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold text-slate-800">Manual / Cash</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran tunai/manual tanpa rekening.</span>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <div id="formErrors"></div>
+
+                <div
+                    class="sticky sm:bottom-16 z-20 mx-1 border-t rounded-md border-slate-200 bg-white/95 p-3 shadow-[0_-8px_18px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm">
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <button type="submit" id="btnSave"
-                            class="btn-primary flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold">
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
                             <i class="ri-save-line"></i>
                             <span id="btnSaveText">Simpan Data</span>
                         </button>
                         <button type="button" id="btnReset"
-                            class="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-slate-300 px-6 py-3 font-semibold text-slate-700 transition-all hover:bg-slate-50">
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
                             <i class="ri-refresh-line"></i>
-                            <span>Reset Form</span>
+                            Reset Form
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
 
-            <div class="card-white mt-4 border-l-4 border-blue-500 p-4">
+            <div class="p-4 mt-4 border rounded-lg border-sky-100 bg-sky-50">
                 <div class="flex items-start gap-3">
-                    <i class="ri-information-line mt-0.5 text-xl text-blue-500"></i>
+                    <i class="ri-information-line mt-0.5 text-xl text-sky-600"></i>
                     <div>
                         <p class="text-sm font-semibold text-slate-800">Informasi Penting</p>
-                        <ul class="mt-2 list-inside list-disc space-y-1 text-xs text-slate-600">
-                            <li>Pastikan semua data yang diisi sudah benar</li>
-                            <li>Pilih metode gaji sesuai dengan kesepakatan</li>
-                            <li>Data dapat diubah kembali setelah disimpan</li>
+                        <ul class="mt-2 space-y-1 text-xs leading-5 list-disc list-inside text-slate-600">
+                            <li>Pastikan data personil dan jabatan sudah benar.</li>
+                            <li>Pilih metode gaji sesuai kesepakatan.</li>
+                            <li>Data dapat diubah kembali setelah disimpan.</li>
                         </ul>
                     </div>
                 </div>
@@ -228,14 +246,12 @@
                 isSearching: false,
                 searchError: '',
                 searchTimeout: null,
-
                 selectedMethod: '',
                 manualMethod: '',
                 showFullnameError: false,
 
                 getResolvedFullname() {
-                    return this.hasAccount === 'yes' ? (this.selectedUserName || '').trim() : (this.manualName || '')
-                        .trim();
+                    return this.hasAccount === 'yes' ? (this.selectedUserName || '').trim() : (this.manualName || '').trim();
                 },
 
                 setAccountMode(mode) {
@@ -295,9 +311,7 @@
                             }
                         })
                         .then(async response => {
-                            if (!response.ok) {
-                                throw new Error('Gagal mencari user');
-                            }
+                            if (!response.ok) throw new Error('Gagal mencari user');
                             return response.json();
                         })
                         .then(result => {
@@ -315,9 +329,7 @@
 
                 init() {
                     this.$watch('selectedMethod', value => {
-                        if (value !== 'transfer') {
-                            this.manualMethod = '';
-                        }
+                        if (value !== 'transfer') this.manualMethod = '';
                     });
 
                     this.$watch('userQuery', () => {
@@ -358,24 +370,24 @@
                 $('#alertBox').html(`
                     <div class="rounded-lg border px-4 py-3 shadow-sm ${wrapperClass}">
                         <div class="flex items-center gap-2">
-                        <i class="ri-${icon}-line"></i>
-                        <span>${message}</span>
+                            <i class="ri-${icon}-line"></i>
+                            <span>${message}</span>
                         </div>
                     </div>
                 `);
 
                 setTimeout(() => $('#alertBox').html(''), 4000);
-                $('html, body').animate({
-                    scrollTop: 0
-                }, 300);
+                $('html, body').animate({ scrollTop: 0 }, 300);
             }
 
             function showFormErrors(errors) {
                 const errorList = errors.map(err => `<li>${err}</li>`).join('');
                 $('#formErrors').html(`
-                    <div class="alert alert-error rounded-lg shadow-sm">
-                        <i class="ri-error-warning-line"></i>
-                        <ul class="ml-6 list-disc pl-5">${errorList}</ul>
+                    <div class="px-4 py-3 text-sm border rounded-lg shadow-sm border-rose-200 bg-rose-50 text-rose-700">
+                        <div class="flex items-start gap-2">
+                            <i class="ri-error-warning-line mt-0.5"></i>
+                            <ul class="pl-5 list-disc">${errorList}</ul>
+                        </div>
                     </div>
                 `);
             }
@@ -387,9 +399,7 @@
                 $('#btnSaveText').text('Simpan Data');
 
                 const alpineData = Alpine.$data($form[0]);
-                if (alpineData) {
-                    alpineData.resetFormState();
-                }
+                if (alpineData) alpineData.resetFormState();
             }
 
             function saveData(e) {
@@ -442,70 +452,4 @@
             });
         });
     </script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: #f1f5f9;
-        }
-
-        .card-container {
-            background: #64748b;
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .card-white {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #1f2937;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #f59e0b;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
-        }
-
-        input[type="radio"]:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-        }
-
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(0.5);
-        }
-
-        input[type="date"]:hover::-webkit-calendar-picker-indicator {
-            filter: invert(0.3);
-        }
-
-        select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            appearance: none;
-        }
-
-        @media (max-width: 640px) {
-            .card-container {
-                padding: 16px;
-            }
-        }
-    </style>
 </x-app-layout>

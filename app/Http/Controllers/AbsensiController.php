@@ -184,7 +184,7 @@ class AbsensiController extends Controller
                 ->exists();
 
             if ($dueDateSetting?->due_date && Carbon::today()->gt(Carbon::parse($dueDateSetting->due_date)->endOfDay()) && !$isExempted) {
-                toastr()->error('Periode pengajuan rekap sudah melewati due date. Anda tidak dapat membuat absensi baru.', 'error');
+                toastr()->error('Periode pengajuan rekap sudah melewati due date. Anda tidak dapat membuat absensi baru.', [], 'error');
                 return redirect()->back();
             }
         }
@@ -197,6 +197,8 @@ class AbsensiController extends Controller
             'keterangan' => 'required',
             'absensi_type_masuk' => 'required',
             'absensi_type_pulang' => 'nullable',
+            'lat_user' => 'required|numeric|between:-90,90',
+            'long_user' => 'required|numeric|between:-180,180',
             'image' => Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]) ? 'required' : 'nullable',
             'deskripsi' => 'nullable',
             'point_id' => 'nullable',
@@ -231,7 +233,7 @@ class AbsensiController extends Controller
 
         // dd($request->all());
         if ($validator->fails()) {
-            toastr()->error('Formulir tidak lengkap. Mohon isi semua kolom.', 'error');
+            toastr()->error('Formulir tidak lengkap. Mohon isi semua kolom.', [], 'error');
 
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -256,8 +258,8 @@ class AbsensiController extends Controller
         }
         // dd($fileName, $request->all(), $request->hasFile('image'));
 
-        $latUser = $request->lat_user;
-        $longUser = $request->long_user; // 125950.0
+        $latUser = (float) $request->lat_user;
+        $longUser = (float) $request->long_user;
         // $latUser = -7.864453554822072;
         // $longUser = 111.49581153034036; //13316.0
 
@@ -277,67 +279,37 @@ class AbsensiController extends Controller
 
         // end Sementara
 
-        $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
-        // dd($harLok);
-        $latMitra = (float) $request->lat_mitra;
-        $longMitra = (float) $request->long_mitra;
+        $selectedKerjasama = Kerjasama::query()
+            ->select('id', 'client_id')
+            ->find($kerjasama_id);
+
+        if (!$selectedKerjasama) {
+            toastr()->error('Data penempatan tidak ditemukan.', [], 'error');
+
+            return redirect()->back()->withInput();
+        }
+
+        $harLok = Lokasi::query()
+            ->where('client_id', $selectedKerjasama->client_id)
+            ->first();
+
+        if (!$harLok) {
+            toastr()->error('Lokasi penempatan belum tersedia.', [], 'error');
+
+            return redirect()->back()->withInput();
+        }
+
+        $latMitra = (float) $harLok->latitude;
+        $longMitra = (float) $harLok->longtitude;
+        $radiusMitra = (float) $harLok->radius;
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
         $radius = round($jarak['meters']);
 
-        // dd($jarak, $latMitra, $longMitra, $latUser, $longUser, $request->all());
-        $panjangLat = strlen($latUser);
-        $panjangLong = strlen($longUser);
-
-        $agent = $this->detectDevice($request->header('User-Agent'));
-        $ukuran = $panjangLat + $panjangLong;
-
-        if ($agent == 'android' || $agent == 'unknow') {
-            $sebuahPengukur = 22;
-            // $sebuahPengukur = 220;
-        } elseif ($agent == 'iphone') {
-            $sebuahPengukur = 36;
-        }
-
-        if ($ukuran <= $sebuahPengukur) {
-            if ($radius <= $request->radius_mitra) {
-                try {
-                    DB::beginTransaction();
-                    if ($absensi) {
-                        if (count($absensi) <= 2) {
-                            $absensi = new Absensi();
-
-                            $absensiData = [
-                                'user_id' => $user_id,
-                                'kerjasama_id' => $kerjasama_id,
-                                'shift_id' => $shift_id,
-                                'perlengkapan' => $perlengkapan,
-                                'keterangan' => $keterangan,
-                                'absensi_type_masuk' => Carbon::now()->format('H:i:s'),
-                                'tanggal_absen' => Carbon::now()->format('Y-m-d'),
-                                'image' => $fileName,
-                                'deskripsi' => $deskripsi,
-                                'tipe_id' => '1',
-                                'msk_lat' => $latUser,
-                                'msk_long' => $longUser,
-                                'masuk' => $masuk,
-                                'tukar' => $tukar,
-                                'lembur' => $lembur,
-                                'terus' => $terus,
-                                'tukar_id' => $tukar_id,
-                            ];
-                            $absensi->create($absensiData);
-                            DB::commit();
-                            toastr()->success('Berhasil Absen Hari Ini', 'succes');
-
-                            $users = Auth::user();
-
-                            return redirect()->to(route('dashboard.index'));
-                        } else {
-                            toastr()->error('Tidak Dapat Absensi Lebih 2x', 'Error');
-
-                            return redirect()->back();
-                        }
-                    } else {
+        if ($radius <= $radiusMitra) {
+            try {
+                DB::beginTransaction();
+                if ($absensi) {
+                    if (count($absensi) <= 2) {
                         $absensi = new Absensi();
 
                         $absensiData = [
@@ -362,28 +334,57 @@ class AbsensiController extends Controller
 
                         $absensi->create($absensiData);
                         DB::commit();
-                        toastr()->success('Berhasil Absen Hari Ini', 'succes');
+                        toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
 
                         $users = Auth::user();
 
                         return redirect()->to(route('dashboard.index'));
-                    }
-                } catch (\Exception $e) {
-                    // dd($request->all(), $e);
-                    DB::rollBack();
-                    Log::error('Error storing data Absensi: ' . $e->getMessage());
-                    toastr()->error('Gagal Absen Cek Signal Dan Coba Lagi', 'error');
+                    } else {
+                        toastr()->error('Tidak Dapat Absensi Lebih 2x', [], 'Error');
 
-                    return redirect()->back();
+                        return redirect()->back();
+                    }
+                } else {
+                    $absensi = new Absensi();
+
+                    $absensiData = [
+                        'user_id' => $user_id,
+                        'kerjasama_id' => $kerjasama_id,
+                        'shift_id' => $shift_id,
+                        'perlengkapan' => $perlengkapan,
+                        'keterangan' => $keterangan,
+                        'absensi_type_masuk' => Carbon::now()->format('H:i:s'),
+                        'tanggal_absen' => Carbon::now()->format('Y-m-d'),
+                        'image' => $fileName,
+                        'deskripsi' => $deskripsi,
+                        'tipe_id' => '1',
+                        'msk_lat' => $latUser,
+                        'msk_long' => $longUser,
+                        'masuk' => $masuk,
+                        'tukar' => $tukar,
+                        'lembur' => $lembur,
+                        'terus' => $terus,
+                        'tukar_id' => $tukar_id,
+                    ];
+
+                    $absensi->create($absensiData);
+                    DB::commit();
+                    toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
+
+                    $users = Auth::user();
+
+                    return redirect()->to(route('dashboard.index'));
                 }
-            } else {
-                // dd($radius <= $request->radius_mitra, $jarak, $radius, $request->radius_mitra, $request->all());
-                toastr()->error('Kamu Diluar Radius', 'Error');
+            } catch (\Exception $e) {
+                // dd($request->all(), $e);
+                DB::rollBack();
+                Log::error('Error storing data Absensi: ' . $e->getMessage());
+                toastr()->error('Gagal Absen Cek Signal Dan Coba Lagi', [], 'error');
 
                 return redirect()->back();
             }
         } else {
-            toastr()->error('Harap Matikan Extension Fake GPS !', 'Error');
+            toastr()->error('Kamu Diluar Radius', [], 'Error');
 
             return redirect()->back();
         }
@@ -408,7 +409,7 @@ class AbsensiController extends Controller
         if ($absensi != null) {
             return view('absensi.updateAbsen', compact('absensi', 'cekAbsen', 'user', 'dev', 'client', 'shift', 'jadwal', 'harLok'));
         }
-        toastr()->error('Data Tidak Ditemukan', 'error');
+        toastr()->error('Data Tidak Ditemukan', [], 'error');
 
         return redirect()->back();
     }
@@ -477,13 +478,13 @@ class AbsensiController extends Controller
                     // dd($absensi);
 
                     Absensi::findOrFail($id)->update($absensi);
-                    toastr()->success('Berhasil Update Absen Hari Ini', 'success');
+                    toastr()->success('Berhasil Update Absen Hari Ini', [], 'success');
 
                     $users = Auth::user();
 
                     return redirect()->route('dashboard.index');
                 } else {
-                    toastr()->error('Tidak Dapat Absensi 2x', 'Error');
+                    toastr()->error('Tidak Dapat Absensi 2x', [], 'Error');
 
                     return redirect()->back();
                 }
@@ -502,14 +503,14 @@ class AbsensiController extends Controller
                 ];
 
                 Absensi::findOrFail($id)->update($absensi);
-                toastr()->success('Berhasil Absen Hari Ini', 'succes');
+                toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
 
                 $users = Auth::user();
 
                 return redirect()->to(route('dashboard.index'));
             }
         } else {
-            toastr()->error('Kamu Diluar Radius', 'Error');
+            toastr()->error('Kamu Diluar Radius', [], 'Error');
 
             return redirect()->back();
         }
@@ -582,13 +583,13 @@ class AbsensiController extends Controller
                 ];
 
                 Absensi::create($absensi);
-                toastr()->success('Berhasil Absen Hari Ini', 'succes');
+                toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
 
                 $users = Auth::user();
 
                 return redirect()->to(route('dashboard.index'));
             } else {
-                toastr()->error('Tidak Dapat Absensi 2x', 'Error');
+                toastr()->error('Tidak Dapat Absensi 2x', [], 'Error');
 
                 return redirect()->back();
             }
@@ -612,7 +613,7 @@ class AbsensiController extends Controller
             ];
 
             Absensi::create($absensi);
-            toastr()->success('Berhasil Absen Hari Ini', 'succes');
+            toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
 
             $users = Auth::user();
 
@@ -623,6 +624,24 @@ class AbsensiController extends Controller
     public function updatePulang(Request $request, $id)
     {
         $absensi = Absensi::find($id);
+
+        if (!$absensi) {
+            toastr()->error('Gagal Absen Pulang !! Data absensi tidak ditemukan.', [], 'error');
+
+            return redirect()->back();
+        }
+
+        $validator = Validator::make($request->all(), [
+            'lat_user' => 'required|numeric|between:-90,90',
+            'long_user' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            toastr()->error('Gagal Absen Pulang !! Lokasi GPS tidak valid.', [], 'error');
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         $waktuMasuk = Carbon::parse($absensi->absensi_type_masuk);
 
         $selisihWaktu = $waktuMasuk->diffInMinutes(Carbon::now());
@@ -644,7 +663,12 @@ class AbsensiController extends Controller
         $longUser = $request->long_user;
 
         $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
-        // dd($harLok);
+        if (!$harLok) {
+            toastr()->error('Gagal Absen Pulang !! Lokasi mitra belum tersedia.', [], 'error');
+
+            return redirect()->back();
+        }
+
         $latMitra = $harLok->latitude;
         $longMitra = $harLok->longtitude;
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
@@ -673,7 +697,7 @@ class AbsensiController extends Controller
                             $sebuahPengukur = 35;
                         }
                     } else {
-                        toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
+                        toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', [], 'error');
 
                         return redirect()->back();
                     }
@@ -696,16 +720,18 @@ class AbsensiController extends Controller
                             $point = 'Point Di Klaim !';
                         }
                     } else {
-                        toastr()->error('Error GPS Mati !!, Nyalakan GPS Untuk Absen Pulang !!', 'errorr');
+                        toastr()->error('Error GPS Mati !!, Nyalakan GPS Untuk Absen Pulang !!', [], 'errorr');
 
                         return redirect()->back();
                     }
                 }
 
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
 
-                toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
+                toastr()->success('Berhasil Absen Pulang Hari Ini', [], 'succes');
 
                 return redirect()
                     ->to(route('dashboard.index'))
@@ -726,7 +752,7 @@ class AbsensiController extends Controller
                         $sebuahPengukur = 35;
                     }
                 } else {
-                    toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
+                    toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', [], 'error');
 
                     return redirect()->back();
                 }
@@ -737,16 +763,16 @@ class AbsensiController extends Controller
                     $absensi->plg_long = $longUser;
                     $absensi->save();
 
-                    toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
+                    toastr()->success('Berhasil Absen Pulang Hari Ini', [], 'succes');
 
                     return redirect()->to(route('dashboard.index'));
                 } else {
-                    toastr()->error('Error GPS Mati !!, Nyalakan GPS Untuk Absen Pulang !!', 'errorr');
+                    toastr()->error('Error GPS Mati !!, Nyalakan GPS Untuk Absen Pulang !!', [], 'errorr');
 
                     return redirect()->back();
                 }
             } else {
-                toastr()->error('Gagal Absen Pulang', 'errorr');
+                toastr()->error('Gagal Absen Pulang', [], 'errorr');
 
                 return redirect()->back();
             }
@@ -775,7 +801,7 @@ class AbsensiController extends Controller
                             $sebuahPengukur = 35;
                         }
                     } else {
-                        toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
+                        toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', [], 'error');
 
                         return redirect()->back();
                     }
@@ -798,16 +824,18 @@ class AbsensiController extends Controller
                             $point = 'Point Di Klaim !';
                         }
                     } else {
-                        toastr()->error('Error GPS Mati !!, Nyalakan GPS Untuk Absen Pulang !!', 'errorr');
+                        toastr()->error('Error GPS Mati !!, Nyalakan GPS Untuk Absen Pulang !!', [], 'errorr');
 
                         return redirect()->back();
                     }
                 }
 
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
 
-                toastr()->success('Berhasil Absen Pulang Hari Ini', 'success');
+                toastr()->success('Berhasil Absen Pulang Hari Ini', [], 'success');
 
                 return redirect()
                     ->to(route('dashboard.index'))
@@ -831,19 +859,21 @@ class AbsensiController extends Controller
                         $sebuahPengukur = 35;
                     }
                 } else {
-                    toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', 'error');
+                    toastr()->error('Gagal Absen Pulang !! Nyalakan GPS !!', [], 'error');
 
                     return redirect()->back();
                 }
 
                 $absensi->absensi_type_pulang = Carbon::now()->format('H:i:s');
+                $absensi->plg_lat = $latUser;
+                $absensi->plg_long = $longUser;
                 $absensi->save();
 
-                toastr()->success('Berhasil Absen Pulang Hari Ini', 'succes');
+                toastr()->success('Berhasil Absen Pulang Hari Ini', [], 'succes');
 
                 return redirect()->to(route('dashboard.index'));
             } else {
-                toastr()->error('Gagal Absen Pulang', 'errorr');
+                toastr()->error('Gagal Absen Pulang', [], 'errorr');
 
                 return redirect()->back();
             }
@@ -873,11 +903,11 @@ class AbsensiController extends Controller
             $clock = Carbon::now()->format('H:i:s');
             $absensi->absensi_type_siang = $clock;
             $absensi->save();
-            toastr()->success('Berhasil Absen Siang Jam : ' . $clock, 'succes');
+            toastr()->success('Berhasil Absen Siang Jam : ' . $clock, [], 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', 'error');
+            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
             return redirect()->back();
         }
@@ -895,11 +925,11 @@ class AbsensiController extends Controller
 
             $absensi->subuh = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', 'error');
+            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
             return redirect()->back();
         }
@@ -934,21 +964,21 @@ class AbsensiController extends Controller
                     $absensi->sig_long = $request->long_user;
 
                     $absensi->save();
-                    toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
+                    toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
 
                     return redirect()->back();
                 } catch (\Throwable $th) {
-                    toastr()->error('Error Data Tidak Ditemukan', 'error');
+                    toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
                     return redirect()->back();
                 }
             } else {
-                toastr()->error('Gagal Absen Siang !! Matikan Extension Fake GPS !!', 'error');
+                toastr()->error('Gagal Absen Siang !! Matikan Extension Fake GPS !!', [], 'error');
 
                 return redirect()->back();
             }
         } else {
-            toastr()->error('Gagal Absen Siang !! Nyalakan GPS !!', 'error');
+            toastr()->error('Gagal Absen Siang !! Nyalakan GPS !!', [], 'error');
 
             return redirect()->back();
         }
@@ -966,11 +996,11 @@ class AbsensiController extends Controller
 
             $absensi->asar = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', 'error');
+            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
             return redirect()->back();
         }
@@ -988,11 +1018,11 @@ class AbsensiController extends Controller
 
             $absensi->maghrib = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', 'error');
+            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
             return redirect()->back();
         }
@@ -1010,11 +1040,11 @@ class AbsensiController extends Controller
 
             $absensi->isya = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
 
             return redirect()->back();
         } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', 'error');
+            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
             return redirect()->back();
         }
@@ -1163,7 +1193,7 @@ class AbsensiController extends Controller
         ];
         $absensiId = Absensi::findOrFail($id);
         $absensiId->update($absen);
-        toastr()->success('Point Diclaim', 'success');
+        toastr()->success('Point Diclaim', [], 'success');
 
         return redirect()->back();
     }
@@ -1222,3 +1252,4 @@ class AbsensiController extends Controller
         }
     }
 }
+

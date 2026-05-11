@@ -90,20 +90,20 @@
                                     </tr>
                                     <tr>
                                         <td>Jabatan</td>
-                                        @if (!Auth::user()->divisi->jabatan)
+                                        @if (!Auth::user()->divisi?->jabatan)
                                             <td style="padding-left: 8px;">: Kosong</td>
                                         @else
                                             <td style="padding-left: 8px;">:
-                                                {{ Auth::user()->divisi->jabatan->name_jabatan }}</td>
+                                                {{ Auth::user()->divisi?->jabatan?->name_jabatan }}</td>
                                         @endif
                                     </tr>
                                     <tr>
                                         <td style="vertical-align: top;">Bermitra</td>
-                                        @if (!Auth::user()->kerjasama)
+                                        @if (!Auth::user()->kerjasama?->client)
                                             <td style="padding-left: 8px;">: Kosong</td>
                                         @else
                                             <td style="padding-left: 8px;">:
-                                                {{ Auth::user()->kerjasama->client->name }}</td>
+                                                {{ Auth::user()->kerjasama?->client?->name }}</td>
                                         @endif
                                     </tr>
                                 </thead>

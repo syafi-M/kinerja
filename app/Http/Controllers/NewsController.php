@@ -33,16 +33,16 @@ class NewsController extends Controller
          if ($request->hasFile('image')) {
             $news['image'] = UploadImage($request, 'image');
         }else{
-            toastr()->error('Image harus ditambahkan', 'error');
+            toastr()->error('Image harus ditambahkan', [], 'error');
         }
         
          try {
             News::create($news);
         } catch(\Illuminate\Database\QueryException $e){
-           toastr()->error('Data Sudah Ada', 'error');
+           toastr()->error('Data Sudah Ada', [], 'error');
            return redirect()->back();
         }
-            toastr()->success('News Berhasil Ditambahkan', 'success');
+            toastr()->success('News Berhasil Ditambahkan', [], 'success');
             return redirect()->to(route('news.index'));
     }
     
@@ -52,7 +52,7 @@ class NewsController extends Controller
         if ($newsId != null) {
             return view('admin.news.edit', compact('newsId'));
         }
-        toastr()->error('Data Tidak Ditemukan', 'error');
+        toastr()->error('Data Tidak Ditemukan', [], 'error');
         return redirect()->back();
     }
     
@@ -78,10 +78,10 @@ class NewsController extends Controller
          try {
             News::findOrFail($id)->update($news);
         } catch(\Illuminate\Database\QueryException $e){
-           toastr()->error('Data Tidak Tersimpan', 'error');
+           toastr()->error('Data Tidak Tersimpan', [], 'error');
            return redirect()->back();
         }
-        toastr()->success('Data berhasil diedit', 'success');
+        toastr()->success('Data berhasil diedit', [], 'success');
         return redirect()->to(route('news.index'));
     }
     
@@ -90,14 +90,14 @@ class NewsController extends Controller
         $news = News::find($id);
         if ($news != null) {
             if ($news->image == null) {
-                toastr()->error('Logo Tidak Ditemukan', 'error');
+                toastr()->error('Logo Tidak Ditemukan', [], 'error');
             }
                 if ($news->image) {
                     Storage::disk('public')->delete('images/'.$news->image);
                 }
         }
         $news->delete();
-        toastr()->error('Data Tidak Ditemukan', 'error');
+        toastr()->error('Data Tidak Ditemukan', [], 'error');
         return redirect()->back();
     }
     
