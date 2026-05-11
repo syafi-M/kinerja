@@ -39,16 +39,27 @@ class OvertimeApplicationController extends Controller
 
     public function show(Request $request, $id)
     {
-       $startDate = Carbon::now()->subMonth()->day(26)->startOfDay(); 
-        $endDate = Carbon::now()->day(25)->endOfDay(); 
-        $overtimes = Overtime::whereHas('user', function ($q) { 
-            $q->where('kerjasama_id', auth()->user()->kerjasama_id); 
-        })->whereBetween('date_overtime', [$startDate, $endDate]) 
-        ->when($request->status, function ($q) use ($request) { 
-            $q->where('status', $request->status); 
-        })->when($request->month, function ($q) use ($request) { 
-            $q->whereMonth('date_overtime', $request->month); 
-        })->paginate(15) ->withQueryString();
+        $overtimes = Overtime::whereHas('user', function ($q) {
+            $q->where('kerjasama_id', auth()->user()->kerjasama_id)
+                ->whereHas('jabatan', function ($jabatanQuery) {
+                    $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+                });
+        })
+            ->when($request->status, function ($q) use ($request) {
+                $q->where('status', $request->status);
+            })
+            ->when($request->month, function ($q) use ($request) {
+                try {
+                    $date = Carbon::createFromFormat('Y-m', $request->month);
+                    $q->whereYear('date_overtime', $date->year)
+                        ->whereMonth('date_overtime', $date->month);
+                } catch (\Throwable $th) {
+                    // Ignore invalid month and keep base query
+                }
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('leader_view.data_rekap.lembur.show', [
             'overtimes' => $overtimes
@@ -67,15 +78,9 @@ class OvertimeApplicationController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(OvertimeStoreRequest $request, $id)
     {
-        $data = $request->only([
-            'user_id',
-            'date_overtime',
-            'desc',
-            'type_overtime',
-            'type_overtime_manual'
-        ]);
+        $data = $request->validated();
         Overtime::findOrFail($id)->update($data);
         toastr()->success('Lembur Berhasil Diupdate!', 'success');
         return to_route('overtime-application.show', 1);

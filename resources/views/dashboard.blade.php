@@ -697,12 +697,12 @@
                 </div>
             </main>
         </div>
-        @if (count($warn) >= 3)
+        @if (($warnCount ?? 0) >= 3)
             <div class="flex justify-center pt-10 mx-10 sm:justify-start">
                 <div
                     class="inset-0 flex flex-col justify-start px-4 py-2 mb-5 font-semibold text-white bg-red-500 rounded-lg shadow-md w-fit text-md sm:text-xl">
                     <p class="p-1 px-2 text-xs bg-yellow-500 rounded-full w-fit">Warning</p>
-                    <p style="padding-left: 3px;">Kamu Sudah Tidak Absen Pulang {{ count($warn) }}x</p>
+                    <p style="padding-left: 3px;">Kamu Sudah Tidak Absen Pulang {{ $warnCount }}x</p>
                 </div>
             </div>
         @endif
@@ -723,13 +723,18 @@
             // Get location data from server
             const lokasiMitra = {!! json_encode($lokasiMitra) !!};
             const userCoopId = @json(Auth::user()->kerjasama_id);
+            const hasCheckoutButton = elements.pulangBtn.length > 0;
+            const needsLocationTracking = elements.lat.length > 0 || elements.long.length > 0 || hasCheckoutButton;
+
+            if (!needsLocationTracking) {
+                return;
+            }
 
             // pre calculated loc
             const processedLocations = lokasiMitra.map(loc => ({
-                lat: loc.latitude,
-                lng: loc.longtitude,
+                lat: parseFloat(loc.latitude),
+                lng: parseFloat(loc.longtitude),
                 radius: parseFloat(loc.radius),
-                center: L.latLng(loc.latitude, loc.longtitude)
             }));
 
             let watchId = null;
@@ -800,13 +805,15 @@
                 elements.long.val(longitude);
                 elements.tutor.removeClass('hidden');
 
-                // Handle different coop types
-                if (userCoopId === 1) {
-                    // For coop 1, always enable the button without radius check
-                    updateButtonState(true);
-                } else {
-                    // For other coops, check if user is within any location's radius
-                    checkLocationRadius(latitude, longitude);
+                if (hasCheckoutButton) {
+                    // Handle different coop types
+                    if (userCoopId === 1) {
+                        // For coop 1, always enable the button without radius check
+                        updateButtonState(true);
+                    } else {
+                        // For other coops, check if user is within any location's radius
+                        checkLocationRadius(latitude, longitude);
+                    }
                 }
             }
 
@@ -828,6 +835,11 @@
 
             // Optimized radius checking
             function checkLocationRadius(userLat, userLng) {
+                if (!processedLocations.length) {
+                    updateButtonState(false);
+                    return;
+                }
+
                 let withinAnyRadius = false;
 
                 // Use our pre-processed locations for faster checks
@@ -1120,12 +1132,12 @@
         });
     </script>
     <script>
-        // Store user data once to avoid repeated server-side calls
-        const userData = {!! json_encode(Auth::user()) !!};
+        // Store only fields used in script to reduce payload size
+        const userName = @json(Auth::user()->name);
         const userJabatanCode = @json(Auth::user()->jabatan->code_jabatan);
         const userDevisiId = @json(Auth::user()->devisi_id);
         const isSupervisorOrSpecialDept = userJabatanCode === "SPV-W" || userDevisiId === 12;
-        const shift = {!! json_encode($absenP?->shift) !!};
+        const isOvernightShift = @json((bool) ($absenP?->shift?->is_overnight));
 
         // Cache DOM elements
         const elements = {
@@ -1143,7 +1155,7 @@
         const MINUTES_BEFORE_SHIFT_END = 90;
         const MINUTES_AFTER_SHIFT_END = -360;
         const SUPERVISOR_MIN_WORK_TIME = 390;
-        const IS_OVERNIGHT_SHIFT = shift?.is_overnight == true;
+        const IS_OVERNIGHT_SHIFT = isOvernightShift === true;
 
         $(document).ready(function() {
             startClock();
@@ -1244,7 +1256,7 @@
 
         function updateCheckoutButton(durasiKerja, sisaMenit) {
             // Direksi selalu bisa pulang
-            if (userData.name === "DIREKSI") {
+            if (userName === "DIREKSI") {
                 showCheckoutBtn(true);
                 return;
             }

@@ -183,7 +183,7 @@ class AbsensiController extends Controller
                 ->where('is_active', true)
                 ->exists();
 
-            if ($dueDateSetting && Carbon::today()->gt(Carbon::parse($dueDateSetting->due_date)) && !$isExempted) {
+            if ($dueDateSetting?->due_date && Carbon::today()->gt(Carbon::parse($dueDateSetting->due_date)->endOfDay()) && !$isExempted) {
                 toastr()->error('Periode pengajuan rekap sudah melewati due date. Anda tidak dapat membuat absensi baru.', 'error');
                 return redirect()->back();
             }

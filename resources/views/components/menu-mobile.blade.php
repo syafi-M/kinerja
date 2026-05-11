@@ -1,7 +1,10 @@
-	
 <div class="block md:hidden mx-5 sm:mx-auto">
 	<div class="menu menu-horizontal px-3 flex items-center bg-slate-200 mb-1 rounded-box">
 		<div class="flex text-[10px]">
+		    @php
+		        $authUser = Auth::user();
+		        $authJabatanCode = $authUser?->divisi?->jabatan?->code_jabatan;
+		    @endphp
 		    <ul class="flex">
 			<li class="overflow-hidden">
 				<a href="{{ route('profile.index') }}" class="flex flex-col gap-0 -my-2 " style="margin-top: -0.5rem; margin-bottom: -0.5rem">
@@ -29,11 +32,11 @@
 				</li>
 			@if(Route::has('login') && request()->routeIs('dashboard.index'))
 			@auth
-    			@if (Auth::user()->divisi->jabatan->code_jabatan != 'MITRA' && Auth::user()->divisi->jabatan->code_jabatan != 'LEADER' && Auth::user()->name != 'DIREKSI')
+    			@if ($authJabatanCode != 'MITRA' && $authJabatanCode != 'LEADER' && $authUser?->name != 'DIREKSI')
     				<li class="overflow-hidden">
-    				    @if(Auth::user()->kerjasama_id == 1)
+    				    @if($authUser?->kerjasama_id == 1)
     				        @if(Carbon\Carbon::now()->format('N') == 6 || Carbon\Carbon::now()->format('N') == 7)
-    				            @if(Auth::user()->devisi_id == 26)
+    				            @if($authUser?->devisi_id == 26)
     					        <a id="aAbsen2" href="{{ route('absensi.index') }}" class="flex flex-col gap-0" style="margin-top: -0.5rem; margin-bottom: -0.5rem">
             						<i class="ri-file-edit-fill text-xl text-green-500"></i>
             						<span class="font-semibold text-slate-700">Kehadiran</span>

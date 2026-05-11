@@ -99,7 +99,7 @@
                                 <input type="number" name="type_overtime_manual" x-model="manualType"
                                     placeholder="Masukan Berapa Jam..." value="{{ old('type_overtime_manual') }}"
                                     class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                                    :required="selectedType === 'jam'">
+                                    :required="selectedType === 'jam'" :disabled="selectedType !== 'jam'" min="1">
                                 <p class="text-xs text-slate-500 mt-1">Contoh: 1, 2, 3, 24,
                                     dll.</p>
                             </div>
@@ -128,7 +128,7 @@
                                 <input type="number" name="type_overtime_manual" x-model="manualType"
                                     placeholder="Masukan Nominalnya..." value="{{ old('type_overtime_manual') }}"
                                     class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                                    :required="selectedType === 'lainnya'">
+                                    :required="selectedType === 'lainnya'" :disabled="selectedType !== 'lainnya'" min="1">
                                 <p class="text-xs text-slate-500 mt-1">Contoh: 50000, 20000,
                                     dll.</p>
                             </div>
