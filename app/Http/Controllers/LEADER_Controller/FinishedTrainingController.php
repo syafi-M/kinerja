@@ -4,6 +4,7 @@ namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Controller;
 use App\Models\FinishedTraining;
+use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\FinishedTrainingSubmitted;
 use Carbon\Carbon;
@@ -15,7 +16,13 @@ class FinishedTrainingController extends Controller
 {
     public function index()
     {
-        return view('leader_view.data_rekap.finished_training.index');
+        $users = $this->allowedUsersQuery()
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap']);
+
+        return view('leader_view.data_rekap.finished_training.index', [
+            'users' => $users,
+        ]);
     }
 
     public function searchUsers(Request $request)
@@ -45,6 +52,8 @@ class FinishedTrainingController extends Controller
 
     public function history(Request $request)
     {
+        $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+
         $allowedPerPage = [10, 15, 25, 50];
         $perPage = (int) $request->input('per_page', 15);
         if (!in_array($perPage, $allowedPerPage, true)) {
@@ -68,6 +77,12 @@ class FinishedTrainingController extends Controller
             'users' => $users,
             'perPage' => $perPage,
             'allowedPerPage' => $allowedPerPage,
+            'isSubmissionLocked' => $isSubmissionLocked,
+            'canBulkSubmit' => !$isSubmissionLocked && $this->filteredHistoryQuery($request)
+                ->where(function ($q) {
+                    $q->whereNull('status')
+                        ->orWhereRaw('LOWER(status) = ?', ['pending']);
+                })->exists(),
         ]);
     }
 
@@ -85,40 +100,58 @@ class FinishedTrainingController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules());
+        try {
+            $validated = $request->validate($this->rules());
 
-        $finishedTraining = FinishedTraining::create([
-            'user_id' => $validated['user_id'],
-            'date_in' => $validated['date_in'],
-            'date_finish_train' => $validated['date_finish_train'],
-            'desc' => $validated['desc'],
-            'status' => 'pending',
-        ]);
+            $finishedTraining = FinishedTraining::create([
+                'user_id' => $validated['user_id'],
+                'date_in' => $validated['date_in'],
+                'date_finish_train' => $validated['date_finish_train'],
+                'desc' => $validated['desc'],
+                'status' => 'pending',
+            ]);
 
-        return response()->json([
-            'message' => 'Data lepas training disimpan !',
-            'data' => $finishedTraining,
-            'error' => ''
-        ], 201);
+            return response()->json([
+                'message' => 'Data lepas training berhasil disimpan!',
+                'data' => $finishedTraining,
+                'error' => ''
+            ], 201);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan data lepas training.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $finishedTraining = $this->baseQuery()->findOrFail($id);
-        $validated = $request->validate($this->rules());
+        try {
+            $finishedTraining = $this->baseQuery()->findOrFail($id);
+            $validated = $request->validate($this->rules());
 
-        $finishedTraining->update([
-            'user_id' => $validated['user_id'],
-            'date_in' => $validated['date_in'],
-            'date_finish_train' => $validated['date_finish_train'],
-            'desc' => $validated['desc'],
-        ]);
+            $finishedTraining->update([
+                'user_id' => $validated['user_id'],
+                'date_in' => $validated['date_in'],
+                'date_finish_train' => $validated['date_finish_train'],
+                'desc' => $validated['desc'],
+            ]);
 
-        return response()->json([
-            'message' => 'Finished training updated',
-            'data' => $finishedTraining->fresh('user'),
-            'error' => ''
-        ]);
+            return response()->json([
+                'message' => 'Data lepas training berhasil diperbarui!',
+                'data' => $finishedTraining->fresh('user'),
+                'error' => ''
+            ]);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui data lepas training.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy($id)
@@ -134,39 +167,65 @@ class FinishedTrainingController extends Controller
             ]);
         }
 
-        toastr()->warning('Data lepas training berhasil dihapus!', [], 'warning');
-        return redirect()->back();
+        toastr()->warning('Data lepas training berhasil dihapus!', 'warning');
+        return redirect()->back()->with('toast', [
+            'type' => 'warning',
+            'message' => 'Data lepas training berhasil dihapus!',
+        ]);
     }
 
     public function changeStatus($id)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $finishedTraining = $this->baseQuery()->findOrFail($id);
         $currentStatus = $finishedTraining->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
             toastr()->info('Data ini tidak dapat diajukan lagi.');
-            return redirect()->back();
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Data ini tidak dapat diajukan lagi.',
+            ]);
         }
 
         $finishedTraining->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($finishedTraining->fresh('user'));
-        toastr()->success('Lepas training berhasil diajukan!', [], 'success');
-        return redirect()->back();
+        toastr()->success('Lepas training berhasil diajukan!', 'success');
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Lepas training berhasil diajukan!',
+        ]);
     }
 
     public function bulkStatus(Request $request)
     {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
         $query = $this->filteredHistoryQuery($request)
             ->where(function ($q) {
                 $q->whereNull('status')
-                    ->orWhere('status', 'pending');
+                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
             });
 
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
             toastr()->info('Tidak ada data lepas training yang bisa diajukan.');
-            return back();
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Tidak ada data lepas training yang bisa diajukan.',
+            ]);
         }
 
         FinishedTraining::whereIn('id', $items->pluck('id'))
@@ -177,8 +236,19 @@ class FinishedTrainingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua data lepas training sesuai filter!', [], 'success');
-        return back();
+        toastr()->success('Berhasil mengajukan semua data lepas training sesuai filter!', 'success');
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Berhasil mengajukan semua data lepas training sesuai filter!',
+        ]);
+    }
+
+    private function isSubmissionLockedByDueDate(): bool
+    {
+        $dueDate = RekapDueDateSetting::latest()->first();
+
+        return $dueDate !== null
+            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     public function fetchApi($id)
@@ -219,7 +289,8 @@ class FinishedTrainingController extends Controller
 
     private function baseQuery()
     {
-        return FinishedTraining::with('user')
+        return FinishedTraining::with('user:id,name,nama_lengkap')
+            ->select(['id', 'user_id', 'date_in', 'date_finish_train', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
                 $q->where('kerjasama_id', auth()->user()->kerjasama_id)
                     ->whereHas('jabatan', function ($jabatanQuery) {

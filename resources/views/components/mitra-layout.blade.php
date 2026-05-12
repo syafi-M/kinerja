@@ -1366,6 +1366,9 @@
     </style>
 </head>
 <body id="mainBody" class="font-sans antialiased">
+    <x-flasher />
+    <x-session-toast />
+    <x-flasher-theme />
     @php
         $primaryMenus = [
             ['label' => 'Dashboard', 'route' => 'dashboard.index', 'icon' => 'ri-dashboard-3-line'],

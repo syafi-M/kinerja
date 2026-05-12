@@ -12,7 +12,7 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
-## [v2.0.2] - 2026-05-04
+## [v2.0.3] - 2026-05-12
 
 ### Changed
 - Merapikan penamaan route admin agar konsisten memakai namespace `admin.*` pada modul rekap, izin, jadwal, slip, checklist, rating, berita, subarea, pekerjaan checkpoint, list pekerjaan, report sholat, monev, dan resource CRUD admin utama.
@@ -22,6 +22,50 @@ Format rilis:
 - Memperbaiki konflik nama route peta admin dengan memisahkan route checkpoint map dan absensi map ke nama yang berbeda.
 - Memperbaiki referensi route lama pada layout, sidebar, dashboard, Blade admin, dan beberapa redirect controller setelah standardisasi naming route admin.
 - Memperbaiki anomali route pada `monev/create.blade.php` agar kembali mengarah ke route admin jabatan dan shift yang valid.
+
+## [v2.0.2] - 2026-05-11
+
+### Added
+- Menambahkan komponen toast fallback berbasis session (`x-session-toast`) agar notifikasi tetap muncul konsisten di semua layout utama.
+- Menambahkan komponen styling toast global (`x-flasher-theme`) untuk menyeragamkan tampilan `success`, `error`, `warning`, dan `info`.
+- Menambahkan helper global modal konfirmasi `window.openConfirmModal(...)` pada layout utama untuk konfirmasi aksi kritikal.
+- Menambahkan integrasi Tom Select lokal (tanpa CDN) untuk dropdown user searchable pada modul rekap leader.
+
+### Changed
+- Menyelaraskan seluruh teks option dropdown user pada form rekap agar menampilkan nama lengkap saja.
+- Memoles UI Tom Select (control, dropdown, option, hover, selected state) agar lebih clean dan konsisten dengan design system aplikasi.
+- Mengubah seluruh alur konfirmasi browser native (`confirm()`) pada aksi Hapus, Ajukan, dan Ajukan Semua menjadi modal konfirmasi.
+- Menyeragamkan flow notifikasi CRUD rekap agar selalu mengirimkan flash toast session pada redirect.
+
+### Fixed
+- **Shared / UI Infrastructure**
+- Memperbaiki bug tampilan dropdown user yang terjebak di dalam container dengan mengatur `dropdownParent` ke `body` dan z-index dropdown.
+- Memperbaiki bug double border pada input select Tom Select dengan membersihkan class warisan dari elemen select asli.
+- Memperbaiki bug notifikasi yang tidak muncul setelah aksi Hapus/Ajukan/Ajukan Semua melalui penyelarasan flash toast session di layout utama.
+
+- **Overtime**
+- Memperbaiki mismatch status `pending` (case-sensitive) pada bulk submit sehingga status seperti `Pending` tetap terbaca eligible.
+- Menambahkan guard due date pada submit single dan bulk agar pengajuan otomatis terkunci setelah melewati due date.
+- Menonaktifkan tombol `Ajukan Semua` saat tidak ada data eligible atau saat masa submit terkunci due date.
+
+- **Person Out**
+- Memperbaiki bug update gambar person out yang tidak mengganti file dengan benar pada alur submit.
+- Memperbaiki error duplikasi `person_outs.user_id` dengan handling validasi + feedback toast yang jelas.
+- Menambahkan guard due date pada submit single dan bulk agar pengajuan terkunci setelah melewati due date.
+- Menonaktifkan tombol `Ajukan Semua` saat data eligible kosong atau saat masa submit terkunci due date.
+
+- **Person In**
+- Memperbaiki bug data user tidak muncul stabil pada select person in akibat render option berbasis template dinamis saat inisialisasi select.
+- Menambahkan guard due date pada submit single dan bulk agar pengajuan terkunci setelah melewati due date.
+- Menonaktifkan tombol `Ajukan Semua` saat data eligible kosong atau saat masa submit terkunci due date.
+
+- **Cutting**
+- Menambahkan guard due date pada submit single dan bulk agar pengajuan terkunci setelah melewati due date.
+- Menonaktifkan tombol `Ajukan Semua` saat data eligible kosong atau saat masa submit terkunci due date.
+
+- **Finished Training**
+- Menambahkan guard due date pada submit single dan bulk agar pengajuan terkunci setelah melewati due date.
+- Menonaktifkan tombol `Ajukan Semua` saat data eligible kosong atau saat masa submit terkunci due date.
 
 ## [v2.0.1] - 2026-05-04
 

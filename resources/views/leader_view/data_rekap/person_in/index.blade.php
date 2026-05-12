@@ -30,8 +30,7 @@
             <div id="alertBox" class="mb-4"></div>
 
             <form id="personInForm" x-data="personInForm()" enctype="multipart/form-data"
-                data-store-url="{{ route('person-in.store') }}"
-                data-user-search-url="{{ route('person-in.users.search') }}" class="space-y-4">
+                data-store-url="{{ route('person-in.store') }}" class="space-y-4">
                 <input type="hidden" id="person_in_id" />
                 <input type="hidden" name="has_account" :value="hasAccount">
                 <input type="hidden" name="fullname" :value="getResolvedFullname()">
@@ -66,55 +65,20 @@
                     </div>
 
                     <div class="mt-4" x-show="hasAccount === 'yes'" x-collapse>
-                        <label for="user_search" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label for="user_id" class="mb-1.5 block text-sm font-semibold text-slate-700">
                             Cari User <span class="text-red-500">*</span>
                         </label>
-                        <div class="space-y-2" @click.outside="openSearch = false">
-                            <div class="relative">
-                                <input type="text" id="user_search" x-model="userQuery" @focus="openSearch = true"
-                                    placeholder="Ketik minimal 2 huruf nama user..."
-                                    class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-10 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-                                    :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''">
-                                <span class="absolute pointer-events-none right-3 top-3 text-slate-400">
-                                    <i class="ri-search-line"></i>
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-500">Pilih user dari hasil pencarian yang muncul.</p>
-
-                            <div x-show="selectedUserName" class="px-3 py-2 border rounded-lg border-sky-100 bg-sky-50">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="min-w-0 text-sm truncate text-slate-700">Terpilih:
-                                        <span class="font-semibold" x-text="selectedUserName"></span>
-                                    </span>
-                                    <button type="button"
-                                        class="inline-flex items-center px-2 text-xs font-semibold rounded-lg min-h-8 text-sky-700 hover:bg-sky-100"
-                                        @click="clearSelectedUser()">
-                                        Ganti
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div x-show="shouldShowSearchPanel()" x-transition
-                                class="overflow-y-auto bg-white border rounded-lg shadow-sm max-h-64 border-slate-200">
-                                <template x-if="isSearching">
-                                    <div class="px-4 py-3 text-sm text-slate-500">Mencari user...</div>
-                                </template>
-                                <template x-if="!isSearching && searchError">
-                                    <div class="px-4 py-3 text-sm text-red-600" x-text="searchError"></div>
-                                </template>
-                                <template x-if="!isSearching && !searchError && userQuery.trim().length >= 2 && userResults.length === 0">
-                                    <div class="px-4 py-3 text-sm text-slate-500">User tidak ditemukan.</div>
-                                </template>
-                                <template x-for="user in userResults" :key="user.id">
-                                    <button type="button"
-                                        class="flex items-center justify-between w-full px-4 py-3 text-sm text-left min-h-11 hover:bg-slate-50"
-                                        @click="selectUser(user)">
-                                        <span x-text="user.nama_lengkap"></span>
-                                        <i class="ri-check-line text-sky-600" x-show="selectedUserName === user.nama_lengkap"></i>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
+                        <select id="user_id" x-model="selectedUserId" @change="syncSelectedUser($event)"
+                            class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                            :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''" required>
+                            <option value="">Pilih user</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}" data-name="{{ $user->nama_lengkap }}">
+                                    {{ $user->nama_lengkap }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-2 text-xs text-slate-500">Daftar user dibatasi sesuai area kerja/kerjasama Anda.</p>
                     </div>
 
                     <div class="mt-4" x-show="hasAccount === 'no'" x-collapse>
@@ -240,12 +204,6 @@
                 selectedUserId: null,
                 selectedUserName: '',
                 manualName: '',
-                userQuery: '',
-                userResults: [],
-                openSearch: false,
-                isSearching: false,
-                searchError: '',
-                searchTimeout: null,
                 selectedMethod: '',
                 manualMethod: '',
                 showFullnameError: false,
@@ -260,71 +218,13 @@
                     this.selectedUserId = null;
                     this.selectedUserName = '';
                     this.manualName = '';
-                    this.userQuery = '';
-                    this.userResults = [];
-                    this.searchError = '';
-                    this.openSearch = false;
                 },
 
-                selectUser(user) {
-                    this.selectedUserId = user.id;
-                    this.selectedUserName = user.nama_lengkap;
-                    this.userQuery = user.nama_lengkap;
-                    this.openSearch = false;
-                    this.userResults = [];
+                syncSelectedUser(event) {
+                    this.selectedUserId = event.target.value ? Number(event.target.value) : null;
+                    const selectedOption = event.target.options[event.target.selectedIndex];
+                    this.selectedUserName = this.selectedUserId ? (selectedOption?.dataset?.name || selectedOption?.text || '') : '';
                     this.showFullnameError = false;
-                },
-
-                clearSelectedUser() {
-                    this.selectedUserId = null;
-                    this.selectedUserName = '';
-                    this.userQuery = '';
-                    this.userResults = [];
-                    this.searchError = '';
-                    this.openSearch = true;
-                },
-
-                shouldShowSearchPanel() {
-                    return this.openSearch && this.userQuery.trim().length >= 2;
-                },
-
-                searchUsers() {
-                    const keyword = this.userQuery.trim();
-
-                    if (!this.selectedUserId || keyword !== this.selectedUserName) {
-                        this.selectedUserId = null;
-                        this.selectedUserName = '';
-                    }
-                    this.searchError = '';
-
-                    if (keyword.length < 2) {
-                        this.userResults = [];
-                        return;
-                    }
-
-                    this.isSearching = true;
-
-                    fetch(`${this.$el.dataset.userSearchUrl}?q=${encodeURIComponent(keyword)}`, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(async response => {
-                            if (!response.ok) throw new Error('Gagal mencari user');
-                            return response.json();
-                        })
-                        .then(result => {
-                            this.userResults = result.data || [];
-                        })
-                        .catch(() => {
-                            this.userResults = [];
-                            this.searchError = 'Terjadi kesalahan saat mencari user.';
-                        })
-                        .finally(() => {
-                            this.isSearching = false;
-                            this.openSearch = true;
-                        });
                 },
 
                 init() {
@@ -332,12 +232,10 @@
                         if (value !== 'transfer') this.manualMethod = '';
                     });
 
-                    this.$watch('userQuery', () => {
-                        if (this.hasAccount !== 'yes') return;
-                        if (this.selectedUserId && this.userQuery.trim() === this.selectedUserName) return;
-
-                        if (this.searchTimeout) clearTimeout(this.searchTimeout);
-                        this.searchTimeout = setTimeout(() => this.searchUsers(), 300);
+                    this.$nextTick(() => {
+                        window.initTomUserSelect?.('user_id', {
+                            placeholder: 'Pilih user'
+                        });
                     });
                 },
 
@@ -346,6 +244,10 @@
                     this.selectedMethod = '';
                     this.manualMethod = '';
                     this.showFullnameError = false;
+                    const userSelect = document.getElementById('user_id');
+                    if (userSelect?.tomselect) {
+                        userSelect.tomselect.clear(true);
+                    }
                 }
             }));
         });
@@ -439,7 +341,7 @@
                         if (xhr.status === 422 && xhr.responseJSON?.errors) {
                             showFormErrors(Object.values(xhr.responseJSON.errors).flat());
                         } else {
-                            showAlert('error', 'Gagal menyimpan data');
+                            showAlert('error', xhr.responseJSON?.message || 'Terjadi kesalahan saat menyimpan data personil masuk. Silakan coba lagi.');
                         }
                     });
             }

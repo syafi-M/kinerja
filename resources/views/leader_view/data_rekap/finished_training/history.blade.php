@@ -14,7 +14,8 @@
                             <h1 class="text-xl font-bold leading-tight truncate text-slate-900 sm:text-2xl">
                                 Riwayat Lepas Training
                             </h1>
-                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan lepas training.</p>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">Pantau status dan kelola pengajuan lepas
+                                training.</p>
                         </div>
                     </div>
                     <a href="{{ route('finished-training.index') }}"
@@ -25,13 +26,16 @@
             </div>
 
             <div class="p-3 mb-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-4">
-                <form action="{{ route('finished-training.history') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <form action="{{ route('finished-training.history') }}" method="GET"
+                    class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <select name="status"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         <option value="">Semua Status</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan</option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                        <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan
+                        </option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
+                        </option>
                     </select>
                     <input type="month" name="month" value="{{ request('month') }}"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
@@ -56,8 +60,10 @@
                         <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
                             <div class="mb-3 flex items-start justify-between gap-3">
                                 <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">{{ $item->user->nama_lengkap ?? '-' }}</p>
-                                    <p class="mt-0.5 text-xs text-slate-500">Masuk {{ \Carbon\Carbon::parse($item->date_in)->format('d M Y') }}</p>
+                                    <p class="text-sm font-semibold text-slate-800">
+                                        {{ $item->user->nama_lengkap ?? '-' }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-500">Masuk
+                                        {{ \Carbon\Carbon::parse($item->date_in)->format('d M Y') }}</p>
                                 </div>
                                 @if (($item->status ?? 'pending') == 'Di Ajukan')
                                     <span
@@ -76,11 +82,13 @@
                             <div class="mb-4 grid grid-cols-2 gap-2 text-xs text-slate-600">
                                 <div class="p-2 rounded-lg bg-slate-50">
                                     <span class="block text-slate-400">Tanggal Lepas Training</span>
-                                    <span class="font-medium text-slate-700">{{ \Carbon\Carbon::parse($item->date_finish_train)->format('d M Y') }}</span>
+                                    <span
+                                        class="font-medium text-slate-700">{{ \Carbon\Carbon::parse($item->date_finish_train)->format('d M Y') }}</span>
                                 </div>
                                 <div class="p-2 rounded-lg bg-slate-50">
                                     <span class="block text-slate-400">Jumlah Masa Training</span>
-                                    <span class="font-medium text-slate-700">{{ $item->masa_training_hari }} hari</span>
+                                    <span class="font-medium text-slate-700">{{ $item->masa_training_hari }}
+                                        hari</span>
                                 </div>
                             </div>
                             <div class="mb-4">
@@ -92,7 +100,7 @@
                                     class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg min-h-10 bg-sky-50 text-sky-700 hover:bg-sky-100">
                                     <i class="ri-eye-line"></i>Lihat
                                 </button>
-                                @if (($item->status ?? 'pending') === 'pending')
+                                @if (($item->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                     <button onclick="sendFinishedTraining({{ $item->id }})"
                                         class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100">
                                         <i class="ri-send-plane-fill"></i>Ajukan
@@ -140,7 +148,8 @@
                         <tbody class="divide-y divide-slate-200">
                             @forelse($finishedTrainings as $index => $item)
                                 <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-4 py-4 text-sm text-slate-700">{{ $finishedTrainings->firstItem() + $index }}
+                                    <td class="px-4 py-4 text-sm text-slate-700">
+                                        {{ $finishedTrainings->firstItem() + $index }}
                                     </td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $item->user->nama_lengkap ?? '-' }}</td>
@@ -169,7 +178,7 @@
                                             <button onclick="viewDetail({{ $item->id }})"
                                                 class="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center"
                                                 title="Lihat"><i class="ri-eye-line"></i></button>
-                                            @if (($item->status ?? 'pending') === 'pending')
+                                            @if (($item->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                                 <button onclick="editData({{ $item->id }})"
                                                     class="w-9 h-9 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-600 flex items-center justify-center"
                                                     title="Edit"><i class="ri-edit-line"></i></button>
@@ -186,7 +195,8 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="px-4 py-12 text-center">
-                                        <p class="text-slate-600 font-medium">Belum ada riwayat pengajuan lepas training</p>
+                                        <p class="text-slate-600 font-medium">Belum ada riwayat pengajuan lepas
+                                            training</p>
                                         <a href="{{ route('finished-training.index') }}"
                                             class="inline-flex items-center gap-2 px-6 py-2 mt-3 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900"><i
                                                 class="ri-add-line"></i><span>Buat Pengajuan</span></a>
@@ -217,7 +227,8 @@
                                 </select>
                             </form>
                             <div class="text-xs text-slate-500">
-                                Menampilkan {{ $finishedTrainings->firstItem() }}-{{ $finishedTrainings->lastItem() }} dari
+                                Menampilkan {{ $finishedTrainings->firstItem() }}-{{ $finishedTrainings->lastItem() }}
+                                dari
                                 {{ $finishedTrainings->total() }} data
                             </div>
                         </div>
@@ -230,16 +241,17 @@
                 @endif
             </div>
 
-            <div class="flex justify-end w-full">
-                <form action="{{ route('finished-training-bulk.status') }}" method="post" class="w-full mt-3 sm:w-auto">
+            <div class="flex justify-end w-full my-2">
+                <form id="bulkFinishedTrainingForm" action="{{ route('finished-training-bulk.status') }}"
+                    method="post" class="w-full mt-3 sm:w-auto">
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="status" value="{{ request('status') }}">
                     <input type="hidden" name="month" value="{{ request('month') }}">
                     <input type="hidden" name="search" value="{{ request('search') }}">
                     <input type="hidden" name="per_page" value="{{ request('per_page', $perPage ?? 15) }}">
-                    <button type="submit"
-                        class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-semibold text-green-700 transition bg-green-100 rounded-lg min-h-10 hover:bg-green-200 sm:w-auto"><i
+                    <button type="button" @disabled(!($canBulkSubmit ?? false)) onclick="openBulkFinishedTrainingModal()"
+                        class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-semibold rounded-lg min-h-10 sm:w-auto {{ $canBulkSubmit ?? false ? 'bg-green-100 text-green-700 hover:bg-green-200 transition' : 'cursor-not-allowed bg-slate-100 text-slate-400' }}"><i
                             class="ri-send-plane-fill"></i>Ajukan Semua</button>
                 </form>
             </div>
@@ -259,7 +271,8 @@
                 <div class="mb-4"><label for="user_id"
                         class="block mb-2 text-sm font-semibold text-slate-700">Fullname <span
                             class="text-red-500">*</span></label><select name="user_id" id="user_id"
-                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" required>
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                        required>
                         <option value="">-- Pilih Fullname --</option>
                         @foreach ($users as $user)
                             <option value="{{ $user->id }}">{{ $user->nama_lengkap }}</option>
@@ -267,23 +280,29 @@
                     </select></div>
                 <div class="mb-4"><label for="edit_date_in"
                         class="block mb-2 text-sm font-semibold text-slate-700">Tanggal Masuk <span
-                            class="text-red-500">*</span></label><input type="date" name="date_in" id="edit_date_in"
-                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" required></div>
+                            class="text-red-500">*</span></label><input type="date" name="date_in"
+                        id="edit_date_in"
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                        required></div>
                 <div class="mb-4"><label for="edit_date_finish_train"
                         class="block mb-2 text-sm font-semibold text-slate-700">Tanggal Lepas Training <span
                             class="text-red-500">*</span></label><input type="date" name="date_finish_train"
-                        id="edit_date_finish_train" class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm" required></div>
+                        id="edit_date_finish_train"
+                        class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"
+                        required></div>
                 <div class="mb-4">
                     <label for="edit_desc" class="block mb-2 text-sm font-semibold text-slate-700">Keterangan
                         <span class="text-red-500">*</span></label>
-                    <textarea name="desc" id="edit_desc" rows="4" class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm" required></textarea>
+                    <textarea name="desc" id="edit_desc" rows="4"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm" required></textarea>
                 </div>
                 <div id="formErrors" class="mb-4"></div>
             </form>
             <div class="grid grid-cols-1 gap-2 modal-action sm:flex"><label for="modal-edit"
                     class="inline-flex items-center justify-center px-4 text-sm font-semibold border rounded-lg min-h-10 border-slate-300 text-slate-700">Batal</label><button
                     id="btnSave"
-                    class="inline-flex items-center justify-center gap-2 px-4 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900"><i class="ri-save-line"></i>Update Data</button>
+                    class="inline-flex items-center justify-center gap-2 px-4 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900"><i
+                        class="ri-save-line"></i>Update Data</button>
             </div>
         </div>
     </div>
@@ -292,7 +311,8 @@
         class="fixed inset-0 z-50 overflow-y-auto" style="display:none;">
         <div class="fixed inset-0 bg-black/50" @click="open = false"></div>
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
-            <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6" @click.away="open = false">
+            <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
+                @click.away="open = false">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Pengajuan Lepas Training</h3><button
                         @click="open = false"
@@ -308,18 +328,21 @@
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Tanggal Masuk</p>
                             <p class="font-semibold text-slate-800"
-                                x-text="detail.date_in ? new Date(detail.date_in).toLocaleDateString('id-ID') : '-' "></p>
+                                x-text="detail.date_in ? new Date(detail.date_in).toLocaleDateString('id-ID') : '-' ">
+                            </p>
                         </div>
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Tanggal Lepas Training</p>
                             <p class="font-semibold text-slate-800"
-                                x-text="detail.date_finish_train ? new Date(detail.date_finish_train).toLocaleDateString('id-ID') : '-' "></p>
+                                x-text="detail.date_finish_train ? new Date(detail.date_finish_train).toLocaleDateString('id-ID') : '-' ">
+                            </p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Jumlah Masa Training</p>
-                            <p class="font-semibold text-slate-800" x-text="(detail.masa_training_hari || 0) + ' hari'"></p>
+                            <p class="font-semibold text-slate-800"
+                                x-text="(detail.masa_training_hari || 0) + ' hari'"></p>
                         </div>
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Status</p><span x-text="detail.status ?? 'pending'"
@@ -384,13 +407,40 @@
         }
 
         function sendFinishedTraining(id) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/finished-training-change-status/${id}`;
-            form.innerHTML =
-                `<input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="PATCH">`;
-            document.body.appendChild(form);
-            form.submit();
+            window.openConfirmModal({
+                title: 'Ajukan Pengajuan',
+                message: 'Apakah Anda yakin ingin mengajukan pengajuan ini?',
+                confirmText: 'Ya, Ajukan',
+                cancelText: 'Batal',
+                type: 'warning',
+                onConfirm: function() {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/finished-training-change-status/${id}`;
+                    form.innerHTML =
+                        `<input type="hidden" name="_token" value="{{ csrf_token() }}"><input type="hidden" name="_method" value="PATCH">`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function openBulkFinishedTrainingModal() {
+            if (!{{ $canBulkSubmit ?? false ? 'true' : 'false' }}) {
+                return;
+            }
+
+            window.openConfirmModal({
+                title: 'Ajukan Semua Pengajuan',
+                message: 'Apakah Anda yakin ingin mengajukan semua pengajuan yang belum diajukan?',
+                confirmText: 'Ya, Ajukan Semua',
+                cancelText: 'Batal',
+                type: 'warning',
+                onConfirm: function() {
+                    const form = document.getElementById('bulkFinishedTrainingForm');
+                    if (form) form.submit();
+                }
+            });
         }
 
         function editData(id) {
@@ -434,7 +484,8 @@
                         $('#formErrors').html(
                             `<div class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"><div class="flex gap-2"><i class="ri-error-warning-line mt-0.5"></i><ul class="list-disc pl-4">${errors.map(err => `<li>${err}</li>`).join('')}</ul></div></div>`
                         );
-                    } else showAlert('error', 'Gagal menyimpan data');
+                    } else showAlert('error', xhr.responseJSON?.message ||
+                        'Terjadi kesalahan saat memperbarui data lepas training. Silakan coba lagi.');
                 });
         }
 
