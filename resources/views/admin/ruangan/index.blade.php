@@ -14,14 +14,14 @@
                         <i class="ri-search-2-line text-base text-gray-500"></i>
                         <input type="search" id="searchInput" class="w-full border-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none" placeholder="Cari ruangan atau client..." />
                     </label>
-                    <a href="{{ route('ruangan.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Ruangan</a>
+                    <a href="{{ route('admin.ruangan.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Ruangan</a>
                     <a href="{{ route('admin.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Dashboard</a>
                 </div>
             </div>
         </section>
 
         <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
-            <form action="{{ route('ruangan.import') }}" method="POST" class="flex flex-wrap items-center gap-2" enctype="multipart/form-data">
+            <form action="{{ route('admin.ruangan.import') }}" method="POST" class="flex flex-wrap items-center gap-2" enctype="multipart/form-data">
                 @csrf
                 <label for="iCP" class="inline-flex h-10 cursor-pointer items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"><i class="ri-file-excel-2-line mr-1.5 text-base"></i><span id="importLabel">Import Ruangan</span></label>
                 <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>

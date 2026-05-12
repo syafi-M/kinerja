@@ -65,7 +65,7 @@ class SubareaController extends Controller
         $subId = Subarea::findOrFail($id);
         $subId->update($subData);
         toastr()->success('Sub Area Berhasil Di Update', [], 'success');
-        return to_route('subarea.index');
+        return to_route('admin.subarea.index');
     }
     
     public function destroy($id)

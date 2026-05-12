@@ -59,11 +59,11 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'user' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('users.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('users.index') ? 'text-blue-700 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }}"><i
+                    <a href="{{ route('admin.user.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.user.index') ? 'text-blue-700 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }}"><i
                             class="mr-3 ri-user-line"></i>Data User</a>
-                    <a href="{{ route('users.create') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('users.create') ? 'text-blue-700 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }}"><i
+                    <a href="{{ route('admin.user.create') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.user.create') ? 'text-blue-700 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }}"><i
                             class="mr-3 ri-add-line"></i>Tambah User</a>
                 </div>
             </div>
@@ -85,14 +85,14 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'divisi' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('divisi.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('divisi.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
+                    <a href="{{ route('admin.divisi.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.divisi.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
                             class="mr-3 ri-building-4-line"></i>Data Divisi</a>
-                    <a href="{{ route('divisi.create') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('divisi.create') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
+                    <a href="{{ route('admin.divisi.create') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.divisi.create') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
                             class="mr-3 ri-add-line"></i>Tambah Divisi</a>
-                    <a href="{{ route('jabatan.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('jabatan.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
+                    <a href="{{ route('admin.jabatan.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jabatan.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
                             class="mr-3 ri-award-line"></i>Data Jabatan</a>
                 </div>
             </div>
@@ -114,17 +114,17 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'klien' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('data-client.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('data-client.index') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
+                    <a href="{{ route('admin.client.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.client.index') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
                             class="mr-3 ri-briefcase-line"></i>Data Client</a>
-                    <a href="{{ route('data-client.create') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('data-client.create') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
+                    <a href="{{ route('admin.client.create') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.client.create') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
                             class="mr-3 ri-add-line"></i>Tambah Client</a>
-                    <a href="{{ route('kerjasama.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('kerjasama.index') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
+                    <a href="{{ route('admin.kerjasama.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.kerjasama.index') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
                             class="mr-3 ri-file-list-3-line"></i>Data Kerjasama</a>
-                    <a href="{{ route('lokasi.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('lokasi.index') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
+                    <a href="{{ route('admin.lokasi.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.lokasi.index') ? 'text-green-700 bg-green-50' : 'text-gray-500 hover:text-green-600 hover:bg-green-50' }}"><i
                             class="mr-3 ri-pin-distance-line"></i>Data Lokasi</a>
                 </div>
             </div>
@@ -146,11 +146,11 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'shift' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('shift.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('shift.index') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50' }}"><i
+                    <a href="{{ route('admin.shift.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.shift.index') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50' }}"><i
                             class="mr-3 ri-calendar-2-line"></i>Data Shift</a>
-                    <a href="{{ route('admin-jadwal.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin-jadwal.index') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50' }}"><i
+                    <a href="{{ route('admin.jadwal.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jadwal.index') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50' }}"><i
                             class="mr-3 ri-calendar-event-line"></i>Jadwal User</a>
                 </div>
             </div>
@@ -175,14 +175,14 @@
                     <a href="{{ route('admin.absen') }}"
                         class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.absen') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' }}"><i
                             class="mr-3 ri-list-check-3"></i>Data Absensi</a>
-                    <a href="{{ route('data-izin.admin') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('data-izin.admin') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' }}"><i
+                    <a href="{{ route('admin.izin.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.izin.index') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' }}"><i
                             class="mr-3 ri-shield-user-line"></i>Data Izin</a>
                     <a href="{{ route('lemburList') }}"
                         class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('lemburList') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' }}"><i
                             class="mr-3 ri-hourglass-2-line"></i>Data Lembur</a>
-                    <a href="{{ route('reportSholat.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('reportSholat.index') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' }}"><i
+                    <a href="{{ route('admin.report-sholat.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.report-sholat.index') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100' }}"><i
                             class="mr-3 ri-shield-check-line"></i>Data Sholat</a>
                 </div>
             </div>
@@ -204,11 +204,11 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'poin' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('point.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('point.index') ? 'text-yellow-700 bg-yellow-50' : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50' }}"><i
+                    <a href="{{ route('admin.point.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.point.index') ? 'text-yellow-700 bg-yellow-50' : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50' }}"><i
                             class="mr-3 ri-star-line"></i>Data Poin</a>
-                    <a href="{{ route('point.create') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('point.create') ? 'text-yellow-700 bg-yellow-50' : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50' }}"><i
+                    <a href="{{ route('admin.point.create') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.point.create') ? 'text-yellow-700 bg-yellow-50' : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50' }}"><i
                             class="mr-3 ri-add-line"></i>Tambah Poin</a>
                 </div>
             </div>
@@ -230,11 +230,11 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'perlengkapan' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('perlengkapan.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('perlengkapan.index') ? 'text-teal-700 bg-teal-50' : 'text-gray-500 hover:text-teal-600 hover:bg-teal-50' }}"><i
+                    <a href="{{ route('admin.perlengkapan.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.perlengkapan.index') ? 'text-teal-700 bg-teal-50' : 'text-gray-500 hover:text-teal-600 hover:bg-teal-50' }}"><i
                             class="mr-3 ri-hammer-line"></i>Data Perlengkapan</a>
-                    <a href="{{ route('perlengkapan.create') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('perlengkapan.create') ? 'text-teal-700 bg-teal-50' : 'text-gray-500 hover:text-teal-600 hover:bg-teal-50' }}"><i
+                    <a href="{{ route('admin.perlengkapan.create') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.perlengkapan.create') ? 'text-teal-700 bg-teal-50' : 'text-gray-500 hover:text-teal-600 hover:bg-teal-50' }}"><i
                             class="mr-3 ri-add-line"></i>Tambah Perlengkapan</a>
                 </div>
             </div>
@@ -282,8 +282,8 @@
                     <a href="{{ route('admin.cp.index') }}"
                         class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.cp.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
                             class="mr-3 ri-check-double-line"></i>Data Checkpoint</a>
-                    <a href="{{ route('pekerjaanCp.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('pekerjaanCp.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
+                    <a href="{{ route('admin.pekerjaan-cp.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.pekerjaan-cp.index') ? 'text-purple-700 bg-purple-50' : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50' }}"><i
                             class="mr-3 ri-file-list-line"></i>Data Pekerjaan CP</a>
                 </div>
             </div>
@@ -305,8 +305,8 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'berita' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('news.index') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('news.index') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50' }}"><i
+                    <a href="{{ route('admin.news.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.news.index') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50' }}"><i
                             class="mr-3 ri-news-line"></i>Data Berita</a>
                 </div>
             </div>
@@ -354,8 +354,8 @@
                     </div>
                 </button>
                 <div x-show="openMenu === 'gaji' && sidebarOpen" x-collapse class="pl-4 mt-1 space-y-1">
-                    <a href="{{ route('admin-slip') }}"
-                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin-slip') ? 'text-blue-700 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }}"><i
+                    <a href="{{ route('admin.slip.index') }}"
+                        class="flex items-center p-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.slip.index') ? 'text-blue-700 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50' }}"><i
                             class="mr-3 ri-file-list-line"></i>Data Slip Gaji</a>
                 </div>
             </div>

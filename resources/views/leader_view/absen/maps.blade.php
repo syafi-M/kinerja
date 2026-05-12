@@ -42,7 +42,7 @@
                 <div class="px-5 py-5">
                     <p class="p-2 rounded-full bg-white text-center mx-10 my-5 font-semibold">Lokasi Absen Masuk & Pulang {{ $absen?->user->nama_lengkap }}</p>
                     <div class="flex justify-end">
-                        <form method="get" action="{{ $absen ? Auth::user()->role_id == 2 ? route('admin-lihatMap', $absen?->id) : route('mitra-lihatMap', $absen?->id) : '' }}" class="form-control bg-base-100 p-5 rounded-md join">
+                        <form method="get" action="{{ $absen ? Auth::user()->role_id == 2 ? route('admin.absen.map', $absen?->id) : route('mitra-lihatMap', $absen?->id) : '' }}" class="form-control bg-base-100 p-5 rounded-md join">
                             <input type="date" value="{{ $tgl ? $tgl : $absen?->tanggal_absen }}" name="tgl" class="join-item input input-bordered input-sm" />
                             <input type="hidden" name="user" value="{{ $us ? $us : $absen?->user_id }}"/>
                             <button class="btn btn-sm" style="border-radius: 0 10px 10px 0;">Submit</button>

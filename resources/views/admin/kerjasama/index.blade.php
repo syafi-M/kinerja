@@ -15,7 +15,7 @@
                         <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari client, approval, expired..." />
                     </label>
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('kerjasama.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
+                        <a href="{{ route('admin.kerjasama.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
                             <i class="ri-add-line mr-1.5 text-base"></i> Tambah Kerjasama
                         </a>
                     </div>

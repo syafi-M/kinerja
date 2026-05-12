@@ -7,24 +7,24 @@
 <body class="font-sans antialiased">
     @php
         $isDashboardActive = request()->routeIs('admin.index');
-        $isUserMenuActive = request()->routeIs('users.*');
-        $isDivisiMenuActive = request()->routeIs('divisi.*') || request()->routeIs('jabatan.*');
+        $isUserMenuActive = request()->routeIs('admin.user.*');
+        $isDivisiMenuActive = request()->routeIs('admin.divisi.*') || request()->routeIs('admin.jabatan.*');
         $isKlienMenuActive =
-            request()->routeIs('data-client.*') || request()->routeIs('kerjasama.*') || request()->routeIs('lokasi.*');
-        $isShiftMenuActive = request()->routeIs('shift.*') || request()->routeIs('admin-jadwal.*');
+            request()->routeIs('admin.client.*') || request()->routeIs('admin.kerjasama.*') || request()->routeIs('admin.lokasi.*');
+        $isShiftMenuActive = request()->routeIs('admin.shift.*') || request()->routeIs('admin.jadwal.*');
         $isAbsensiMenuActive =
             request()->routeIs('admin.absen') ||
-            request()->routeIs('data-izin.admin') ||
+            request()->routeIs('admin.izin.*') ||
             request()->routeIs('lemburList') ||
-            request()->routeIs('reportSholat.*');
-        $isPoinMenuActive = request()->routeIs('point.*');
-        $isPerlengkapanMenuActive = request()->routeIs('perlengkapan.*');
+            request()->routeIs('admin.report-sholat.*');
+        $isPoinMenuActive = request()->routeIs('admin.point.*');
+        $isPerlengkapanMenuActive = request()->routeIs('admin.perlengkapan.*');
         $isLaporanMenuActive =
             request()->routeIs('laporan.*') || request()->routeIs('laporanMitra.*') || request()->routeIs('qrcode.*');
-        $isCheckpointMenuActive = request()->routeIs('admin.cp.*') || request()->routeIs('pekerjaanCp.*');
-        $isBeritaMenuActive = request()->routeIs('news.*');
+        $isCheckpointMenuActive = request()->routeIs('admin.cp.*') || request()->routeIs('admin.pekerjaan-cp.*');
+        $isBeritaMenuActive = request()->routeIs('admin.news.*');
         $isRekapMenuActive = request()->routeIs('admin.rekap.*');
-        $isGajiMenuActive = request()->routeIs('admin-slip');
+        $isGajiMenuActive = request()->routeIs('admin.slip.index');
 
         $activeMenu = null;
         if ($isUserMenuActive) {

@@ -212,7 +212,7 @@ class UserController extends Controller
 
 
         toastr()->success('Data Berhasil diupdate', [], 'success');
-        return to_route('users.index');
+        return to_route('admin.user.index');
         // return redirect()->back();
     }
 
@@ -264,7 +264,7 @@ class UserController extends Controller
 
             $user->delete();
             toastr()->warning('Data User Telah Dihapus', [], 'warning');
-            return to_route('users.index');
+            return to_route('admin.user.index');
         } else {
             toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();

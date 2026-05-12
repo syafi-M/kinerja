@@ -34,7 +34,7 @@ class LokasiController extends Controller
 
         Lokasi::create($lokasi);
         toastr()->success('Berhasil Menambahkan Lokasi', [], 'success');
-        return to_route('lokasi.index');
+        return to_route('admin.lokasi.index');
     }
 
     public function edit($id)
@@ -56,7 +56,7 @@ class LokasiController extends Controller
         $lokasiId = Lokasi::findOrFail($id);
         $lokasiId->update($lokasi);
         toastr()->success('Berhasil Mengupdate Lokasi', [], 'success');
-        return to_route('lokasi.index');
+        return to_route('admin.lokasi.index');
     }
 
     public function destroy($id)

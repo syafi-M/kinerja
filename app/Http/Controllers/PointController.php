@@ -33,7 +33,7 @@ class PointController extends Controller
 
         Point::create($point);
         toastr()->success('Point Berhasil Ditambahkan', [], 'success');
-        return to_route('point.index');
+        return to_route('admin.point.index');
     }
 
     public function edit($id)
@@ -53,7 +53,7 @@ class PointController extends Controller
         $pointId = Point::findOrFail($id);
         $pointId->update($point);
         toastr()->success('Point Berhasil Diedit', [], 'success');
-        return to_route('point.index');
+        return to_route('admin.point.index');
     }
 
     public function destroy($id)

@@ -44,7 +44,7 @@ class PekerjaanCpController extends Controller
        ];
        PekerjaanCp::create($pcp);
        toastr()->success('Data Berhasil Di Tambahkan', [], 'success');
-       return to_route('pekerjaanCp.index');
+       return to_route('admin.pekerjaan-cp.index');
    }
    
    public function edit($id)
@@ -69,7 +69,7 @@ class PekerjaanCpController extends Controller
         $Datapcp = PekerjaanCp::findOrFail($id);
         $Datapcp->update($pcp);
         toastr()->success('Data Berhasil Di Edit', [], 'success');
-        return to_route('pekerjaanCp.index');
+        return to_route('admin.pekerjaan-cp.index');
    }
    
    public function destroy($id)

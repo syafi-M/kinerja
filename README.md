@@ -12,6 +12,17 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.2] - 2026-05-04
+
+### Changed
+- Merapikan penamaan route admin agar konsisten memakai namespace `admin.*` pada modul rekap, izin, jadwal, slip, checklist, rating, berita, subarea, pekerjaan checkpoint, list pekerjaan, report sholat, monev, dan resource CRUD admin utama.
+- Menyusun ulang group routing admin di `routes/web.php` menjadi blok yang lebih terstruktur untuk area rekap, API rekap, attendance, dan resource admin tanpa mengubah URI utama yang sudah dipakai aplikasi.
+
+### Fixed
+- Memperbaiki konflik nama route peta admin dengan memisahkan route checkpoint map dan absensi map ke nama yang berbeda.
+- Memperbaiki referensi route lama pada layout, sidebar, dashboard, Blade admin, dan beberapa redirect controller setelah standardisasi naming route admin.
+- Memperbaiki anomali route pada `monev/create.blade.php` agar kembali mengarah ke route admin jabatan dan shift yang valid.
+
 ## [v2.0.1] - 2026-05-04
 
 ### Added

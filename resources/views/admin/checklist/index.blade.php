@@ -20,7 +20,7 @@
             <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <a href="{{ Auth::user()->role_id == 2 ? route('admin.index') : route('leaderView') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50">Back</a>
-                    <a href="{{ Auth::user()->role_id == 2 ? route('admin-checklist.create') : route('leader-checklist.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">+ Checklist</a>
+                    <a href="{{ Auth::user()->role_id == 2 ? route('admin.checklist.create') : route('leader-checklist.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700">+ Checklist</a>
                 </div>
             </section>
 
@@ -55,7 +55,7 @@
                                                 <td class="px-4 py-3 sm:px-5">{{ $c->area}} - {{ $c->sub_area }}</td>
                                                 <td class="px-4 py-3 sm:px-5">{{ $c->tingkat_bersih }}</td>
                                                 <td class="px-4 py-3 sm:px-5 text-right">
-                                                    <form action="{{ route('admin-checklist.destroy', $c->id) }}" method="POST" class="inline">
+                                                    <form action="{{ route('admin.checklist.destroy', $c->id) }}" method="POST" class="inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button class="text-red-500 hover:text-red-600 text-xl transition"><i class="ri-delete-bin-5-line"></i></button>
@@ -99,7 +99,7 @@
                             </div>
                         </form>
                     @else
-                        <form id="hiddenForm" action="{{ route('admin-checklist.index')}}" method="GET" class="approvalForm w-full max-w-md">
+                        <form id="hiddenForm" action="{{ route('admin.checklist.index')}}" method="GET" class="approvalForm w-full max-w-md">
                             @csrf
                             @foreach ($checklistApproved as $item)
                                 <input name="allow" value="true" class="hidden"/>
@@ -115,7 +115,7 @@
             </section>
         @else
             <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
-                <form action="{{ Auth::user()->role_id == 2 ? route('admin-checklist.index') : route('leader-checklist.index') }}" method="GET" class="mx-auto max-w-xl space-y-4">
+                <form action="{{ Auth::user()->role_id == 2 ? route('admin.checklist.index') : route('leader-checklist.index') }}" method="GET" class="mx-auto max-w-xl space-y-4">
                     @csrf
                     <p class="text-center text-lg font-semibold text-gray-800">Tanggal Mulai - Akhir</p>
                     <div class="grid gap-3 sm:grid-cols-2">

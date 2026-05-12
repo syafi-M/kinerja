@@ -11,7 +11,7 @@
 				
 			</div>
 				<div class="flex justify-between gap-2 py-3 mx-16">
-	    			<form action="{{ route('import-pekerjaan') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
+	    			<form action="{{ route('admin.pekerjaan-cp.import') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
 	    				    @csrf
 	    				    <label for="iCP" class="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">
 									<i class="text-base ri-file-excel-2-line"></i>
@@ -20,7 +20,7 @@
 	    				    <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
 	    				    <button class="inline-flex items-center hidden h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700" type="submit" id="btnImport">Import</button>
 	    				</form>
-	    				<a href="{{ route('pekerjaanCp.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">+ Tambah Pekerjaan</a>
+	    				<a href="{{ route('admin.pekerjaan-cp.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">+ Tambah Pekerjaan</a>
 	    			</div>
 			</div>
 			<!--Handle error-->
@@ -65,14 +65,14 @@
 								<td>{{ $i->type_check }}</td>
 								<td class="flex gap-1">
 									<a
-										href="{{ route('pekerjaanCp.edit', [$i->id]) }}"
+										href="{{ route('admin.pekerjaan-cp.edit', [$i->id]) }}"
 										class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
 									>
 										<i class="text-xs ri-edit-line"></i>
 										Edit
 									</a>
 									@if(Auth::user()->role_id == 2)
-										<form action="{{ route('pekerjaanCp.destroy', [$i->id]) }}" method="POST">
+										<form action="{{ route('admin.pekerjaan-cp.destroy', [$i->id]) }}" method="POST">
 											@csrf
 											@method('DELETE')
 											<button

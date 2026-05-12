@@ -12,7 +12,7 @@
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('users.create') }}"
+                    <a href="{{ route('admin.user.create') }}"
                         class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700">
                         + Tambah User
                     </a>
@@ -22,7 +22,7 @@
 
         <section class="p-3 border shadow-sm rounded-xl border-gray-100/80 bg-white/85 sm:p-4">
             <div class="grid gap-3 lg:grid-cols-2 lg:items-end">
-                <form id="filterForm" action="{{ route('users.index') }}" method="GET"
+                <form id="filterForm" action="{{ route('admin.user.index') }}" method="GET"
                     class="flex flex-wrap items-center min-w-0 gap-2">
                     <select name="filterKerjasama" id="filterKerjasama"
                         class="w-full max-w-xs text-xs bg-white border-gray-200 select select-bordered h-9 focus:outline-none">
@@ -271,7 +271,7 @@
             $('#checkbox_all').prop('checked', false);
 
             activeFetchRequest = $.ajax({
-                url: "{{ route('users.index') }}",
+                url: "{{ route('admin.user.index') }}",
                 method: 'GET',
                 data: {
                     ajax: 1,

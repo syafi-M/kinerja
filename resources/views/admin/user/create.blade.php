@@ -61,7 +61,7 @@
                     </div>
 
                     <a
-                        href="{{ route('users.index') }}"
+                        href="{{ route('admin.user.index') }}"
                         class="inline-flex items-center border border-gray-200 bg-white font-semibold text-gray-700 transition hover:bg-gray-50"
                         :class="density === 'ultra_compact' ? 'rounded-lg px-3 py-1.5 text-xs' : 'rounded-xl px-4 py-2 text-sm'"
                     >
@@ -73,7 +73,7 @@
 
         <form
             method="POST"
-            action="{{ route('users.store') }}"
+            action="{{ route('admin.user.store') }}"
             id="form"
             enctype="multipart/form-data"
             :class="density === 'ultra_compact' ? 'space-y-2' : 'space-y-5'"
@@ -291,7 +291,7 @@
 
             <div class="flex justify-end gap-2" :class="density === 'ultra_compact' ? 'pb-1' : 'pb-2'">
                 <a
-                    href="{{ route('users.index') }}"
+                    href="{{ route('admin.user.index') }}"
                     class="inline-flex items-center border border-gray-200 bg-white font-semibold text-gray-700 transition hover:bg-gray-50"
                     :class="density === 'ultra_compact' ? 'rounded-lg px-3 py-1.5 text-xs' : 'rounded-xl px-4 py-2 text-sm'"
                 >

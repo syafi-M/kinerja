@@ -9,13 +9,13 @@
                     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Client</h1>
                     <p class="mt-1 text-sm text-gray-600">Perbarui data client agar informasi kontak dan alamat selalu valid.</p>
                 </div>
-                <a href="{{ route('data-client.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                <a href="{{ route('admin.client.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     Kembali
                 </a>
             </div>
         </section>
 
-        <form action="{{ route('data-client.update', [$client->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <form action="{{ route('admin.client.update', [$client->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @method('PUT')
             @csrf
             <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
@@ -73,7 +73,7 @@
                 </div>
 
                 <div class="mt-5 flex justify-end gap-2">
-                    <a href="{{ route('data-client.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <a href="{{ route('admin.client.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
                     <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Perubahan</button>
                 </div>
             </section>

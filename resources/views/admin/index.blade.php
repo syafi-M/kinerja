@@ -14,7 +14,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">Dashboard Admin</h2>
                     <p class="mt-1 text-sm text-gray-600">Ringkasan status operasional hari ini.</p>
                 </div>
-                <a href="{{ route('data-izin.admin') }}"
+                <a href="{{ route('admin.izin.index') }}"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-700 transition border border-blue-200 rounded-xl bg-blue-50 hover:bg-blue-100">
                     <i class="ri-notification-3-line"></i>
                     Review Izin
@@ -75,7 +75,7 @@
                                         {{ Carbon\Carbon::createFromFormat('Y-m-d', $ex->experied)->isoFormat('DD MMMM YYYY') }}
                                     </p>
                                 </div>
-                                <a href="{{ route('kerjasama.edit', $ex->id) }}"
+                                <a href="{{ route('admin.kerjasama.edit', $ex->id) }}"
                                     class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
                                     Update
                                 </a>

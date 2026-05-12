@@ -77,7 +77,7 @@
                         <button type="submit" formaction="{{ route('admin.exportV2') }}" class="text-yellow-900 border-0 btn bg-yellow-400/80 hover:bg-yellow-500">
                             <i class="ri-file-pdf-2-fill"></i><span class="text-sm">pdf</span>
                         </button>
-                        <button type="submit" formaction="{{ route('attendanceReport') }}" class="border-0 btn bg-emerald-400/80 text-emerald-900 hover:bg-emerald-500">
+                        <button type="submit" formaction="{{ route('admin.attendance.report') }}" class="border-0 btn bg-emerald-400/80 text-emerald-900 hover:bg-emerald-500">
                             <i class="ri-file-excel-fill"></i><span class="text-sm">exc</span>
                         </button>
                     </div>
@@ -176,7 +176,7 @@
 
                             <td class="flex items-center justify-center">
                                 <a class="flex items-center justify-center text-center btn btn-sm btn-primary"
-                                    href="{{ route('admin-lihatMap', $arr->id) }}"><i class="ri-map-pin-2-line"></i>
+                                    href="{{ route('admin.absen.map', $arr->id) }}"><i class="ri-map-pin-2-line"></i>
                                     Lihat</a>
                             </td>
                             {{-- End Handle Absensi Type Pulang --}}

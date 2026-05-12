@@ -35,7 +35,7 @@ class RuanganController extends Controller
 
         Ruangan::create($ruangan);
         toastr()->success('Data Ruangan Dibuat', [], 'success');
-        return to_route('ruangan.index');
+        return to_route('admin.ruangan.index');
     }
 
     public function edit($id)
@@ -55,7 +55,7 @@ class RuanganController extends Controller
         $ruanganId = Ruangan::findOrFail($id);
         $ruanganId->update($ruangan);
         toastr()->success('Data Ruangan Ter Update', [], 'success');
-        return to_route('ruangan.index');
+        return to_route('admin.ruangan.index');
     }
 
     public function destroy($id)

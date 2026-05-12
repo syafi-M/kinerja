@@ -42,7 +42,7 @@ class ShiftController extends Controller
         Shift::create($shift);
         toastr()->success('Shift berhasil ditambahkan', [], 'success');
 
-        return to_route('shift.index');
+        return to_route('admin.shift.index');
     }
 
     public function show($id)
@@ -87,7 +87,7 @@ class ShiftController extends Controller
         Shift::findOrFail($id)->update($shift);
         toastr()->success('Shift berhasil diupdate', [], 'success');
 
-        return to_route('shift.index');
+        return to_route('admin.shift.index');
     }
 
     public function destroy($id)

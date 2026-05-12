@@ -9,11 +9,11 @@
                     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Perlengkapan</h1>
                     <p class="mt-1 text-sm text-gray-600">Masukkan satu atau beberapa nama perlengkapan sekaligus.</p>
                 </div>
-                <a href="{{ route('perlengkapan.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Kembali</a>
+                <a href="{{ route('admin.perlengkapan.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Kembali</a>
             </div>
         </section>
 
-        <form action="{{ route('perlengkapan.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.perlengkapan.store') }}" method="POST" class="space-y-4">
             @csrf
             <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
                 <div id="inputContainer" class="space-y-2">
@@ -23,7 +23,7 @@
                 <div class="flex flex-wrap justify-between gap-2 mt-5">
                     <button type="button" id="add" class="inline-flex items-center h-10 px-4 text-sm font-semibold border rounded-xl border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100">Add Input</button>
                     <div class="flex gap-2">
-                        <a href="{{ route('perlengkapan.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Batal</a>
+                        <a href="{{ route('admin.perlengkapan.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Batal</a>
                         <button type="submit" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">Simpan</button>
                     </div>
                 </div>

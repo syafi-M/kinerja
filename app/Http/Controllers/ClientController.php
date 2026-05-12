@@ -57,7 +57,7 @@ class ClientController extends Controller
            return redirect()->back();
         }
             toastr()->success('Client Berhasil Ditambahkan', [], 'success');
-            return redirect()->to(route('data-client.index'));
+            return redirect()->to(route('admin.client.index'));
 
     }
 
@@ -115,7 +115,7 @@ class ClientController extends Controller
            return redirect()->back();
         }
         toastr()->success('Client berhasil diedit', [], 'success');
-        return redirect()->to(route('data-client.index'));
+        return redirect()->to(route('admin.client.index'));
     }
 
     public function destroy($id)
@@ -138,7 +138,7 @@ class ClientController extends Controller
             DB::commit();
 
             toastr()->success('Client dan semua data kerjasamanya berhasil dihapus.', [], 'Sukses');
-            return redirect()->route('data-client.index');
+            return redirect()->route('admin.client.index');
 
         } catch (ModelNotFoundException $e) {
             // This will catch the error from findOrFail if the client doesn't exist.

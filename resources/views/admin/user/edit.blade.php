@@ -103,7 +103,7 @@
 				<x-input-error class="mt-2" :messages="$errors->get('image')" />
 			</div>
 			<div class="flex flex-wrap justify-end gap-2 mt-8">
-				<a href="{{ route('users.index')}}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">
+				<a href="{{ route('admin.user.index')}}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">
 					Kembali
 				</a>
 				<button type="submit" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
@@ -119,7 +119,7 @@
 		<div class="flex justify-end mb-3">
 			<button id="close" class="scale-90 btn btn-error">&times;</button>
 		</div>
-		<form action="{{ route('users.destroy', $dataUser->id) }}" method="POST"
+		<form action="{{ route('admin.user.destroy', $dataUser->id) }}" method="POST"
 			class="flex items-center justify-center ">
 			@csrf
 			@method('DELETE')

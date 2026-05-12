@@ -9,7 +9,7 @@
                     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Edit Kerjasama</h1>
                     <p class="mt-1 text-sm text-gray-600">Perbarui data kontrak kerjasama client dan detail approval.</p>
                 </div>
-                <a href="{{ route('kerjasama.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                <a href="{{ route('admin.kerjasama.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     Kembali
                 </a>
             </div>
@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="mt-5 flex justify-end gap-2">
-                    <a href="{{ route('kerjasama.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <a href="{{ route('admin.kerjasama.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
                     <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Perubahan</button>
                 </div>
             </section>

@@ -29,7 +29,7 @@ class PerlengkapanController extends Controller
             ]);
         }
         toastr()->success('Perlengkapan Berhasil dibuat', [], 'success');
-        return redirect()->to(route('perlengkapan.index'));
+        return redirect()->to(route('admin.perlengkapan.index'));
     }
 
     public function edit($id)
@@ -46,7 +46,7 @@ class PerlengkapanController extends Controller
 
         Perlengkapan::findOrFail($id)->update($data);
         toastr()->success('Data berhasil di Update!', [], 'success');
-        return redirect()->to(route('perlengkapan.index'));
+        return redirect()->to(route('admin.perlengkapan.index'));
     }
 
     public function destroy($id)

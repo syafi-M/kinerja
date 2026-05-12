@@ -406,50 +406,67 @@ Route::middleware(['auth', 'danru', 'apdt'])->group(function () {
 
 // ADIMIN
 Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
-    Route::get('/admin/rekap', [AdminDashboardRekapController::class, 'index'])->name('admin.rekap.index');
-    Route::get('/admin/rekap/overtimes/{kerjasama}', [AdminDashboardRekapController::class, 'indexOvertimes'])->name('admin.rekap.overtimes');
-    Route::get('/admin/rekap/person-out/{kerjasama}', [AdminDashboardRekapController::class, 'indexPersonOut'])->name('admin.rekap.person-out');
-    Route::get('/admin/rekap/person-in/{kerjasama}', [AdminDashboardRekapController::class, 'indexPersonIn'])->name('admin.rekap.person-in');
-    Route::get('/admin/rekap/cutting/{kerjasama}', [AdminDashboardRekapController::class, 'indexCutting'])->name('admin.rekap.cutting');
-    Route::get('/admin/rekap/finished-training/{kerjasama}', [AdminDashboardRekapController::class, 'indexFinishedTraining'])->name('admin.rekap.finished-training');
+    Route::prefix('admin')->group(function () {
+        Route::prefix('rekap')->name('admin.rekap.')->group(function () {
+            Route::get('/', [AdminDashboardRekapController::class, 'index'])->name('index');
+            Route::get('/overtimes/{kerjasama}', [AdminDashboardRekapController::class, 'indexOvertimes'])->name('overtimes');
+            Route::get('/person-out/{kerjasama}', [AdminDashboardRekapController::class, 'indexPersonOut'])->name('person-out');
+            Route::get('/person-in/{kerjasama}', [AdminDashboardRekapController::class, 'indexPersonIn'])->name('person-in');
+            Route::get('/cutting/{kerjasama}', [AdminDashboardRekapController::class, 'indexCutting'])->name('cutting');
+            Route::get('/finished-training/{kerjasama}', [AdminDashboardRekapController::class, 'indexFinishedTraining'])->name('finished-training');
 
-    Route::get('/admin/api/v1/rekap/overtimes/{kerjasama}', [AdminRekapOvertimesController::class, 'index'])->name('admin.rekap.api.overtimes');
-    Route::delete('/admin/api/v1/rekap/overtimes/{id}', [AdminRekapOvertimesController::class, 'destroy'])->name('admin.rekap.api.overtimes.destroy');
-    Route::get('/admin/api/v1/rekap/person-out/{kerjasama}', [AdminRekapPersonOutController::class, 'index'])->name('admin.rekap.api.person-out');
-    Route::delete('/admin/api/v1/rekap/person-out/{id}', [AdminRekapPersonOutController::class, 'destroy'])->name('admin.rekap.api.person-out.destroy');
-    Route::patch('/admin/api/v1/rekap/person-out/{id}/restore-user', [AdminRekapPersonOutController::class, 'restoreUser'])->name('admin.rekap.api.person-out.restore-user');
-    Route::get('/admin/api/v1/rekap/person-in/{kerjasama}', [AdminRekapPersonInController::class, 'index'])->name('admin.rekap.api.person-in');
-    Route::delete('/admin/api/v1/rekap/person-in/{id}', [AdminRekapPersonInController::class, 'destroy'])->name('admin.rekap.api.person-in.destroy');
-    Route::get('/admin/api/v1/rekap/cutting/{kerjasama}', [AdminRekapCuttingController::class, 'index'])->name('admin.rekap.api.cutting');
-    Route::delete('/admin/api/v1/rekap/cutting/{id}', [AdminRekapCuttingController::class, 'destroy'])->name('admin.rekap.api.cutting.destroy');
-    Route::get('/admin/api/v1/rekap/finished-training/{kerjasama}', [AdminRekapFinishedTrainingController::class, 'index'])->name('admin.rekap.api.finished-training');
-    Route::delete('/admin/api/v1/rekap/finished-training/{id}', [AdminRekapFinishedTrainingController::class, 'destroy'])->name('admin.rekap.api.finished-training.destroy');
-    Route::delete('/admin/rekap/actions/overtimes/{id}', [AdminRekapOvertimesController::class, 'destroyAction'])->name('admin.rekap.actions.overtimes.destroy');
-    Route::delete('/admin/rekap/actions/person-out/{id}', [AdminRekapPersonOutController::class, 'destroyAction'])->name('admin.rekap.actions.person-out.destroy');
-    Route::patch('/admin/rekap/actions/person-out/{id}/restore-user', [AdminRekapPersonOutController::class, 'restoreUserAction'])->name('admin.rekap.actions.person-out.restore-user');
-    Route::delete('/admin/rekap/actions/person-in/{id}', [AdminRekapPersonInController::class, 'destroyAction'])->name('admin.rekap.actions.person-in.destroy');
-    Route::delete('/admin/rekap/actions/cutting/{id}', [AdminRekapCuttingController::class, 'destroyAction'])->name('admin.rekap.actions.cutting.destroy');
-    Route::delete('/admin/rekap/actions/finished-training/{id}', [AdminRekapFinishedTrainingController::class, 'destroyAction'])->name('admin.rekap.actions.finished-training.destroy');
+            Route::prefix('actions')->name('actions.')->group(function () {
+                Route::delete('/overtimes/{id}', [AdminRekapOvertimesController::class, 'destroyAction'])->name('overtimes.destroy');
+                Route::delete('/person-out/{id}', [AdminRekapPersonOutController::class, 'destroyAction'])->name('person-out.destroy');
+                Route::patch('/person-out/{id}/restore-user', [AdminRekapPersonOutController::class, 'restoreUserAction'])->name('person-out.restore-user');
+                Route::delete('/person-in/{id}', [AdminRekapPersonInController::class, 'destroyAction'])->name('person-in.destroy');
+                Route::delete('/cutting/{id}', [AdminRekapCuttingController::class, 'destroyAction'])->name('cutting.destroy');
+                Route::delete('/finished-training/{id}', [AdminRekapFinishedTrainingController::class, 'destroyAction'])->name('finished-training.destroy');
+            });
 
-    Route::get('/admin/rekap/settings', [RekapSettingsController::class, 'index'])->name('admin.rekap.settings');
-    Route::post('/admin/rekap/settings', [RekapSettingsController::class, 'update'])->name('admin.rekap.settings.update');
+            Route::get('/settings', [RekapSettingsController::class, 'index'])->name('settings');
+            Route::post('/settings', [RekapSettingsController::class, 'update'])->name('settings.update');
+        });
 
-    Route::get('/report/sholat/by-admin', [ReportSholatController::class, 'index'])->name('reportSholat.index');
-    Route::get('/report/sholat/download-as-admin', [ReportSholatController::class, 'download'])->name('reportSholat.download');
-    Route::resource('/admin/qrcode', QrCodeController::class);
-    Route::POST('/admin/qrcode/export', [QrCodeController::class, 'exportPDF'])->name('qrcode.export');
+        Route::prefix('api/v1/rekap')->name('admin.rekap.api.')->group(function () {
+            Route::get('/overtimes/{kerjasama}', [AdminRekapOvertimesController::class, 'index'])->name('overtimes');
+            Route::delete('/overtimes/{id}', [AdminRekapOvertimesController::class, 'destroy'])->name('overtimes.destroy');
+            Route::get('/person-out/{kerjasama}', [AdminRekapPersonOutController::class, 'index'])->name('person-out');
+            Route::delete('/person-out/{id}', [AdminRekapPersonOutController::class, 'destroy'])->name('person-out.destroy');
+            Route::patch('/person-out/{id}/restore-user', [AdminRekapPersonOutController::class, 'restoreUser'])->name('person-out.restore-user');
+            Route::get('/person-in/{kerjasama}', [AdminRekapPersonInController::class, 'index'])->name('person-in');
+            Route::delete('/person-in/{id}', [AdminRekapPersonInController::class, 'destroy'])->name('person-in.destroy');
+            Route::get('/cutting/{kerjasama}', [AdminRekapCuttingController::class, 'index'])->name('cutting');
+            Route::delete('/cutting/{id}', [AdminRekapCuttingController::class, 'destroy'])->name('cutting.destroy');
+            Route::get('/finished-training/{kerjasama}', [AdminRekapFinishedTrainingController::class, 'index'])->name('finished-training');
+            Route::delete('/finished-training/{id}', [AdminRekapFinishedTrainingController::class, 'destroy'])->name('finished-training.destroy');
+        });
 
-    Route::get('/admin/data-absen', [AdminController::class, 'absen'])->name('admin.absen');
-    Route::get('/admin/data-absen/users/search', [AdminController::class, 'searchAbsenUsers'])->name('admin.absen.users.search');
+        Route::resource('qrcode', QrCodeController::class);
+        Route::post('qrcode/export', [QrCodeController::class, 'exportPDF'])->name('qrcode.export');
+
+        Route::prefix('data-absen')->group(function () {
+            Route::get('/', [AdminController::class, 'absen'])->name('admin.absen');
+            Route::get('/users/search', [AdminController::class, 'searchAbsenUsers'])->name('admin.absen.users.search');
+        });
+
+        Route::get('/attendance/update', [HandlingAttendanceToExcelPage::class, 'index'])->name('admin.attendance.report');
+        Route::post('/attendance/update', [HandlingAttendanceToExcelPage::class, 'update'])->name('admin.attendance.update');
+        Route::post('/attendance/fetch', [HandlingAttendanceToExcelPage::class, 'fetch'])->name('admin.attendance.fetch');
+        Route::get('/attendance/to-pdf', [HandlingAttendanceToExcelPage::class, 'reportToPDF'])->name('admin.attendance.reportToPDF');
+    });
+
+    Route::get('/report/sholat/by-admin', [ReportSholatController::class, 'index'])->name('admin.report-sholat.index');
+    Route::get('/report/sholat/download-as-admin', [ReportSholatController::class, 'download'])->name('admin.report-sholat.download');
     Route::get('/admin/export', [AdminController::class, 'export'])->name('admin.export');
     Route::get('/admin/exportV2', [AdminController::class, 'exportWith'])->name('admin.exportV2');
     Route::get('/admin/export-izin', [AdminController::class, 'exp'])->name('admin.export-izin');
     Route::resource('/admin', AdminController::class);
-    Route::resource('/client/data-client', ClientController::class);
-    Route::resource('/users', UserController::class);
-    Route::resource('/kerjasama', KerjasamaController::class);
-    Route::resource('/divisi', DivisiController::class);
-    Route::resource('/perlengkapan', PerlengkapanController::class);
+    Route::resource('/client/data-client', ClientController::class)->names('admin.client');
+    Route::resource('/users', UserController::class)->names('admin.user');
+    Route::resource('/kerjasama', KerjasamaController::class)->names('admin.kerjasama');
+    Route::resource('/divisi', DivisiController::class)->names('admin.divisi');
+    Route::resource('/perlengkapan', PerlengkapanController::class)->names('admin.perlengkapan');
 
     Route::get('/divisi/{divisiId}/add-equipment', [DivisiController::class, 'editEquipment'])->name('editRquipment');
     Route::post('/divisi/{divisiId}/add-equipment', [DivisiController::class, 'addEquipment'])->name('addEquipment');
@@ -460,21 +477,21 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
 
     Route::resource('/data-lembur', LemburController::class);
     Route::get('/data-lembur-saat-ini', [LemburController::class, 'lemburIndexAdmin'])->name('lemburList');
-    Route::resource('/shift', ShiftController::class);
-    Route::resource('/jabatan', JabatanController::class);
+    Route::resource('/shift', ShiftController::class)->names('admin.shift');
+    Route::resource('/jabatan', JabatanController::class)->names('admin.jabatan');
 
     Route::delete('/laporans/{id}', [LaporanController::class, 'destroy']);
     Route::get('/export/laporans', [LaporanController::class, 'exportWith'])->name('export.laporans');
     Route::post('/admin-laporan-hapus-foto', [LaporanController::class, 'hapusFotoLaporan'])->name('laporan.hapusFotoLaporan');
 
-    Route::resource('/ruangan', RuanganController::class);
-    Route::resource('/point', PointController::class);
+    Route::resource('/ruangan', RuanganController::class)->names('admin.ruangan');
+    Route::resource('/point', PointController::class)->names('admin.point');
     Route::patch('/claim-point/{id}', [AbsensiController::class, 'claimPoint'])->name('claim.point');
-    Route::resource('holiday', HolidayController::class);
-    Route::resource('/lokasi', LokasiController::class);
+    Route::resource('holiday', HolidayController::class)->names('admin.holiday');
+    Route::resource('/lokasi', LokasiController::class)->names('admin.lokasi');
     Route::resource('/area', AreaController::class);
 
-    Route::get('/admin-check-koordinat/{id}', [CheckPointController::class, "show"])->name('admin-lihatMap');
+    Route::get('/admin-checkpoint-koordinat/{id}', [CheckPointController::class, "show"])->name('admin.cp.map');
 
     Route::get('/admin-checkpoint', [AdminController::class, 'checkPoint'])->name('admin.cp.index');
     Route::patch('/admin-check-approve/{id}', [AdminController::class, 'approveCheck'])->name('admin.cp.approve');
@@ -482,51 +499,45 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('/admin-lihat-check/{id}', [AdminController::class, 'lihatCheck'])->name('admin.cp.show');
     Route::delete('/admin-checkpoint-delete/{id}', [AdminController::class, 'destroyCheck'])->name('admin.cp.delete');
 
-    Route::resource('admin-jadwal', JadwalUserController::class);
-    Route::post('storeJadwalAdmin', [JadwalUserController::class, 'storeJadwal'])->name('storeJadwalAdmin');
-    Route::post('jadwal-import', [JadwalUserController::class, 'import'])->name('import-jadwal');
-    Route::get('admin-jadwal-new', [JadwalUserController::class, 'processDate'])->name('store.processDate.admin');
-    Route::get('admin-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('jadwal_export.admin');
-    Route::get('admin-cp-export', [CheckPointController::class, 'exportWith'])->name('cp_export.admin');
+    Route::resource('admin-jadwal', JadwalUserController::class)->names('admin.jadwal');
+    Route::post('storeJadwalAdmin', [JadwalUserController::class, 'storeJadwal'])->name('admin.jadwal.store-bulk');
+    Route::post('jadwal-import', [JadwalUserController::class, 'import'])->name('admin.jadwal.import');
+    Route::get('admin-jadwal-new', [JadwalUserController::class, 'processDate'])->name('admin.jadwal.process-date');
+    Route::get('admin-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('admin.jadwal.export');
+    Route::get('admin-cp-export', [CheckPointController::class, 'exportWith'])->name('admin.cp.export');
 
-    Route::post('admin-ruangan-import', [RuanganController::class, 'import'])->name('ruangan.import');
+    Route::post('admin-ruangan-import', [RuanganController::class, 'import'])->name('admin.ruangan.import');
 
-    Route::get('/data-izin', [IzinController::class, 'indexAdmin'])->name('data-izin.admin');
-    Route::patch('/absensi-izin/admin-accept/{id}', [IzinController::class, 'updateSuccess'])->name('admin_acc');
-    Route::patch('/absensi-izin/admin-denied/{id}', [IzinController::class, 'updateDenied'])->name('admin_denied');
-    Route::delete('/absensi-izin/{id}/deleted', [IzinController::class, 'deleteAdmin'])->name('admin.deletedIzin');
+    Route::get('/data-izin', [IzinController::class, 'indexAdmin'])->name('admin.izin.index');
+    Route::patch('/absensi-izin/admin-accept/{id}', [IzinController::class, 'updateSuccess'])->name('admin.izin.approve');
+    Route::patch('/absensi-izin/admin-denied/{id}', [IzinController::class, 'updateDenied'])->name('admin.izin.deny');
+    Route::delete('/absensi-izin/{id}/deleted', [IzinController::class, 'deleteAdmin'])->name('admin.izin.destroy');
 
-    Route::post('/pekerjaanCp-import', [PekerjaanCpController::class, 'import'])->name('import-pekerjaan');
-    Route::resource('/pekerjaanCp', PekerjaanCpController::class);
-    Route::resource('/admin-rating', RatingController::class);
-    Route::resource('/news', NewsController::class);
-    Route::resource('/subarea', SubareaController::class);
-    Route::resource('/admin-checklist', ChecklistController::class);
-    Route::post('/admin-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('admin-checklist.ajx');
-    Route::get('/admin-finalisasi/{start_date}/{end_date}', [FinalisasiController::class, 'exportPDF'])->name('finalisasi.export');
+    Route::post('/pekerjaanCp-import', [PekerjaanCpController::class, 'import'])->name('admin.pekerjaan-cp.import');
+    Route::resource('/pekerjaanCp', PekerjaanCpController::class)->names('admin.pekerjaan-cp');
+    Route::resource('/admin-rating', RatingController::class)->names('admin.rating');
+    Route::resource('/news', NewsController::class)->names('admin.news');
+    Route::resource('/subarea', SubareaController::class)->names('admin.subarea');
+    Route::resource('/admin-checklist', ChecklistController::class)->names('admin.checklist');
+    Route::post('/admin-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('admin.checklist.ajx');
+    Route::get('/admin-finalisasi/{start_date}/{end_date}', [FinalisasiController::class, 'exportPDF'])->name('admin.finalisasi.export');
 
-    Route::resource('/listPekerjaan', ListPekerjaanController::class);
-    Route::post('/listPekerjaan-import', [ListPekerjaanController::class, 'importExcel'])->name('listPekerjaan-excell');
+    Route::resource('/listPekerjaan', ListPekerjaanController::class)->names('admin.list-pekerjaan');
+    Route::post('/listPekerjaan-import', [ListPekerjaanController::class, 'importExcel'])->name('admin.list-pekerjaan.import');
 
-    Route::post('/admin-user-massUpdate', [UserController::class, 'massUpdate'])->name('user.massUpdate');
+    Route::post('/admin-user-massUpdate', [UserController::class, 'massUpdate'])->name('admin.user.mass-update');
     Route::post('/admin-absen-hapus-foto', [AdminController::class, 'hapusFotoAbsen'])->name('absen.hapusFotoAbsen');
 
-    Route::get('/admin-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('admin-lihatMap');
+    Route::get('/admin-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('admin.absen.map');
 
-    Route::get('/admin-monev', [MonevController::class, "indexAdmin"])->name('admin-monev-index');
-    Route::get('/admin-monev/create', [MonevController::class, "createAdmin"])->name('admin-monev-create');
+    Route::get('/admin-monev', [MonevController::class, "index"])->name('admin.monev.index');
+    Route::get('/admin-monev/create', [MonevController::class, "create"])->name('admin.monev.create');
 
-    Route::get('/admin-slip-gaji', [AdminController::class, 'indexSlip'])->name('admin-slip');
+    Route::get('/admin-slip-gaji', [AdminController::class, 'indexSlip'])->name('admin.slip.index');
 
     Route::get('/admin-addKaryawan/index', [UserController::class, 'addKaryawanAdminIndex'])->name('addKaryawanAdminIndex');
     Route::put('/admin-addKaryawan/{id}', [UserController::class, 'addKaryawanStatus'])->name('addKaryawanStatus');
 
-    // Routing Handling EDIT EXCELLL
-    Route::get('/admin-report-attendance', [HandlingAttendanceToExcelPage::class, 'index'])->name('attendanceReport');
-    Route::post('/admin/attendance/update', [HandlingAttendanceToExcelPage::class, 'update'])->name('admin.attendance.update');
-
-    Route::post('/admin/attendance/fetch', [HandlingAttendanceToExcelPage::class, 'fetch'])->name('admin.attendance.fetch');
-    Route::get('/admin/attendance/to-pdf', [HandlingAttendanceToExcelPage::class, 'reportToPDF'])->name('admin.attendance.reportToPDF');
 });
 
 

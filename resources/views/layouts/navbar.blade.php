@@ -55,7 +55,7 @@
                     <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
                         {{ __('Admin Tool') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('admin-slip')" :active="request()->routeIs('admin-slip')">
+                    <x-nav-link :href="route('admin.slip.index')" :active="request()->routeIs('admin.slip.index')">
                         {{ __('Slip Gaji') }}
                     </x-nav-link>
                 @else

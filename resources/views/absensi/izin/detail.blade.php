@@ -58,7 +58,7 @@
         </div>
         <div class="flex justify-center mb-4 sm:justify-end">
             @if(Auth::user()->role_id == 2)
-                <a href="{{ route('data-izin.admin') }}" class="mx-2 btn btn-error sm:mx-10">Back</a>
+                <a href="{{ route('admin.izin.index') }}" class="mx-2 btn btn-error sm:mx-10">Back</a>
             @elseif (Auth::user()->jabatan_id == 15)
                 <a href="{{ route('mitra_izin') }}" class="mx-2 btn btn-error sm:mx-10">Back</a>
             @else

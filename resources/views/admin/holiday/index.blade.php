@@ -41,7 +41,7 @@
             </div>
             <div class="flex justify-end gap-2 mx-16 py-3">
 				<a href="{{ route('admin.index') }}" class="btn btn-error">Back</a>
-				<a href="{{ route('holiday.create') }}" class="btn btn-primary">+ Hari Libur</a>
+				<a href="{{ route('admin.holiday.create') }}" class="btn btn-primary">+ Hari Libur</a>
 			</div>
         </div>
 </x-admin-layout>

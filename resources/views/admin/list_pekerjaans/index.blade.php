@@ -8,11 +8,11 @@
                     <x-search />
                 </div>
                 <div class="flex justify-end">
-                    <a href="{{ route('listPekerjaan.create') }}" class="btn btn-warning">+ Pekerjaan</a>
+                    <a href="{{ route('admin.list-pekerjaan.create') }}" class="btn btn-warning">+ Pekerjaan</a>
                 </div>
             </div>
             <div class="flex justify-between gap-2 mx-16 py-3">
-                <form action="{{ route('listPekerjaan-excell') }}" method="POST"
+                <form action="{{ route('admin.list-pekerjaan.import') }}" method="POST"
                     class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
                     @csrf
                     <label for="iCP" class="btn btn-success overflow-hidden"><i
@@ -70,8 +70,8 @@
 
                             </td>
                             <td class="flex gap-2">
-                                <x-btn-edit>{{ route('listPekerjaan.edit', [$li->id]) }}</x-btn-edit>
-                                <form action="{{ route('listPekerjaan.destroy', [$li->id]) }}" method="POST">
+                                <x-btn-edit>{{ route('admin.list-pekerjaan.edit', [$li->id]) }}</x-btn-edit>
+                                <form action="{{ route('admin.list-pekerjaan.destroy', [$li->id]) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <x-btn-submit />

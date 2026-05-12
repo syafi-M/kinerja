@@ -2,7 +2,7 @@
     <x-main-div>
     <div class="bg-slate-500 shadow-md rounded-md mt-5">
 		<p class="text-center text-2xl uppercase font-bold">Validasi Monev</p>
-		<form method="POST" action="{{ route('jabatan.store') }}" class="m-5" id="form">
+		<form method="POST" action="{{ route('admin.jabatan.store') }}" class="m-5" id="form">
 			@csrf
 			<div class="bg-slate-100 px-10 py-5 rounded shadow">
 			    <!-- foto -->
@@ -37,7 +37,7 @@
                     <input type="text" id="kerjasama_name" value="" class="input input-bordered disabled" readonly >
 				</div>
 				<div class="flex gap-2 my-5 justify-end">
-					<button><a href="{{ route('shift.index') }}" class="btn btn-error">Back</a></button>
+					<button><a href="{{ route('admin.shift.index') }}" class="btn btn-error">Back</a></button>
 					<button type="submit" class="btn btn-primary">Save</button>
 				</div>
 			</div>

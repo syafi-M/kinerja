@@ -53,7 +53,7 @@ class ListPekerjaanController extends Controller
 
         ListPekerjaan::create($pekerjaan);
         toastr()->success('Data List Berhasil Disimpan', [], 'success');
-        return to_route('listPekerjaan.index');
+        return to_route('admin.list-pekerjaan.index');
     }
 
     public function edit(ListPekerjaan $listPekerjaan)
@@ -90,7 +90,7 @@ class ListPekerjaanController extends Controller
             
             $listPekerjaan->update($pekerjaan);
             toastr()->success('Data List Berhasil Di Update', [], 'success');
-            return to_route('listPekerjaan.index');
+            return to_route('admin.list-pekerjaan.index');
         }else{
             toastr()->error('Eitss Input nya Kok Kosong!', [], 'error');
             return redirect()->back();
@@ -102,7 +102,7 @@ class ListPekerjaanController extends Controller
     {
         $listPekerjaan->delete();
         toastr()->warning('Data List Berhasil Di Deleted', [], 'warning');
-        return to_route('listPekerjaan.index');
+        return to_route('admin.list-pekerjaan.index');
     }
     
     public function importExcel(Request $request)

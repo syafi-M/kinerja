@@ -9,13 +9,13 @@
                     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Tambah Divisi</h1>
                     <p class="mt-1 text-sm text-gray-600">Buat divisi baru dan tautkan ke jabatan utama.</p>
                 </div>
-                <a href="{{ route('divisi.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">
+                <a href="{{ route('admin.divisi.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">
                     Kembali
                 </a>
             </div>
         </section>
 
-        <form method="POST" action="{{ route('divisi.store') }}" id="form" class="space-y-4">
+        <form method="POST" action="{{ route('admin.divisi.store') }}" id="form" class="space-y-4">
             @csrf
             <section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
                 <div class="grid gap-4 md:grid-cols-2">
@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2 mt-5">
-                    <a href="{{ route('divisi.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Batal</a>
+                    <a href="{{ route('admin.divisi.index') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-gray-700 transition bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Batal</a>
                     <button type="submit" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">Simpan Divisi</button>
                 </div>
             </section>

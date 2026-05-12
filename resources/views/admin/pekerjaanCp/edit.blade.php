@@ -1,5 +1,5 @@
 <x-admin-layout :fullWidth="true">
-        <form action="{{ route('pekerjaanCp.update', [$pcpId->id]) }}" method="POST">
+        <form action="{{ route('admin.pekerjaan-cp.update', [$pcpId->id]) }}" method="POST">
         @method('put')
         @csrf
         <div>
@@ -61,7 +61,7 @@
 				</div>
 
 				<div class="flex gap-2 my-5 justify-end">
-					<button><a href="{{ route('pekerjaanCp.index') }}" class="btn btn-error">Back</a></button>
+					<button><a href="{{ route('admin.pekerjaan-cp.index') }}" class="btn btn-error">Back</a></button>
 					<button type="submit" class="btn btn-primary">Save</button>
 				</div>
         </div>

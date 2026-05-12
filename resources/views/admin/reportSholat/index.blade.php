@@ -11,7 +11,7 @@
 			<section class="grid gap-4 lg:grid-cols-12">
 				<div class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5 lg:col-span-8">
 					<h2 class="text-sm font-semibold text-gray-800">Filter Data</h2>
-					<form id="filterForm" action="{{ route('reportSholat.index') }}" method="GET" class="grid gap-3 mt-3 md:grid-cols-2">
+					<form id="filterForm" action="{{ route('admin.report-sholat.index') }}" method="GET" class="grid gap-3 mt-3 md:grid-cols-2">
 						<div>
 							<label for="filterKerjasama" class="block mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">Nama Klien</label>
 							<select
@@ -65,7 +65,7 @@
 
 			<section class="p-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-5">
 				<h2 class="text-sm font-semibold text-gray-800">Download Report</h2>
-				<form method="GET" action="{{ route('reportSholat.download') }}" class="grid gap-3 mt-3 lg:grid-cols-12">
+				<form method="GET" action="{{ route('admin.report-sholat.download') }}" class="grid gap-3 mt-3 lg:grid-cols-12">
 					<div class="lg:col-span-3">
 						<label for="selectInput" class="block mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">Mitra</label>
 						<select

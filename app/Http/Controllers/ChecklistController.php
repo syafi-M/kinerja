@@ -104,7 +104,7 @@ class ChecklistController extends Controller
             
             Checklist::create($check);
             toastr()->success('Success to create Checklist', [], 'success');
-            return to_route('admin-checklist.index');
+            return to_route('admin.checklist.index');
             
         }catch (\Exception $e) 
         {
@@ -137,7 +137,7 @@ class ChecklistController extends Controller
             $checkId = Checklist::findOrFail($id);
             $checkId->update($check);
             toastr()->success('Success to update Checklist', [], 'success');
-            return to_route('admin-checklist.index');
+            return to_route('admin.checklist.index');
             
         }catch (\Exception $e) 
         {

@@ -66,15 +66,15 @@
                                 <td class="px-4 py-3 sm:px-5">
                                     @if ($i->approve_status == 'process')
                                         <div class="flex items-center justify-center gap-1 text-center">
-                                            <form action="{{ route('admin_acc', $i->id) }}" method="POST">@csrf @method('PATCH')<button type="submit" class="btn btn-success btn-xs rounded-btn"><i class="ri-check-double-line"></i></button></form>
-                                            <form action="{{ route('admin_denied', $i->id) }}" method="POST">@csrf @method('PATCH')<button type="submit" class="btn btn-error btn-xs rounded-btn"><i class="ri-close-line"></i></button></form>
+                                            <form action="{{ route('admin.izin.approve', $i->id) }}" method="POST">@csrf @method('PATCH')<button type="submit" class="btn btn-success btn-xs rounded-btn"><i class="ri-check-double-line"></i></button></form>
+                                            <form action="{{ route('admin.izin.deny', $i->id) }}" method="POST">@csrf @method('PATCH')<button type="submit" class="btn btn-error btn-xs rounded-btn"><i class="ri-close-line"></i></button></form>
                                             <a href="{{ route('izin.show', $i->id) }}" class="text-xl transition text-sky-400 hover:text-sky-500"><i class="ri-eye-fill"></i></a>
-                                            <form action="{{ route('admin.deletedIzin', $i->id) }}" method="POST">@csrf @method('DELETE')<button class="text-xl text-red-400 transition hover:text-red-500"><i class="ri-delete-bin-5-line"></i></button></form>
+                                            <form action="{{ route('admin.izin.destroy', $i->id) }}" method="POST">@csrf @method('DELETE')<button class="text-xl text-red-400 transition hover:text-red-500"><i class="ri-delete-bin-5-line"></i></button></form>
                                         </div>
                                     @else
                                         <div class="flex justify-center gap-2">
                                             <a href="{{ route('izin.show', $i->id) }}" class="text-xl transition text-sky-400 hover:text-sky-500"><i class="ri-eye-fill"></i></a>
-                                            <form action="{{ route('admin.deletedIzin', $i->id) }}" method="POST">@csrf @method('DELETE')<button class="text-xl text-red-400 transition hover:text-red-500"><i class="ri-delete-bin-5-line"></i></button></form>
+                                            <form action="{{ route('admin.izin.destroy', $i->id) }}" method="POST">@csrf @method('DELETE')<button class="text-xl text-red-400 transition hover:text-red-500"><i class="ri-delete-bin-5-line"></i></button></form>
                                         </div>
                                     @endif
                                 </td>

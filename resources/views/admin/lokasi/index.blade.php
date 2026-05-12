@@ -15,7 +15,7 @@
                         <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari client atau koordinat..." />
                     </label>
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('lokasi.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Tambah Lokasi</a>
+                        <a href="{{ route('admin.lokasi.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Tambah Lokasi</a>
                     </div>
                 </div>
             </div>

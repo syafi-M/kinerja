@@ -14,7 +14,7 @@
                         <i class="text-base text-gray-500 ri-search-2-line"></i>
                         <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari client atau nominal poin..." />
                     </label>
-                    <a href="{{ route('point.create') }}" class="inline-flex items-center justify-center h-10 px-4 text-sm font-semibold text-white transition bg-yellow-500 rounded-xl hover:bg-yellow-600">
+                    <a href="{{ route('admin.point.create') }}" class="inline-flex items-center justify-center h-10 px-4 text-sm font-semibold text-white transition bg-yellow-500 rounded-xl hover:bg-yellow-600">
                         <i class="ri-add-line mr-1.5 text-base"></i> Tambah Poin
                     </a>
                 </div>
@@ -85,7 +85,7 @@
                     <h3 class="text-sm font-semibold text-gray-800">Konfirmasi Hapus Poin</h3>
                     <button @click="delOpen = false" type="button" class="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-50">Tutup</button>
                 </div>
-                <form :action="`{{ route('point.index') }}/${deleteId}`" method="POST" class="p-5 space-y-4">
+                <form :action="`{{ route('admin.point.index') }}/${deleteId}`" method="POST" class="p-5 space-y-4">
                     @csrf
                     @method('DELETE')
                     <p class="text-sm text-gray-600">Yakin ingin menghapus data poin untuk <span class="font-semibold text-gray-800" x-text="deleteName"></span>?</p>

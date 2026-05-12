@@ -14,7 +14,7 @@
                         <i class="text-base text-gray-500 ri-search-2-line"></i>
                         <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari perlengkapan..." />
                     </label>
-                    <a href="{{ route('perlengkapan.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Tambah Perlengkapan</a>
+                    <a href="{{ route('admin.perlengkapan.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Tambah Perlengkapan</a>
                 </div>
             </div>
         </section>

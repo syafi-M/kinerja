@@ -381,7 +381,7 @@
                             </div>
                             @if (Auth::user()->role_id == 2)
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="cekRate">
-                                    <a href="{{ route('admin-rating.index') }}"
+                                    <a href="{{ route('admin.rating.index') }}"
                                         class="w-full btn btn-info">Rating</a>
                                 </div>
                             @elseif(Auth::user()->divisi->jabatan->code_jabatan == 'LEADER')
@@ -462,7 +462,7 @@
                             $routes = [
                                 'MITRA' => [
                                     'karyawan' => 'mitra_user',
-                                    'jadwal' => $role_id == 2 ? 'admin-jadwal.index' : 'mitra_jadwal',
+                                    'jadwal' => $role_id == 2 ? 'admin.jadwal.index' : 'mitra_jadwal',
                                     'absensi' => 'mitra_absensi',
                                     'izin' => 'mitra_izin',
                                     'lembur' => 'mitra_lembur',
@@ -472,7 +472,7 @@
                                 ],
                                 'LEADER' => [
                                     'karyawan' => 'lead_user',
-                                    'jadwal' => $role_id == 2 ? 'admin-jadwal.index' : 'leader-jadwal.index',
+                                    'jadwal' => $role_id == 2 ? 'admin.jadwal.index' : 'leader-jadwal.index',
                                     'absensi' => 'lead_absensi',
                                     'izin' => 'lead_izin',
                                     'lembur' => 'lead_lembur',
@@ -481,7 +481,7 @@
                                 ],
                                 'DIREKSI' => [
                                     'karyawan' => 'direksi_user',
-                                    'jadwal' => $role_id == 2 ? 'admin-jadwal.index' : 'direksi_jadwal',
+                                    'jadwal' => $role_id == 2 ? 'admin.jadwal.index' : 'direksi_jadwal',
                                     'absensi' => 'direksi_absensi',
                                     'izin' => 'direksi_izin',
                                     'lembur' => 'direksi_lembur',
@@ -955,14 +955,14 @@
             // Optimized distance calculation (Haversine formula)
             function calculateDistance(lat1, lon1, lat2, lon2) {
                 const R = 6371e3; // Earth's radius in meters
-                const φ1 = lat1 * Math.PI / 180;
-                const φ2 = lat2 * Math.PI / 180;
-                const Δφ = (lat2 - lat1) * Math.PI / 180;
-                const Δλ = (lon2 - lon1) * Math.PI / 180;
+                const f1 = lat1 * Math.PI / 180;
+                const f2 = lat2 * Math.PI / 180;
+                const fi = (lat2 - lat1) * Math.PI / 180;
+                const fo = (lon2 - lon1) * Math.PI / 180;
 
-                const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                    Math.cos(φ1) * Math.cos(φ2) *
-                    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+                const a = Math.sin(fi / 2) * Math.sin(fi / 2) +
+                    Math.cos(f1) * Math.cos(f2) *
+                    Math.sin(fo / 2) * Math.sin(fo / 2);
                 const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
                 return R * c; // Distance in meters

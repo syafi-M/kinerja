@@ -9,11 +9,11 @@
                     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">Buat Berita</h1>
                     <p class="mt-1 text-sm text-gray-600">Tambahkan berita baru beserta rentang tanggal tayang.</p>
                 </div>
-                <a href="{{ route('news.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Kembali</a>
+                <a href="{{ route('admin.news.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Kembali</a>
             </div>
         </section>
 
-        <form method="POST" action="{{ route('news.store') }}" class="space-y-4" id="form" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('admin.news.store') }}" class="space-y-4" id="form" enctype="multipart/form-data">
             @csrf
             <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                 <div class="space-y-4">
@@ -37,7 +37,7 @@
                     </div>
                 </div>
                 <div class="mt-5 flex justify-end gap-2">
-                    <a href="{{ route('news.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Batal</a>
+                    <a href="{{ route('admin.news.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Batal</a>
                     <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan Berita</button>
                 </div>
             </section>

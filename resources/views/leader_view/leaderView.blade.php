@@ -12,7 +12,7 @@
                 </div>
                 @if (Auth::user()->role_id == 2)
                     <div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Ljadwal">
-                        <a href="{{ route('admin-jadwal.index') }}" class="btn btn-info w-full"><i
+                        <a href="{{ route('admin.jadwal.index') }}" class="btn btn-info w-full"><i
                                 class="ri-calendar-check-line text-xl"></i>Jadwal User</a>
                     </div>
                 @else
@@ -61,7 +61,7 @@
                 </div>
                 @if (Auth::user()->role_id == 2)
                     <div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Ljadwal">
-                        <a href="{{ route('admin-jadwal.index') }}" class="btn btn-info w-full"><i
+                        <a href="{{ route('admin.jadwal.index') }}" class="btn btn-info w-full"><i
                                 class="ri-calendar-check-line text-xl"></i>Jadwal User</a>
                     </div>
                 @else
@@ -110,7 +110,7 @@
                 </div>
                 @if (Auth::user()->role_id == 2)
                     <div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Ljadwal">
-                        <a href="{{ route('admin-jadwal.index') }}" class="btn btn-info w-full"><i
+                        <a href="{{ route('admin.jadwal.index') }}" class="btn btn-info w-full"><i
                                 class="ri-calendar-check-line text-xl"></i>Jadwal User</a>
                     </div>
                 @else

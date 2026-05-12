@@ -43,7 +43,7 @@ class NewsController extends Controller
            return redirect()->back();
         }
             toastr()->success('News Berhasil Ditambahkan', [], 'success');
-            return redirect()->to(route('news.index'));
+            return redirect()->to(route('admin.news.index'));
     }
     
     public function edit($id)
@@ -82,7 +82,7 @@ class NewsController extends Controller
            return redirect()->back();
         }
         toastr()->success('Data berhasil diedit', [], 'success');
-        return redirect()->to(route('news.index'));
+        return redirect()->to(route('admin.news.index'));
     }
     
     public function destroy($id)

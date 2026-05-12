@@ -32,7 +32,7 @@ class HolidayController extends Controller
 
         Holiday::create($holiday);
         toastr()->success('Berhasil Menambahkan Hari Libur', [], 'success');
-        return to_route('holiday.index');
+        return to_route('admin.holiday.index');
    }
 
    public function edit($id)
@@ -56,7 +56,7 @@ class HolidayController extends Controller
         $holidayId = Holiday::findorFail($id);
         $holidayId->update($holiday);
         toastr()->success('Hari Libur Telah Di Update', [], 'success');
-        return to_route('holiday.index');
+        return to_route('admin.holiday.index');
 
    }
 

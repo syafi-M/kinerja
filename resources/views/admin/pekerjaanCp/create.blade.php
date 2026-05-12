@@ -9,7 +9,7 @@
         </section>
 
         <section class="p-4 mt-4 bg-white border border-gray-100 shadow-sm rounded-2xl sm:p-6">
-            <form method="POST" action="{{ route('pekerjaanCp.store') }}" id="form" class="space-y-5">
+            <form method="POST" action="{{ route('admin.pekerjaan-cp.store') }}" id="form" class="space-y-5">
                 @csrf
 
                 <div class="grid gap-4 md:grid-cols-2">
@@ -69,7 +69,7 @@
                 </div>
 
                 <div class="flex flex-wrap justify-end gap-2 pt-2">
-                    <a href="{{ route('pekerjaanCp.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Back</a>
+                    <a href="{{ route('admin.pekerjaan-cp.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Back</a>
                     <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">Simpan</button>
                 </div>
             </form>

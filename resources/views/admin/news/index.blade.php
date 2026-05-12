@@ -14,7 +14,7 @@
                         <i class="text-base text-gray-500 ri-search-2-line"></i>
                         <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari berita..." />
                     </label>
-                    <a href="{{ route('news.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Tambah Berita</a>
+                    <a href="{{ route('admin.news.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"><i class="ri-add-line mr-1.5"></i>Tambah Berita</a>
                 </div>
             </div>
         </section>
@@ -46,7 +46,7 @@
                                 <td class="px-4 py-3 sm:px-5">
                                     <div class="flex justify-end gap-1.5">
                                         <a
-                                            href="{{ route('news.edit', $n->id) }}"
+                                            href="{{ route('admin.news.edit', $n->id) }}"
                                             class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
                                         >
                                             <i class="ri-edit-line text-xs"></i>

@@ -1,7 +1,7 @@
 <x-admin-layout :fullWidth="true">
     <div class="bg-slate-500 p-4 mx-36 shadow-md rounded-md">
 		<p class="text-center text-2xl uppercase font-bold">Tambah Pekerjaan</p>
-		<form method="POST" action="{{ route('listPekerjaan.store') }}" class="mx-[25%] my-10" id="form">
+		<form method="POST" action="{{ route('admin.list-pekerjaan.store') }}" class="mx-[25%] my-10" id="form">
 			@csrf
 			<div id="formDiv" class="bg-slate-100 px-10 py-5 rounded shadow">
 				<!-- ruangan -->
@@ -68,7 +68,7 @@
 
 				<div class="flex gap-2 my-5 justify-end">
 				    <button id="duplicateField" type="button" class="btn btn-info">+ Input</button>
-					<button><a href="{{ route('listPekerjaan.index') }}" class="btn btn-error">Kembali</a></button>
+					<button><a href="{{ route('admin.list-pekerjaan.index') }}" class="btn btn-error">Kembali</a></button>
 					<button type="submit" class="btn btn-primary">Simpan</button>
 				</div>
 			</div>

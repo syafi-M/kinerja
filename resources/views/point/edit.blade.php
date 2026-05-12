@@ -9,7 +9,7 @@
         </section>
 
         <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
-            <form action="{{ route('point.update', [$point->id]) }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.point.update', [$point->id]) }}" method="POST" class="space-y-4">
                 @method('put')
                 @csrf
 
@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2 pt-1">
-                    <a href="{{ route('point.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
+                    <a href="{{ route('admin.point.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a>
                     <button type="submit" class="inline-flex h-10 items-center rounded-xl bg-yellow-500 px-4 text-sm font-semibold text-white transition hover:bg-yellow-600">Simpan Perubahan</button>
                 </div>
             </form>

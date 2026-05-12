@@ -16,7 +16,7 @@
                     </label>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('admin.index') }}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Dashboard</a>
-                        <a href="{{ route('jabatan.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
+                        <a href="{{ route('admin.jabatan.create') }}" class="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
                             <i class="ri-add-line mr-1.5 text-base"></i> Jabatan
                         </a>
                     </div>
@@ -62,8 +62,8 @@
                                 <td class="hidden px-4 py-3 lg:table-cell sm:px-5">{{ $i->name_jabatan }}</td>
                                 <td class="px-4 py-3 sm:px-5">
                                     <div class="flex justify-end gap-1.5">
-                                        <x-btn-edit>{{ route('jabatan.edit', [$i->id]) }}</x-btn-edit>
-                                        <form action="{{ route('jabatan.destroy', [$i->id]) }}" method="POST">
+                                        <x-btn-edit>{{ route('admin.jabatan.edit', [$i->id]) }}</x-btn-edit>
+                                        <form action="{{ route('admin.jabatan.destroy', [$i->id]) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
                                             <x-btn-submit />

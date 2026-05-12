@@ -29,7 +29,7 @@
         @if(Auth::user()->role_id == 2)
             <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex flex-col justify-center items-center gap-3 md:flex-row md:justify-between w-full">
-                    <form action="{{ route('import-jadwal') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
+                    <form action="{{ route('admin.jadwal.import') }}" method="POST" class="flex items-center gap-2 overflow-hidden" enctype="multipart/form-data">
                         @csrf
                         <label for="iJDW" class="inline-flex h-10 items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 cursor-pointer hover:bg-emerald-100"><i class="ri-file-excel-2-line text-lg mr-1.5"></i><span id="importLabel">Import Jadwal</span></label>
                         <input id="iJDW" name="file" type="file" class="hidden" accept=".csv"/>
@@ -40,7 +40,7 @@
             </section>
 
             <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
-                <form action="{{ route('jadwal_export.admin') }}" method="get" class="grid gap-3 md:grid-cols-4 items-end">
+                <form action="{{ route('admin.jadwal.export') }}" method="get" class="grid gap-3 md:grid-cols-4 items-end">
                     <div>
                         <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-600">Mulai</label>
                         <input class="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm" type="date" name="str1" required>
