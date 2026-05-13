@@ -366,6 +366,18 @@
             <x-menu-mobile />
         </div>
     </div>
+
+    <div id="absen-submit-overlay" class="fixed inset-0 z-[100000] hidden items-center justify-center bg-slate-900/60 backdrop-blur-[2px]">
+        <div class="w-[min(92vw,22rem)] rounded-2xl border border-slate-200 bg-white px-5 py-5 text-center shadow-2xl">
+            <div class="mx-auto mb-3 h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-sky-500"></div>
+            <p class="text-sm font-semibold text-slate-900">Mengirim absen...</p>
+            <p id="absen-submit-status" class="mt-1 text-xs text-slate-500">Menyiapkan data...</p>
+            <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                <div id="absen-submit-progress" class="h-full w-0 rounded-full bg-sky-500 transition-all duration-500"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ URL::asset('js/jquery.min.js') }}"></script>
     <script src="{{ URL::asset('js/moment.min.js') }}"></script>
     <script>
@@ -378,8 +390,56 @@
             remove: function () {},
             clear: function () {}
         };
+
+        let absenOverlayTimer = null;
+
+        function showAbsenSubmitOverlay() {
+            const overlay = document.getElementById('absen-submit-overlay');
+            const status = document.getElementById('absen-submit-status');
+            const progress = document.getElementById('absen-submit-progress');
+            if (!overlay) return;
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+
+            if (status) status.textContent = 'Menyiapkan data...';
+            if (progress) progress.style.width = '22%';
+
+            const steps = [
+                { delay: 350, text: 'Memvalidasi input...', pct: '45%' },
+                { delay: 900, text: 'Mengambil lokasi & foto...', pct: '72%' },
+                { delay: 1500, text: 'Mengirim ke server...', pct: '90%' },
+            ];
+
+            if (absenOverlayTimer) clearInterval(absenOverlayTimer);
+            let idx = 0;
+            absenOverlayTimer = setInterval(() => {
+                if (!status || !progress || idx >= steps.length) {
+                    clearInterval(absenOverlayTimer);
+                    return;
+                }
+                status.textContent = steps[idx].text;
+                progress.style.width = steps[idx].pct;
+                idx += 1;
+            }, 450);
+        }
+
+        function hideAbsenSubmitOverlay() {
+            const overlay = document.getElementById('absen-submit-overlay');
+            const progress = document.getElementById('absen-submit-progress');
+            if (!overlay) return;
+            if (absenOverlayTimer) {
+                clearInterval(absenOverlayTimer);
+                absenOverlayTimer = null;
+            }
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+            if (progress) progress.style.width = '0';
+        }
     </script>
     <x-flasher />
+    <x-flasher-theme />
 
     @if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18]))
         <!-- Configure a few settings and attach camera -->
@@ -640,6 +700,7 @@
 
                         var fileInput = document.getElementById('image');
                         fileInput.files = dataTransfer.files;
+                        $(fileInput).trigger('change');
 
                         var imageUrl = URL.createObjectURL(blob);
                         document.getElementById('results').innerHTML =
@@ -760,6 +821,11 @@
             maximumAge: 5000,
             timeout: 15000
         };
+        const FAST_GPS_OPTIONS = {
+            enableHighAccuracy: false,
+            maximumAge: 10000,
+            timeout: 8000
+        };
         const canBypassRadius = @json(Auth::user()->jabatan->code_jabatan == 'SPV-W' || Auth::user()->devisi_id == 12);
         var lat = document.getElementById('lat')
         var long = document.getElementById('long')
@@ -767,8 +833,120 @@
         var tutor = $('#tutor')
         var getNewLoc = null;
         var map = L.map('map'); // ini adalah zoom level
+        var tileLayer = null;
+        var locationLayerGroup = L.layerGroup().addTo(map);
         var absenButton = $('.btnAbsen');
         var gpsDebug = false;
+        var prefetchedTiles = new Set();
+        var absenGateState = {
+            gpsReady: false,
+            gpsText: 'Mengambil GPS...',
+            timeReady: false,
+            timeText: 'Tunggu'
+        };
+
+        function hasRequiredAbsenFields() {
+            const kerjasamaId = ($('[name="kerjasama_id"]').first().val() || '').toString().trim();
+            const shiftValue = ($('[name="shift_id"]').first().val() || '').toString().trim();
+            const hasPerlengkapan = $('[name="perlengkapan[]"]:checked').length > 0;
+            const keteranganValue = ($('#keterangan').val() || '').toString().trim();
+            const latValue = ($('#lat').val() || '').toString().trim();
+            const longValue = ($('#long').val() || '').toString().trim();
+            const imageField = document.getElementById('image');
+            const hasImage = !imageField || (imageField.files && imageField.files.length > 0);
+
+            return Boolean(kerjasamaId) && Boolean(shiftValue) && hasPerlengkapan && Boolean(keteranganValue) && Boolean(latValue) && Boolean(longValue) && hasImage;
+        }
+
+        function refreshAbsenButtonState() {
+            const formReady = hasRequiredAbsenFields();
+            const canEnable = absenGateState.gpsReady && absenGateState.timeReady && formReady;
+
+            let text = 'Absen';
+            if (!absenGateState.timeReady) {
+                text = absenGateState.timeText;
+            } else if (!absenGateState.gpsReady) {
+                text = absenGateState.gpsText;
+            } else if (!formReady) {
+                text = 'Lengkapi Form';
+            }
+
+            absenButton
+                .text(text)
+                .prop('disabled', !canEnable)
+                .toggleClass('btn-disabled', !canEnable)
+                .toggleClass('bg-blue-500 hover:bg-blue-600', canEnable)
+                .css('background-color', canEnable ? '' : 'rgba(96, 165, 250, 0.5)');
+        }
+
+        function ensureTileLayer() {
+            if (tileLayer) {
+                return;
+            }
+
+            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        function drawLocationCircle(latitude, longitude, radius) {
+            return L.circle([latitude, longitude], {
+                color: 'crimson',
+                fillColor: '#f09',
+                fillOpacity: 0.5,
+                radius: radius
+            }).addTo(locationLayerGroup);
+        }
+
+        function latLngToTile(latitude, longitude, zoom) {
+            const latRad = latitude * Math.PI / 180;
+            const scale = Math.pow(2, zoom);
+
+            return {
+                x: Math.floor((longitude + 180) / 360 * scale),
+                y: Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * scale)
+            };
+        }
+
+        function prefetchTilesAround(latitude, longitude, zoom = 15, range = 1) {
+            const parsedLatitude = parseFloat(latitude);
+            const parsedLongitude = parseFloat(longitude);
+
+            if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) {
+                return;
+            }
+
+            const centerTile = latLngToTile(parsedLatitude, parsedLongitude, zoom);
+            const subdomains = ['a', 'b', 'c'];
+
+            for (let xOffset = -range; xOffset <= range; xOffset++) {
+                for (let yOffset = -range; yOffset <= range; yOffset++) {
+                    const x = centerTile.x + xOffset;
+                    const y = centerTile.y + yOffset;
+                    const key = `${zoom}/${x}/${y}`;
+
+                    if (prefetchedTiles.has(key)) {
+                        continue;
+                    }
+
+                    prefetchedTiles.add(key);
+                    const img = new Image();
+                    img.decoding = 'async';
+                    img.src = `https://${subdomains[prefetchedTiles.size % subdomains.length]}.tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+                }
+            }
+        }
+
+        function prefetchLocationTiles(latitude, longitude) {
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => prefetchTilesAround(latitude, longitude), {
+                    timeout: 2000
+                });
+                return;
+            }
+
+            setTimeout(() => prefetchTilesAround(latitude, longitude), 500);
+        }
 
         function logGpsDebug(label, data = {}) {
             if (!gpsDebug) {
@@ -784,12 +962,9 @@
                 text
             });
 
-            absenButton
-                .text(text)
-                .prop('disabled', !enabled)
-                .toggleClass('btn-disabled', !enabled)
-                .toggleClass('bg-blue-500 hover:bg-blue-600', enabled)
-                .css('background-color', enabled ? '' : 'rgba(96, 165, 250, 0.5)');
+            absenGateState.gpsReady = enabled;
+            absenGateState.gpsText = text;
+            refreshAbsenButtonState();
         }
 
         function showGeolocationError(error) {
@@ -813,11 +988,7 @@
 
         if (navigator.geolocation) {
             setAbsenButton(false, 'Mengambil GPS...');
-            logGpsDebug('geolocation supported', GPS_OPTIONS);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            logGpsDebug('geolocation supported', FAST_GPS_OPTIONS);
 
             navigator.geolocation.getCurrentPosition(function(position) {
                 userLocation = [position.coords.latitude, position.coords.longitude];
@@ -829,7 +1000,8 @@
                 });
                 showPosition(position);
                 setupNearbyLocations(userLocation);
-            }, showGeolocationError, GPS_OPTIONS);
+                prefetchLocationTiles($('#lat_mitra').val() || lati, $('#long_mitra').val() || longi);
+            }, showGeolocationError, FAST_GPS_OPTIONS);
 
             const watchUser = navigator.geolocation.watchPosition(
                 (position) => {
@@ -898,21 +1070,6 @@
                 },
                 GPS_OPTIONS
             );
-            $(document).on('click', '.btnAbsen', function() {
-                logGpsDebug('absen clicked', {
-                    latUser: lat.value,
-                    longUser: long.value,
-                    latMitra: $('#lat_mitra').val(),
-                    longMitra: $('#long_mitra').val(),
-                    radiusMitra: $('#radius_mitra').val(),
-                    formAction: $('#form-absen').attr('action')
-                });
-                navigator.geolocation.clearWatch(watchUser);
-                $(this).prop('disabled', true)
-                    .text('Tunggu...')
-                    .addClass('btn-disabled')
-                    .css('background-color', 'rgba(96, 165, 250, 0.5)');
-            });
         } else {
             logGpsDebug('geolocation unsupported');
             alert('Geo Location Not Supported By This Browser !!');
@@ -922,6 +1079,7 @@
         function showPosition(position) {
             var latitude = position.coords.latitude; // Ganti dengan latitude Anda
             var longitude = position.coords.longitude; // Ganti dengan longitude Anda
+            ensureTileLayer();
             logGpsDebug('render map', {
                 latitude,
                 longitude,
@@ -932,13 +1090,12 @@
             });
 
             map.setView([latitude, longitude], 14); // ini adalah zoom level
+            locationLayerGroup.clearLayers();
 
-            var circle = L.circle([$('#lat_mitra').val(), $('#long_mitra').val()], {
-                color: 'crimson',
-                fillColor: '#f09',
-                fillOpacity: 0.5,
-                radius: radi
-            }).addTo(map).bindPopup("Lokasi absen: <br>" + client);
+            var circle = drawLocationCircle($('#lat_mitra').val(), $('#long_mitra').val(), radi)
+                .bindPopup("Lokasi absen: <br>" + client);
+
+            prefetchLocationTiles($('#lat_mitra').val(), $('#long_mitra').val());
         }
 
         function getDistanceFromLatLng(lat1, lng1, lat2, lng2) {
@@ -994,131 +1151,119 @@
             selectMitra.html('');
 
             if (@json(Auth::user()->id) == 10) {
-                    // Add the default location to the select dropdown
-                    loc.forEach(function(location) {
-                        if (location.id == defaultLocationId) {
-                            const option = document.createElement('option');
-                            var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
-                            option.textContent = selectedMit.client.name;
-                            option.value = selectedMit.id;
-                            option.selected = true; // Set as selected
-                            // console.log(option);
-                            selectMitra.append(option);
-                        }
+                // Add the default location to the select dropdown
+                loc.forEach(function(location) {
+                    if (location.id == defaultLocationId) {
+                        const option = document.createElement('option');
+                        var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
+                        option.textContent = selectedMit.client.name;
+                        option.value = selectedMit.id;
+                        option.selected = true; // Set as selected
+                        // console.log(option);
+                        selectMitra.append(option);
+                    }
+                });
+
+                // Add closest locations to the select dropdown
+                closestLocations.forEach(function(location) {
+                    // Avoid duplicating the default location
+                    if (location.id != defaultLocationId) {
+                        const option = document.createElement('option');
+                        var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
+                        option.textContent = selectedMit.client.name;
+                        option.value = selectedMit.id;
+                        selectMitra.append(option);
+
+                        drawLocationCircle(location.latitude, location.longtitude, location.radius);
+                    }
+                });
+                selectMitra.off('change.gpsLocation').on('change.gpsLocation', function() {
+                    var selectedKerjasamaId = Number($(this).val());
+                    var selectedMit = mitra.find(mit => Number(mit.id) === selectedKerjasamaId);
+
+                    if (!selectedMit) {
+                        console.log("Mitra not found for kerjasama ID:", selectedKerjasamaId);
+                        return;
+                    }
+
+                    var selectedLocation = loc.find(location => Number(location.client_id) === Number(
+                        selectedMit.client_id));
+                    logGpsDebug('mitra selected', {
+                        selectedKerjasamaId,
+                        selectedClientId: selectedMit.client_id,
+                        selectedLocation
                     });
 
-                    // Add closest locations to the select dropdown
-                    closestLocations.forEach(function(location) {
-                        // Avoid duplicating the default location
-                        if (location.id != defaultLocationId) {
-                            const option = document.createElement('option');
-                            var selectedMit = mitra.find(mit => mit.client_id == location.client_id);
-                            option.textContent = selectedMit.client.name;
-                            option.value = selectedMit.id;
-                            selectMitra.append(option);
+                    if (selectedLocation) {
+                        $('#lat_mitra').val(selectedLocation.latitude);
+                        $('#long_mitra').val(selectedLocation.longtitude);
+                        $('#radius_mitra').val(selectedLocation.radius);
+                        prefetchLocationTiles(selectedLocation.latitude, selectedLocation.longtitude);
 
-                            L.circle([location.latitude, location.longtitude], {
-                                color: 'crimson',
-                                fillColor: '#f09',
-                                fillOpacity: 0.5,
-                                radius: location.radius
-                            }).addTo(map);
-                        }
-                    });
-                    selectMitra.off('change.gpsLocation').on('change.gpsLocation', function() {
-                        var selectedKerjasamaId = Number($(this).val());
-                        var selectedMit = mitra.find(mit => Number(mit.id) === selectedKerjasamaId);
-
-                        if (!selectedMit) {
-                            console.log("Mitra not found for kerjasama ID:", selectedKerjasamaId);
-                            return;
-                        }
-
-                        var selectedLocation = loc.find(location => Number(location.client_id) === Number(
-                            selectedMit.client_id));
-                        logGpsDebug('mitra selected', {
-                            selectedKerjasamaId,
-                            selectedClientId: selectedMit.client_id,
-                            selectedLocation
-                        });
-
-                        if (selectedLocation) {
-                            $('#lat_mitra').val(selectedLocation.latitude);
-                            $('#long_mitra').val(selectedLocation.longtitude);
-                            $('#radius_mitra').val(selectedLocation.radius);
-
-                            L.popup()
-                                .setLatLng([selectedLocation.latitude, selectedLocation.longtitude])
-                                .setContent("Lokasi absen: <br>" + selectedLocation.client.name)
-                                .openOn(map);
-                        } else {
-                            console.log("Location not found for client ID:", selectedMit.client_id);
-                        }
-                    });
-                } else if (@json(Auth::user()->kerjasama->client_id) == 28) {
-                    closestLocations.forEach(function(location) {
-                        if (location.id == 25 || location.id == 28) {
-                            // console.log("aku: ", location);
-                            $('#lat_mitra').val(location.latitude);
-                            $('#long_mitra').val(location.longtitude);
-                            $('#radius_mitra').val(location.radius);
-
-                            var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
-                            $('#kerjasama_id').val(selectMitra.id);
-                            $('.viewKerjasama').val(selectMitra.client.name);
-
-                            L.circle([location.latitude, location.longtitude], {
-                                color: 'crimson',
-                                fillColor: '#f09',
-                                fillOpacity: 0.5,
-                                radius: location.radius
-                            }).addTo(map);
-                            if (location.id == 28) {
-                                map.setView([location.latitude, location.longtitude], 15);
-                            }
-
-                            L.popup()
-                                .setLatLng([location.latitude, location.longtitude])
-                                .setContent("Lokasi absen: <br>" + location.client
-                                    .name) // Correct concatenation
-                                .openOn(map);
-                        }
-                    })
-                } else if (@json(Auth::user()->id) == 7 || @json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
-                    if (closestLocations.length > 0) {
-                        // Get the absolute closest one (the first item in the sorted array)
-                        var location = closestLocations[0];
-
-                        // Update form values
+                        L.popup()
+                            .setLatLng([selectedLocation.latitude, selectedLocation.longtitude])
+                            .setContent("Lokasi absen: <br>" + selectedLocation.client.name)
+                            .openOn(map);
+                    } else {
+                        console.log("Location not found for client ID:", selectedMit.client_id);
+                    }
+                });
+            } else if (@json(Auth::user()->kerjasama->client_id) == 28) {
+                closestLocations.forEach(function(location) {
+                    if (location.id == 25 || location.id == 28) {
+                        // console.log("aku: ", location);
                         $('#lat_mitra').val(location.latitude);
                         $('#long_mitra').val(location.longtitude);
                         $('#radius_mitra').val(location.radius);
+                        prefetchLocationTiles(location.latitude, location.longtitude);
 
-                        // Find and update Mitra info
-                        selectMitra = mitra.find(mit => mit.client_id == location.client_id);
-                        if (selectMitra) {
-                            $('#kerjasama_id').val(selectMitra.id);
-                            $('.viewKerjasama').val(selectMitra.client.name);
+                        var selectMitra = mitra.find(mit => mit.client_id == location.client_id);
+                        $('#kerjasama_id').val(selectMitra.id);
+                        $('.viewKerjasama').val(selectMitra.client.name);
+
+                        drawLocationCircle(location.latitude, location.longtitude, location.radius);
+                        if (location.id == 28) {
+                            map.setView([location.latitude, location.longtitude], 15);
                         }
-
-                        // Add visual circle to map for the closest location
-                        L.circle([location.latitude, location.longtitude], {
-                            color: 'crimson',
-                            fillColor: '#f09',
-                            fillOpacity: 0.5,
-                            radius: location.radius
-                        }).addTo(map);
-
-                        // Set map view and open popup
-                        map.setView([location.latitude, location.longtitude], 16);
 
                         L.popup()
                             .setLatLng([location.latitude, location.longtitude])
-                            .setContent("Lokasi terdekat: <br>" + location.client.name)
+                            .setContent("Lokasi absen: <br>" + location.client
+                                .name) // Correct concatenation
                             .openOn(map);
-                    } else {
-                        console.log("No locations found within the threshold.");
                     }
+                })
+            } else if (@json(Auth::user()->id) == 7 || @json(Auth::user()->jabatan->code_jabatan) == "SPV-W") {
+                if (closestLocations.length > 0) {
+                    // Get the absolute closest one (the first item in the sorted array)
+                    var location = closestLocations[0];
+
+                    // Update form values
+                    $('#lat_mitra').val(location.latitude);
+                    $('#long_mitra').val(location.longtitude);
+                    $('#radius_mitra').val(location.radius);
+                    prefetchLocationTiles(location.latitude, location.longtitude);
+
+                    // Find and update Mitra info
+                    selectMitra = mitra.find(mit => mit.client_id == location.client_id);
+                    if (selectMitra) {
+                        $('#kerjasama_id').val(selectMitra.id);
+                        $('.viewKerjasama').val(selectMitra.client.name);
+                    }
+
+                    // Add visual circle to map for the closest location
+                    drawLocationCircle(location.latitude, location.longtitude, location.radius);
+
+                    // Set map view and open popup
+                    map.setView([location.latitude, location.longtitude], 16);
+
+                    L.popup()
+                        .setLatLng([location.latitude, location.longtitude])
+                        .setContent("Lokasi terdekat: <br>" + location.client.name)
+                        .openOn(map);
+                } else {
+                    console.log("No locations found within the threshold.");
+                }
             }
         }
     </script>
@@ -1178,6 +1323,7 @@
             }
 
             $('#shift_id').change(calculatedJamStart);
+            $('#form-absen').on('change input', 'select, input, textarea', refreshAbsenButtonState);
 
             if (typeof window.toastr !== 'undefined') {
                 window.toastr.options = {
@@ -1188,28 +1334,65 @@
                 };
             }
 
-            $('#btnAbsen').click(function() {
-                $(this).prop('disabled', true)
-                    .text('Tunggu...')
+            $(document).off('click.absenSubmit').on('click.absenSubmit', '.btnAbsen', function(e) {
+                e.preventDefault();
+
+                const form = document.getElementById('form-absen');
+                if (!form) return;
+
+                logGpsDebug?.('absen clicked', {
+                    latUser: $('#lat').val(),
+                    longUser: $('#long').val(),
+                    latMitra: $('#lat_mitra').val(),
+                    longMitra: $('#long_mitra').val(),
+                    radiusMitra: $('#radius_mitra').val(),
+                    formAction: $('#form-absen').attr('action')
+                });
+
+                if (navigator.geolocation && typeof watchUser !== 'undefined') {
+                    navigator.geolocation.clearWatch(watchUser);
+                }
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    hideAbsenSubmitOverlay();
+                    return;
+                }
+
+                $('.btnAbsen').prop('disabled', true)
+                    .text('Memproses...')
                     .addClass('btn-disabled')
                     .css('background-color', 'rgba(96, 165, 250, 0.5)');
-                $('#form-absen').submit();
+
+                showAbsenSubmitOverlay();
+                form.requestSubmit();
+            });
+
+            $('#form-absen').on('submit', function() {
+                showAbsenSubmitOverlay();
+            });
+
+            window.addEventListener('pageshow', function() {
+                hideAbsenSubmitOverlay();
             });
         });
 
         function setBtnAbsen(enabled, label = "Absen") {
-            const btn = $('#btnAbsen');
+            absenGateState.timeReady = enabled;
+            absenGateState.timeText = label;
+
+            const btn = $('.btnAbsen');
             if (enabled) {
                 btn.removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50')
-                    .prop('disabled', false)
-                    .text(label);
+                    .prop('disabled', false);
                 $('#labelWaktuStart').addClass('hidden');
             } else {
                 btn.addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50')
-                    .prop('disabled', true)
-                    .text(label);
+                    .prop('disabled', true);
                 $('#labelWaktuStart').removeClass('hidden');
             }
+
+            refreshAbsenButtonState();
         }
 
         function formatCountdown(minutesDiff, seconds) {
@@ -1233,132 +1416,6 @@
             }
             $('#keterangan').val(value);
         }
-
-        // $(document).ready(function() {
-        //     var dataUserId = $("#dataUser").attr('data-userId');
-        //     var debounceTimer;
-        //     var keterangan = $('#keterangan');
-
-        //     function calculatedJamStart() {
-        //         // get jam
-        //         var currentDate = new Date();
-        //         var jamSaiki = currentDate.getHours();
-        //         var menitSaiki = currentDate.getMinutes();
-        //         var detikSaiki = currentDate.getSeconds();
-
-        //         // fungsi
-        //         var selectedOption = $('#shift_id').find(":selected");
-        //         var shiftStart = selectedOption.data('shift');
-
-        //         if (typeof shiftStart != 'undefined' && shiftStart != '') {
-        //             var startTimeParts = shiftStart.split(':');
-        //             var startHours = parseInt(startTimeParts[0]);
-        //             var startMinutes = parseInt(startTimeParts[1]);
-
-        //             var startDiffMinutes = startHours * 60 + startMinutes;
-        //             var nowDiffMinutes = jamSaiki * 60 + menitSaiki;
-
-        //             var jadi = startDiffMinutes - nowDiffMinutes;
-
-        //             var kesimH = Math.floor(jadi / 60);
-        //             var kesimM = Math.abs(jadi % 60);
-        //             var kesimH2 = Math.floor(jadi / 60 - 1);
-        //             var kesimM2 = Math.abs(jadi % 60 - 30);
-        //             var kesimS = Math.abs(60 - detikSaiki);
-
-        //             if (kesimM < 0) {
-        //                 kesimH--;
-        //                 kesimM += 60;
-        //             }
-        //         };
-
-        //         // kantor
-        //         var absenKantor = $('#absen-kantor').data('absen-kantor');
-        //         var authName = keterangan.data('authname');
-        //         const kerId = {{ Auth::user()->kerjasama_id }};
-
-        //         // 	keterangan
-        //         if (absenKantor == 1) {
-        //             if (jadi < -32 && (authName != 'DIREKTUR' || authName != 'DIRUT' || authName != 'WAHYUDI')) {
-        //                 // console.log('telat');
-        //                 $('#keterangan').val('telat');
-        //             } else {
-        //                 // console.log('masuk');
-        //                 $('#keterangan').val('masuk');
-        //             }
-        //         } else {
-        //             if (kerId == 11) {
-        //                 if (jadi < -15) {
-        //                     $('#keterangan').val('telat');
-        //                 } else {
-        //                     $('#keterangan').val('masuk');
-        //                 }
-        //             } else {
-        //                 if (jadi < 0) {
-        //                     $('#keterangan').val('telat');
-        //                 } else {
-        //                     $('#keterangan').val('masuk');
-        //                 }
-        //             }
-        //         }
-
-        //         if (dataUserId == 'MCS' || dataUserId == 'SPV') {
-        //             $('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-        //             $('#btnAbsen').prop('disabled', false);
-        //             $('#labelWaktuStart').addClass('hidden');
-        //         } else {
-        //             if (jadi <= 90) {
-        //                 $('#btnAbsen').removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-        //                 $('#btnAbsen').prop('disabled', false);
-        //                 $('#labelWaktuStart').addClass('hidden');
-        //                 $('.btnAbsen').html('Absen');
-        //             } else if (jadi >= 90) {
-        //                 $('.btnAbsen').addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50');
-        //                 $('#labelWaktuStart').removeClass('hidden');
-        //                 $('.btnAbsen').prop('disabled', true);
-        //                 $('.btnAbsen').html('Tunggu');
-        //                 $('#labelWaktuStart').html(
-        //                     `shift anda dimulai ${kesimH} jam ${kesimM} menit ${kesimS} detik lagi, harap tunggu ${kesimH2} jam ${kesimM2} menit ${kesimS} detik lagi`
-        //                 );
-        //             }
-        //         }
-
-        //         clearTimeout(debounceTimer);
-        //         debounceTimer = setTimeout(calculatedJamStart, 1000);
-        //     };
-        //     $('#shift_id').change(function() {
-        //         //   console.log("shift id changed", calculatedJamStart());
-        //         calculatedJamStart();
-        //     });
-
-        //     toastr.options = {
-        //         "closeButton": true,
-        //         "debug": false,
-        //         "newestOnTop": false,
-        //         "progressBar": true,
-        //         "positionClass": "toast-top-right",
-        //         "preventDuplicates": false,
-        //         "onclick": null,
-        //         "showDuration": "300",
-        //         "hideDuration": "1000",
-        //         "timeOut": "3500",
-        //         "extendedTimeOut": "1000",
-        //         "showEasing": "swing",
-        //         "hideEasing": "linear",
-        //         "showMethod": "fadeIn",
-        //         "hideMethod": "fadeOut"
-        //     };
-
-        //     $('#btnAbsen').click(function() {
-        //         $(this).prop('disabled', true)
-        //             .text('Tunggu...')
-        //             .addClass('btn-disabled')
-        //             .css('background-color', 'rgba(96, 165, 250, 0.5)');
-
-        //         $('#form-absen').submit();
-        //     })
-        //     var value = $('.lat_user').val();
-        // });
 
         // function checkDevTools() {
         //     const _0x50807b = (function() {

@@ -131,7 +131,10 @@
                                 value="{{ old('type_overtime_manual') }}"
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 :required="selectedType === 'lainnya'" :disabled="selectedType !== 'lainnya'">
-                            <p class="mt-1 text-xs text-slate-500">Gunakan angka, misalnya 50000 atau 20000.</p>
+                            <p class="mt-1 text-xs text-slate-500"
+                                x-text="manualType ? `Preview: ${formatRupiah(manualType)}` : 'Gunakan angka, misalnya 50000 atau 20000.'">
+                                {{ old('type_overtime_manual') ? 'Preview: ' . toRupiah(old('type_overtime_manual')) : 'Gunakan angka, misalnya 50000 atau 20000.' }}
+                            </p>
                         </div>
                     </div>
 
@@ -193,6 +196,12 @@
             return {
                 selectedType: '{{ old('type_overtime') ?? '' }}',
                 manualType: '{{ old('type_overtime_manual') ?? '' }}',
+
+                formatRupiah(value) {
+                    const normalized = String(value ?? '').replace(/[^\d]/g, '');
+                    if (!normalized) return 'Rp. -';
+                    return `Rp. ${new Intl.NumberFormat('id-ID').format(Number(normalized))}`;
+                },
 
                 init() {
                     this.$watch('selectedType', value => {

@@ -31,6 +31,7 @@ return [
     'plugins' => [
         'toastr' => [
             'scripts' => [
+                '/vendor/flasher/toastr.min.js',
                 '/vendor/flasher/flasher-toastr.min.js',
             ],
             'options' => [

@@ -43,17 +43,17 @@ class DataRekapController extends Controller
 
         $dueDate = RekapDueDateSetting::latest()->first();
         if (!$dueDate) {
-            toastr()->error('Due date rekap belum diatur oleh admin.', 'error');
+            toastr()->error('Due date rekap belum diatur oleh admin.', [], 'Error');
             return back();
         }
 
         if (Carbon::today()->gt(Carbon::parse($dueDate->due_date))) {
-            toastr()->error('Masa aktivasi pengecualian sudah lewat due date.', 'error');
+            toastr()->error('Masa aktivasi pengecualian sudah lewat due date.', [], 'Error');
             return back();
         }
 
         if (!$this->isCurrentMonthRekapEmpty()) {
-            toastr()->error('Pengecualian hanya bisa diaktifkan jika data rekap kosong.', 'error');
+            toastr()->error('Pengecualian hanya bisa diaktifkan jika data rekap kosong.', [], 'Error');
             return back();
         }
 
@@ -62,7 +62,7 @@ class DataRekapController extends Controller
             ['is_active' => true, 'source' => 'leader_self']
         );
 
-        toastr()->success('Pengecualian penalty berhasil diaktifkan.', 'success');
+        toastr()->success('Pengecualian penalty berhasil diaktifkan.', [], 'Berhasil');
         return back();
     }
 

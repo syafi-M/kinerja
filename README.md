@@ -12,6 +12,43 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.5] - 2026-05-13
+
+### Added
+- Menambahkan overlay loading full-screen dengan progress bar bertahap saat submit form absensi untuk memberikan feedback visual yang lebih jelas kepada user.
+- Menambahkan komponen toast modern dengan desain clean, timer countdown, dan tombol "Hentikan" untuk kontrol manual auto-close.
+- Menambahkan icon status di samping title toast untuk memperjelas jenis notifikasi (success, error, warning, info).
+- Menambahkan helper `toRupiah()` pada preview nominal input lembur dengan live-format saat user mengetik.
+
+### Changed
+- Mendesain ulang komponen toast menjadi single-layer compact card dengan background putih, warna status hanya pada icon/title/progress bar, dan timer visual yang lebih informatif.
+- Menyeragamkan desain toast di seluruh layout aplikasi (session toast + flasher toast) agar konsisten dengan referensi modern UI.
+- Mengoptimalkan flow submit absensi dengan validasi form native browser sebelum disable tombol dan menampilkan overlay loading.
+- Memperbaiki signature `toastr()` di `DataRekapController` agar konsisten dengan pola helper global (message, options, title).
+- Menambahkan `<x-flasher-theme />` ke halaman `dashboard.blade.php` dan `absensi/index.blade.php` yang sebelumnya belum include komponen styling toast.
+
+### Fixed
+- Memperbaiki bug tombol submit absensi yang tidak mengirim form karena konflik handler event duplikat (GPS block vs submit block).
+- Memperbaiki toast yang masih memakai desain lama setelah redirect sukses absen ke dashboard.
+- Memperbaiki error JavaScript `Cannot set properties of undefined (setting 'options')` pada flasher-toastr dengan menambahkan dependency `toastr.min.js` sebelum `flasher-toastr.min.js` di config.
+- Memperbaiki mapping tipe toast yang salah (typo `succes`, `errorr`, `warn`) agar tetap dapat theme yang benar melalui normalisasi di `session-toast` dan `flasher-theme`.
+- Memperbaiki padding, spacing, dan overflow toast yang terlalu besar dengan menyesuaikan CSS override agar lebih compact dan rapi.
+
+## [v2.0.4] - 2026-05-12
+
+### Added
+- Menambahkan prefetch tile Leaflet di halaman absensi untuk menghangatkan cache area lokasi user/mitra yang sering dipakai berulang.
+- Menambahkan guard permission berbasis frontend pada halaman absensi untuk memastikan izin lokasi dan kamera tervalidasi sebelum tombol absen dapat aktif.
+- Menambahkan reminder berkala dan tombol `Minta izin lagi` pada halaman absensi agar user mendapat panduan saat permission lokasi atau kamera belum aktif.
+
+### Changed
+- Mengoptimalkan inisialisasi peta absensi dengan lazy tile initialization, layer group terpisah untuk circle lokasi, dan render circle yang lebih ringan.
+- Mengoptimalkan query `AbsensiController@index` dengan payload relasi yang lebih kecil, eager loading lokasi aktif, dan penggunaan ulang state waktu/user agar beban query lebih efisien.
+
+### Fixed
+- Memperbaiki inkonsistensi state permission lokasi pada flow GPS absensi agar status `locationGranted` ikut tersinkron saat `watchPosition` berhasil.
+- Memperbaiki potensi penumpukan layer circle pada peta absensi yang sebelumnya bisa memicu render berulang tidak perlu.
+
 ## [v2.0.3] - 2026-05-12
 
 ### Changed

@@ -35,7 +35,7 @@ class AbsensiController extends Controller
         $user = Auth::user();
         $now = Carbon::now();
         $today = $now->format('Y-m-d');
-        $todayName = Carbon::now()->translatedFormat('l'); // Nama hari dalam bahasa lokal
+        $todayName = $now->translatedFormat('l'); // Nama hari dalam bahasa lokal
 
         // Eager load only necessary fields
         $dev = Divisi::with(['perlengkapan:id,name'])
@@ -52,7 +52,12 @@ class AbsensiController extends Controller
                 default => '16:00',
             };
 
-            $shift = Shift::orderBy('jam_start', 'asc')->where('jam_start', '>=', $startTime)->where('client_id', $user->kerjasama->client_id)->where('jabatan_id', $user->jabatan_id)->get();
+            $shift = Shift::query()
+                ->where('jam_start', '>=', $startTime)
+                ->where('client_id', $user->kerjasama->client_id)
+                ->where('jabatan_id', $user->jabatan_id)
+                ->orderBy('jam_start', 'asc')
+                ->get();
         } else {
             $shift = $now->format('H:i');
         }
@@ -72,19 +77,27 @@ class AbsensiController extends Controller
         $dirShift = Shift::firstWhere('shift_name', 'DIREKSI');
 
         // Users belum absen hari ini
-        $aID = Absensi::where('tanggal_absen', $today)->pluck('user_id');
+        $absenUserIdsToday = Absensi::where('tanggal_absen', $today)
+            ->pluck('user_id')
+            ->unique()
+            ->values();
 
         $userL = User::where('kerjasama_id', $user->kerjasama_id)
-            ->whereNotIn('id', $aID)
+            ->whereNotIn('id', $absenUserIdsToday)
             ->whereNotIn('devisi_id', [2, 3, 4, 7, 8, 12, 14, 18, 20, 24, 26])
-            ->where('id', '!=', Auth::user()->id)
+            ->where('id', '!=', $user->id)
             ->get();
 
         // Cek pulang terakhir
-        $cekPulang = Absensi::where('user_id', $user->id)->where('tanggal_absen', $today)->latest()->first();
+        $cekPulang = Absensi::where('user_id', $user->id)
+            ->where('tanggal_absen', $today)
+            ->latest()
+            ->first();
 
         // Cek jika ada tukar shift
-        $cekTukar = Absensi::where('tukar_id', $user->id)->where('tanggal_absen', $today)->first();
+        $cekTukar = Absensi::where('tukar_id', $user->id)
+            ->where('tanggal_absen', $today)
+            ->first();
 
         // Cek hari libur (khusus kerjasama_id == 1)
         $tesLib = '';
@@ -97,7 +110,7 @@ class AbsensiController extends Controller
             try {
                 $loginResponse = httped::timeout(30)->get('https://raw.githubusercontent.com/guangrei/APIHariLibur_V2/main/holidays.json');
 
-                $holidayDates = collect($loginResponse->json())->keys();
+                $holidayDates = collect($loginResponse->json() ?? [])->keys();
                 $liburNasional = $holidayDates->contains($today);
                 $tesLib = $liburNasional ? $today : '';
             } catch (\Exception $e) {
@@ -108,9 +121,22 @@ class AbsensiController extends Controller
         }
 
         // Lokasi terkait
-        $harLok = Lokasi::where('client_id', $user->kerjasama->client_id)->first();
-        $lokLok = Lokasi::with('client')->whereHas('client')->get();
-        $penempatan = Kerjasama::with('client')->get();
+        $harLok = Lokasi::with('client')
+            ->where('client_id', $user->kerjasama->client_id)
+            ->first();
+
+        if (!$harLok) {
+            $harLok = Lokasi::with('client')->whereHas('client')->first();
+        }
+
+        $lokLok = Lokasi::query()
+            ->with('client:id,name')
+            ->whereHas('client')
+            ->get(['id', 'client_id', 'latitude', 'longtitude', 'radius']);
+
+        $penempatan = Kerjasama::query()
+            ->with('client:id,name')
+            ->get(['id', 'client_id']);
 
         $matchedShifts = collect(); // default kosong
 
@@ -334,7 +360,7 @@ class AbsensiController extends Controller
 
                         $absensi->create($absensiData);
                         DB::commit();
-                        toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
+                        toastr()->success('Berhasil Absen Hari Ini', [], 'success');
 
                         $users = Auth::user();
 
@@ -369,7 +395,7 @@ class AbsensiController extends Controller
 
                     $absensi->create($absensiData);
                     DB::commit();
-                    toastr()->success('Berhasil Absen Hari Ini', [], 'succes');
+                    toastr()->success('Berhasil Absen Hari Ini', [], 'success');
 
                     $users = Auth::user();
 
@@ -1252,4 +1278,3 @@ class AbsensiController extends Controller
         }
     }
 }
-
