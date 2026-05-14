@@ -108,7 +108,6 @@ class PersonOutController extends Controller
                     try {
                         $validated['img'] = UploadImageV2($request, 'img');
                         if (empty($validated['img'])) {
-                            toastr()->error('Gagal mengunggah gambar. Silakan coba lagi.', 'error');
                             return redirect()->back()->withInput()->with('toast', [
                                 'type' => 'error',
                                 'message' => 'Gagal mengunggah gambar. Silakan coba lagi.',
@@ -116,7 +115,6 @@ class PersonOutController extends Controller
                         }
                     } catch (\Exception $e) {
                         report($e);
-                        toastr()->error('Gagal mengunggah gambar. Silakan coba lagi.', 'error');
                         return redirect()->back()->withInput()->with('toast', [
                             'type' => 'error',
                             'message' => 'Gagal mengunggah gambar. Silakan coba lagi.',
@@ -126,14 +124,12 @@ class PersonOutController extends Controller
 
             PersonOut::create($validated);
 
-            toastr()->success('Berhasil mengajukan data!', 'success');
             return redirect()->back()->with('toast', [
                 'type' => 'success',
                 'message' => 'Berhasil mengajukan data!',
             ]);
         } catch (QueryException $th) {
             if ((int) $th->getCode() === 23000 && str_contains(strtolower($th->getMessage()), 'person_outs_user_id_unique')) {
-                toastr()->error('User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.', 'error');
                 return redirect()->back()->withInput()->with('toast', [
                     'type' => 'error',
                     'message' => 'User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.',
@@ -143,7 +139,6 @@ class PersonOutController extends Controller
             throw $th;
         } catch (\Throwable $th) {
             report($th);
-            toastr()->error('Terjadi kesalahan saat menyimpan data personil keluar. Silakan coba lagi.', 'error');
             return redirect()->back()->withInput()->with('toast', [
                 'type' => 'error',
                 'message' => 'Terjadi kesalahan saat menyimpan data personil keluar. Silakan coba lagi.',
@@ -219,14 +214,12 @@ class PersonOutController extends Controller
                 }
             });
 
-            toastr()->success('Berhasil update data!', 'success');
             return redirect()->back()->with('toast', [
                 'type' => 'success',
                 'message' => 'Berhasil update data!',
             ]);
         } catch (\Throwable $th) {
             report($th);
-            toastr()->error('Gagal memperbarui data personil keluar. Silakan coba lagi.', 'error');
             return redirect()->back()->withInput()->with('toast', [
                 'type' => 'error',
                 'message' => 'Gagal memperbarui data personil keluar. Silakan coba lagi.',
@@ -238,7 +231,6 @@ class PersonOutController extends Controller
     {
         $personOut->delete();
 
-        toastr()->success('Personil berhasil direcover', 'success');
         return redirect()->back()->with('toast', [
             'type' => 'warning',
             'message' => 'Data personil keluar berhasil dihapus!',
@@ -256,7 +248,6 @@ class PersonOutController extends Controller
 
         $personOut = PersonOut::findOrFail($id);
         $personOut->update(["status" => "Di Ajukan"]);
-        toastr()->success('Personil Keluar Berhasil Di Ajukan!', 'success');
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
             : (auth()->user()->jabatan->code_jabatan == 'CO-SCR'
@@ -305,7 +296,6 @@ class PersonOutController extends Controller
                 ? 'MARKETING'
                 : null);
         if ($personOuts->isEmpty()) {
-            toastr()->info('Tidak ada pengajuan personil keluar.');
             return back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Tidak ada pengajuan personil keluar.',
@@ -328,7 +318,6 @@ class PersonOutController extends Controller
             );
         }
 
-        toastr()->success('Berhasil mengajukan semua personil keluar!', 'success');
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua personil keluar!',

@@ -45,7 +45,7 @@ class KerjasamaController extends Controller
             toastr()->success('Kerjasama Berhasil Dibuat', [], 'succes');
             return redirect()->back();
         }
-            toastr()->error('Some fields Error');
+            toastr()->error('Some fields Error', [], 'Error');
             return view('admin.kerjasama.create');
     }
 

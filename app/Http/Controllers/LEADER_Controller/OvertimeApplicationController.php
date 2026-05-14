@@ -34,14 +34,12 @@ class OvertimeApplicationController extends Controller
         try {
             $data = $request->validated();
             Overtime::create($data);
-            toastr()->success('Lembur berhasil disimpan!', 'success');
             return redirect()->back()->with('toast', [
                 'type' => 'success',
                 'message' => 'Lembur berhasil disimpan!',
             ]);
         } catch (\Throwable $th) {
             report($th);
-            toastr()->error('Terjadi kesalahan saat menyimpan data lembur. Silakan coba lagi.', 'error');
             return redirect()->back()->withInput()->with('toast', [
                 'type' => 'error',
                 'message' => 'Terjadi kesalahan saat menyimpan data lembur. Silakan coba lagi.',
@@ -109,7 +107,6 @@ class OvertimeApplicationController extends Controller
     {
         $data = $request->validated();
         Overtime::findOrFail($id)->update($data);
-        toastr()->success('Lembur berhasil diupdate!', 'success');
         return to_route('overtime-application.show', 1)->with('toast', [
             'type' => 'success',
             'message' => 'Lembur berhasil diupdate!',
@@ -119,7 +116,6 @@ class OvertimeApplicationController extends Controller
     public function destroy($id)
     {
         Overtime::findOrFail($id)->delete();
-        toastr()->warning('Lembur Berhasil Dihapus!', 'warning');
         return redirect()->back()->with('toast', [
             'type' => 'warning',
             'message' => 'Lembur berhasil dihapus!',
@@ -151,7 +147,6 @@ class OvertimeApplicationController extends Controller
             'status' => 'Di Ajukan'
         ]);
 
-        toastr()->success('Lembur Berhasil Di Ajukan!', 'success');
 
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
@@ -206,7 +201,6 @@ class OvertimeApplicationController extends Controller
             ->get();
 
         if ($overtimes->isEmpty()) {
-            toastr()->info('Tidak ada data lembur untuk diajukan.');
             return back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Tidak ada data lembur untuk diajukan.',
@@ -231,7 +225,6 @@ class OvertimeApplicationController extends Controller
         }
 
 
-        toastr()->success('Berhasil mengajukan semua lembur!', 'success');
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua lembur!',

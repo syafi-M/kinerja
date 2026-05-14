@@ -318,7 +318,7 @@ class MainController extends Controller
             $absen->save();
         }
         // dd($request->all(), $absenRecords);
-        toastr()->success('Berhasil Absen Sholat', 'sukses');
+        toastr()->success('Berhasil Absen Sholat', [], 'Berhasil');
         return to_route('dashboard.index');
     }
 }

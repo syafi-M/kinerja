@@ -167,7 +167,6 @@ class FinishedTrainingController extends Controller
             ]);
         }
 
-        toastr()->warning('Data lepas training berhasil dihapus!', 'warning');
         return redirect()->back()->with('toast', [
             'type' => 'warning',
             'message' => 'Data lepas training berhasil dihapus!',
@@ -187,7 +186,6 @@ class FinishedTrainingController extends Controller
         $currentStatus = $finishedTraining->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
-            toastr()->info('Data ini tidak dapat diajukan lagi.');
             return redirect()->back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Data ini tidak dapat diajukan lagi.',
@@ -196,7 +194,6 @@ class FinishedTrainingController extends Controller
 
         $finishedTraining->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($finishedTraining->fresh('user'));
-        toastr()->success('Lepas training berhasil diajukan!', 'success');
         return redirect()->back()->with('toast', [
             'type' => 'success',
             'message' => 'Lepas training berhasil diajukan!',
@@ -221,7 +218,6 @@ class FinishedTrainingController extends Controller
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
-            toastr()->info('Tidak ada data lepas training yang bisa diajukan.');
             return back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Tidak ada data lepas training yang bisa diajukan.',
@@ -236,7 +232,6 @@ class FinishedTrainingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua data lepas training sesuai filter!', 'success');
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua data lepas training sesuai filter!',

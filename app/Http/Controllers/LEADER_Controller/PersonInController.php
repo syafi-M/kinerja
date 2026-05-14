@@ -174,7 +174,6 @@ class PersonInController extends Controller
             ]);
         }
 
-        toastr()->warning('Personil masuk berhasil dihapus!', 'warning');
         return redirect()->back()->with('toast', [
             'type' => 'warning',
             'message' => 'Personil masuk berhasil dihapus!',
@@ -194,7 +193,6 @@ class PersonInController extends Controller
         $currentStatus = $personIn->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
-            toastr()->info('Data ini tidak dapat diajukan lagi.');
             return redirect()->back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Data ini tidak dapat diajukan lagi.',
@@ -205,7 +203,6 @@ class PersonInController extends Controller
 
         $this->notifyApproverForSubmission($personIn);
 
-        toastr()->success('Personil masuk berhasil diajukan!', 'success');
         return redirect()->back()->with('toast', [
             'type' => 'success',
             'message' => 'Personil masuk berhasil diajukan!',
@@ -230,7 +227,6 @@ class PersonInController extends Controller
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
-            toastr()->info('Tidak ada data personil masuk yang bisa diajukan.');
             return back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Tidak ada data personil masuk yang bisa diajukan.',
@@ -245,7 +241,6 @@ class PersonInController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua personil masuk sesuai filter!', 'success');
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua personil masuk sesuai filter!',

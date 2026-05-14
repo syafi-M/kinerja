@@ -165,7 +165,6 @@ class CuttingController extends Controller
             ]);
         }
 
-        toastr()->warning('Data cutting berhasil dihapus!', 'warning');
         return redirect()->back()->with('toast', [
             'type' => 'warning',
             'message' => 'Data cutting berhasil dihapus!',
@@ -185,7 +184,6 @@ class CuttingController extends Controller
         $currentStatus = $cutting->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
-            toastr()->info('Data ini tidak dapat diajukan lagi.');
             return redirect()->back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Data ini tidak dapat diajukan lagi.',
@@ -194,7 +192,6 @@ class CuttingController extends Controller
 
         $cutting->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($cutting->fresh('user'));
-        toastr()->success('Cutting berhasil diajukan!', 'success');
         return redirect()->back()->with('toast', [
             'type' => 'success',
             'message' => 'Cutting berhasil diajukan!',
@@ -219,7 +216,6 @@ class CuttingController extends Controller
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
-            toastr()->info('Tidak ada data cutting yang bisa diajukan.');
             return back()->with('toast', [
                 'type' => 'info',
                 'message' => 'Tidak ada data cutting yang bisa diajukan.',
@@ -234,7 +230,6 @@ class CuttingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        toastr()->success('Berhasil mengajukan semua data cutting sesuai filter!', 'success');
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua data cutting sesuai filter!',
