@@ -12,6 +12,24 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.7] - 2026-05-16
+
+### Added
+- Menambahkan struktur module baru `resources/js/absensi/` untuk memisahkan logic absensi menjadi `map.js`, `init.js`, `camera.js`, dan `time.js`.
+- Menambahkan debug log frontend untuk gate absensi (`[ABSEN TIME]`, `[ABSEN GATE]`, dan `[GPS DEBUG]`) agar penyebab tombol disable lebih mudah dilacak saat troubleshooting.
+
+### Changed
+- Merapikan halaman `resources/views/absensi/index.blade.php` dengan memindahkan logic map, GPS, kamera, dan waktu ke file JavaScript terpisah agar Blade tidak terlalu panjang.
+- Menyesuaikan query dashboard agar status absen masuk yang belum pulang dibatasi maksimal 24 jam, sambil tetap mendukung skenario shift overnight yang tampil di hari berikutnya.
+
+### Fixed
+- Memperbaiki viewport map agar saat user berada di luar radius, marker user dan titik mitra tampil bersamaan pada area peta yang sama.
+- Memperbaiki cache tile peta di sekitar mitra agar area sekitar lokasi lebih siap saat map digeser atau dizoom.
+- Memperbaiki gate tombol absensi yang sempat stuck di status `Tunggu` meskipun window shift sudah terbuka.
+- Memperbaiki wiring state tombol absensi antara gate waktu, GPS, dan kelengkapan form agar status final tombol konsisten.
+- Memperbaiki submit handler tombol absensi yang sempat hilang setelah refactor JavaScript sehingga klik tombol tidak mengirim form.
+- Memperbaiki status dashboard yang sempat tidak menampilkan "sudah absen masuk" setelah absen berhasil disimpan.
+
 ## [v2.0.6] - 2026-05-16
 
 ### Changed

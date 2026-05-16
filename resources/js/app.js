@@ -5,6 +5,9 @@ import { collapse } from "@alpinejs/collapse";
 import "remixicon/fonts/remixicon.css";
 import TomSelect from "tom-select";
 import "tom-select/dist/css/tom-select.css";
+import { initAbsensiPage } from "./absensi/init";
+import { initCamera } from "./absensi/camera";
+import { initAbsensiTime } from "./absensi/time";
 
 window.Alpine = Alpine;
 
@@ -54,3 +57,34 @@ window.initTomUserSelect = function initTomUserSelect(selectId, options = {}) {
 
   return instance;
 };
+
+function bootAbsensiPage() {
+  const config = window.absensiPageConfig;
+  if (!config) return;
+  if (window.__absensiPageBooted) return;
+
+  window.__absensiPageBooted = true;
+
+  // Init map/GPS if map element exists
+  if (document.getElementById("map")) {
+    initAbsensiPage(config);
+  }
+
+  // Init camera if enabled
+  if (config.camera && config.camera.enabled) {
+    initCamera(config.camera);
+  }
+
+  // Init time logic
+  if (config.time) {
+    initAbsensiTime(config.time);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootAbsensiPage);
+} else {
+  bootAbsensiPage();
+}
+
+window.addEventListener("absensi:ready-config", bootAbsensiPage);
