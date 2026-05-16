@@ -330,8 +330,9 @@ class AbsensiController extends Controller
         $radiusMitra = (float) $harLok->radius;
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
         $radius = round($jarak['meters']);
+        $canBypassRadius = $authCode === 'SPV-W' || (int) $authUser->devisi_id === 12;
 
-        if ($radius <= $radiusMitra) {
+        if ($canBypassRadius || $radius <= $radiusMitra) {
             try {
                 DB::beginTransaction();
                 if ($absensi) {

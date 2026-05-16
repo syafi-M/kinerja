@@ -12,6 +12,17 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.6] - 2026-05-16
+
+### Changed
+- Merapikan gate tombol absensi jadi evaluator terpusat (waktu, GPS, kelengkapan form).
+- Menyesuaikan inisialisasi gate waktu untuk skenario `shift_id` hidden (SPV-W).
+
+### Fixed
+- Memperbaiki mismatch bypass radius SPV-W antara frontend dan backend saat absen masuk.
+- Memperbaiki tombol absensi SPV-W yang stuck di status `Tunggu` meskipun form sudah lengkap.
+- Memperbaiki fallback pembacaan shift agar user non-select shift tidak terkunci validasi waktu.
+
 ## [v2.0.5] - 2026-05-13
 
 ### Added

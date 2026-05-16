@@ -876,6 +876,7 @@
                 .prop('disabled', !canEnable)
                 .toggleClass('btn-disabled', !canEnable)
                 .toggleClass('bg-blue-500 hover:bg-blue-600', canEnable)
+                .toggleClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50', !canEnable)
                 .css('background-color', canEnable ? '' : 'rgba(96, 165, 250, 0.5)');
         }
 
@@ -1271,11 +1272,18 @@
     <script defer>
         $(function() {
             const dataUserId = $("#dataUser").data('userid');
+            const authCodeJabatan = @json(Auth::user()->jabatan?->code_jabatan);
             const keterangan = $('#keterangan');
             const kerId = {{ Auth::user()->kerjasama_id }};
             let debounceTimer;
 
             function calculatedJamStart() {
+                if (authCodeJabatan === 'SPV-W') {
+                    setBtnAbsen(true, "Absen");
+                    $('#labelWaktuStart').addClass('hidden');
+                    return;
+                }
+
                 const now = new Date();
                 const jamSaiki = now.getHours();
                 const menitSaiki = now.getMinutes();
@@ -1283,7 +1291,11 @@
 
                 const selectedOption = $('#shift_id').find(":selected");
                 const shiftStart = selectedOption.data('shift');
-                if (!shiftStart) return;
+                if (!shiftStart) {
+                    setBtnAbsen(true, "Absen");
+                    $('#labelWaktuStart').addClass('hidden');
+                    return;
+                }
 
                 const [startHours, startMinutes] = shiftStart.split(':').map(Number);
                 const startDiffMinutes = startHours * 60 + startMinutes;
@@ -1306,7 +1318,7 @@
                 setKeterangan(jadi, absenKantor, kerId, authName);
 
                 // tombol absen
-                if (['MCS', 'SPV'].includes(dataUserId)) {
+                if (['MCS', 'SPV', 'SPV-W'].includes(dataUserId) || authCodeJabatan === 'SPV-W') {
                     setBtnAbsen(true);
                 } else if (jadi <= 90) {
                     setBtnAbsen(true, "Absen");
@@ -1324,6 +1336,8 @@
 
             $('#shift_id').change(calculatedJamStart);
             $('#form-absen').on('change input', 'select, input, textarea', refreshAbsenButtonState);
+            calculatedJamStart();
+            refreshAbsenButtonState();
 
             if (typeof window.toastr !== 'undefined') {
                 window.toastr.options = {
@@ -1381,14 +1395,9 @@
             absenGateState.timeReady = enabled;
             absenGateState.timeText = label;
 
-            const btn = $('.btnAbsen');
             if (enabled) {
-                btn.removeClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50')
-                    .prop('disabled', false);
                 $('#labelWaktuStart').addClass('hidden');
             } else {
-                btn.addClass('cursor-not-allowed bg-blue-400/50 hover:bg-blue-400/50')
-                    .prop('disabled', true);
                 $('#labelWaktuStart').removeClass('hidden');
             }
 
