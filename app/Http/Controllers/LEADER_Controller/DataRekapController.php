@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\LEADER_Controller;
 
+use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\FinishedTraining;
 use App\Models\Overtime;
@@ -15,6 +16,8 @@ use Illuminate\Http\Request;
 
 class DataRekapController extends Controller
 {
+    use UsesToastRedirects;
+
     public function index()
     {
         $dueDate = RekapDueDateSetting::latest()->first();
@@ -43,18 +46,15 @@ class DataRekapController extends Controller
 
         $dueDate = RekapDueDateSetting::latest()->first();
         if (!$dueDate) {
-            toastr()->error('Due date rekap belum diatur oleh admin.', [], 'Error');
-            return back();
+            return $this->backWithToast('error', 'Due date rekap belum diatur oleh admin.');
         }
 
         if (Carbon::today()->gt(Carbon::parse($dueDate->due_date))) {
-            toastr()->error('Masa aktivasi pengecualian sudah lewat due date.', [], 'Error');
-            return back();
+            return $this->backWithToast('error', 'Masa aktivasi pengecualian sudah lewat due date.');
         }
 
         if (!$this->isCurrentMonthRekapEmpty()) {
-            toastr()->error('Pengecualian hanya bisa diaktifkan jika data rekap kosong.', [], 'Error');
-            return back();
+            return $this->backWithToast('error', 'Pengecualian hanya bisa diaktifkan jika data rekap kosong.');
         }
 
         RekapPenaltyExemption::updateOrCreate(
@@ -62,8 +62,7 @@ class DataRekapController extends Controller
             ['is_active' => true, 'source' => 'leader_self']
         );
 
-        toastr()->success('Pengecualian penalty berhasil diaktifkan.', [], 'Berhasil');
-        return back();
+        return $this->backWithToast('success', 'Pengecualian penalty berhasil diaktifkan.');
     }
 
     private function isCurrentMonthRekapEmpty(): bool
