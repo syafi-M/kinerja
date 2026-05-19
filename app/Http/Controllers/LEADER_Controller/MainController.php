@@ -21,7 +21,7 @@ class MainController extends Controller
     public function indexAbsen(Request $request)
     {
         // --- 1. Early Exit for Specific Condition ---
-        $isSpecialDate = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == 18;
+        $isSpecialDate = Carbon::now()->format('Y-m-d') == '2024-05-24' && Auth::user()->devisi_id == '18';
         if ($isSpecialDate) {
             abort(500);
         }
@@ -30,7 +30,7 @@ class MainController extends Controller
         $user = Auth::user();
         $filter = $request->search; // This can be a full date or a month string
         $filterMitra = $request->mitra;
-        $isDiv18 = $user->devisi_id == 18;
+        $isDiv18 = $user->devisi_id == '18';
 
         // Data for the view
         $mitra = Kerjasama::with('client')->get();
