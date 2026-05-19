@@ -117,7 +117,7 @@
                                 <div
                                     class="inline-flex items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase border rounded-lg min-h-11 border-slate-200 bg-slate-50 text-slate-600 sm:w-auto">
                                     <i class="text-sm ri-filter-3-line text-slate-500"></i>
-                                    Client
+                                    Mitra
                                 </div>
 
                                 <div class="flex-1 min-w-0">
