@@ -39,7 +39,7 @@ class MainController extends Controller
         $query = Absensi::with('user.divisi.jabatan')->latest();
 
         if ($filterMitra) {
-            if (Auth::user()->jabatan_id == 20) {
+            if (Auth::user()->jabatan_id == '20') {
                 $jabatanCodes = ['OCS', 'CO-CS', 'TMN', 'PTR', 'KSR', 'PG', 'TKS'];
             } else {
                 $jabatanCodes = ['SCR', 'CO-SCR', 'JM', 'DRV', 'FO', 'RCP', 'JK'];
