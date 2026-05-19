@@ -167,23 +167,11 @@
             });
 
             function showAlert(type, message) {
-                const isError = type === 'error';
-                const wrapperClass = isError ?
-                    'border-rose-200 bg-rose-50 text-rose-700' :
-                    'border-emerald-200 bg-emerald-50 text-emerald-700';
-                const icon = isError ? 'error-warning' : 'checkbox-circle';
-
-                $('#alertBox').html(`
-                    <div class="rounded-lg border px-4 py-3 shadow-sm ${wrapperClass}">
-                        <div class="flex items-center gap-2">
-                        <i class="ri-${icon}-line"></i>
-                        <span>${message}</span>
-                        </div>
-                    </div>
-                `);
-
-                setTimeout(() => $('#alertBox').html(''), 4000);
-                $('html, body').animate({ scrollTop: 0 }, 300);
+                $('#alertBox').html('');
+                if (typeof window.showAppToast === 'function') {
+                    window.showAppToast(type, message);
+                    return;
+                }
             }
 
             function showFormErrors(errors) {

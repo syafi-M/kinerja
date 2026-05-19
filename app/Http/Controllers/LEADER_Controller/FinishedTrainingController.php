@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\LEADER_Controller;
 
+use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\FinishedTraining;
 use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\FinishedTrainingSubmitted;
+use App\Services\ApprovalNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class FinishedTrainingController extends Controller
 {
+    use UsesToastRedirects;
+
     public function index()
     {
         $users = $this->allowedUsersQuery()
@@ -167,46 +170,31 @@ class FinishedTrainingController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('toast', [
-            'type' => 'warning',
-            'message' => 'Data lepas training berhasil dihapus!',
-        ]);
+        return $this->redirectBackWithToast('warning', 'Data lepas training berhasil dihapus!');
     }
 
     public function changeStatus($id)
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $finishedTraining = $this->baseQuery()->findOrFail($id);
         $currentStatus = $finishedTraining->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Data ini tidak dapat diajukan lagi.',
-            ]);
+            return $this->redirectBackWithToast('info', 'Data ini tidak dapat diajukan lagi.');
         }
 
         $finishedTraining->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($finishedTraining->fresh('user'));
-        return redirect()->back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Lepas training berhasil diajukan!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Lepas training berhasil diajukan!');
     }
 
     public function bulkStatus(Request $request)
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $query = $this->filteredHistoryQuery($request)
@@ -218,10 +206,7 @@ class FinishedTrainingController extends Controller
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Tidak ada data lepas training yang bisa diajukan.',
-            ]);
+            return $this->backWithToast('info', 'Tidak ada data lepas training yang bisa diajukan.');
         }
 
         FinishedTraining::whereIn('id', $items->pluck('id'))
@@ -232,10 +217,7 @@ class FinishedTrainingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Berhasil mengajukan semua data lepas training sesuai filter!',
-        ]);
+        return $this->backWithToast('success', 'Berhasil mengajukan semua data lepas training sesuai filter!');
     }
 
     private function isSubmissionLockedByDueDate(): bool
@@ -325,43 +307,12 @@ class FinishedTrainingController extends Controller
 
     private function notifyApproverForSubmission(FinishedTraining $finishedTraining): void
     {
-        $targetCode = $this->resolveTargetCode();
-        if (!$targetCode) {
-            return;
-        }
-
         $kerjasamaId = (int) auth()->user()->kerjasama_id;
-        $approvers = User::whereHas('jabatan', function ($q) use ($targetCode) {
-            $q->where('code_jabatan', $targetCode);
-        })->get();
-
-        if ($approvers->isEmpty()) {
-            return;
-        }
-
-        $filteredRecipients = $approvers->filter(function ($recipient) use ($kerjasamaId) {
-            return !$recipient->unreadNotifications()
-                ->where('data->type', 'finished_training')
-                ->where('data->kerjasama_id', $kerjasamaId)
-                ->exists();
-        });
-
-        if ($filteredRecipients->isNotEmpty()) {
-            Notification::send($filteredRecipients, new FinishedTrainingSubmitted($finishedTraining));
-        }
-    }
-
-    private function resolveTargetCode(): ?string
-    {
-        $code = strtoupper((string) auth()->user()->jabatan->code_jabatan);
-        if ($code === 'CO-CS') {
-            return 'SPV';
-        }
-
-        if ($code === 'CO-SCR') {
-            return 'MARKETING';
-        }
-
-        return null;
+        app(ApprovalNotificationService::class)->sendToApprovers(
+            (string) auth()->user()->jabatan->code_jabatan,
+            $kerjasamaId,
+            'finished_training',
+            new FinishedTrainingSubmitted($finishedTraining)
+        );
     }
 }
