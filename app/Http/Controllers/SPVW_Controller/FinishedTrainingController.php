@@ -1,0 +1,389 @@
+<?php
+
+namespace App\Http\Controllers\SPVW_Controller;
+
+use App\Http\Controllers\Controller;
+use App\Models\FinishedTraining;
+use App\Models\RekapDueDateSetting;
+use App\Models\User;
+use App\Notifications\FinishedTrainingSubmitted;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\Rule;
+
+class FinishedTrainingController extends Controller
+{
+    public function index()
+    {
+        $users = $this->allowedUsersQuery()
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap']);
+
+        return view('spv_w_view.finished_training.index', [
+            'users' => $users,
+        ]);
+    }
+
+    public function searchUsers(Request $request)
+    {
+        $query = trim((string) $request->input('q', ''));
+
+        if (mb_strlen($query) < 2) {
+            return response()->json([
+                'message' => 'Query too short',
+                'data' => [],
+                'error' => ''
+            ]);
+        }
+
+        $users = $this->allowedUsersQuery()
+            ->where('nama_lengkap', 'like', '%' . $query . '%')
+            ->orderBy('nama_lengkap')
+            ->limit(15)
+            ->get(['id', 'nama_lengkap']);
+
+        return response()->json([
+            'message' => 'User list',
+            'data' => $users,
+            'error' => ''
+        ]);
+    }
+
+    public function history(Request $request)
+    {
+        $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+
+        $allowedPerPage = [10, 15, 25, 50];
+        $perPage = (int) $request->input('per_page', 15);
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 15;
+        }
+
+        $finishedTrainings = $this->filteredHistoryQuery($request)
+            ->paginate($perPage)
+            ->through(function ($item) {
+                $item->masa_training_hari = Carbon::parse($item->date_finish_train)->day;
+                return $item;
+            })
+            ->withQueryString();
+
+        $users = $this->allowedUsersQuery()
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap']);
+
+        return view('spv_w_view.finished_training.history', [
+            'finishedTrainings' => $finishedTrainings,
+            'users' => $users,
+            'perPage' => $perPage,
+            'allowedPerPage' => $allowedPerPage,
+            'isSubmissionLocked' => $isSubmissionLocked,
+            'canBulkSubmit' => !$isSubmissionLocked && $this->filteredHistoryQuery($request)
+                ->where(function ($q) {
+                    $q->whereNull('status')
+                        ->orWhereRaw('LOWER(status) = ?', ['pending']);
+                })->exists(),
+        ]);
+    }
+
+    public function show($id)
+    {
+        $finishedTraining = $this->baseQuery()->findOrFail($id);
+        $finishedTraining->masa_training_hari = Carbon::parse($finishedTraining->date_finish_train)->day;
+
+        return response()->json([
+            'message' => 'Get finished training',
+            'data' => $finishedTraining,
+            'error' => ''
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $validated = $request->validate($this->rules());
+
+            $finishedTraining = FinishedTraining::create([
+                'user_id' => $validated['user_id'],
+                'date_in' => $validated['date_in'],
+                'date_finish_train' => $validated['date_finish_train'],
+                'desc' => $validated['desc'],
+                'status' => 'pending',
+            ]);
+
+            return response()->json([
+                'message' => 'Data lepas training berhasil disimpan!',
+                'data' => $finishedTraining,
+                'error' => ''
+            ], 201);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan data lepas training.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $finishedTraining = $this->baseQuery()->findOrFail($id);
+            $validated = $request->validate($this->rules());
+
+            $finishedTraining->update([
+                'user_id' => $validated['user_id'],
+                'date_in' => $validated['date_in'],
+                'date_finish_train' => $validated['date_finish_train'],
+                'desc' => $validated['desc'],
+            ]);
+
+            return response()->json([
+                'message' => 'Data lepas training berhasil diperbarui!',
+                'data' => $finishedTraining->fresh('user'),
+                'error' => ''
+            ]);
+        } catch (\Throwable $th) {
+            report($th);
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memperbarui data lepas training.',
+                'data' => null,
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $finishedTraining = $this->baseQuery()->findOrFail($id);
+        $finishedTraining->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Finished training deleted',
+                'data' => null,
+                'error' => ''
+            ]);
+        }
+
+        return redirect()->back()->with('toast', [
+            'type' => 'warning',
+            'message' => 'Data lepas training berhasil dihapus!',
+        ]);
+    }
+
+    public function changeStatus($id)
+    {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
+        $finishedTraining = $this->baseQuery()->findOrFail($id);
+        $currentStatus = $finishedTraining->status ?? 'pending';
+
+        if (!in_array($currentStatus, ['pending', null, ''], true)) {
+            return redirect()->back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Data ini tidak dapat diajukan lagi.',
+            ]);
+        }
+
+        $finishedTraining->update(['status' => 'Di Ajukan']);
+        $this->notifyApproverForSubmission($finishedTraining->fresh('user'));
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Lepas training berhasil diajukan!',
+        ]);
+    }
+
+    public function bulkStatus(Request $request)
+    {
+        if ($this->isSubmissionLockedByDueDate()) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
+            ]);
+        }
+
+        $query = $this->filteredHistoryQuery($request)
+            ->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
+            });
+
+        $items = $query->get(['id']);
+
+        if ($items->isEmpty()) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'Tidak ada data lepas training yang bisa diajukan.',
+            ]);
+        }
+
+        FinishedTraining::whereIn('id', $items->pluck('id'))
+            ->update(['status' => 'Di Ajukan']);
+
+        $firstSubmitted = FinishedTraining::with('user')->whereIn('id', $items->pluck('id'))->first();
+        if ($firstSubmitted) {
+            $this->notifyApproverForSubmission($firstSubmitted);
+        }
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Berhasil mengajukan semua data lepas training sesuai filter!',
+        ]);
+    }
+
+    private function isSubmissionLockedByDueDate(): bool
+    {
+        $dueDate = RekapDueDateSetting::latest()->first();
+
+        return $dueDate !== null
+            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
+    }
+
+    public function fetchApi($id)
+    {
+        $finishedTraining = $this->baseQuery()->findOrFail($id);
+        $finishedTraining->masa_training_hari = Carbon::parse($finishedTraining->date_finish_train)->day;
+
+        return response()->json([
+            'message' => 'Get data by id',
+            'data' => $finishedTraining,
+            'error' => ''
+        ]);
+    }
+
+    private function filteredHistoryQuery(Request $request)
+    {
+        return $this->baseQuery()
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('status', $request->status);
+            })
+            ->when($request->filled('month'), function ($q) use ($request) {
+                try {
+                    $date = Carbon::createFromFormat('Y-m', $request->month);
+                    $q->whereYear('date_finish_train', $date->year)
+                        ->whereMonth('date_finish_train', $date->month);
+                } catch (\Throwable $th) {
+                    // ignore invalid month
+                }
+            })
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $keyword = trim($request->search);
+                $q->whereHas('user', function ($userQuery) use ($keyword) {
+                    $userQuery->where('nama_lengkap', 'like', '%' . $keyword . '%');
+                });
+            })
+            ->latest();
+    }
+
+    private function baseQuery()
+    {
+        return FinishedTraining::with('user:id,name,nama_lengkap')
+            ->select(['id', 'user_id', 'date_in', 'date_finish_train', 'desc', 'status', 'created_at'])
+            ->whereHas('user', function ($q) {
+                $q->whereHas('jabatan', function ($jabatanQuery) {
+                        $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+                    })
+                    ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
+            });
+    }
+
+    private function allowedUsersQuery()
+    {
+        return User::where('role_id', '!=', 2)
+            ->where('kerjasama_id', '!=', 1)
+            ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
+    }
+
+    private function rules(): array
+    {
+        return [
+            'user_id' => [
+                'required',
+                Rule::exists('users', 'id')->where(function ($q) {
+                    if ($this->selectedClientId() > 0) {
+                        $q->whereIn('kerjasama_id', function ($subQuery) {
+                            $subQuery->select('id')->from('kerjasamas')->where('client_id', $this->selectedClientId());
+                        });
+                    }
+                }),
+                function ($attribute, $value, $fail) {
+                    $exists = $this->allowedUsersQuery()->where('id', $value)->exists();
+                    if (!$exists) {
+                        $fail('Nama lengkap tidak valid untuk area kerja Anda.');
+                    }
+                },
+            ],
+            'date_in' => ['required', 'date'],
+            'date_finish_train' => ['required', 'date', 'after_or_equal:date_in'],
+            'desc' => ['required', 'string'],
+        ];
+    }
+
+    private function notifyApproverForSubmission(FinishedTraining $finishedTraining): void
+    {
+        $targetCode = $this->resolveTargetCode();
+        if (!$targetCode) {
+            return;
+        }
+
+        $kerjasamaId = (int) auth()->user()->kerjasama_id;
+        $approvers = User::whereHas('jabatan', function ($q) use ($targetCode) {
+            $q->where('code_jabatan', $targetCode);
+        })->get();
+
+        if ($approvers->isEmpty()) {
+            return;
+        }
+
+        $filteredRecipients = $approvers->filter(function ($recipient) use ($kerjasamaId) {
+            return !$recipient->unreadNotifications()
+                ->where('data->type', 'finished_training')
+                ->where('data->kerjasama_id', $kerjasamaId)
+                ->exists();
+        });
+
+        if ($filteredRecipients->isNotEmpty()) {
+            Notification::send($filteredRecipients, new FinishedTrainingSubmitted($finishedTraining));
+        }
+    }
+
+    private function resolveTargetCode(): ?string
+    {
+        $code = strtoupper((string) auth()->user()->jabatan->code_jabatan);
+        if ($code === 'CO-CS') {
+            return 'SPV';
+        }
+
+        if ($code === 'CO-SCR') {
+            return 'MARKETING';
+        }
+
+        return null;
+    }
+
+    private function selectedClientId(): int
+    {
+        $sessionKey = 'spvw.selected_client_id';
+
+        if (request()->has('client_id')) {
+            $clientId = max((int) request('client_id', 0), 0);
+
+            if ($clientId > 0) {
+                session([$sessionKey => $clientId]);
+            } else {
+                session()->forget($sessionKey);
+            }
+
+            return $clientId;
+        }
+
+        return max((int) session($sessionKey, 0), 0);
+    }
+}

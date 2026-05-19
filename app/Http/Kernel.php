@@ -61,6 +61,8 @@ class Kernel extends HttpKernel
         'mitra' => \App\Http\Middleware\MitraMiddleware::class,
         'spv' => \App\Http\Middleware\SuperPusarMiddleware::class,
         'spv-w' => \App\Http\Middleware\SPVWMiddleware::class,
+        'spvw.client-filter' => \App\Http\Middleware\PersistSpvwClientFilter::class,
+        'spvw.client-required' => \App\Http\Middleware\RequireSpvwClientFilter::class,
         'leader' => \App\Http\Middleware\LeaderMiddleware::class,
         'apdt' => \App\Http\Middleware\UpdateAbsenTelat::class,
         'rekap.management' => \App\Http\Middleware\RekapManagementAccessMiddleware::class,

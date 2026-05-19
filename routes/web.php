@@ -56,6 +56,12 @@ use App\Http\Controllers\SVP_Controller\Rekap\CuttingController as RekapCuttingC
 use App\Http\Controllers\SVP_Controller\Rekap\FinishedTrainingController as RekapFinishedTrainingController;
 use App\Http\Controllers\SVP_Controller\Rekap\OvertimesController;
 use App\Http\Controllers\SVP_Controller\Rekap\PersonOutController as RekapPersonOutController;
+use App\Http\Controllers\SPVW_Controller\CuttingController as SPVWCuttingController;
+use App\Http\Controllers\SPVW_Controller\DataRekapController as SPVWDataRekapController;
+use App\Http\Controllers\SPVW_Controller\FinishedTrainingController as SPVWFinishedTrainingController;
+use App\Http\Controllers\SPVW_Controller\OvertimeApplicationController as SPVWOvertimeApplicationController;
+use App\Http\Controllers\SPVW_Controller\PersonInController as SPVWPersonInController;
+use App\Http\Controllers\SPVW_Controller\PersonOutController as SPVWPersonOutController;
 use App\Models\TempUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -287,7 +293,7 @@ Route::middleware(['auth', 'apdt'])->group(function () {
 });
 
 // SPV W
-Route::middleware(['auth', 'spv-w', 'apdt'])->group(function () {
+Route::middleware(['auth', 'spv-w', 'apdt', 'spvw.client-filter'])->group(function () {
     Route::view('spvView', 'leader_view/leaderView')->name('SPVWiew');
 
     Route::resource('/SPVW/spvw-rating', RatingController::class);
@@ -314,6 +320,64 @@ Route::middleware(['auth', 'spv-w', 'apdt'])->group(function () {
     Route::get('/spvw-slip-gaji', [SlipGajiController::class, 'leaderIndex'])->name('spvw-slip');
 
     Route::resource('/spvw-monev', MonevController::class);
+
+    Route::get('/SPVW/rekap-data', [SPVWDataRekapController::class, 'index'])->name('spvw.rekap.index');
+    Route::post('/SPVW/rekap/exemption/self', [SPVWDataRekapController::class, 'exemptSelf'])->name('spvw.rekap.exemption.self');
+
+    Route::middleware('spvw.client-required')->group(function () {
+        Route::get('/SPVW/overtime-application/create', [SPVWOvertimeApplicationController::class, 'create'])->name('spvw.overtime-application.create');
+        Route::post('/SPVW/overtime-application', [SPVWOvertimeApplicationController::class, 'store'])->name('spvw.overtime-application.store');
+        Route::get('/SPVW/overtime-application/history', [SPVWOvertimeApplicationController::class, 'history'])->name('spvw.overtime-application.history');
+        Route::get('/SPVW/overtime-application/{id}/edit', [SPVWOvertimeApplicationController::class, 'edit'])->name('spvw.overtime-application.edit');
+        Route::put('/SPVW/overtime-application/{id}', [SPVWOvertimeApplicationController::class, 'update'])->name('spvw.overtime-application.update');
+        Route::delete('/SPVW/overtime-application/{id}', [SPVWOvertimeApplicationController::class, 'destroy'])->name('spvw.overtime-application.destroy');
+        Route::get('/SPVW/api/v1/get-overtime/{id}', [SPVWOvertimeApplicationController::class, 'fetchApi'])->name('spvw.get-overtime-id');
+        Route::patch('/SPVW/overtime-change-status/{id}', [SPVWOvertimeApplicationController::class, 'changeStatus'])->name('spvw.overtime.change_status');
+        Route::patch('/SPVW/overtime-change-bulk', [SPVWOvertimeApplicationController::class, 'bulkStatus'])->name('spvw.overtime-bulk.status');
+
+        Route::get('/SPVW/person-is-out/create', [SPVWPersonOutController::class, 'create'])->name('spvw.person-is-out.create');
+        Route::post('/SPVW/person-is-out', [SPVWPersonOutController::class, 'store'])->name('spvw.person-is-out.store');
+        Route::get('/SPVW/person-is-out/history', [SPVWPersonOutController::class, 'history'])->name('spvw.person-is-out.history');
+        Route::get('/SPVW/person-is-out/{id}/edit', [SPVWPersonOutController::class, 'edit'])->name('spvw.person-is-out.edit');
+        Route::put('/SPVW/person-is-out/{id}', [SPVWPersonOutController::class, 'update'])->name('spvw.person-is-out.update');
+        Route::delete('/SPVW/person-is-out/{id}', [SPVWPersonOutController::class, 'destroy'])->name('spvw.person-is-out.destroy');
+        Route::get('/SPVW/api/v1/get-person-is-out/{id}', [SPVWPersonOutController::class, 'fetchApi'])->name('spvw.person-is-out-id');
+        Route::patch('/SPVW/person-is-out-change-status/{id}', [SPVWPersonOutController::class, 'changeStatus'])->name('spvw.person-is-out.change_status');
+        Route::patch('/SPVW/person-is-out-bulk', [SPVWPersonOutController::class, 'bulkStatus'])->name('spvw.person-is-out-bulk.status');
+
+        Route::get('/SPVW/person-in', [SPVWPersonInController::class, 'index'])->name('spvw.person-in.index');
+        Route::post('/SPVW/person-in', [SPVWPersonInController::class, 'store'])->name('spvw.person-in.store');
+        Route::get('/SPVW/person-is-in/history', [SPVWPersonInController::class, 'history'])->name('spvw.person.in.history');
+        Route::get('/SPVW/person-in/users/search', [SPVWPersonInController::class, 'searchUsers'])->name('spvw.person-in.users.search');
+        Route::get('/SPVW/person-in/{id}', [SPVWPersonInController::class, 'show'])->name('spvw.person-in.show');
+        Route::put('/SPVW/person-in/{id}', [SPVWPersonInController::class, 'update'])->name('spvw.person-in.update');
+        Route::delete('/SPVW/person-in/{id}', [SPVWPersonInController::class, 'destroy'])->name('spvw.person-in.destroy');
+        Route::get('/SPVW/api/v1/get-person-in/{id}', [SPVWPersonInController::class, 'fetchApi'])->name('spvw.person-in-id');
+        Route::patch('/SPVW/person-in-change-status/{id}', [SPVWPersonInController::class, 'changeStatus'])->name('spvw.person-in.change_status');
+        Route::patch('/SPVW/person-in-bulk', [SPVWPersonInController::class, 'bulkStatus'])->name('spvw.person-in-bulk.status');
+
+        Route::get('/SPVW/cutting', [SPVWCuttingController::class, 'index'])->name('spvw.cutting.index');
+        Route::post('/SPVW/cutting', [SPVWCuttingController::class, 'store'])->name('spvw.cutting.store');
+        Route::get('/SPVW/cutting/history', [SPVWCuttingController::class, 'history'])->name('spvw.cutting.history');
+        Route::get('/SPVW/cutting/users/search', [SPVWCuttingController::class, 'searchUsers'])->name('spvw.cutting.users.search');
+        Route::get('/SPVW/cutting/{id}', [SPVWCuttingController::class, 'show'])->name('spvw.cutting.show');
+        Route::put('/SPVW/cutting/{id}', [SPVWCuttingController::class, 'update'])->name('spvw.cutting.update');
+        Route::delete('/SPVW/cutting/{id}', [SPVWCuttingController::class, 'destroy'])->name('spvw.cutting.destroy');
+        Route::get('/SPVW/api/v1/get-cutting/{id}', [SPVWCuttingController::class, 'fetchApi'])->name('spvw.cutting-id');
+        Route::patch('/SPVW/cutting-change-status/{id}', [SPVWCuttingController::class, 'changeStatus'])->name('spvw.cutting.change_status');
+        Route::patch('/SPVW/cutting-bulk', [SPVWCuttingController::class, 'bulkStatus'])->name('spvw.cutting-bulk.status');
+
+        Route::get('/SPVW/finished-training', [SPVWFinishedTrainingController::class, 'index'])->name('spvw.finished-training.index');
+        Route::post('/SPVW/finished-training', [SPVWFinishedTrainingController::class, 'store'])->name('spvw.finished-training.store');
+        Route::get('/SPVW/finished-training/history', [SPVWFinishedTrainingController::class, 'history'])->name('spvw.finished-training.history');
+        Route::get('/SPVW/finished-training/users/search', [SPVWFinishedTrainingController::class, 'searchUsers'])->name('spvw.finished-training.users.search');
+        Route::get('/SPVW/finished-training/{id}', [SPVWFinishedTrainingController::class, 'show'])->name('spvw.finished-training.show');
+        Route::put('/SPVW/finished-training/{id}', [SPVWFinishedTrainingController::class, 'update'])->name('spvw.finished-training.update');
+        Route::delete('/SPVW/finished-training/{id}', [SPVWFinishedTrainingController::class, 'destroy'])->name('spvw.finished-training.destroy');
+        Route::get('/SPVW/api/v1/get-finished-training/{id}', [SPVWFinishedTrainingController::class, 'fetchApi'])->name('spvw.finished-training-id');
+        Route::patch('/SPVW/finished-training-change-status/{id}', [SPVWFinishedTrainingController::class, 'changeStatus'])->name('spvw.finished-training.change_status');
+        Route::patch('/SPVW/finished-training-bulk', [SPVWFinishedTrainingController::class, 'bulkStatus'])->name('spvw.finished-training-bulk.status');
+    });
 });
 
 Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {

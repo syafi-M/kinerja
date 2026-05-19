@@ -302,13 +302,14 @@
                             $jabatanMatch = match ($codeJabatan) {
                                 'CO-CS' => true,
                                 'CO-SCR' => true,
+                                'SPV-W' => true,
                                 default => false,
                             };
                         @endphp
                         @if ($jabatanMatch)
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnRekap"
-                                    onclick="window.location='{{ route('index.rekap.data.leader') }}'"
+                                    onclick="window.location='{{ $codeJabatan == 'SPV-W' ? route('spvw.rekap.index') : route('index.rekap.data.leader') }}'"
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="ri-calendar-schedule-line"></i>
                                     <button class="text-sm font-bold uppercase">
