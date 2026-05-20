@@ -342,6 +342,9 @@
             const statusLower = (status || '').toLowerCase();
             const badges = {
                 'pending': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>',
+                'di ajukan': '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-emerald-50 text-emerald-700 ring-emerald-200">Di Ajukan</span>',
+                'di setujui': '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-lime-50 text-lime-700 ring-lime-200">Di Setujui</span>',
+                'di tolak': '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-rose-50 text-rose-700 ring-rose-200">Di Tolak</span>',
                 'approved': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>',
                 'rejected': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>'
             };
@@ -406,6 +409,7 @@
                 <span class="font-semibold text-indigo-600">${item.desc}</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">${statusBadge}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">${actionButtons(item)}</td>
         `;
 
                 tbody.appendChild(row);
@@ -416,6 +420,25 @@
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('tableContainer').classList.remove('hidden');
             document.getElementById('paginationContainer').classList.remove('hidden');
+        }
+
+        function actionButtons(r) {
+            if (!r || (r.status || '').toLowerCase() !== 'di ajukan') return '-';
+            return `<div class="flex items-center justify-center gap-2">
+                <button onclick="updateStatus(${r.id}, 'Di Setujui')" class="rounded bg-lime-600 hover:bg-lime-700 text-white px-2 py-1 text-xs">Setujui</button>
+                <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 text-xs">Tolak</button>
+            </div>`;
+        }
+
+        async function updateStatus(id, status) {
+            const res = await fetch(`/api/v1/rekap/overtimes/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ status })
+            });
+            const result = await res.json();
+            if (!result.success) return alert(result.message || 'Gagal update status');
+            await fetchOvertimeData();
         }
 
         // Update pagination UI
@@ -631,7 +654,7 @@
             // Group data by employee
             const groupedByEmployee = {};
 
-            filteredData.forEach(item => {
+            filteredData.filter(item => (item.status || '').toLowerCase() === 'di setujui').forEach(item => {
                 const employeeKey = item.user?.id || 'unknown';
 
                 if (!groupedByEmployee[employeeKey]) {
@@ -733,7 +756,7 @@
             // Group data by employee
             const groupedByEmployee = {};
 
-            filteredData.forEach(item => {
+            filteredData.filter(item => (item.status || '').toLowerCase() === 'di setujui').forEach(item => {
                 const employeeKey = item.user?.id || 'unknown';
 
                 if (!groupedByEmployee[employeeKey]) {

@@ -34,7 +34,9 @@
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan
                         </option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
+                        <option value="Di Setujui" {{ request('status') == 'Di Setujui' ? 'selected' : '' }}>Di Setujui
+                        </option>
+                        <option value="Di Tolak" {{ request('status') == 'Di Tolak' ? 'selected' : '' }}>Di Tolak
                         </option>
                     </select>
                     <input type="month" name="month" value="{{ request('month') }}"
@@ -69,7 +71,11 @@
                                     <span
                                         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700"><i
                                             class="ri-checkbox-circle-fill"></i>Diajukan</span>
-                                @elseif(($item->status ?? 'pending') == 'rejected')
+                                @elseif(($item->status ?? 'pending') == 'Di Setujui')
+                                    <span
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2.5 py-1 text-xs font-medium text-lime-700"><i
+                                            class="ri-checkbox-circle-fill"></i>Di Setujui</span>
+                                @elseif(($item->status ?? 'pending') == 'Di Tolak')
                                     <span
                                         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"><i
                                             class="ri-close-circle-fill"></i>Ditolak</span>
@@ -163,10 +169,14 @@
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"><i
                                                     class="ri-checkbox-circle-fill"></i>Di Ajukan</span>
-                                        @elseif(($item->status ?? 'pending') == 'rejected')
+                                        @elseif(($item->status ?? 'pending') == 'Di Setujui')
+                                    <span
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2.5 py-1 text-xs font-medium text-lime-700"><i
+                                            class="ri-checkbox-circle-fill"></i>Di Setujui</span>
+                                @elseif(($item->status ?? 'pending') == 'Di Tolak')
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium"><i
-                                                    class="ri-close-circle-fill"></i>Ditolak</span>
+                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-lime-100 text-lime-700 text-xs font-medium"><i
+                                                    class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                         @else
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium"><i
@@ -349,7 +359,8 @@
                                 :class="{
                                     'bg-green-100 text-green-700': detail.status == 'Di Ajukan',
                                     'bg-yellow-100 text-yellow-700': !detail.status || detail.status == 'pending',
-                                    'bg-red-100 text-red-700': detail.status == 'rejected'
+                                    'bg-lime-100 text-lime-700': detail.status == 'Di Setujui',
+                                    'bg-red-100 text-red-700': detail.status == 'Di Tolak'
                                 }"
                                 class="inline-block px-3 py-1 text-xs font-medium rounded-full"></span>
                         </div>
@@ -501,3 +512,4 @@
         }
     </style>
 </x-app-layout>
+
