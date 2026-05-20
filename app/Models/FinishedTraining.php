@@ -15,10 +15,16 @@ class FinishedTraining extends Model
         'date_finish_train',
         'desc',
         'status',
+        'created_by_user_id',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 }

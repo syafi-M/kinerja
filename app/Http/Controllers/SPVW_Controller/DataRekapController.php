@@ -27,24 +27,10 @@ class DataRekapController extends Controller
             ? (int) request('client_id', 0)
             : (int) session($sessionKey, 0);
 
-        $blockedClientIds = Kerjasama::query()
-            ->whereIn('id', function ($query) {
-                $query->select('kerjasama_id')
-                    ->from('users')
-                    ->whereIn('jabatan_id', [10, 11, 19])
-                    ->whereNull('deleted_at');
-            })
-            ->pluck('client_id')
-            ->filter()
-            ->unique()
-            ->values();
 
         $clients = Client::query()
             ->select(['id', 'name'])
             ->where('id', '!=', 1)
-            ->when($blockedClientIds->isNotEmpty(), function ($query) use ($blockedClientIds) {
-                $query->whereNotIn('id', $blockedClientIds);
-            })
             ->orderBy('name')
             ->get();
 
@@ -95,17 +81,17 @@ class DataRekapController extends Controller
 
         $dueDate = RekapDueDateSetting::latest()->first();
         if (!$dueDate) {
-            toastr()->error('Due date rekap belum diatur oleh admin.', [], 'Error');
+            toastr()->error('Due date rekap belum diatur oleh admin.', 'error');
             return back();
         }
 
         if (Carbon::today()->gt(Carbon::parse($dueDate->due_date))) {
-            toastr()->error('Masa aktivasi pengecualian sudah lewat due date.', [], 'Error');
+            toastr()->error('Masa aktivasi pengecualian sudah lewat due date.', 'error');
             return back();
         }
 
         if (!$this->isCurrentMonthRekapEmpty()) {
-            toastr()->error('Pengecualian hanya bisa diaktifkan jika data rekap kosong.', [], 'Error');
+            toastr()->error('Pengecualian hanya bisa diaktifkan jika data rekap kosong.', 'error');
             return back();
         }
 
@@ -114,7 +100,7 @@ class DataRekapController extends Controller
             ['is_active' => true, 'source' => 'leader_self']
         );
 
-        toastr()->success('Pengecualian penalty berhasil diaktifkan.', [], 'Berhasil');
+        toastr()->success('Pengecualian penalty berhasil diaktifkan.', 'success');
         return back();
     }
 

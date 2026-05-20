@@ -16,10 +16,16 @@ class PerformanceCuts extends Model
         'manual_type_cut',
         'desc',
         'status',
+        'created_by_user_id',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 }

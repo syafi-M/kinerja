@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(Client::class);
             $table->foreignIdFor(Jabatan::class);
             $table->date('date_in');
+            $table->string('total_mk');
             $table->string('method_salary');
             $table->string('method_salary_manual')->nullable();
             $table->string('status')->nullable()->default('pending');

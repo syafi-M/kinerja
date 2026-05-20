@@ -109,6 +109,7 @@ class CuttingController extends Controller
                 'manual_type_cut' => $validated['type_cutting_manual'] ?? '',
                 'desc' => $validated['desc'],
                 'status' => 'pending',
+                'created_by_user_id' => auth()->id(),
             ]);
 
             return response()->json([
@@ -138,6 +139,7 @@ class CuttingController extends Controller
                 'type_cut' => $validated['type_cutting'],
                 'manual_type_cut' => $validated['type_cutting_manual'] ?? '',
                 'desc' => $validated['desc'],
+                'created_by_user_id' => auth()->id(),
             ]);
 
             return response()->json([
@@ -263,8 +265,8 @@ class CuttingController extends Controller
 
     private function baseQuery()
     {
-        return PerformanceCuts::with('user:id,name,nama_lengkap')
-            ->select(['id', 'user_id', 'date_cut', 'type_cut', 'manual_type_cut', 'desc', 'status', 'created_at'])
+        return PerformanceCuts::with(['user:id,name,nama_lengkap', 'createdBy:id,name,nama_lengkap'])
+            ->select(['id', 'user_id', 'created_by_user_id', 'date_cut', 'type_cut', 'manual_type_cut', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
                 $q->where('kerjasama_id', auth()->user()->kerjasama_id)
                     ->whereHas('jabatan', function ($jabatanQuery) {

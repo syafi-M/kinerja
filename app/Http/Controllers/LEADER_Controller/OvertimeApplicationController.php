@@ -33,6 +33,7 @@ class OvertimeApplicationController extends Controller
     {
         try {
             $data = $request->validated();
+            $data['created_by_user_id'] = auth()->id();
             Overtime::create($data);
             return redirect()->back()->with('toast', [
                 'type' => 'success',
@@ -106,6 +107,7 @@ class OvertimeApplicationController extends Controller
     public function update(OvertimeStoreRequest $request, $id)
     {
         $data = $request->validated();
+        $data['created_by_user_id'] = auth()->id();
         Overtime::findOrFail($id)->update($data);
         return to_route('overtime-application.show', 1)->with('toast', [
             'type' => 'success',

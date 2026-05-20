@@ -22,7 +22,7 @@ class PersonInController extends Controller
             ->orderBy('name_jabatan')
             ->get();
 
-        $users = User::select(['id', 'nama_lengkap'])
+        $users = User::select(['id', 'nama_lengkap', 'jabatan_id'])
             ->where('role_id', '!=', 2)
             ->where('kerjasama_id', '!=', 1)
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
@@ -116,9 +116,27 @@ class PersonInController extends Controller
             $validated['client_id'] = $this->selectedClientId() > 0 ? $this->selectedClientId() : auth()->user()->kerjasama->client_id;
             $validated['status'] = 'pending';
 
-            $personIn = PersonIn::create($validated);
+            // Set created_by_user_id
+            $validated['created_by_user_id'] = auth()->id();
+
+            // Check if person already exists with same fullname, client_id, and date_in
+            $personIn = PersonIn::where('fullname', $validated['fullname'])
+                ->where('client_id', $validated['client_id'])
+                ->where('date_in', $validated['date_in'])
+                ->first();
+
+            if ($personIn) {
+                // Update existing record
+                $personIn->update($validated);
+                $message = 'Data personil masuk berhasil diperbarui!';
+            } else {
+                // Create new record
+                $personIn = PersonIn::create($validated);
+                $message = 'Data personil masuk berhasil disimpan!';
+            }
+
             return response()->json([
-                'message' => 'Data personil masuk berhasil disimpan!',
+                'message' => $message,
                 'data' => $personIn,
                 'error' => ''
             ], 201);
@@ -141,6 +159,9 @@ class PersonInController extends Controller
             unset($validated['has_account']);
 
             $validated['client_id'] = $this->selectedClientId() > 0 ? $this->selectedClientId() : auth()->user()->kerjasama->client_id;
+
+            // Set created_by_user_id
+            $validated['created_by_user_id'] = auth()->id();
 
             $personIn->update($validated);
 
@@ -290,8 +311,8 @@ class PersonInController extends Controller
 
     private function baseQuery()
     {
-        return PersonIn::with('jabatan:id,name_jabatan')
-            ->select(['id', 'fullname', 'client_id', 'jabatan_id', 'date_in', 'method_salary', 'method_salary_manual', 'status', 'created_at'])
+        return PersonIn::with(['jabatan:id,name_jabatan', 'createdBy:id,name,nama_lengkap'])
+            ->select(['id', 'fullname', 'client_id', 'created_by_user_id', 'jabatan_id', 'date_in', 'method_salary', 'method_salary_manual', 'status', 'created_at'])
             ->when($this->selectedClientId() > 0,
                 fn($q) => $q->where('client_id', $this->selectedClientId()),
                 fn($q) => $q->where('client_id', auth()->user()->kerjasama->client_id)

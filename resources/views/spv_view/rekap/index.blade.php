@@ -1,4 +1,8 @@
 <x-app-layout>
+    @push('scripts')
+        <script src={{ URL::asset('js/rekap-export.js') }}></script>
+    @endpush
+
     @push('styles')
         <style>
             #detailModal {
@@ -686,7 +690,7 @@
                     <div
                         class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-md">
                         <!-- Modal Header -->
-                        <div class="bg-white px-6 pt-6 pb-4">
+                        <div class="bg-white px-6 pt-6 pb-4 flex flex-col gap-y-2">
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center gap-3">
                                     <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
@@ -706,6 +710,31 @@
                                             d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
+                            </div>
+                            <div class="justify-end items-center">
+                                <!-- Export Buttons -->
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="exportToExcel()"
+                                        class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                            </path>
+                                        </svg>
+                                        <span>Excel</span>
+                                    </button>
+                                    <button onclick="exportToPDF()"
+                                        class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                        <span>PDF</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -1019,6 +1048,40 @@
             }, 300);
 
             button.setAttribute('aria-expanded', 'false');
+        }
+
+        // Rekap Exporter - DRY & SOLID approach
+        let currentKerjasamaId = null;
+        let currentMonth = null;
+
+        // Override openModal to capture kerjasamaId
+        const originalOpenModal = window.openModal;
+        window.openModal = function(mitraId, mitraName) {
+            currentKerjasamaId = mitraId;
+            currentMonth = new Date().toISOString().slice(0, 7);
+            originalOpenModal(mitraId, mitraName);
+        };
+
+        // Export to Excel - All Rekap Data
+        function exportToExcel() {
+            if (!currentKerjasamaId) {
+                alert('Silakan pilih mitra terlebih dahulu');
+                return;
+            }
+
+            const exporter = new RekapExporter(currentKerjasamaId, currentMonth);
+            exporter.exportToExcel();
+        }
+
+        // Export to PDF - All Rekap Data
+        function exportToPDF() {
+            if (!currentKerjasamaId) {
+                alert('Silakan pilih mitra terlebih dahulu');
+                return;
+            }
+
+            const exporter = new RekapExporter(currentKerjasamaId, currentMonth);
+            exporter.exportToPDF();
         }
 
         // Close on Escape key

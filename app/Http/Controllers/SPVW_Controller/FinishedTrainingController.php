@@ -109,6 +109,7 @@ class FinishedTrainingController extends Controller
                 'date_finish_train' => $validated['date_finish_train'],
                 'desc' => $validated['desc'],
                 'status' => 'pending',
+                'created_by_user_id' => auth()->id(),
             ]);
 
             return response()->json([
@@ -137,6 +138,7 @@ class FinishedTrainingController extends Controller
                 'date_in' => $validated['date_in'],
                 'date_finish_train' => $validated['date_finish_train'],
                 'desc' => $validated['desc'],
+                'created_by_user_id' => auth()->id(),
             ]);
 
             return response()->json([
@@ -284,8 +286,8 @@ class FinishedTrainingController extends Controller
 
     private function baseQuery()
     {
-        return FinishedTraining::with('user:id,name,nama_lengkap')
-            ->select(['id', 'user_id', 'date_in', 'date_finish_train', 'desc', 'status', 'created_at'])
+        return FinishedTraining::with(['user:id,name,nama_lengkap', 'createdBy:id,name,nama_lengkap'])
+            ->select(['id', 'user_id', 'created_by_user_id', 'date_in', 'date_finish_train', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
                 $q->whereHas('jabatan', function ($jabatanQuery) {
                         $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);

@@ -18,7 +18,7 @@ class PersonOutController extends Controller
             'user' => function ($q) {
                 $q->withTrashed()->with(['jabatan', 'kerjasama.client']);
             }
-        ])->where('status', 'Di Ajukan')->whereHas('user', function ($q) use ($kerjasama) {
+        ])->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])->whereHas('user', function ($q) use ($kerjasama) {
             $q->withTrashed()->where('kerjasama_id', $kerjasama);
         })->whereBetween('out_date', [$startDate, $endDate])
             ->when($request->month, function ($q) use ($request) {
@@ -38,4 +38,19 @@ class PersonOutController extends Controller
             'message' => 'Data personil keluar berhasil diambil'
         ]);
     }
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $personOut = PersonOut::findOrFail($id);
+            $status = $request->input('status');
+            if (!in_array($status, ['Di Setujui', 'Di Tolak'])) {
+                return response()->json(['success' => false, 'message' => 'Status tidak valid'], 422);
+            }
+            $personOut->update(['status' => $status]);
+            return response()->json(['success' => true, 'message' => 'Status berhasil diupdate']);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
+

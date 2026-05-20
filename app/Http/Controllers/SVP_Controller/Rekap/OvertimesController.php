@@ -24,7 +24,7 @@ class OvertimesController extends Controller
 
             $overtimes = Overtime::with(['user', 'user.jabatan', 'user.kerjasama.client'])
                 ->whereBetween('date_overtime', [$startDate, $endDate])
-                ->where('status', 'Di Ajukan')
+                ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
                 ->whereHas(
                     'user',
                     fn($q) =>
@@ -151,4 +151,19 @@ class OvertimesController extends Controller
             );
         }
     }
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $overtime = Overtime::findOrFail($id);
+            $status = $request->input('status');
+            if (!in_array($status, ['Di Setujui', 'Di Tolak'])) {
+                return response()->json(['success' => false, 'message' => 'Status tidak valid'], 422);
+            }
+            $overtime->update(['status' => $status]);
+            return response()->json(['success' => true, 'message' => 'Status berhasil diupdate']);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
+

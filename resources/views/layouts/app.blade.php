@@ -16,9 +16,15 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <!-- Webcam CDN -->
     <script src="{{ URL::asset('js/webcam.min.js') }}"></script>
     <script src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
+    @stack('scripts')
 
 
     <style>
@@ -62,12 +68,14 @@
         <div class="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-slate-900/5">
             <div class="p-5">
                 <div class="flex items-start gap-4">
-                    <div id="global-confirm-icon-wrap" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                    <div id="global-confirm-icon-wrap"
+                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100">
                         <i id="global-confirm-icon" class="ri-alert-line text-xl text-amber-600"></i>
                     </div>
                     <div class="min-w-0 flex-1">
                         <h3 id="global-confirm-title" class="text-base font-semibold text-slate-900">Konfirmasi</h3>
-                        <p id="global-confirm-message" class="mt-2 text-sm leading-6 text-slate-600">Apakah Anda yakin?</p>
+                        <p id="global-confirm-message" class="mt-2 text-sm leading-6 text-slate-600">Apakah Anda yakin?
+                        </p>
                     </div>
                 </div>
             </div>
@@ -134,7 +142,9 @@
 
             iconWrap.className = 'flex h-12 w-12 shrink-0 items-center justify-center rounded-full ' + theme.wrap;
             icon.className = theme.icon + ' text-xl';
-            okBtn.className = 'inline-flex flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition ' + theme.button;
+            okBtn.className =
+                'inline-flex flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition ' +
+                theme.button;
 
             const close = () => {
                 modal.classList.add('hidden');
@@ -477,7 +487,6 @@
                 modal.addClass('hidden ');
             });
         });
-
     </script>
 </body>
 

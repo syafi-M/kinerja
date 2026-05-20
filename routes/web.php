@@ -56,6 +56,7 @@ use App\Http\Controllers\SVP_Controller\Rekap\CuttingController as RekapCuttingC
 use App\Http\Controllers\SVP_Controller\Rekap\FinishedTrainingController as RekapFinishedTrainingController;
 use App\Http\Controllers\SVP_Controller\Rekap\OvertimesController;
 use App\Http\Controllers\SVP_Controller\Rekap\PersonOutController as RekapPersonOutController;
+use App\Http\Controllers\SVP_Controller\Rekap\AllRekapExportController;
 use App\Http\Controllers\SPVW_Controller\CuttingController as SPVWCuttingController;
 use App\Http\Controllers\SPVW_Controller\DataRekapController as SPVWDataRekapController;
 use App\Http\Controllers\SPVW_Controller\FinishedTrainingController as SPVWFinishedTrainingController;
@@ -284,6 +285,12 @@ Route::middleware(['auth', 'apdt'])->group(function () {
         Route::get('/api/v1/person-in-api/{kerjasama}', [RekapPersonInController::class, 'index'])->name('api-person-in');
         Route::get('/api/v1/cutting-api/{kerjasama}', [RekapCuttingController::class, 'index'])->name('api-cutting');
         Route::get('/api/v1/finished-training-api/{kerjasama}', [RekapFinishedTrainingController::class, 'index'])->name('api-finished-training');
+        Route::get('/api/v1/all-rekap-export/{kerjasama}', [AllRekapExportController::class, 'getAllRekapData'])->name('api-all-rekap-export');
+        Route::patch('/api/v1/rekap/overtimes/{id}/status', [OvertimesController::class, 'updateStatus'])->name('api-overtimes-status');
+        Route::patch('/api/v1/rekap/person-out/{id}/status', [RekapPersonOutController::class, 'updateStatus'])->name('api-person-out-status');
+        Route::patch('/api/v1/rekap/person-in/{id}/status', [RekapPersonInController::class, 'updateStatus'])->name('api-person-in-status');
+        Route::patch('/api/v1/rekap/cutting/{id}/status', [RekapCuttingController::class, 'updateStatus'])->name('api-cutting-status');
+        Route::patch('/api/v1/rekap/finished-training/{id}/status', [RekapFinishedTrainingController::class, 'updateStatus'])->name('api-finished-training-status');
     });
 
     Route::get('/Management/spv-absensi', [MainController::class, 'indexAbsen'])->name('manajemen_absensi');

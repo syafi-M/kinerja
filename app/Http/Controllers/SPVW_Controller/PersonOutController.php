@@ -123,6 +123,7 @@ class PersonOutController extends Controller
                     }
                 }
 
+            $validated['created_by_user_id'] = auth()->id();
             PersonOut::create($validated);
 
             return redirect()->back()->with('toast', [
@@ -204,6 +205,7 @@ class PersonOutController extends Controller
                     unset($validated['img']);
                 }
 
+                $validated['created_by_user_id'] = auth()->id();
                 $personOut->update($validated);
 
                 if (isset($validated['img']) && $oldImageName && $oldImageName !== $validated['img']) {

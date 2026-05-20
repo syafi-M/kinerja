@@ -38,6 +38,7 @@
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Tipe</th>
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Keterangan</th>
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Status</th>
+                            <th class="px-4 py-3 text-center text-xs uppercase text-gray-500">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tbody" class="divide-y divide-gray-200"></tbody>
@@ -65,6 +66,10 @@
             const s = raw.toLowerCase();
             if (s == 'di ajukan')
                 return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-emerald-50 text-emerald-700 ring-emerald-200">Di Ajukan</span>';
+            if (s == 'di setujui')
+                return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-lime-50 text-lime-700 ring-lime-200">Di Setujui</span>';
+            if (s == 'di tolak')
+                return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-rose-50 text-rose-700 ring-rose-200">Di Tolak</span>';
             if (s == 'pending')
                 return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-amber-50 text-amber-700 ring-amber-200">Pending</span>';
             return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-slate-100 text-slate-700 ring-slate-200">${raw}</span>`;
@@ -88,8 +93,32 @@
                     <td class="px-4 py-3 text-sm">${r.type_cut || '-'}</td>
                     <td class="px-4 py-3 text-sm">${r.desc || '-'}</td>
                     <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${statusBadge(r.status)}</td>
+                                    <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${actionButtons(r || item)}</td>
                 </tr>`;
             });
+        }
+
+
+        function actionButtons(r) {
+            if (!r || (r.status || '').toLowerCase() !== 'di ajukan') return '-';
+            return `<div class="flex items-center justify-center gap-2">
+                <button onclick="updateStatus(${r.id}, 'Di Setujui')" class="rounded bg-lime-600 hover:bg-lime-700 text-white px-2 py-1 text-xs">Setujui</button>
+                <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 text-xs">Tolak</button>
+            </div>`;
+        }
+
+        async function updateStatus(id, status) {
+            const res = await fetch(`/api/v1/rekap/cutting/${id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ status })
+            });
+            const result = await res.json();
+            if (!result.success) return alert(result.message || 'Gagal update status');
+            await loadData();
         }
 
         function applyFilter() {

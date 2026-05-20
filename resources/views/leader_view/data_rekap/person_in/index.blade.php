@@ -1,6 +1,22 @@
 <x-app-layout>
     <x-main-div>
-        <div class="w-full max-w-3xl px-3 py-4 mx-auto sm:px-5 lg:px-6">
+        <div class="w-full max-w-3xl px-3 py-4 mx-auto sm:px-5 lg:px-6" <div x-data="{
+            users: @js($users),
+            jabatanId: '',
+            selectedUserId: null,
+        
+            syncSelectedUser(event) {
+                this.selectedUserId = event.target.value ?
+                    Number(event.target.value) :
+                    null;
+        
+                const user = this.users.find(
+                    u => u.id == this.selectedUserId
+                );
+        
+                this.jabatanId = user?.jabatan_id ?? '';
+            }
+        }">
             <div class="p-4 mb-4 bg-white border rounded-lg shadow-sm border-white/60 ring-1 ring-slate-900/5">
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center min-w-0 gap-3">
@@ -38,7 +54,8 @@
                 <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
                     <div class="mb-3">
                         <h2 class="text-sm font-semibold text-slate-800">Status Akun</h2>
-                        <p class="mt-0.5 text-xs text-slate-500">Pilih apakah personil sudah memiliki akun di sistem.</p>
+                        <p class="mt-0.5 text-xs text-slate-500">Pilih apakah personil sudah memiliki akun di sistem.
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -49,7 +66,8 @@
                                 @change="setAccountMode('yes')" class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500">
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Sudah memiliki akun</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Cari dari data user yang tersedia.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Cari dari data user yang
+                                    tersedia.</span>
                             </span>
                         </label>
                         <label
@@ -59,7 +77,8 @@
                                 @change="setAccountMode('no')" class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500">
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Belum memiliki akun</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi nama lengkap secara manual.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi nama lengkap secara
+                                    manual.</span>
                             </span>
                         </label>
                     </div>
@@ -69,8 +88,9 @@
                             Cari User <span class="text-red-500">*</span>
                         </label>
                         <select id="user_id" x-model="selectedUserId" @change="syncSelectedUser($event)"
+                            :required="hasAccount === 'yes'"
                             class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-                            :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''" required>
+                            :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''">
                             <option value="">Pilih user</option>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}" data-name="{{ $user->nama_lengkap }}">
@@ -78,7 +98,8 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-slate-500">Daftar user dibatasi sesuai area kerja/kerjasama Anda.</p>
+                        <p class="mt-2 text-xs text-slate-500">Daftar user dibatasi sesuai area kerja/kerjasama Anda.
+                        </p>
                     </div>
 
                     <div class="mt-4" x-show="hasAccount === 'no'" x-collapse>
@@ -98,7 +119,7 @@
                             <label for="jabatan_id" class="mb-1.5 block text-sm font-semibold text-slate-700">
                                 Jabatan <span class="text-red-500">*</span>
                             </label>
-                            <select name="jabatan_id" id="jabatan_id"
+                            <select name="jabatan_id" id="jabatan_id" x-model="jabatanId"
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 required>
                                 <option value="">Pilih jabatan</option>
@@ -115,6 +136,18 @@
                             <input type="date" name="date_in" id="date_in"
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 required>
+                        </div>
+
+                        <div>
+                            <label for="total_mk" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Jumlah MK <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="total_mk" id="total_mk" value="{{ old('total_mk') }}"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required placeholder="Contoh: 12 bulan">
+                            @error('total_mk')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </section>
@@ -135,7 +168,8 @@
                                 class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500" required>
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Transfer</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran melalui transfer bank.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran melalui transfer
+                                    bank.</span>
                             </span>
                         </label>
 
@@ -156,7 +190,8 @@
                                 class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500" required>
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Manual / Cash</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran tunai/manual tanpa rekening.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran tunai/manual
+                                    tanpa rekening.</span>
                             </span>
                         </label>
                     </div>
@@ -209,7 +244,8 @@
                 showFullnameError: false,
 
                 getResolvedFullname() {
-                    return this.hasAccount === 'yes' ? (this.selectedUserName || '').trim() : (this.manualName || '').trim();
+                    return this.hasAccount === 'yes' ? (this.selectedUserName || '').trim() : (this
+                        .manualName || '').trim();
                 },
 
                 setAccountMode(mode) {
@@ -221,9 +257,29 @@
                 },
 
                 syncSelectedUser(event) {
-                    this.selectedUserId = event.target.value ? Number(event.target.value) : null;
-                    const selectedOption = event.target.options[event.target.selectedIndex];
-                    this.selectedUserName = this.selectedUserId ? (selectedOption?.dataset?.name || selectedOption?.text || '') : '';
+                    this.selectedUserId = event.target.value ?
+                        Number(event.target.value) :
+                        null;
+
+                    const selectedOption =
+                        event.target.options[event.target.selectedIndex];
+
+                    this.selectedUserName = this.selectedUserId ?
+                        (
+                            selectedOption?.dataset?.name ||
+                            selectedOption?.text ||
+                            ''
+                        ) :
+                        '';
+
+                    // ambil user berdasarkan id
+                    const user = this.users.find(
+                        u => u.id == this.selectedUserId
+                    );
+
+                    // set otomatis jabatan
+                    this.jabatanId = user?.jabatan_id ?? '';
+
                     this.showFullnameError = false;
                 },
 
@@ -329,7 +385,8 @@
                         if (xhr.status === 422 && xhr.responseJSON?.errors) {
                             showFormErrors(Object.values(xhr.responseJSON.errors).flat());
                         } else {
-                            showAlert('error', xhr.responseJSON?.message || 'Terjadi kesalahan saat menyimpan data personil masuk. Silakan coba lagi.');
+                            showAlert('error', xhr.responseJSON?.message ||
+                                'Terjadi kesalahan saat menyimpan data personil masuk. Silakan coba lagi.');
                         }
                     });
             }
