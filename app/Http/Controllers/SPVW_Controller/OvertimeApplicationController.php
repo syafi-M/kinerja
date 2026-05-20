@@ -22,7 +22,7 @@ class OvertimeApplicationController extends Controller
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
             ->orderBy('nama_lengkap')
             ->get();
-        
+
         return view('spv_w_view.lembur.create', [
             'users' => $users,
         ]);
@@ -32,6 +32,7 @@ class OvertimeApplicationController extends Controller
     {
         try {
             $data = $request->validated();
+            $data['created_by_user_id'] = auth()->id();
             Overtime::create($data);
             return redirect()->back()->with('toast', [
                 'type' => 'success',
@@ -50,8 +51,8 @@ class OvertimeApplicationController extends Controller
     {
         $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
 
-        $overtimes = Overtime::with(['user:id,name,nama_lengkap'])
-            ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'status', 'created_at'])
+        $overtimes = Overtime::with(['user:id,name,nama_lengkap', 'createdBy:id,nama_lengkap'])
+            ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'created_by_user_id', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
                 $q->where('role_id', '!=', 2)
                     ->where('kerjasama_id', '!=', 1)
@@ -103,6 +104,7 @@ class OvertimeApplicationController extends Controller
     public function update(OvertimeStoreRequest $request, $id)
     {
         $data = $request->validated();
+        $data['created_by_user_id'] = auth()->id();
         Overtime::findOrFail($id)->update($data);
         return to_route('spvw.overtime-application.history', array_filter([
             'client_id' => $this->selectedClientId(),
@@ -123,7 +125,8 @@ class OvertimeApplicationController extends Controller
 
     public function fetchApi($id)
     {
-        $overtime = Overtime::with('user')->findOrFail($id);
+        $overtime = Overtime::with('user', 'createdBy')->findOrFail($id);
+        // dd($overtime);
         return response()->json([
             'message' => 'Get data by id',
             'data' => $overtime,

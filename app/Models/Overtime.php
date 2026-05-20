@@ -15,11 +15,17 @@ class Overtime extends Model
         'desc',
         'type_overtime',
         'type_overtime_manual',
-        'status'
+        'status',
+        'created_by_user_id',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 }

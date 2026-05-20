@@ -16,7 +16,7 @@ class FinishedTrainingController extends Controller
         $items = FinishedTraining::with(['user' => function ($q) {
             $q->with(['jabatan', 'kerjasama.client']);
         }])
-            ->where('status', 'Di Ajukan')
+            ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
             ->whereHas('user', function ($q) use ($kerjasama) {
                 $q->where('kerjasama_id', $kerjasama);
             })
@@ -38,4 +38,19 @@ class FinishedTrainingController extends Controller
             'message' => 'Data lepas training berhasil diambil'
         ]);
     }
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $training = FinishedTraining::findOrFail($id);
+            $status = $request->input('status');
+            if (!in_array($status, ['Di Setujui', 'Di Tolak'])) {
+                return response()->json(['success' => false, 'message' => 'Status tidak valid'], 422);
+            }
+            $training->update(['status' => $status]);
+            return response()->json(['success' => true, 'message' => 'Status berhasil diupdate']);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }
+

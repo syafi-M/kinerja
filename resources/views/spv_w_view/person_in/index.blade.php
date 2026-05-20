@@ -72,10 +72,7 @@
                         <label for="user_id" class="mb-1.5 block text-sm font-semibold text-slate-700">
                             Cari User <span class="text-red-500">*</span>
                         </label>
-                        <select id="user_id" x-model="selectedUserId" @change="syncSelectedUser($event)"
-                            class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-                            :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''" required>
-                            <option value="">Pilih user</option>
+                        <select id="user_id" x-model="selectedUserId" @change="syncSelectedUser($event)" :required="hasAccount === 'yes'" class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100" :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''" >
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}" data-name="{{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}">
                                     {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
@@ -228,6 +225,13 @@
                     this.selectedUserId = event.target.value ? Number(event.target.value) : null;
                     const selectedOption = event.target.options[event.target.selectedIndex];
                     this.selectedUserName = this.selectedUserId ? (selectedOption?.dataset?.name || selectedOption?.text || '') : '';
+                      
+                      // Auto-select jabatan from user data
+                      const user = @js($users).find(u => u.id == this.selectedUserId);
+                      if (user && user.jabatan_id) {
+                          const jabatanSelect = document.getElementById('jabatan_id');
+                          if (jabatanSelect) jabatanSelect.value = user.jabatan_id;
+                      }
                     this.showFullnameError = false;
                 },
 
@@ -359,3 +363,5 @@
         });
     </script>
 </x-app-layout>
+
+

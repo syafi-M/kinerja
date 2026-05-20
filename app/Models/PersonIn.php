@@ -12,11 +12,14 @@ class PersonIn extends Model
     protected $fillable = [
         'fullname',
         'client_id',
+        'user_id',
         'jabatan_id',
         'date_in',
+        'total_mk',
         'method_salary',
         'method_salary_manual',
-        'status'
+        'status',
+        'created_by_user_id',
     ];
 
     public function client()
@@ -27,5 +30,10 @@ class PersonIn extends Model
     public function jabatan()
     {
         return $this->belongsTo(Jabatan::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 }

@@ -31,8 +31,9 @@
             </div>
 
             <div class="p-3 mb-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-4">
-                <form action="{{ route('spvw.overtime-application.history', array_filter(['client_id' => $spvwClientId])) }}" method="GET"
-                    class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                <form
+                    action="{{ route('spvw.overtime-application.history', array_filter(['client_id' => $spvwClientId])) }}"
+                    method="GET" class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
                     <select name="status"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         <option value="">Semua Status</option>
@@ -56,10 +57,10 @@
                             <span>Reset</span>
                         </a>
                     </div>
-                @if(isset($spvwClientId) && $spvwClientId)
-                    <input type="hidden" name="client_id" value="{{ $spvwClientId }}">
-                @endif
-            </form>
+                    @if (isset($spvwClientId) && $spvwClientId)
+                        <input type="hidden" name="client_id" value="{{ $spvwClientId }}">
+                    @endif
+                </form>
             </div>
 
             <div class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
@@ -163,6 +164,7 @@
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50">
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Penginput</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Pegawai</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal Pengisian
                                 </th>
@@ -187,6 +189,15 @@
                                 <tr class="transition-colors hover:bg-slate-50">
                                     <td class="px-4 py-4 text-sm text-slate-700">
                                         {{ method_exists($overtimes, 'firstItem') ? $overtimes->firstItem() + $index : $index + 1 }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                        @if ($overtime->createdBy)
+                                            {{ $overtime->createdBy->nama_lengkap }}
+                                        @else
+                                            <span
+                                                class="font-semibold text-sm text-white bg-red-600 badge overflow-hidden">
+                                                Kosong</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex items-center gap-3">
@@ -322,10 +333,10 @@
                     style="display: none;">
                     @csrf
                     @method('PATCH')
-                @if(isset($spvwClientId) && $spvwClientId)
-                    <input type="hidden" name="client_id" value="{{ $spvwClientId }}">
-                @endif
-            </form>
+                    @if (isset($spvwClientId) && $spvwClientId)
+                        <input type="hidden" name="client_id" value="{{ $spvwClientId }}">
+                    @endif
+                </form>
                 <button type="button" @disabled(!($canBulkSubmit ?? false)) onclick="openBulkOvertimeModal()"
                     class="inline-flex items-center justify-center w-full gap-2 px-4 py-2 mt-3 text-sm font-semibold rounded-lg min-h-10 sm:mt-0 sm:w-auto {{ $canBulkSubmit ?? false ? 'bg-green-100 text-green-700 hover:bg-green-200 transition' : 'cursor-not-allowed bg-slate-100 text-slate-400' }}">
                     <i class="ri-send-plane-fill"></i>
@@ -336,12 +347,12 @@
     </x-main-div>
 
     <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+        class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" @keydown.escape.window="open = false">
         <div class="fixed inset-0 transition-opacity bg-black/50"></div>
 
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
             <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
-                @click.away="open = false" x-transition:enter="transition ease-out duration-200"
+                @click="open = false" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95">
@@ -391,13 +402,18 @@
                         </div>
                     </div>
                     <div>
+                        <p class="mb-1 text-xs text-slate-500">Pengisi</p>
+                        <p class="font-semibold text-slate-800" x-text="detail.created_by?.nama_lengkap || '-'">
+                        </p>
+                    </div>
+                    <div>
                         <p class="mb-1 text-xs text-slate-500">Keterangan</p>
                         <p class="text-sm leading-6 text-slate-700" x-text="detail.desc || '-'"></p>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-200">
-                    <button
+                    <button @click="open = false"
                         class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-semibold transition bg-white border rounded-lg min-h-10 border-slate-300 text-slate-700 hover:bg-slate-50 sm:w-auto"
                         type="button">
                         Tutup
@@ -518,9 +534,9 @@
         }
     </script>
 
-    
-    
-<style>
+
+
+    <style>
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;

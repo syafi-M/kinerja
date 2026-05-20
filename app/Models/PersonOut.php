@@ -17,7 +17,8 @@ class PersonOut extends Model
         'reason',
         'reason_manual',
         'img',
-        'status'
+        'status',
+        'created_by_user_id',
     ];
 
     protected static function booted()
@@ -76,5 +77,10 @@ class PersonOut extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 }
