@@ -131,7 +131,7 @@
         }
 
         function getExportRows() {
-            return filtered.map((r, i) => ({
+            return filtered.filter(r => (r.status || '').toLowerCase() === 'di setujui').map((r, i) => ({
                 no: i + 1,
                 nama: r.fullname || '-',
                 jabatan: r.jabatan?.name_jabatan || '-',

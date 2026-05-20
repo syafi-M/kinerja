@@ -93,7 +93,7 @@
                     <td class="px-4 py-3 text-sm">${r.type_cut || '-'}</td>
                     <td class="px-4 py-3 text-sm">${r.desc || '-'}</td>
                     <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${statusBadge(r.status)}</td>
-                                    <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${actionButtons(r || item)}</td>
+                                    <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${actionButtons(r)}</td>
                 </tr>`;
             });
         }
@@ -128,7 +128,7 @@
         }
 
         function getExportRows() {
-            return filtered.map((r, i) => ({
+            return filtered.filter(r => (r.status || '').toLowerCase() === 'di setujui').map((r, i) => ({
                 no: i + 1,
                 nama: r.user?.nama_lengkap || '-',
                 tanggal: fmtDate(r.date_cut),
@@ -207,3 +207,4 @@
         loadData();
     </script>
 </x-app-layout>
+

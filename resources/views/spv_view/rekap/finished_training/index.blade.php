@@ -93,7 +93,7 @@
                     <td class="px-4 py-3 text-sm">${fmtDate(r.date_finish_train)}</td>
                     <td class="px-4 py-3 text-sm">${r.masa_training_hari || 0} hari</td>
                     <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${statusBadge(r.status)}</td>
-                                    <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${actionButtons(r || item)}</td>
+                                    <td class="px-4 py-3 text-sm text-center whitespace-nowrap">${actionButtons(r)}</td>
                 </tr>`;
             });
         }
@@ -128,7 +128,7 @@
         }
 
         function getExportRows() {
-            return filtered.map((r, i) => ({
+            return filtered.filter(r => (r.status || '').toLowerCase() === 'di setujui').map((r, i) => ({
                 no: i + 1,
                 nama: r.user?.nama_lengkap || '-',
                 tanggal_masuk: fmtDate(r.date_in),
@@ -209,3 +209,4 @@
         loadData();
     </script>
 </x-app-layout>
+

@@ -35,7 +35,7 @@
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="Di Ajukan" {{ request('status') == 'Di Ajukan' ? 'selected' : '' }}>Di Ajukan
                         </option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
+                        <option value="rejected" {{ request('status') == 'Di Tolak' ? 'selected' : '' }}>Ditolak
                         </option>
                     </select>
                     <input type="month" name="month" value="{{ request('month') }}"
@@ -82,7 +82,7 @@
                                         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
                                         <i class="ri-checkbox-circle-fill"></i>Diajukan
                                     </span>
-                                @elseif($status == 'rejected')
+                                @elseif($status == 'Di Tolak')
                                     <span
                                         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
                                         <i class="ri-close-circle-fill"></i>Ditolak
@@ -241,7 +241,7 @@
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full whitespace-nowrap">
                                                 <i class="ri-checkbox-circle-fill"></i>Di Ajukan
                                             </span>
-                                        @elseif($status == 'rejected')
+                                        @elseif($status == 'Di Tolak')
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full whitespace-nowrap">
                                                 <i class="ri-close-circle-fill"></i>Ditolak
@@ -376,7 +376,7 @@
                                 :class="{
                                     'bg-green-100 text-green-700': detail.status == 'Di Ajukan',
                                     'bg-yellow-100 text-yellow-700': !detail.status || detail.status == 'pending',
-                                    'bg-red-100 text-red-700': detail.status == 'rejected'
+                                    'bg-red-100 text-red-700': detail.status == 'Di Tolak'
                                 }"
                                 class="inline-block px-3 py-1 text-xs font-medium rounded-full"></span>
                         </div>
@@ -529,3 +529,4 @@
         }
     </style>
 </x-app-layout>
+
