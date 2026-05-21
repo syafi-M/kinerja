@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     @php
         $spvwClientId = request('client_id', session('spvw.selected_client_id'));
     @endphp
@@ -42,7 +42,8 @@
                 <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
                     <div class="mb-3">
                         <h2 class="text-sm font-semibold text-slate-800">Status Akun</h2>
-                        <p class="mt-0.5 text-xs text-slate-500">Pilih apakah personil sudah memiliki akun di sistem.</p>
+                        <p class="mt-0.5 text-xs text-slate-500">Pilih apakah personil sudah memiliki akun di sistem.
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -53,7 +54,8 @@
                                 @change="setAccountMode('yes')" class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500">
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Sudah memiliki akun</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Cari dari data user yang tersedia.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Cari dari data user yang
+                                    tersedia.</span>
                             </span>
                         </label>
                         <label
@@ -63,7 +65,8 @@
                                 @change="setAccountMode('no')" class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500">
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Belum memiliki akun</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi nama lengkap secara manual.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi nama lengkap secara
+                                    manual.</span>
                             </span>
                         </label>
                     </div>
@@ -72,14 +75,19 @@
                         <label for="user_id" class="mb-1.5 block text-sm font-semibold text-slate-700">
                             Cari User <span class="text-red-500">*</span>
                         </label>
-                        <select id="user_id" x-model="selectedUserId" @change="syncSelectedUser($event)" :required="hasAccount === 'yes'" class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100" :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''" >
+                        <select id="user_id" x-model="selectedUserId" @change="syncSelectedUser($event)"
+                            :required="hasAccount === 'yes'"
+                            class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                            :class="showFullnameError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''">
                             @foreach ($users as $user)
-                                <option value="{{ $user->id }}" data-name="{{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}">
+                                <option value="{{ $user->id }}"
+                                    data-name="{{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}">
                                     {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-slate-500">Daftar user dibatasi sesuai area kerja/kerjasama Anda.</p>
+                        <p class="mt-2 text-xs text-slate-500">Daftar user dibatasi sesuai area kerja/kerjasama Anda.
+                        </p>
                     </div>
 
                     <div class="mt-4" x-show="hasAccount === 'no'" x-collapse>
@@ -136,7 +144,8 @@
                                 class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500" required>
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Transfer</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran melalui transfer bank.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran melalui transfer
+                                    bank.</span>
                             </span>
                         </label>
 
@@ -157,9 +166,22 @@
                                 class="w-4 h-4 mt-1 text-sky-600 focus:ring-sky-500" required>
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Manual / Cash</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran tunai/manual tanpa rekening.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Pembayaran tunai/manual
+                                    tanpa rekening.</span>
                             </span>
                         </label>
+                    </div>
+                </section>
+
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-semibold text-slate-800">
+                            Keterangan <span class="text-red-blue">(opsional)</span>
+                        </h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Silahkan ketik keterangan singkat & jelas.</p>
+                        <textarea type="text" name="additional_reason" id="additional_reason" x-model="additionalReason"
+                            placeholder="Masukkan keterangan dengan singkat namun jelas"
+                            class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                     </div>
                 </section>
 
@@ -206,11 +228,13 @@
                 selectedUserName: '',
                 manualName: '',
                 selectedMethod: '',
+                additionalReason: '',
                 manualMethod: '',
                 showFullnameError: false,
 
                 getResolvedFullname() {
-                    return this.hasAccount === 'yes' ? (this.selectedUserName || '').trim() : (this.manualName || '').trim();
+                    return this.hasAccount === 'yes' ? (this.selectedUserName || '').trim() : (this
+                        .manualName || '').trim();
                 },
 
                 setAccountMode(mode) {
@@ -224,14 +248,15 @@
                 syncSelectedUser(event) {
                     this.selectedUserId = event.target.value ? Number(event.target.value) : null;
                     const selectedOption = event.target.options[event.target.selectedIndex];
-                    this.selectedUserName = this.selectedUserId ? (selectedOption?.dataset?.name || selectedOption?.text || '') : '';
-                      
-                      // Auto-select jabatan from user data
-                      const user = @js($users).find(u => u.id == this.selectedUserId);
-                      if (user && user.jabatan_id) {
-                          const jabatanSelect = document.getElementById('jabatan_id');
-                          if (jabatanSelect) jabatanSelect.value = user.jabatan_id;
-                      }
+                    this.selectedUserName = this.selectedUserId ? (selectedOption?.dataset?.name ||
+                        selectedOption?.text || '') : '';
+
+                    // Auto-select jabatan from user data
+                    const user = @js($users).find(u => u.id == this.selectedUserId);
+                    if (user && user.jabatan_id) {
+                        const jabatanSelect = document.getElementById('jabatan_id');
+                        if (jabatanSelect) jabatanSelect.value = user.jabatan_id;
+                    }
                     this.showFullnameError = false;
                 },
 
@@ -251,6 +276,7 @@
                     this.setAccountMode('yes');
                     this.selectedMethod = '';
                     this.manualMethod = '';
+                    this.additionalReason = '';
                     this.showFullnameError = false;
                     const userSelect = document.getElementById('user_id');
                     if (userSelect?.tomselect) {
@@ -271,23 +297,7 @@
             });
 
             function showAlert(type, message) {
-                const isError = type === 'error';
-                const wrapperClass = isError ?
-                    'border-rose-200 bg-rose-50 text-rose-700' :
-                    'border-emerald-200 bg-emerald-50 text-emerald-700';
-                const icon = isError ? 'error-warning' : 'checkbox-circle';
-
-                $('#alertBox').html(`
-                    <div class="rounded-lg border px-4 py-3 shadow-sm ${wrapperClass}">
-                        <div class="flex items-center gap-2">
-                            <i class="ri-${icon}-line"></i>
-                            <span>${message}</span>
-                        </div>
-                    </div>
-                `);
-
-                setTimeout(() => $('#alertBox').html(''), 4000);
-                $('html, body').animate({ scrollTop: 0 }, 300);
+                window.showAppToast(type, message);
             }
 
             function showFormErrors(errors) {
@@ -333,7 +343,8 @@
                     jabatan_id: $('#jabatan_id').val(),
                     date_in: $('#date_in').val(),
                     method_salary: $('input[name="method_salary"]:checked').val(),
-                    method_salary_manual: alpineData ? alpineData.manualMethod : ''
+                    method_salary_manual: alpineData ? alpineData.manualMethod : '',
+                    additional_reason: $('#additional_reason'),
                 };
 
                 $.ajax({
@@ -349,7 +360,8 @@
                         if (xhr.status === 422 && xhr.responseJSON?.errors) {
                             showFormErrors(Object.values(xhr.responseJSON.errors).flat());
                         } else {
-                            showAlert('error', xhr.responseJSON?.message || 'Terjadi kesalahan saat menyimpan data personil masuk. Silakan coba lagi.');
+                            showAlert('error', xhr.responseJSON?.message ||
+                                'Terjadi kesalahan saat menyimpan data personil masuk. Silakan coba lagi.');
                         }
                     });
             }
@@ -363,5 +375,3 @@
         });
     </script>
 </x-app-layout>
-
-

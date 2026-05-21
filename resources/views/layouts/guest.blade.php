@@ -15,29 +15,119 @@
     <script src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
 
     <style>
+        /* ── Glassmorphism base ── */
         .glass {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.55));
-            -webkit-backdrop-filter: blur(6px);
-            backdrop-filter: blur(6px);
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.38) 0%,
+                    rgba(255, 255, 255, 0.20) 100%);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow:
+                0 8px 32px rgba(180, 83, 9, 0.10),
+                inset 0 1px 0 rgba(255, 255, 255, 0.60);
         }
 
+        /* blob dekorasi */
         .blob {
-            filter: blur(10px);
-            opacity: .6;
+            filter: blur(24px);
+            opacity: .45;
+        }
+
+        main,
+        .fixed {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* pastikan konten di atas pseudo-element */
+        body>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Input & button glassmorphism ── */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.40) !important;
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.60) !important;
+            box-shadow: inset 0 1px 3px rgba(180, 83, 9, 0.06);
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.55) !important;
+            outline: none;
+            border-color: rgba(251, 191, 36, 0.70) !important;
+        }
+
+        .glass-input::placeholder {
+            color: rgba(146, 64, 14, 0.40);
+        }
+
+        /* pill / badge sosmed & kontak */
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.42);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.60);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.70);
+        }
+
+        /* tombol login */
+        .btn-glass-primary {
+            background: linear-gradient(135deg,
+                    rgba(251, 191, 36, 0.82) 0%,
+                    rgba(245, 158, 11, 0.90) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.50);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            box-shadow:
+                0 2px 12px rgba(180, 83, 9, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.55);
+            transition: box-shadow .15s, transform .1s;
+        }
+
+        .btn-glass-primary:hover {
+            box-shadow:
+                0 4px 20px rgba(180, 83, 9, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.60);
+            transform: translateY(-1px);
+        }
+
+        .btn-glass-primary:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 
-<body
-    class="max-h-screen min-h-screen font-sans bg-gradient-to-b from-amber-50 via-amber-100 to-amber-200 text-stone-800">
-
+<body class="max-h-screen min-h-screen font-sans text-stone-800"
+    style="background: linear-gradient(135deg, #fffdf5 0%, #fefce8 40%, #fef9c3 70%, #fef08a 100%);">
+    <!-- Background 12th text -->
+    <div
+        style="
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(160px, 30vw, 320px);
+            font-weight: 900;
+            color: rgba(180, 83, 9, 0.023);
+            letter-spacing: -6px;
+            pointer-events: none;
+            user-select: none;
+            z-index: 0;
+            white-space: nowrap;
+            line-height: 1;
+        ">
+        12<sup style="font-size: 0.45em; vertical-align: 0.3em;">th</sup></div>
     <!-- top browser alert (only if not chrome) -->
     <div x-data="{ open: false }" x-init="(() => {
         const ua = navigator.userAgent;
         const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua) && !/OPR/.test(ua);
         if (!isChrome) open = true;
     })()" x-show="open" x-transition class="fixed z-50 inset-x-4 top-4">
-        <div class="flex items-center justify-between px-4 py-2 border rounded-full shadow glass border-amber-200">
+        <div class="flex items-center justify-between px-4 py-2 border rounded-full shadow glass-pill border-amber-200">
             <div class="flex items-center gap-3 text-sm text-amber-900">
                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-200">
                     <!-- info icon -->
@@ -70,7 +160,7 @@
         <div class="grid items-start justify-center w-full max-w-6xl grid-cols-1 lg:grid-cols-2">
 
             <!-- LEFT (only visible on md+): company info, socials, maps, kontak -->
-            <aside class="flex-col hidden gap-2 lg:flex">
+            <aside class="flex-col hidden gap-2 lg:flex rounded-2xl">
                 <div class="p-4 border shadow-lg glass rounded-2xl border-amber-100">
                     <div class="flex items-start gap-4">
                         <img src="{{ asset('logo/sac.png') }}" alt="SAC Logo"
@@ -138,7 +228,7 @@
                 </div>
 
                 <!-- contact card -->
-                <div class="px-4 py-2 text-sm border shadow rounded-xl bg-white/80 border-amber-100">
+                <div class="flex flex-col gap-2 px-3 py-1.5 rounded-2xl glass-pill text-sm hover:shadow">
                     <h4 class="font-semibold text-slate-700">Kontak</h4>
                     <div class="mt-2 space-y-2 font-medium text-slate-700">
                         <div class="flex items-center gap-2">
@@ -178,15 +268,17 @@
             </aside>
 
             <!-- Right: login card -->
-            <section class="w-full max-w-md mx-auto">
+            <section class="w-full max-w-md mx-auto rounded-2xl">
                 {{ $slot }}
             </section>
         </div>
+        <footer
+            class="absolute bottom-0 w-fit px-2 mb-1 text-xs text-center border-t border-white/5 shadow-md glass rounded-full">
+            <p class="font-label-sm text-[11px] tracking-wider py-1">
+                © {{ date('Y') }} PT. SURYA AMANAH CENDEKIA (SAC)
+            </p>
+        </footer>
     </main>
-
-    <footer class="absolute w-full text-xs text-center text-stone-500 bottom-4">
-        © {{ date('Y') }} {{ config('app.name', 'Kinerja SAC-PO') }}
-    </footer>
     <x-flasher />
     <x-session-toast />
     <x-flasher-theme />

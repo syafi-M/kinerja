@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OvertimeStoreRequest;
 use App\Models\Overtime;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 
 class OvertimeApplicationController extends Controller
 {
+    use UsesToastRedirects;
+
     public function create()
     {
         $allowedJabatanIds = $this->allowedTargetJabatanIds();
@@ -40,16 +43,10 @@ class OvertimeApplicationController extends Controller
             }
             $data['created_by_user_id'] = auth()->id();
             Overtime::create($data);
-            return redirect()->back()->with('toast', [
-                'type' => 'success',
-                'message' => 'Lembur berhasil disimpan!',
-            ]);
+            return $this->redirectBackWithToast('success', 'Lembur berhasil disimpan!');
         } catch (\Throwable $th) {
             report($th);
-            return redirect()->back()->withInput()->with('toast', [
-                'type' => 'error',
-                'message' => 'Terjadi kesalahan saat menyimpan data lembur. Silakan coba lagi.',
-            ]);
+            return $this->redirectBackWithInputToast('error', 'Terjadi kesalahan saat menyimpan data lembur. Silakan coba lagi.');
         }
     }
 
@@ -123,21 +120,15 @@ class OvertimeApplicationController extends Controller
         }
         $data['created_by_user_id'] = auth()->id();
         $overtime->update($data);
-        return to_route('spvw.overtime-application.history', array_filter([
+        return redirect()->route('spvw.overtime-application.history', array_filter([
             'client_id' => $this->selectedClientId(),
-        ]))->with('toast', [
-            'type' => 'success',
-            'message' => 'Lembur berhasil diupdate!',
-        ]);
+        ]))->with('toast', $this->toastPayload('success', 'Lembur berhasil diupdate!'));
     }
 
     public function destroy($id)
     {
         Overtime::findOrFail($id)->delete();
-        return redirect()->back()->with('toast', [
-            'type' => 'warning',
-            'message' => 'Lembur berhasil dihapus!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Lembur berhasil dihapus!');
     }
 
     public function fetchApi($id)
@@ -154,10 +145,7 @@ class OvertimeApplicationController extends Controller
     public function changeStatus($id)
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $overtime = Overtime::findOrFail($id);
@@ -185,19 +173,13 @@ class OvertimeApplicationController extends Controller
                 new OvertimeSubmitted($overtime)
             );
         }
-        return redirect()->back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Lembur berhasil diajukan!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Lembur berhasil diajukan!');
     }
 
     public function bulkStatus()
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $startDate = Carbon::now()->startOfMonth();
@@ -224,10 +206,7 @@ class OvertimeApplicationController extends Controller
             ->get();
 
         if ($overtimes->isEmpty()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Tidak ada data lembur untuk diajukan.',
-            ]);
+            return $this->backWithToast('info', 'Tidak ada data lembur untuk diajukan.');
         }
 
         Overtime::whereIn('id', $overtimes->pluck('id'))
@@ -248,10 +227,7 @@ class OvertimeApplicationController extends Controller
         }
 
 
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Berhasil mengajukan semua lembur!',
-        ]);
+        return $this->backWithToast('success', 'Berhasil mengajukan semua lembur!');
     }
 
     private function isSubmissionLockedByDueDate(): bool

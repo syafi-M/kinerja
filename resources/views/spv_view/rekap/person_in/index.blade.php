@@ -102,10 +102,9 @@
         function actionButtons(r) {
             if ((r.status || '').toLowerCase() !== 'di ajukan') return '-';
             return `<div class="flex items-center justify-center gap-2">
-                <button onclick="updateStatus(${r.id}, 'Di Setujui')" class="rounded bg-lime-600 hover:bg-lime-700 text-white px-2 py-1 text-xs">Setujui</button>
-                <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 text-xs">Tolak</button>
-            </div>`;
-        }
+                 <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 text-xs">Tolak</button>
+             </div>`;
+         }
 
         async function updateStatus(id, status) {
             const res = await fetch(`/api/v1/rekap/person-in/${id}/status`, {

@@ -196,6 +196,17 @@
                         </label>
                     </div>
                 </section>
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-semibold text-slate-800">
+                            Keterangan <span class="text-red-blue">(opsional)</span>
+                        </h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Silahkan ketik keterangan singkat & jelas.</p>
+                        <textarea type="text" name="additional_reason" id="additional_reason" x-model="additionalReason"
+                            placeholder="Masukkan keterangan dengan singkat namun jelas"
+                            class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
+                    </div>
+                </section>
 
                 <div id="formErrors"></div>
 
@@ -241,6 +252,7 @@
                 manualName: '',
                 selectedMethod: '',
                 manualMethod: '',
+                additionalReason: '',
                 showFullnameError: false,
 
                 getResolvedFullname() {
@@ -299,6 +311,7 @@
                     this.setAccountMode('yes');
                     this.selectedMethod = '';
                     this.manualMethod = '';
+                    this.additionalReason = '';
                     this.showFullnameError = false;
                     const userSelect = document.getElementById('user_id');
                     if (userSelect?.tomselect) {
@@ -369,7 +382,8 @@
                     jabatan_id: $('#jabatan_id').val(),
                     date_in: $('#date_in').val(),
                     method_salary: $('input[name="method_salary"]:checked').val(),
-                    method_salary_manual: alpineData ? alpineData.manualMethod : ''
+                    method_salary_manual: alpineData ? alpineData.manualMethod : '',
+                    additional_reason: $('#additional_reason').val()
                 };
 
                 $.ajax({

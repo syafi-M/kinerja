@@ -16,9 +16,8 @@ class SPVWMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::user()->jabatan->code_jabatan != "SPV-W")
-        {
-            toastr()->error('Anda Tidak Memiliki Wewenang', [], 'error');
+        if (Auth::user()->jabatan->code_jabatan != "SPV-W") {
+            toastr()->error('Anda Tidak Memiliki Wewenang', 'error');
             session()->flush();
             Auth::logout();
             return redirect()->to(route('login'));

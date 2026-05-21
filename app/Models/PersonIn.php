@@ -18,6 +18,7 @@ class PersonIn extends Model
         'total_mk',
         'method_salary',
         'method_salary_manual',
+        'additional_reason',
         'status',
         'created_by_user_id',
     ];

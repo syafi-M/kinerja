@@ -10,17 +10,20 @@ use App\Models\PerformanceCuts;
 use App\Models\PersonIn;
 use App\Models\PersonOut;
 use Carbon\Carbon;
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\TransformOvertimes;
 use Illuminate\Http\Request;
 
 class AllRekapExportController extends RekapController
 {
+    use TransformOvertimes;
+
     public function getAllRekapData(Request $request, $kerjasama)
     {
         try {
             $kerjasamaModel = Kerjasama::with('client')->findOrFail($kerjasama);
             $clientId = $kerjasamaModel->client_id;
             $month = $request->input('month', now()->format('Y-m'));
-            $includeAllStatus = $request->has('all_status'); // Debug parameter
+            $includeAllStatus = false; // Debug parameter
 
             $data = [
                 'overtimes' => $this->getOvertimesPerMitra($clientId, $month, $includeAllStatus),
@@ -55,13 +58,15 @@ class AllRekapExportController extends RekapController
                     ->whereIn('jabatan_id', $this->allowedSeeData());
             });
 
-        if (!$includeAllStatus) $query->where('status', 'Di Setujui');
+        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
-        return $query->whereYear('date_overtime', $date->year)
+        $overtimes = $query->whereYear('date_overtime', $date->year)
             ->whereMonth('date_overtime', $date->month)
             ->orderBy('user_id')
             ->orderBy('date_overtime')
             ->get();
+
+        return $this->transformOvertimes($overtimes);
     }
 
     private function getPersonInsPerMitra($clientId, $month, $includeAllStatus = false)
@@ -72,7 +77,7 @@ class AllRekapExportController extends RekapController
             ->where('client_id', $clientId)
             ->whereIn('jabatan_id', $this->allowedSeeData());
 
-        if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
+        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
         return $query->whereYear('date_in', $date->year)
             ->whereMonth('date_in', $date->month)
@@ -90,7 +95,7 @@ class AllRekapExportController extends RekapController
                 $q->whereIn('jabatan_id', $this->allowedSeeData());
             });
 
-        if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
+        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
         return $query->whereYear('out_date', $date->year)
             ->whereMonth('out_date', $date->month)
@@ -109,7 +114,7 @@ class AllRekapExportController extends RekapController
                     ->whereIn('jabatan_id', $this->allowedSeeData());
             });
 
-        if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
+        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
         return $query->whereYear('date_cut', $date->year)
             ->whereMonth('date_cut', $date->month)
@@ -128,7 +133,7 @@ class AllRekapExportController extends RekapController
                     ->whereIn('jabatan_id', $this->allowedSeeData());
             });
 
-        if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
+        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
         return $query->whereYear('date_finish_train', $date->year)
             ->whereMonth('date_finish_train', $date->month)
@@ -195,7 +200,7 @@ class AllRekapExportController extends RekapController
                     $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $overtimesQuery->where('status', 'Di Setujui');
+            if (!$includeAllStatus) $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $overtimesQuery->whereYear('date_overtime', $date->year)
                 ->whereMonth('date_overtime', $date->month)
                 ->orderBy('user_id')
@@ -205,7 +210,7 @@ class AllRekapExportController extends RekapController
             $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
                 ->whereIn('client_id', $clients)
                 ->whereIn('jabatan_id', $this->allowedSeeData());
-            if (!$includeAllStatus) $personInsQuery->where('status', 'Di Setujui');
+            if (!$includeAllStatus) $personInsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $personInsQuery->whereYear('date_in', $date->year)
                 ->whereMonth('date_in', $date->month)
                 ->orderBy('date_in');
@@ -216,7 +221,7 @@ class AllRekapExportController extends RekapController
                     $q->withTrashed()->whereNotNull('nama_lengkap')->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients));
                     $q->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $personOutsQuery->where('status', 'Di Setujui');
+            if (!$includeAllStatus) $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $personOutsQuery->whereYear('out_date', $date->year)
                 ->whereMonth('out_date', $date->month)
                 ->orderBy('user_id')
@@ -228,7 +233,7 @@ class AllRekapExportController extends RekapController
                     $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $cuttingsQuery->where('status', 'Di Setujui');
+            if (!$includeAllStatus) $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $cuttingsQuery->whereYear('date_cut', $date->year)
                 ->whereMonth('date_cut', $date->month)
                 ->orderBy('user_id')
@@ -240,14 +245,14 @@ class AllRekapExportController extends RekapController
                     $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $finishedTrainingsQuery->where('status', 'Di Setujui');
+            if (!$includeAllStatus) $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
                 ->whereMonth('date_finish_train', $date->month)
                 ->orderBy('user_id')
                 ->orderBy('date_finish_train');
 
             $data = [
-                'overtimes' => $overtimesQuery->get(),
+                'overtimes' => $this->transformOvertimes($overtimesQuery->get()),
                 'person_ins' => $personInsQuery->get(),
                 'person_outs' => $personOutsQuery->get(),
                 'cuttings' => $cuttingsQuery->get(),
