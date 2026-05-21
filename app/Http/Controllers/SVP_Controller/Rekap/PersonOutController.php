@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
-use App\Http\Controllers\Controller;
 use App\Models\PersonOut;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class PersonOutController extends Controller
+class PersonOutController extends RekapController
 {
     public function index(Request $request, $kerjasama)
     {
@@ -19,7 +18,8 @@ class PersonOutController extends Controller
                 $q->withTrashed()->with(['jabatan', 'kerjasama.client']);
             }
         ])->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])->whereHas('user', function ($q) use ($kerjasama) {
-            $q->withTrashed()->where('kerjasama_id', $kerjasama);
+            $q->withTrashed()->where('kerjasama_id', $kerjasama)
+                ->whereIn('jabatan_id', $this->allowedSeeData());
         })->whereBetween('out_date', [$startDate, $endDate])
             ->when($request->month, function ($q) use ($request) {
                 try {

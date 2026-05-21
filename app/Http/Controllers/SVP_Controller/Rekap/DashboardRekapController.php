@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
-use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\Kerjasama;
 use Illuminate\Http\Request;
 
-class DashboardRekapController extends Controller
+class DashboardRekapController extends RekapController
 {
     public function index(Request $request)
     {

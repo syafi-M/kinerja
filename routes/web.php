@@ -621,7 +621,6 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
 
     Route::get('/admin-addKaryawan/index', [UserController::class, 'addKaryawanAdminIndex'])->name('addKaryawanAdminIndex');
     Route::put('/admin-addKaryawan/{id}', [UserController::class, 'addKaryawanStatus'])->name('addKaryawanStatus');
-
 });
 
 

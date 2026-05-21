@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
-use App\Http\Controllers\Controller;
 use App\Models\FinishedTraining;
 use App\Models\Kerjasama;
 use App\Models\Overtime;
@@ -13,7 +12,7 @@ use App\Models\PersonOut;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class AllRekapExportController extends Controller
+class AllRekapExportController extends RekapController
 {
     public function getAllRekapData(Request $request, $kerjasama)
     {
@@ -51,10 +50,13 @@ class AllRekapExportController extends Controller
             'user.jabatan:id,name_jabatan',
             'createdBy:id,nama_lengkap'
         ])
-            ->whereHas('user.kerjasama', fn($k) => $k->where('client_id', $clientId));
-        
+            ->whereHas('user', function ($q) use ($clientId) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            });
+
         if (!$includeAllStatus) $query->where('status', 'Di Setujui');
-        
+
         return $query->whereYear('date_overtime', $date->year)
             ->whereMonth('date_overtime', $date->month)
             ->orderBy('user_id')
@@ -67,10 +69,11 @@ class AllRekapExportController extends Controller
         $date = Carbon::createFromFormat('Y-m', $month);
 
         $query = PersonIn::with(['jabatan:id,name_jabatan', 'createdBy:id,nama_lengkap'])
-            ->where('client_id', $clientId);
-        
+            ->where('client_id', $clientId)
+            ->whereIn('jabatan_id', $this->allowedSeeData());
+
         if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
-        
+
         return $query->whereYear('date_in', $date->year)
             ->whereMonth('date_in', $date->month)
             ->orderBy('date_in')
@@ -84,10 +87,11 @@ class AllRekapExportController extends Controller
         $query = PersonOut::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.kerjasama.client:id,name', 'createdBy:id,nama_lengkap'])
             ->whereHas('user', function ($q) use ($clientId) {
                 $q->withTrashed()->whereNotNull('nama_lengkap')->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
+                $q->whereIn('jabatan_id', $this->allowedSeeData());
             });
-        
+
         if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
-        
+
         return $query->whereYear('out_date', $date->year)
             ->whereMonth('out_date', $date->month)
             ->orderBy('user_id')
@@ -100,10 +104,13 @@ class AllRekapExportController extends Controller
         $date = Carbon::createFromFormat('Y-m', $month);
 
         $query = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'createdBy:id,nama_lengkap'])
-            ->whereHas('user.kerjasama', fn($k) => $k->where('client_id', $clientId));
-        
+            ->whereHas('user', function ($q) use ($clientId) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            });
+
         if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
-        
+
         return $query->whereYear('date_cut', $date->year)
             ->whereMonth('date_cut', $date->month)
             ->orderBy('user_id')
@@ -116,10 +123,13 @@ class AllRekapExportController extends Controller
         $date = Carbon::createFromFormat('Y-m', $month);
 
         $query = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'createdBy:id,nama_lengkap'])
-            ->whereHas('user.kerjasama', fn($k) => $k->where('client_id', $clientId));
-        
+            ->whereHas('user', function ($q) use ($clientId) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            });
+
         if (!$includeAllStatus) $query->where('status', 'Di Ajukan');
-        
+
         return $query->whereYear('date_finish_train', $date->year)
             ->whereMonth('date_finish_train', $date->month)
             ->orderBy('user_id')
@@ -137,7 +147,10 @@ class AllRekapExportController extends Controller
             'user.kerjasama.client:id,name',
             'user.jabatan:id,name_jabatan'
         ])
-            ->whereHas('user.kerjasama', fn($k) => $k->where('client_id', $clientId))
+            ->whereHas('user', function ($q) use ($clientId) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            })
             ->whereYear('created_at', $date->year)
             ->whereMonth('created_at', $date->month)
             ->orderBy('created_at')
@@ -149,7 +162,7 @@ class AllRekapExportController extends Controller
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
-            $includeAllStatus = $request->has('all_status'); // Debug parameter to include all status
+            $includeAllStatus = false; // Debug parameter to include all status
 
             // Get all unique clients from kerjasama table
             $clients = Kerjasama::distinct()->pluck('client_id');
@@ -178,7 +191,10 @@ class AllRekapExportController extends Controller
                 'user.kerjasama.client:id,name',
                 'user.jabatan:id,name_jabatan'
             ])
-                ->whereHas('user.kerjasama', fn($k) => $k->whereIn('client_id', $clients));
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                });
             if (!$includeAllStatus) $overtimesQuery->where('status', 'Di Setujui');
             $overtimesQuery->whereYear('date_overtime', $date->year)
                 ->whereMonth('date_overtime', $date->month)
@@ -187,7 +203,8 @@ class AllRekapExportController extends Controller
 
             // Build person_ins query
             $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
-                ->whereIn('client_id', $clients);
+                ->whereIn('client_id', $clients)
+                ->whereIn('jabatan_id', $this->allowedSeeData());
             if (!$includeAllStatus) $personInsQuery->where('status', 'Di Setujui');
             $personInsQuery->whereYear('date_in', $date->year)
                 ->whereMonth('date_in', $date->month)
@@ -197,6 +214,7 @@ class AllRekapExportController extends Controller
             $personOutsQuery = PersonOut::with(['user:id,nama_lengkap,kerjasama_id,jabatan_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan', 'user.kerjasama.client:id,name'])
                 ->whereHas('user', function ($q) use ($clients) {
                     $q->withTrashed()->whereNotNull('nama_lengkap')->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients));
+                    $q->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) $personOutsQuery->where('status', 'Di Setujui');
             $personOutsQuery->whereYear('out_date', $date->year)
@@ -206,7 +224,10 @@ class AllRekapExportController extends Controller
 
             // Build cuttings query
             $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
-                ->whereHas('user.kerjasama', fn($k) => $k->whereIn('client_id', $clients));
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                });
             if (!$includeAllStatus) $cuttingsQuery->where('status', 'Di Setujui');
             $cuttingsQuery->whereYear('date_cut', $date->year)
                 ->whereMonth('date_cut', $date->month)
@@ -215,7 +236,10 @@ class AllRekapExportController extends Controller
 
             // Build finished trainings query
             $finishedTrainingsQuery = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
-                ->whereHas('user.kerjasama', fn($k) => $k->whereIn('client_id', $clients));
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                });
             if (!$includeAllStatus) $finishedTrainingsQuery->where('status', 'Di Setujui');
             $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
                 ->whereMonth('date_finish_train', $date->month)
@@ -234,7 +258,10 @@ class AllRekapExportController extends Controller
                     'user.kerjasama.client:id,name',
                     'user.jabatan:id,name_jabatan'
                 ])
-                    ->whereHas('user.kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    ->whereHas('user', function ($q) use ($clients) {
+                        $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                            ->whereIn('jabatan_id', $this->allowedSeeData());
+                    })
                     ->whereYear('created_at', $date->year)
                     ->whereMonth('created_at', $date->month)
                     ->orderBy('created_at')
@@ -249,4 +276,3 @@ class AllRekapExportController extends Controller
         }
     }
 }
-

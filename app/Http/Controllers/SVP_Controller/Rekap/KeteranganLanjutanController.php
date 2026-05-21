@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
-use App\Http\Controllers\Controller;
 use App\Models\KeteranganLanjutan;
 use Illuminate\Http\Request;
 
-class KeteranganLanjutanController extends Controller
+class KeteranganLanjutanController extends RekapController
 {
     public function index()
     {
@@ -14,7 +13,8 @@ class KeteranganLanjutanController extends Controller
             ->whereHas('user', function ($q) {
                 $q->whereHas('jabatan', function ($jabatanQuery) {
                     $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-                })->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
+                })->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
             })
             ->latest()
             ->paginate(15)
