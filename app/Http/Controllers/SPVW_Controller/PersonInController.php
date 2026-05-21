@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
 use App\Models\PersonIn;
@@ -15,6 +16,8 @@ use Illuminate\Validation\Rule;
 
 class PersonInController extends Controller
 {
+    use UsesToastRedirects;
+
     public function index()
     {
         $jabatans = Jabatan::select(['id', 'name_jabatan'])
@@ -124,7 +127,6 @@ class PersonInController extends Controller
             // Check if person already exists with same fullname, client_id, and date_in
             $personIn = PersonIn::where('fullname', $validated['fullname'])
                 ->where('client_id', $validated['client_id'])
-                ->where('date_in', $validated['date_in'])
                 ->first();
 
             if ($personIn) {
@@ -137,18 +139,26 @@ class PersonInController extends Controller
                 $message = 'Data personil masuk berhasil disimpan!';
             }
 
-            return response()->json([
-                'message' => $message,
-                'data' => $personIn,
-                'error' => ''
-            ], 201);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'data' => $personIn,
+                    'error' => ''
+                ], 201);
+            }
+
+            return $this->redirectBackWithToast('success', $message);
         } catch (\Throwable $th) {
             report($th);
-            return response()->json([
-                'message' => 'Terjadi kesalahan saat menyimpan data personil masuk.',
-                'data' => null,
-                'error' => $th->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Gagal menyimpan data personil masuk.',
+                    'data' => null,
+                    'error' => $th->getMessage()
+                ], 500);
+            }
+
+            return $this->redirectBackWithInputToast('error', 'Gagal menyimpan data personil masuk. Silakan coba lagi.');
         }
     }
 
@@ -167,18 +177,26 @@ class PersonInController extends Controller
 
             $personIn->update($validated);
 
-            return response()->json([
-                'message' => 'Data personil masuk berhasil diperbarui!',
-                'data' => $personIn->fresh(),
-                'error' => ''
-            ]);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Data personil masuk berhasil diperbarui!',
+                    'data' => $personIn->fresh(),
+                    'error' => ''
+                ]);
+            }
+
+            return $this->redirectBackWithToast('success', 'Data personil masuk berhasil diperbarui!');
         } catch (\Throwable $th) {
             report($th);
-            return response()->json([
-                'message' => 'Terjadi kesalahan saat memperbarui data personil masuk.',
-                'data' => null,
-                'error' => $th->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Terjadi kesalahan saat memperbarui data personil masuk.',
+                    'data' => null,
+                    'error' => $th->getMessage()
+                ], 500);
+            }
+
+            return $this->redirectBackWithInputToast('error', 'Gagal memperbarui data personil masuk. Silakan coba lagi.');
         }
     }
 
@@ -195,10 +213,7 @@ class PersonInController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('toast', [
-            'type' => 'warning',
-            'message' => 'Personil masuk berhasil dihapus!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Data personil masuk berhasil dihapus!');
     }
 
     public function changeStatus($id)
@@ -315,7 +330,8 @@ class PersonInController extends Controller
     {
         return PersonIn::with(['jabatan:id,name_jabatan', 'createdBy:id,name,nama_lengkap'])
             ->select(['id', 'fullname', 'client_id', 'created_by_user_id', 'jabatan_id', 'date_in', 'method_salary', 'method_salary_manual', 'status', 'created_at'])
-            ->when($this->selectedClientId() > 0,
+            ->when(
+                $this->selectedClientId() > 0,
                 fn($q) => $q->where('client_id', $this->selectedClientId()),
                 fn($q) => $q->where('client_id', auth()->user()->kerjasama->client_id)
             )
@@ -349,13 +365,26 @@ class PersonInController extends Controller
                 'max:255',
                 Rule::requiredIf(fn() => $request->method_salary === 'transfer'),
             ],
+            'additional_reason' => ['nullable', 'string', 'max:255'],
             'fullname' => [
                 'required',
                 'string',
                 'max:255',
                 Rule::requiredIf(fn() => $request->has_account === 'yes'),
                 function ($attribute, $value, $fail) use ($request, $allowedFullnames) {
-                    if ($request->has_account === 'yes' && !in_array($value, $allowedFullnames, true)) {
+                    $normalizedValue = mb_strtolower(
+                        preg_replace('/\s+/', ' ', trim($value))
+                    );
+                    $normalizedAllowed = collect($allowedFullnames)
+                        ->map(fn($name) => mb_strtolower(
+                            preg_replace('/\s+/', ' ', trim($name))
+                        ))
+                        ->toArray();
+
+                    if (
+                        $request->has_account === 'yes' &&
+                        !in_array($normalizedValue, $normalizedAllowed, true)
+                    ) {
                         $fail('Nama lengkap tidak valid untuk akun yang dipilih.');
                     }
                 },
@@ -432,3 +461,4 @@ class PersonInController extends Controller
         return [];
     }
 }
+

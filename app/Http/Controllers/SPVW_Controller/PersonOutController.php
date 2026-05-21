@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\PersonOut;
 use App\Models\RekapDueDateSetting;
@@ -17,6 +18,8 @@ use Illuminate\Validation\Rule;
 
 class PersonOutController extends Controller
 {
+    use UsesToastRedirects;
+
     public function create()
     {
         $users = User::select(['id', 'name', 'nama_lengkap'])
@@ -110,42 +113,27 @@ class PersonOutController extends Controller
                     try {
                         $validated['img'] = UploadImageV2($request, 'img');
                         if (empty($validated['img'])) {
-                            return redirect()->back()->withInput()->with('toast', [
-                                'type' => 'error',
-                                'message' => 'Gagal mengunggah gambar. Silakan coba lagi.',
-                            ]);
+                            return $this->redirectBackWithInputToast('error', 'Gagal mengunggah gambar. Silakan coba lagi.');
                         }
                     } catch (\Exception $e) {
                         report($e);
-                        return redirect()->back()->withInput()->with('toast', [
-                            'type' => 'error',
-                            'message' => 'Gagal mengunggah gambar. Silakan coba lagi.',
-                        ]);
+                        return $this->redirectBackWithInputToast('error', 'Gagal mengunggah gambar. Silakan coba lagi.');
                     }
                 }
 
             $validated['created_by_user_id'] = auth()->id();
             PersonOut::create($validated);
 
-            return redirect()->back()->with('toast', [
-                'type' => 'success',
-                'message' => 'Berhasil mengajukan data!',
-            ]);
+            return $this->redirectBackWithToast('success', 'Berhasil mengajukan data!');
         } catch (QueryException $th) {
             if ((int) $th->getCode() === 23000 && str_contains(strtolower($th->getMessage()), 'person_outs_user_id_unique')) {
-                return redirect()->back()->withInput()->with('toast', [
-                    'type' => 'error',
-                    'message' => 'User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.',
-                ]);
+                return $this->redirectBackWithInputToast('error', 'User ini sudah pernah diajukan pada data personil keluar. Silakan edit data yang sudah ada.');
             }
 
             throw $th;
         } catch (\Throwable $th) {
             report($th);
-            return redirect()->back()->withInput()->with('toast', [
-                'type' => 'error',
-                'message' => 'Terjadi kesalahan saat menyimpan data personil keluar. Silakan coba lagi.',
-            ]);
+            return $this->redirectBackWithInputToast('error', 'Terjadi kesalahan saat menyimpan data personil keluar. Silakan coba lagi.');
         }
     }
 
@@ -218,16 +206,10 @@ class PersonOutController extends Controller
                 }
             });
 
-            return redirect()->back()->with('toast', [
-                'type' => 'success',
-                'message' => 'Berhasil update data!',
-            ]);
+            return $this->redirectBackWithToast('success', 'Berhasil update data!');
         } catch (\Throwable $th) {
             report($th);
-            return redirect()->back()->withInput()->with('toast', [
-                'type' => 'error',
-                'message' => 'Gagal memperbarui data personil keluar. Silakan coba lagi.',
-            ]);
+            return $this->redirectBackWithInputToast('error', 'Gagal memperbarui data personil keluar. Silakan coba lagi.');
         }
     }
 
@@ -235,19 +217,13 @@ class PersonOutController extends Controller
     {
         $personOut->delete();
 
-        return redirect()->back()->with('toast', [
-            'type' => 'warning',
-            'message' => 'Data personil keluar berhasil dihapus!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Data personil keluar berhasil dihapus!');
     }
 
     public function changeStatus($id)
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $personOut = PersonOut::findOrFail($id);
@@ -270,19 +246,13 @@ class PersonOutController extends Controller
                 new PersonOutSubmitted($personOut)
             );
         }
-        return redirect()->back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Personil keluar berhasil diajukan!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Personil keluar berhasil diajukan!');
     }
 
     public function bulkStatus()
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $personOuts = PersonOut::whereHas('user', function ($q) {
@@ -300,10 +270,7 @@ class PersonOutController extends Controller
                 ? 'MARKETING'
                 : null);
         if ($personOuts->isEmpty()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Tidak ada pengajuan personil keluar.',
-            ]);
+            return $this->backWithToast('info', 'Tidak ada pengajuan personil keluar.');
         }
 
         PersonOut::whereIn('id', $personOuts->pluck('id'))
@@ -322,10 +289,7 @@ class PersonOutController extends Controller
             );
         }
 
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Berhasil mengajukan semua personil keluar!',
-        ]);
+        return $this->backWithToast('success', 'Berhasil mengajukan semua personil keluar!');
     }
 
     private function isSubmissionLockedByDueDate(): bool

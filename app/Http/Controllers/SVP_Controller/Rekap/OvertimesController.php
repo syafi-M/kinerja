@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SVP_Controller\Rekap;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SVP_Controller\Rekap\Concerns\HasAllowedSeeData;
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\TransformOvertimes;
 use Illuminate\Http\Request;
 use App\Http\Responses\ApiResponse;
 use App\Models\Kerjasama;
@@ -13,19 +14,24 @@ use Carbon\Carbon;
 
 class OvertimesController extends Controller
 {
-    use HasAllowedSeeData;
+    use HasAllowedSeeData, TransformOvertimes;
 
     public function index($kerjasama)
     {
-        if (! Kerjasama::where('id', $kerjasama)->exists()) {
+        if (!Kerjasama::where('id', $kerjasama)->exists()) {
             abort(404);
         }
 
         try {
+
             $startDate = Carbon::now()->subMonth()->day(26)->startOfDay();
             $endDate = Carbon::now()->day(24)->endOfDay();
 
-            $overtimes = Overtime::with(['user', 'user.jabatan', 'user.kerjasama.client'])
+            $overtimes = Overtime::with([
+                'user',
+                'user.jabatan',
+                'user.kerjasama.client'
+            ])
                 ->whereBetween('date_overtime', [$startDate, $endDate])
                 ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
                 ->whereHas('user', function ($q) use ($kerjasama) {
@@ -34,71 +40,16 @@ class OvertimesController extends Controller
                 })
                 ->get();
 
-            $employe = User::where('kerjasama_id', $kerjasama)->count();
-
-            // Group by user_id AND type_overtime
-            $groupedOvertimes = $overtimes->groupBy(function ($item) {
-                return $item->user_id . '_' . strtolower($item->type_overtime);
-            })->map(function ($group) {
-                $first = $group->first();
-                $typeOvertime = strtolower($first->type_overtime);
-
-                if (in_array($typeOvertime, ['jam', 'lainnya'])) {
-                    $totalJam = 0;
-                    $totalRupiah = 0;
-
-                    foreach ($group as $overtime) {
-                        $value = $this->parseOvertimeValue($overtime->type_overtime_manual);
-                        // dd($overtime->type_overtime_manual);
-                        if ($value['type'] == 'jam') {
-                            $totalJam += $value['value'];
-                        } elseif ($value['type'] == 'rupiah') {
-                            $totalRupiah += $value['value'];
-                        }
-                    }
-
-                    $formattedOvertime = '';
-                    if ($totalJam > 0 && $totalRupiah > 0) {
-                        $formattedOvertime = $totalJam . ' Jam + Rp ' . number_format($totalRupiah, 0, ',', '.');
-                    } elseif ($totalJam > 0) {
-                        $formattedOvertime = $totalJam . ' Jam';
-                    } elseif ($totalRupiah > 0) {
-                        $formattedOvertime = 'Rp ' . number_format($totalRupiah, 0, ',', '.');
-                    }
-
-                    return [
-                        'id' => $first->id,
-                        'user' => $first->user,
-                        'date_overtime' => $first->date_overtime,
-                        'type_overtime' => $first->type_overtime,
-                        'type_overtime_manual' => $formattedOvertime,
-                        'total_jam' => $totalJam,
-                        'total_rupiah' => $totalRupiah,
-                        'status' => $first->status,
-                        'desc' => $first->desc,
-                        'count' => $group->count()
-                    ];
-                } else {
-                    return [
-                        'id' => $first->id,
-                        'user' => $first->user,
-                        'date_overtime' => $first->date_overtime,
-                        'type_overtime' => $first->type_overtime,
-                        'type_overtime_manual' => $first->type_overtime_manual,
-                        'status' => $first->status,
-                        'desc' => $first->desc,
-                        'count' => $group->count()
-                    ];
-                }
-            })->values();
+            $employee = User::where('kerjasama_id', $kerjasama)->count();
 
             return response()->json([
                 'success' => true,
-                'data' => $groupedOvertimes,
-                'users_count' => $employe,
+                'data' => $this->transformOvertimes($overtimes),
+                'users_count' => $employee,
                 'message' => 'Data lembur berhasil diambil'
             ]);
         } catch (\Throwable $e) {
+
             return response()->json([
                 'success' => false,
                 'data' => [],
@@ -106,33 +57,6 @@ class OvertimesController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    private function parseOvertimeValue($text)
-    {
-        if (!$text || !is_string($text)) {
-            return ['type' => 'none', 'value' => 0];
-        }
-
-        $clean = preg_replace('/[^0-9]/', '', $text);
-
-        if ($clean === '') {
-            return ['type' => 'none', 'value' => 0];
-        }
-
-        $value = intval($clean);
-
-        // 10–500 dianggap JAM
-        if ($value >= 1 && $value <= 500) {
-            return ['type' => 'jam', 'value' => $value];
-        }
-
-        // >= 1000 dianggap RUPIAH
-        if ($value >= 1000) {
-            return ['type' => 'rupiah', 'value' => $value];
-        }
-
-        return ['type' => 'none', 'value' => 0];
     }
 
     public function show(string $id)
@@ -167,5 +91,4 @@ class OvertimesController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
 }

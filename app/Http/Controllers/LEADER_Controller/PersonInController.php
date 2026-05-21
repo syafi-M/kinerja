@@ -327,6 +327,7 @@ class PersonInController extends Controller
                 'max:255',
                 Rule::requiredIf(fn() => $request->method_salary === 'transfer'),
             ],
+            'additional_reason' => ['nullable', 'string', 'max:255'],
             'fullname' => [
                 'required',
                 'string',

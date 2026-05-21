@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\PerformanceCuts;
 use App\Models\RekapDueDateSetting;
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rule;
 
 class CuttingController extends Controller
 {
+    use UsesToastRedirects;
+
     public function index()
     {
         $users = $this->allowedUsersQuery()
@@ -167,46 +170,31 @@ class CuttingController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('toast', [
-            'type' => 'warning',
-            'message' => 'Data cutting berhasil dihapus!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Data cutting berhasil dihapus!');
     }
 
     public function changeStatus($id)
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $cutting = $this->baseQuery()->findOrFail($id);
         $currentStatus = $cutting->status ?? 'pending';
 
         if (!in_array($currentStatus, ['pending', null, ''], true)) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Data ini tidak dapat diajukan lagi.',
-            ]);
+            return $this->redirectBackWithToast('info', 'Data ini tidak dapat diajukan lagi.');
         }
 
         $cutting->update(['status' => 'Di Ajukan']);
         $this->notifyApproverForSubmission($cutting->fresh('user'));
-        return redirect()->back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Cutting berhasil diajukan!',
-        ]);
+        return $this->redirectBackWithToast('success', 'Cutting berhasil diajukan!');
     }
 
     public function bulkStatus(Request $request)
     {
         if ($this->isSubmissionLockedByDueDate()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
         $query = $this->filteredHistoryQuery($request)
@@ -218,10 +206,7 @@ class CuttingController extends Controller
         $items = $query->get(['id']);
 
         if ($items->isEmpty()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Tidak ada data cutting yang bisa diajukan.',
-            ]);
+            return $this->backWithToast('info', 'Tidak ada data cutting yang bisa diajukan.');
         }
 
         PerformanceCuts::whereIn('id', $items->pluck('id'))
@@ -232,10 +217,7 @@ class CuttingController extends Controller
             $this->notifyApproverForSubmission($firstSubmitted);
         }
 
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Berhasil mengajukan semua data cutting sesuai filter!',
-        ]);
+        return $this->backWithToast('success', 'Berhasil mengajukan semua data cutting sesuai filter!');
     }
 
     private function isSubmissionLockedByDueDate(): bool
