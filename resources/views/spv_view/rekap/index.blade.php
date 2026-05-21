@@ -454,7 +454,8 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-1">Export Data Keseluruhan</h3>
-                            <p class="text-gray-600 text-sm">Export seluruh data rekap bulanan dari semua mitra dalam format Excel atau PDF</p>
+                            <p class="text-gray-600 text-sm">Export seluruh data rekap bulanan dari semua mitra dalam
+                                format Excel atau PDF</p>
                         </div>
                         <div class="flex flex-wrap gap-3">
                             <button onclick="exportGlobalToExcel()"
@@ -485,7 +486,8 @@
                 <div
                     class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -707,224 +709,226 @@
                 </div>
             @endif
 
-        <!-- Modal Overlay -->
-        <div id="detailModal" class="fixed inset-0 z-[999999] hidden" aria-labelledby="modal-title" role="dialog"
-            aria-modal="true">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
+            <!-- Modal Overlay -->
+            <div id="detailModal" class="fixed inset-0 z-[999999] hidden" aria-labelledby="modal-title"
+                role="dialog" aria-modal="true">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
 
-            <!-- Modal Container -->
-            <div class="fixed inset-0 z-10 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4">
-                    <!-- Modal Content -->
-                    <div
-                        class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-md">
-                        <!-- Modal Header -->
-                        <div class="bg-white px-6 pt-6 pb-4 flex flex-col gap-y-2">
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                                        id="modalAvatar">
-                                        M
+                <!-- Modal Container -->
+                <div class="fixed inset-0 z-10 overflow-y-auto">
+                    <div class="flex min-h-full items-center justify-center p-4">
+                        <!-- Modal Content -->
+                        <div
+                            class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-md">
+                            <!-- Modal Header -->
+                            <div class="bg-white px-6 pt-6 pb-4 flex flex-col gap-y-2">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                                            id="modalAvatar">
+                                            M
+                                        </div>
+                                        <div>
+                                            <h3 class="text-md font-semibold text-gray-900 leading-tight"
+                                                id="modalTitle">
+                                                Nama Mitra</h3>
+                                            <p class="text-sm text-gray-500 mt-0.5">Pilih data yang ingin dilihat</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 class="text-md font-semibold text-gray-900 leading-tight" id="modalTitle">
-                                            Nama Mitra</h3>
-                                        <p class="text-sm text-gray-500 mt-0.5">Pilih data yang ingin dilihat</p>
+                                    <button type="button" onclick="closeModal()"
+                                        class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none flex-shrink-0 ml-3">
+                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="flex justify-end items-center">
+                                    <!-- Export Buttons -->
+                                    <div class="flex flex-wrap gap-2">
+                                        <button onclick="exportToExcel()"
+                                            class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                </path>
+                                            </svg>
+                                            <span>Excel</span>
+                                        </button>
+                                        <button onclick="exportToPDF()"
+                                            class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                                </path>
+                                            </svg>
+                                            <span>PDF</span>
+                                        </button>
                                     </div>
                                 </div>
-                                <button type="button" onclick="closeModal()"
-                                    class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none flex-shrink-0 ml-3">
-                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            </div>
+
+                            <!-- Modal Body -->
+                            <div class="bg-white px-6 py-4 space-y-3">
+                                <!-- Data Lembur Button -->
+                                <a href="#" id="linkLembur"
+                                    class="group flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200 rounded-lg transition-all duration-200">
+                                    <div
+                                        class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-indigo-700 transition-colors">
+                                            Data Lembur
+                                        </h4>
+                                        <p class="text-gray-600 text-xs">
+                                            Lihat rekap data lembur karyawan
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-indigo-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
+                                            d="M9 5l7 7-7 7"></path>
                                     </svg>
+                                </a>
+
+                                <!-- Data Personil Keluar Button -->
+                                <a href="#" id="linkPersonilKeluar"
+                                    class="group flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200 rounded-lg transition-all duration-200">
+                                    <div
+                                        class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-emerald-700 transition-colors">
+                                            Data Personil Keluar
+                                        </h4>
+                                        <p class="text-gray-600 text-xs">
+                                            Lihat data karyawan yang keluar
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+
+                                <a href="#" id="linkPersonilMasuk"
+                                    class="group flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 rounded-lg transition-all duration-200">
+                                    <div
+                                        class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-user-follow-line text-white text-lg"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-blue-700 transition-colors">
+                                            Data Personil Masuk
+                                        </h4>
+                                        <p class="text-gray-600 text-xs">
+                                            Lihat data karyawan yang masuk
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+
+                                <a href="#" id="linkCutting"
+                                    class="group flex items-center gap-3 p-4 bg-gradient-to-r from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-200 border border-rose-200 rounded-lg transition-all duration-200">
+                                    <div
+                                        class="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-scissors-cut-line text-white text-lg"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-rose-700 transition-colors">
+                                            Data Cutting
+                                        </h4>
+                                        <p class="text-gray-600 text-xs">
+                                            Lihat data pengajuan cutting
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-rose-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+
+                                <a href="#" id="linkFinishedTraining"
+                                    class="group flex items-center gap-3 p-4 bg-gradient-to-r from-violet-50 to-violet-100 hover:from-violet-100 hover:to-violet-200 border border-violet-200 rounded-lg transition-all duration-200">
+                                    <div
+                                        class="w-10 h-10 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-graduation-cap-line text-white text-lg"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-violet-700 transition-colors">
+                                            Data Lepas Training
+                                        </h4>
+                                        <p class="text-gray-600 text-xs">
+                                            Lihat data pengajuan lepas training
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-violet-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+
+                                <a href="#" id="linkKeteranganLanjutan"
+                                    class="group flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border border-yellow-200 rounded-lg transition-all duration-200">
+                                    <div
+                                        class="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-file-list-line text-white text-lg"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-yellow-700 transition-colors">
+                                            Keterangan Lanjutan
+                                        </h4>
+                                        <p class="text-gray-600 text-xs">
+                                            Lihat keterangan lanjutan mitra
+                                        </p>
+                                    </div>
+                                    <svg class="w-5 h-5 text-yellow-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="bg-gray-50 px-6 py-4 rounded-b-lg">
+                                <button type="button" onclick="closeModal()"
+                                    class="w-full px-4 py-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg font-medium transition-colors">
+                                    Batal
                                 </button>
                             </div>
-                            <div class="flex justify-end items-center">
-                                <!-- Export Buttons -->
-                                <div class="flex flex-wrap gap-2">
-                                    <button onclick="exportToExcel()"
-                                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                            </path>
-                                        </svg>
-                                        <span>Excel</span>
-                                    </button>
-                                    <button onclick="exportToPDF()"
-                                        class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
-                                            </path>
-                                        </svg>
-                                        <span>PDF</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Modal Body -->
-                        <div class="bg-white px-6 py-4 space-y-3">
-                            <!-- Data Lembur Button -->
-                            <a href="#" id="linkLembur"
-                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200 rounded-lg transition-all duration-200">
-                                <div
-                                    class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-indigo-700 transition-colors">
-                                        Data Lembur
-                                    </h4>
-                                    <p class="text-gray-600 text-xs">
-                                        Lihat rekap data lembur karyawan
-                                    </p>
-                                </div>
-                                <svg class="w-5 h-5 text-indigo-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-
-                            <!-- Data Personil Keluar Button -->
-                            <a href="#" id="linkPersonilKeluar"
-                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200 rounded-lg transition-all duration-200">
-                                <div
-                                    class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-emerald-700 transition-colors">
-                                        Data Personil Keluar
-                                    </h4>
-                                    <p class="text-gray-600 text-xs">
-                                        Lihat data karyawan yang keluar
-                                    </p>
-                                </div>
-                                <svg class="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-
-                            <a href="#" id="linkPersonilMasuk"
-                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 rounded-lg transition-all duration-200">
-                                <div
-                                    class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <i class="ri-user-follow-line text-white text-lg"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-blue-700 transition-colors">
-                                        Data Personil Masuk
-                                    </h4>
-                                    <p class="text-gray-600 text-xs">
-                                        Lihat data karyawan yang masuk
-                                    </p>
-                                </div>
-                                <svg class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-
-                            <a href="#" id="linkCutting"
-                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-200 border border-rose-200 rounded-lg transition-all duration-200">
-                                <div
-                                    class="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <i class="ri-scissors-cut-line text-white text-lg"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-rose-700 transition-colors">
-                                        Data Cutting
-                                    </h4>
-                                    <p class="text-gray-600 text-xs">
-                                        Lihat data pengajuan cutting
-                                    </p>
-                                </div>
-                                <svg class="w-5 h-5 text-rose-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-
-                            <a href="#" id="linkFinishedTraining"
-                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-violet-50 to-violet-100 hover:from-violet-100 hover:to-violet-200 border border-violet-200 rounded-lg transition-all duration-200">
-                                <div
-                                    class="w-10 h-10 bg-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <i class="ri-graduation-cap-line text-white text-lg"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-violet-700 transition-colors">
-                                        Data Lepas Training
-                                    </h4>
-                                    <p class="text-gray-600 text-xs">
-                                        Lihat data pengajuan lepas training
-                                    </p>
-                                </div>
-                                <svg class="w-5 h-5 text-violet-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-
-                            <a href="#" id="linkKeteranganLanjutan"
-                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border border-yellow-200 rounded-lg transition-all duration-200">
-                                <div
-                                    class="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <i class="ri-file-list-line text-white text-lg"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-yellow-700 transition-colors">
-                                        Keterangan Lanjutan
-                                    </h4>
-                                    <p class="text-gray-600 text-xs">
-                                        Lihat keterangan lanjutan mitra
-                                    </p>
-                                </div>
-                                <svg class="w-5 h-5 text-yellow-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </a>
-                        </div>
-
-                        <!-- Modal Footer -->
-                        <div class="bg-gray-50 px-6 py-4 rounded-b-lg">
-                            <button type="button" onclick="closeModal()"
-                                class="w-full px-4 py-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg font-medium transition-colors">
-                                Batal
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
     </x-main-div>
 
     <script>
@@ -1144,7 +1148,7 @@
                 const response = await fetch(`/api/v1/all-rekap-export-global?month=${month}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
-                
+
                 if (!result.success) throw new Error(result.message);
                 const data = result.data;
 
@@ -1161,7 +1165,7 @@
                 const response = await fetch(`/api/v1/all-rekap-export-global?month=${month}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
-                
+
                 if (!result.success) throw new Error(result.message);
                 const data = result.data;
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\HasAllowedSeeData;
 use Illuminate\Http\Request;
 use App\Http\Responses\ApiResponse;
 use App\Models\Kerjasama;
@@ -12,6 +13,8 @@ use Carbon\Carbon;
 
 class OvertimesController extends Controller
 {
+    use HasAllowedSeeData;
+
     public function index($kerjasama)
     {
         if (! Kerjasama::where('id', $kerjasama)->exists()) {
@@ -25,11 +28,10 @@ class OvertimesController extends Controller
             $overtimes = Overtime::with(['user', 'user.jabatan', 'user.kerjasama.client'])
                 ->whereBetween('date_overtime', [$startDate, $endDate])
                 ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
-                ->whereHas(
-                    'user',
-                    fn($q) =>
+                ->whereHas('user', function ($q) use ($kerjasama) {
                     $q->where('kerjasama_id', $kerjasama)
-                )
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                })
                 ->get();
 
             $employe = User::where('kerjasama_id', $kerjasama)->count();
@@ -165,5 +167,5 @@ class OvertimesController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-}
 
+}

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
-use App\Http\Controllers\Controller;
 use App\Models\PerformanceCuts;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class CuttingController extends Controller
+class CuttingController extends RekapController
 {
     public function index(Request $request, $kerjasama)
     {
@@ -18,7 +17,8 @@ class CuttingController extends Controller
         }])
             ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
             ->whereHas('user', function ($q) use ($kerjasama) {
-                $q->where('kerjasama_id', $kerjasama);
+                $q->where('kerjasama_id', $kerjasama)
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
             })
             ->when($request->month, function ($q) use ($request) {
                 $date = Carbon::createFromFormat('Y-m', $request->month);
