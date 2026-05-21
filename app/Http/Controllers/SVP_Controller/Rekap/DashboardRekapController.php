@@ -84,4 +84,9 @@ class DashboardRekapController extends Controller
 
         return view('spv_view.rekap.finished_training.index', compact('client'));
     }
+
+    public function indexKeteranganLanjutan()
+    {
+        return view('spv_view.rekap.keterangan_lanjutan.index');
+    }
 }

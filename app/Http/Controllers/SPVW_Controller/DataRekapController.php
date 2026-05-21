@@ -12,6 +12,7 @@ use App\Models\PersonIn;
 use App\Models\PersonOut;
 use App\Models\RekapDueDateSetting;
 use App\Models\RekapPenaltyExemption;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -31,6 +32,18 @@ class DataRekapController extends Controller
         $clients = Client::query()
             ->select(['id', 'name'])
             ->where('id', '!=', 1)
+            ->when(in_array((int) (auth()->user()->jabatan_id ?? 0), [35, 20], true), function ($query) {
+                $allowedJabatanIds = ((int) (auth()->user()->jabatan_id ?? 0) === 35)
+                    ? [8, 11, 16, 17, 18]
+                    : [9, 10, 34, 36];
+
+                $query->whereHas('kerjasama', function ($kerjasamaQuery) use ($allowedJabatanIds) {
+                    $kerjasamaQuery->whereIn('id', User::query()
+                        ->select('kerjasama_id')
+                        ->whereIn('jabatan_id', $allowedJabatanIds)
+                        ->whereNotNull('kerjasama_id'));
+                });
+            })
             ->orderBy('name')
             ->get();
 

@@ -12,6 +12,17 @@ Format rilis:
 - `## [vX.Y.Z] - YYYY-MM-DD`
 - Gunakan kategori: `Added`, `Changed`, `Fixed`, `Removed`.
 
+## [v2.0.8] - 2026-05-21
+
+### Changed
+- Menyelaraskan logika export dengan hanya memasukkan data `Di Setujui` untuk PersonOut, Overtime, dan export global rekap.
+- Menghapus override debug `all_status=1` pada export global dan memperbaiki alur fetch data agar hanya menampilkan data yang disetujui.
+- Menyempurnakan format export Excel/PDF dengan filter status yang benar dan refresh data setelah update status PersonOut.
+
+### Fixed
+- Memperbaiki handler refresh status PersonOut di UI SPV rekap dari panggilan `loadData()` menjadi `fetchPersonOutData()`.
+- Memperbaiki filtering PersonOut agar nama kosong tidak termasuk dalam export dan menyesuaikan format hasil export.
+
 ## [v2.0.7] - 2026-05-16
 
 ### Added

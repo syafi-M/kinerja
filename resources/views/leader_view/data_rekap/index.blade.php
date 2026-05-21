@@ -51,6 +51,16 @@
                 'pengajuan_url' => route('finished-training.index'),
                 'riwayat_url' => route('finished-training.history'),
             ],
+            [
+                'key' => 'keterangan-lanjutan',
+                'title' => 'Keterangan Lanjutan',
+                'description' => 'Lengkapi keterangan tambahan untuk data rekap.',
+                'icon' => 'ri-file-text-line',
+                'icon_bg' => 'bg-violet-100 ring-violet-200',
+                'icon_color' => 'text-violet-700',
+                'pengajuan_url' => route('keterangan-lanjutan.index'),
+                'riwayat_url' => route('keterangan-lanjutan.history'),
+            ],
         ];
 
         $isCO = in_array(strtoupper(auth()->user()->jabatan->code_jabatan ?? ''), ['CO-CS', 'CO-SCR'], true);

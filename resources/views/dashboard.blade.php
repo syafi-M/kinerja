@@ -306,7 +306,7 @@
                                 default => false,
                             };
                         @endphp
-                        @if ($jabatanMatch)
+                        @if ($jabatanMatch && Auth::user()->id != '7')
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnRekap"
                                     onclick="window.location='{{ $codeJabatan == 'SPV-W' ? route('spvw.rekap.index') : route('index.rekap.data.leader') }}'"

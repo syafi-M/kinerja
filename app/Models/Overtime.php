@@ -15,6 +15,7 @@ class Overtime extends Model
         'desc',
         'type_overtime',
         'type_overtime_manual',
+        'foto_bukti',
         'status',
         'created_by_user_id',
     ];

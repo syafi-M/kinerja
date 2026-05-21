@@ -28,6 +28,7 @@ class OvertimeStoreRequest extends FormRequest
             'desc' => 'required|string',
             'type_overtime' => ['required', Rule::in(['shift', 'jam', 'lainnya'])],
             'type_overtime_manual' => ['nullable', 'string', 'max:255', Rule::requiredIf(fn() => in_array($this->type_overtime, ['jam', 'lainnya'], true))],
+            'foto_bukti' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

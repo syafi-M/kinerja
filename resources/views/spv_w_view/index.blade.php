@@ -62,6 +62,16 @@
                 'pengajuan_url' => $appendClient(route('spvw.finished-training.index', array_filter(['client_id' => $spvwClientId]))),
                 'riwayat_url' => $appendClient(route('spvw.finished-training.history', array_filter(['client_id' => $spvwClientId]))),
             ],
+            [
+                'key' => 'keterangan-lanjutan',
+                'title' => 'Keterangan Lanjutan',
+                'description' => 'Catat periode, judul, dan isi keterangan lanjutan.',
+                'icon' => 'ri-file-text-line',
+                'icon_bg' => 'bg-violet-100 ring-violet-200',
+                'icon_color' => 'text-violet-700',
+                'pengajuan_url' => $appendClient(route('spvw.keterangan-lanjutan.index', array_filter(['client_id' => $spvwClientId]))),
+                'riwayat_url' => $appendClient(route('spvw.keterangan-lanjutan.history', array_filter(['client_id' => $spvwClientId]))),
+            ],
         ];
 
         $isSPV = in_array(strtoupper(auth()->user()->jabatan->code_jabatan ?? ''), ['SPV-W'], true);
@@ -121,15 +131,15 @@
                                 </div>
 
                                 <div class="flex-1 min-w-0">
-                                    <label for="client_id" class="sr-only">Pilih client</label>
+                                    <label for="client_id" class="sr-only">Pilih mitra</label>
                                     <select name="client_id" id="client_id"
                                         onchange="window.handleSpvwClientFilterChange && window.handleSpvwClientFilterChange()"
                                         class="w-full text-sm font-medium bg-white rounded-lg min-h-11 border-slate-300 text-slate-700 focus:border-2 focus:border-sky-500 focus:ring-sky-500">
-                                        <option value="">Semua client</option>
+                                        <option value="">Semua Mitra</option>
                                         @foreach (($clients ?? collect()) as $client)
                                             <option value="{{ $client->id }}"
                                                 @selected($selectedClientId === (int) $client->id)>
-                                                {{ capitalizeWords($client->name) ?: 'Client #' . $client->id }}
+                                                {{ capitalizeWords($client->name) ?: 'Mitra #' . $client->id }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -141,7 +151,7 @@
                                         <i class="text-base ri-search-line"></i>
                                         <span>Pakai</span>
                                     </button>
-                                    <a href="{{ route('spvw.rekap.index', ['reset_filter' => 1]) }}"
+                                    <a href="{{ route('spvw.rekap.index', ['reset_filter' => 1]) }}" id="spvw-reset-filter"
                                         class="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                                         <i class="text-base ri-refresh-line"></i>
                                         <span>Reset Filter</span>
@@ -150,15 +160,15 @@
                             </div>
 
                             <div class="mt-2 flex min-h-7 items-center justify-between rounded-lg bg-slate-50 px-2.5 py-1.5">
-                                <p class="text-[11px] text-slate-500">
-                                    {{ $selectedClientId > 0 ? 'Filter client tetap aktif sampai logout.' : 'Mode cepat: filter langsung aktif saat client dipilih.' }}
+                                <p id="spvw-filter-hint" class="text-[11px] text-slate-500">
+                                    {{ $selectedClientId > 0 ? 'Filter mitra tetap aktif sampai logout.' : 'Mode cepat: filter langsung aktif saat mitra dipilih.' }}
                                 </p>
-                                @if ($selectedClientId > 0)
-                                    <div class="flex items-center gap-1.5">
+                                <div id="spvw-filter-active" class="flex items-center gap-1.5 {{ $selectedClientId > 0 ? '' : 'hidden' }}">
                                         <span
+                                            id="spvw-filter-name"
                                             class="hidden sm:inline-flex items-center gap-1 rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200">
                                             <i class="ri-building-line"></i>
-                                            {{ capitalizeWords($selectedClientName ?: 'Client #' . $selectedClientId) }}
+                                            {{ capitalizeWords($selectedClientName ?: 'Mitra #' . $selectedClientId) }}
                                         </span>
                                         <span
                                             class="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
@@ -166,7 +176,6 @@
                                             Aktif
                                         </span>
                                     </div>
-                                @endif
                             </div>
                         </form>
                     </div>
@@ -312,7 +321,7 @@
                     @if ($selectedClientId <= 0)
                         <div class="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
                             <i class="ri-error-warning-line mt-0.5 text-sm min-w-4"></i>
-                            <p>Pilih client terlebih dahulu. Setelah itu menu pengajuan dan riwayat baru bisa dipakai.</p>
+                            <p>Pilih mitra terlebih dahulu. Setelah itu menu pengajuan dan riwayat baru bisa dipakai.</p>
                         </div>
                     @endif
                 </div>
@@ -321,6 +330,8 @@
                     <div class="divide-y divide-slate-100">
                         @foreach ($rekapMenus as $menu)
                             <a href="{{ $selectedClientId > 0 ? $menu['pengajuan_url'] : '#' }}"
+                                data-menu-link
+                                data-base-url="{{ preg_replace('/([&?])client_id=\d+/', '$1', $menu['pengajuan_url']) }}"
                                 @if ($selectedClientId <= 0) aria-disabled="true" @endif
                                 class="flex items-center justify-between gap-3 px-4 py-3 transition group min-h-16 {{ $selectedClientId > 0 ? 'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-inset active:bg-slate-100' : 'cursor-not-allowed bg-slate-50/70 opacity-70' }}">
                                 <span class="flex items-center min-w-0 gap-3">
@@ -337,9 +348,9 @@
                                         </span>
                                     </span>
                                 </span>
-                                <span
+                                <span data-menu-cta
                                     class="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 {{ $selectedClientId > 0 ? 'bg-emerald-50 text-emerald-700 ring-emerald-100 transition group-hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 ring-slate-200' }}">
-                                    {{ $selectedClientId > 0 ? 'Buat' : 'Pilih Client' }}
+                                    {{ $selectedClientId > 0 ? 'Buat' : 'Pilih Mitra' }}
                                     <i class="ri-arrow-right-line"></i>
                                 </span>
                             </a>
@@ -351,6 +362,8 @@
                     <div class="divide-y divide-slate-100">
                         @foreach ($rekapMenus as $menu)
                             <a href="{{ $selectedClientId > 0 ? $menu['riwayat_url'] : '#' }}"
+                                data-menu-link
+                                data-base-url="{{ preg_replace('/([&?])client_id=\d+/', '$1', $menu['riwayat_url']) }}"
                                 @if ($selectedClientId <= 0) aria-disabled="true" @endif
                                 class="flex items-center justify-between gap-3 px-4 py-3 transition group min-h-16 {{ $selectedClientId > 0 ? 'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-inset active:bg-slate-100' : 'cursor-not-allowed bg-slate-50/70 opacity-70' }}">
                                 <span class="flex items-center min-w-0 gap-3">
@@ -367,9 +380,9 @@
                                         </span>
                                     </span>
                                 </span>
-                                <span
+                                <span data-menu-cta
                                     class="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 {{ $selectedClientId > 0 ? 'bg-indigo-50 text-indigo-700 ring-indigo-100 transition group-hover:bg-indigo-100' : 'bg-slate-100 text-slate-500 ring-slate-200' }}">
-                                    {{ $selectedClientId > 0 ? 'Lihat' : 'Pilih Client' }}
+                                    {{ $selectedClientId > 0 ? 'Lihat' : 'Pilih Mitra' }}
                                     <i class="ri-arrow-right-line"></i>
                                 </span>
                             </a>
@@ -381,10 +394,57 @@
     </x-main-div>
 
     <script>
-        window.handleSpvwClientFilterChange = function() {
+        window.handleSpvwClientFilterChange = async function() {
             const form = document.getElementById('spvw-client-filter-form');
-            if (!form) return;
-            form.requestSubmit ? form.requestSubmit() : form.submit();
+            const select = document.getElementById('client_id');
+            if (!form || !select) return;
+
+            const clientId = select.value;
+            const params = new URLSearchParams();
+            if (clientId) params.set('client_id', clientId);
+            const targetUrl = `${form.action.split('?')[0]}${params.toString() ? `?${params.toString()}` : ''}`;
+
+            try { await fetch(targetUrl, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } }); } catch (_) {}
+            window.history.replaceState({}, '', targetUrl);
+
+            const selectedText = select.options[select.selectedIndex]?.text?.trim() || '';
+            const hasClient = Boolean(clientId);
+
+            document.querySelectorAll('[data-menu-link]').forEach((el) => {
+                const base = el.getAttribute('data-base-url') || '#';
+                el.href = hasClient ? `${base}${base.includes('?') ? '&' : '?'}client_id=${clientId}` : '#';
+                if (hasClient) {
+                    el.removeAttribute('aria-disabled');
+                    el.classList.remove('cursor-not-allowed', 'bg-slate-50/70', 'opacity-70');
+                    el.classList.add('hover:bg-slate-50', 'focus:outline-none', 'focus:ring-2', 'focus:ring-slate-400', 'focus:ring-inset', 'active:bg-slate-100');
+                } else {
+                    el.setAttribute('aria-disabled', 'true');
+                    el.classList.add('cursor-not-allowed', 'bg-slate-50/70', 'opacity-70');
+                }
+            });
+            document.querySelectorAll('[data-menu-cta]').forEach((el) => {
+                const labelNode = el.childNodes[0];
+                if (labelNode) labelNode.textContent = hasClient ? (el.closest('[x-show="mode === \'pengajuan\'"]') ? 'Buat ' : 'Lihat ') : 'Pilih Mitra ';
+            });
+
+            const hint = document.getElementById('spvw-filter-hint');
+            if (hint) hint.textContent = hasClient ? 'Filter mitra tetap aktif sampai logout.' : 'Mode cepat: filter langsung aktif saat mitra dipilih.';
+            const active = document.getElementById('spvw-filter-active');
+            if (active) active.classList.toggle('hidden', !hasClient);
+            const name = document.getElementById('spvw-filter-name');
+            if (name) name.innerHTML = `<i class="ri-building-line"></i> ${selectedText || `Mitra #${clientId}`}`;
         };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const resetBtn = document.getElementById('spvw-reset-filter');
+            const select = document.getElementById('client_id');
+            if (!resetBtn || !select) return;
+
+            resetBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                select.value = '';
+                await window.handleSpvwClientFilterChange();
+            });
+        });
     </script>
 </x-app-layout>

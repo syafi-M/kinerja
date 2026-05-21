@@ -50,6 +50,13 @@
             ),
             "Rekap Lepas Training",
         );
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(
+                this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
+            ),
+            "Rekap Keterangan Lanjutan",
+        );
 
         XLSX.writeFile(
             wb,
@@ -109,6 +116,15 @@
                 this.formatFinishedTrainings(data.finished_trainings, true),
             ),
         );
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Keterangan Lanjutan",
+            this.getKeteranganLanjutanHeaders(),
+            this.toBody(
+                this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
+            ),
+        );
 
         doc.save(
             `Data_Rekap_${data.client.name}_${new Date().toISOString().split("T")[0]}.pdf`,
@@ -142,15 +158,16 @@
 
     // ===== formatters sinkron logic lama =====
     formatOvertimes(d, showEmpty = false) {
+        if (!Array.isArray(d)) d = [];
         const grouped = {};
         d.forEach((item) => {
             const key = item.user?.id || "unknown";
             if (!grouped[key])
                 grouped[key] = {
-                    nama: item.user?.nama_lengkap || "-",
-                    mitra: item.user?.kerjasama?.client?.name || "-",
-                    posisi: item.user?.jabatan?.name_jabatan || "-",
-                    tanggal: item.date_overtime,
+                    nama: (item.user?.nama_lengkap || "-").toUpperCase(),
+                    mitra: (item.user?.kerjasama?.client?.name || "-").toUpperCase(),
+                    posisi: (item.user?.jabatan?.name_jabatan || "-").toUpperCase(),
+                    tanggal: this.fmt(item.date_overtime),
                     hari: 0,
                     jam: [],
                     lainnya: [],
@@ -176,7 +193,7 @@
             return [
                 {
                     no: "-",
-                    nama_karyawan: "Tidak ada data",
+                    nama_karyawan: "TIDAK ADA DATA",
                     mitra_kerja: "-",
                     posisi: "-",
                     tanggal: "-",
@@ -189,18 +206,19 @@
     }
 
     formatPersonOuts(d, showEmpty = false) {
+        if (!Array.isArray(d)) d = [];
         const rows = d.map((item, i) => ({
             no: i + 1,
-            nama_karyawan: item.user?.nama_lengkap || "-",
-            mitra_kerja: item.user?.kerjasama?.client?.name || "-",
-            posisi: item.user?.jabatan?.name_jabatan || "-",
+            nama_karyawan: (item.user?.nama_lengkap || "-").toUpperCase(),
+            mitra_kerja: (item.user?.kerjasama?.client?.name || "-").toUpperCase(),
+            posisi: (item.user?.jabatan?.name_jabatan || "-").toUpperCase(),
             jumlah_mk: item.total_mk || "0",
         }));
         if (!rows.length && showEmpty)
             return [
                 {
                     no: "-",
-                    nama_karyawan: "Tidak ada data",
+                    nama_karyawan: "TIDAK ADA DATA",
                     mitra_kerja: "-",
                     posisi: "-",
                     jumlah_mk: "-",
@@ -210,19 +228,20 @@
     }
 
     formatPersonIns(d, showEmpty = false) {
+        if (!Array.isArray(d)) d = [];
         const rows = d.map((r, i) => ({
             no: i + 1,
-            nama: r.fullname || "-",
-            jabatan: r.jabatan?.name_jabatan || "-",
+            nama: (r.fullname || r.user?.nama_lengkap || "-").toUpperCase(),
+            jabatan: (r.jabatan?.name_jabatan || "-").toUpperCase(),
             tanggal_masuk: this.fmt(r.date_in),
-            metode_gaji: r.method_salary || "-",
-            no_rek: r.method_salary_manual || "-",
+            metode_gaji: (r.method_salary || "-").toUpperCase(),
+            no_rek: (r.method_salary_manual || "-").toUpperCase(),
         }));
         if (!rows.length && showEmpty)
             return [
                 {
                     no: "-",
-                    nama: "Tidak ada data",
+                    nama: "TIDAK ADA DATA",
                     jabatan: "-",
                     tanggal_masuk: "-",
                     metode_gaji: "-",
@@ -233,19 +252,20 @@
     }
 
     formatCuttings(d, showEmpty = false) {
+        if (!Array.isArray(d)) d = [];
         const rows = d.map((r, i) => ({
             no: i + 1,
-            nama: r.user?.nama_lengkap || "-",
+            nama: (r.user?.nama_lengkap || "-").toUpperCase(),
             tanggal_cutting: this.fmt(r.date_cut),
-            jenis_cutting: r.type_cut || "-",
-            nominal: r.manual_type_cut || "-",
-            keterangan: r.desc || "-",
+            jenis_cutting: (r.type_cut || "-").toUpperCase(),
+            nominal: (r.manual_type_cut || "-").toUpperCase(),
+            keterangan: (r.desc || "-").toUpperCase(),
         }));
         if (!rows.length && showEmpty)
             return [
                 {
                     no: "-",
-                    nama: "Tidak ada data",
+                    nama: "TIDAK ADA DATA",
                     tanggal_cutting: "-",
                     jenis_cutting: "-",
                     nominal: "-",
@@ -256,20 +276,66 @@
     }
 
     formatFinishedTrainings(d, showEmpty = false) {
+        if (!Array.isArray(d)) d = [];
         const rows = d.map((r, i) => ({
             no: i + 1,
-            nama: r.user?.nama_lengkap || "-",
+            nama: (r.user?.nama_lengkap || "-").toUpperCase(),
             tanggal_masuk: this.fmt(r.date_in),
             tanggal_selesai: this.fmt(r.date_finish_train),
-            keterangan: r.desc || "-",
+            keterangan: (r.desc || "-").toUpperCase(),
         }));
         if (!rows.length && showEmpty)
             return [
                 {
                     no: "-",
-                    nama: "Tidak ada data",
+                    nama: "TIDAK ADA DATA",
                     tanggal_masuk: "-",
                     tanggal_selesai: "-",
+                    keterangan: "-",
+                },
+            ];
+        return rows;
+    }
+
+    formatKeteranganLanjutan(d, showEmpty = false) {
+        if (!Array.isArray(d)) d = [];
+
+        const rows = d.map((r, i) => {
+            // Format keterangan: if array of {periode, judul, keterangan}, join them nicely
+            let keteranganText = "-";
+            if (Array.isArray(r.keterangan)) {
+                const items = r.keterangan.map(e => {
+                    if (typeof e === 'object') {
+                        const parts = [];
+                        if (e.periode) parts.push(e.periode.toUpperCase());
+                        if (e.judul) parts.push(e.judul.toUpperCase());
+                        if (e.keterangan) parts.push(e.keterangan.toUpperCase());
+                        return parts.join(" - ");
+                    }
+                    return (e || "").toUpperCase();
+                }).filter(item => item);
+                keteranganText = items.join("\n");
+            } else if (r.keterangan) {
+                keteranganText = r.keterangan.toUpperCase();
+            }
+
+            return {
+                no: i + 1,
+                nama_karyawan: (r.user?.nama_lengkap || "-").toUpperCase(),
+                mitra_kerja: (r.user?.kerjasama?.client?.name || "-").toUpperCase(),
+                posisi: (r.user?.jabatan?.name_jabatan || "-").toUpperCase(),
+                tanggal: this.fmt(r.created_at),
+                keterangan: keteranganText,
+            };
+        });
+        if (!rows.length && showEmpty)
+            return [
+                {
+                    no: "-",
+                    nama_karyawan: "TIDAK ADA DATA",
+                    mitra_kerja: "-",
+                    posisi: "-",
+                    tanggal: "-",
                     keterangan: "-",
                 },
             ];
@@ -314,10 +380,128 @@
     getFinishedTrainingHeaders() {
         return ["No", "Nama", "Tanggal Masuk", "Tanggal Selesai", "Keterangan"];
     }
+    getKeteranganLanjutanHeaders() {
+        return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Tanggal", "Keterangan"];
+    }
 
     fmt(v) {
         if (!v) return "-";
         const d = new Date(v);
         return isNaN(d) ? "-" : d.toLocaleDateString("id-ID");
+    }
+
+    // Global Export Methods
+    exportGlobalToExcel(data) {
+        const wb = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(
+                this.formatOvertimes(data.overtimes, true),
+            ),
+            "Rekap Lembur",
+        );
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(
+                this.formatPersonOuts(data.person_outs, true),
+            ),
+            "Rekap Personil Keluar",
+        );
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(
+                this.formatPersonIns(data.person_ins, true),
+            ),
+            "Rekap Personil Masuk",
+        );
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(this.formatCuttings(data.cuttings, true)),
+            "Rekap Cutting",
+        );
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(
+                this.formatFinishedTrainings(data.finished_trainings, true),
+            ),
+            "Rekap Lepas Training",
+        );
+        XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.json_to_sheet(
+                this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
+            ),
+            "Rekap Keterangan Lanjutan",
+        );
+
+        XLSX.writeFile(
+            wb,
+            `Data_Rekap_${data.period}_${new Date().toISOString().split("T")[0]}.xlsx`,
+        );
+    }
+
+    exportGlobalToPDF(data) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF("l", "mm", "a4");
+
+        let y = 14;
+        doc.setFontSize(14);
+        doc.text(`Data Rekap - ${data.period}`, 14, y);
+        y += 6;
+        doc.setFontSize(10);
+        doc.text(`Data Keseluruhan Semua Mitra`, 14, y);
+        y += 6;
+
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Lembur",
+            this.getOvertimeHeaders(),
+            this.toBody(this.formatOvertimes(data.overtimes, true)),
+        );
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Personil Keluar",
+            this.getPersonOutHeaders(),
+            this.toBody(this.formatPersonOuts(data.person_outs, true)),
+        );
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Personil Masuk",
+            this.getPersonInHeaders(),
+            this.toBody(this.formatPersonIns(data.person_ins, true)),
+        );
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Cutting",
+            this.getCuttingHeaders(),
+            this.toBody(this.formatCuttings(data.cuttings, true)),
+        );
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Lepas Training",
+            this.getFinishedTrainingHeaders(),
+            this.toBody(
+                this.formatFinishedTrainings(data.finished_trainings, true),
+            ),
+        );
+        y = this.addSectionTable(
+            doc,
+            y,
+            "Rekap Keterangan Lanjutan",
+            this.getKeteranganLanjutanHeaders(),
+            this.toBody(
+                this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
+            ),
+        );
+
+        doc.save(
+            `Data_Rekap_${data.period}_${new Date().toISOString().split("T")[0]}.pdf`,
+        );
     }
 }

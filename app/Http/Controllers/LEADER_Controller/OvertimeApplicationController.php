@@ -11,6 +11,7 @@ use App\Notifications\OvertimeSubmitted;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class OvertimeApplicationController extends Controller
 {
@@ -33,6 +34,9 @@ class OvertimeApplicationController extends Controller
     {
         try {
             $data = $request->validated();
+            if ($request->hasFile('foto_bukti')) {
+                $data['foto_bukti'] = $request->file('foto_bukti')->store('overtimes/foto-bukti', 'public');
+            }
             $data['created_by_user_id'] = auth()->id();
             Overtime::create($data);
             return redirect()->back()->with('toast', [
@@ -53,7 +57,7 @@ class OvertimeApplicationController extends Controller
         $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
 
         $overtimes = Overtime::with(['user:id,name,nama_lengkap'])
-            ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'status', 'created_at'])
+            ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'foto_bukti', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
                 $q->where('kerjasama_id', auth()->user()->kerjasama_id)
                     ->whereHas('jabatan', function ($jabatanQuery) {
@@ -106,9 +110,16 @@ class OvertimeApplicationController extends Controller
 
     public function update(OvertimeStoreRequest $request, $id)
     {
+        $overtime = Overtime::findOrFail($id);
         $data = $request->validated();
+        if ($request->hasFile('foto_bukti')) {
+            if (!empty($overtime->foto_bukti)) {
+                Storage::disk('public')->delete($overtime->foto_bukti);
+            }
+            $data['foto_bukti'] = $request->file('foto_bukti')->store('overtimes/foto-bukti', 'public');
+        }
         $data['created_by_user_id'] = auth()->id();
-        Overtime::findOrFail($id)->update($data);
+        $overtime->update($data);
         return to_route('overtime-application.show', 1)->with('toast', [
             'type' => 'success',
             'message' => 'Lembur berhasil diupdate!',

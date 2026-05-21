@@ -23,6 +23,7 @@ class PersonOutController extends Controller
             ->where('id', '!=', auth()->user()->id)
             ->where('role_id', '!=', 2)
             ->where('kerjasama_id', '!=', 1)
+            ->when(!empty($this->allowedTargetJabatanIds()), fn($q) => $q->whereIn('jabatan_id', $this->allowedTargetJabatanIds()))
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
             ->orderBy('nama_lengkap')
             ->get();
@@ -155,6 +156,7 @@ class PersonOutController extends Controller
             ->where('id', '!=', auth()->user()->id)
             ->where('role_id', '!=', 2)
             ->where('kerjasama_id', '!=', 1)
+            ->when(!empty($this->allowedTargetJabatanIds()), fn($q) => $q->whereIn('jabatan_id', $this->allowedTargetJabatanIds()))
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
             ->orderBy('nama_lengkap')
             ->get();
@@ -366,5 +368,13 @@ class PersonOutController extends Controller
         }
 
         return max((int) session($sessionKey, 0), 0);
+    }
+
+    private function allowedTargetJabatanIds(): array
+    {
+        $authJabatanId = (int) (auth()->user()->jabatan_id ?? 0);
+        if ($authJabatanId === 35) return [8, 11, 16, 17, 18];
+        if ($authJabatanId === 20) return [9, 10, 34, 36];
+        return [];
     }
 }

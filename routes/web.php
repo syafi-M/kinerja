@@ -45,6 +45,7 @@ use App\Http\Controllers\LEADER_Controller\PersonInController;
 use App\Http\Controllers\LEADER_Controller\PersonOutController;
 use App\Http\Controllers\LEADER_Controller\CuttingController;
 use App\Http\Controllers\LEADER_Controller\FinishedTrainingController;
+use App\Http\Controllers\LEADER_Controller\KeteranganLanjutanController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ListPekerjaanController;
 use App\Http\Controllers\SlipGajiController;
@@ -60,6 +61,7 @@ use App\Http\Controllers\SVP_Controller\Rekap\AllRekapExportController;
 use App\Http\Controllers\SPVW_Controller\CuttingController as SPVWCuttingController;
 use App\Http\Controllers\SPVW_Controller\DataRekapController as SPVWDataRekapController;
 use App\Http\Controllers\SPVW_Controller\FinishedTrainingController as SPVWFinishedTrainingController;
+use App\Http\Controllers\SPVW_Controller\KeteranganLanjutanController as SPVWKeteranganLanjutanController;
 use App\Http\Controllers\SPVW_Controller\OvertimeApplicationController as SPVWOvertimeApplicationController;
 use App\Http\Controllers\SPVW_Controller\PersonInController as SPVWPersonInController;
 use App\Http\Controllers\SPVW_Controller\PersonOutController as SPVWPersonOutController;
@@ -278,6 +280,7 @@ Route::middleware(['auth', 'apdt'])->group(function () {
         Route::get('/Management/rekap-person-in/{id}', [DashboardRekapController::class, 'indexPersonIn'])->name('manajemen_rekap_indexPersonIn');
         Route::get('/Management/rekap-cutting/{id}', [DashboardRekapController::class, 'indexCutting'])->name('manajemen_rekap_indexCutting');
         Route::get('/Management/rekap-finished-training/{id}', [DashboardRekapController::class, 'indexFinishedTraining'])->name('manajemen_rekap_indexFinishedTraining');
+        Route::get('/Management/rekap-keterangan-lanjutan/{id}', [DashboardRekapController::class, 'indexKeteranganLanjutan'])->name('manajemen_rekap_indexKeteranganLanjutan');
 
         //API AJA
         Route::get('/api/v1/overtimes-api/{kerjasama}', [OvertimesController::class, 'index'])->name('api-overtimes');
@@ -286,6 +289,8 @@ Route::middleware(['auth', 'apdt'])->group(function () {
         Route::get('/api/v1/cutting-api/{kerjasama}', [RekapCuttingController::class, 'index'])->name('api-cutting');
         Route::get('/api/v1/finished-training-api/{kerjasama}', [RekapFinishedTrainingController::class, 'index'])->name('api-finished-training');
         Route::get('/api/v1/all-rekap-export/{kerjasama}', [AllRekapExportController::class, 'getAllRekapData'])->name('api-all-rekap-export');
+        Route::get('/api/v1/all-rekap-export-global', [AllRekapExportController::class, 'getGlobalRekapData'])->name('api-all-rekap-export-global');
+        Route::get('/api/v1/keterangan-lanjutan-api/{kerjasama}', [KeteranganLanjutanController::class, 'index'])->name('api-keterangan-lanjutan');
         Route::patch('/api/v1/rekap/overtimes/{id}/status', [OvertimesController::class, 'updateStatus'])->name('api-overtimes-status');
         Route::patch('/api/v1/rekap/person-out/{id}/status', [RekapPersonOutController::class, 'updateStatus'])->name('api-person-out-status');
         Route::patch('/api/v1/rekap/person-in/{id}/status', [RekapPersonInController::class, 'updateStatus'])->name('api-person-in-status');
@@ -384,6 +389,10 @@ Route::middleware(['auth', 'spv-w', 'apdt', 'spvw.client-filter'])->group(functi
         Route::get('/SPVW/api/v1/get-finished-training/{id}', [SPVWFinishedTrainingController::class, 'fetchApi'])->name('spvw.finished-training-id');
         Route::patch('/SPVW/finished-training-change-status/{id}', [SPVWFinishedTrainingController::class, 'changeStatus'])->name('spvw.finished-training.change_status');
         Route::patch('/SPVW/finished-training-bulk', [SPVWFinishedTrainingController::class, 'bulkStatus'])->name('spvw.finished-training-bulk.status');
+
+        Route::get('/SPVW/keterangan-lanjutan', [SPVWKeteranganLanjutanController::class, 'index'])->name('spvw.keterangan-lanjutan.index');
+        Route::post('/SPVW/keterangan-lanjutan', [SPVWKeteranganLanjutanController::class, 'store'])->name('spvw.keterangan-lanjutan.store');
+        Route::get('/SPVW/keterangan-lanjutan/history', [SPVWKeteranganLanjutanController::class, 'history'])->name('spvw.keterangan-lanjutan.history');
     });
 });
 
@@ -422,6 +431,10 @@ Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {
     Route::get('/api/v1/get-finished-training/{id}', [FinishedTrainingController::class, 'fetchApi'])->name('finished-training-id');
     Route::patch('/finished-training-change-status/{id}', [FinishedTrainingController::class, 'changeStatus'])->name('finished-training.change_status');
     Route::patch('/finished-training-bulk', [FinishedTrainingController::class, 'bulkStatus'])->name('finished-training-bulk.status');
+
+    Route::get('/keterangan-lanjutan/history', [KeteranganLanjutanController::class, 'history'])->name('keterangan-lanjutan.history');
+    Route::get('/keterangan-lanjutan', [KeteranganLanjutanController::class, 'index'])->name('keterangan-lanjutan.index');
+    Route::post('/keterangan-lanjutan', [KeteranganLanjutanController::class, 'store'])->name('keterangan-lanjutan.store');
 });
 
 // leader

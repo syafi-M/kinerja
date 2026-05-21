@@ -448,6 +448,38 @@
                 </div>
             </div>
 
+            <!-- Global Export Section -->
+            <div class="my-6">
+                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">Export Data Keseluruhan</h3>
+                            <p class="text-gray-600 text-sm">Export seluruh data rekap bulanan dari semua mitra dalam format Excel atau PDF</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="exportGlobalToExcel()"
+                                class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                <span>Excel</span>
+                            </button>
+                            <button onclick="exportGlobalToPDF()"
+                                class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                <span>PDF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Search Info -->
             @if (request('search'))
                 <div
@@ -675,8 +707,6 @@
                 </div>
             @endif
 
-        </div>
-
         <!-- Modal Overlay -->
         <div id="detailModal" class="fixed inset-0 z-[999999] hidden" aria-labelledby="modal-title" role="dialog"
             aria-modal="true">
@@ -711,12 +741,12 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div class="justify-end items-center">
+                            <div class="flex justify-end items-center">
                                 <!-- Export Buttons -->
                                 <div class="flex flex-wrap gap-2">
                                     <button onclick="exportToExcel()"
-                                        class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
@@ -725,8 +755,8 @@
                                         <span>Excel</span>
                                     </button>
                                     <button onclick="exportToPDF()"
-                                        class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                        class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
@@ -860,6 +890,28 @@
                                         d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </a>
+
+                            <a href="#" id="linkKeteranganLanjutan"
+                                class="group flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border border-yellow-200 rounded-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ri-file-list-line text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4
+                                        class="text-gray-900 font-semibold text-sm mb-0.5 group-hover:text-yellow-700 transition-colors">
+                                        Keterangan Lanjutan
+                                    </h4>
+                                    <p class="text-gray-600 text-xs">
+                                        Lihat keterangan lanjutan mitra
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-yellow-600 group-hover:translate-x-1 transition-transform flex-shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
                         </div>
 
                         <!-- Modal Footer -->
@@ -918,6 +970,7 @@
             const linkPersonilMasuk = document.getElementById('linkPersonilMasuk');
             const linkCutting = document.getElementById('linkCutting');
             const linkFinishedTraining = document.getElementById('linkFinishedTraining');
+            const linkKeteranganLanjutan = document.getElementById('linkKeteranganLanjutan');
 
             // Save current scroll position
             scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
@@ -932,7 +985,7 @@
             linkPersonilMasuk.href = `/Management/rekap-person-in/${mitraId}`;
             linkCutting.href = `/Management/rekap-cutting/${mitraId}`;
             linkFinishedTraining.href = `/Management/rekap-finished-training/${mitraId}`;
-
+            linkKeteranganLanjutan.href = `/Management/rekap-keterangan-lanjutan/${mitraId}`;
             // Show modal
             modal.classList.remove('hidden');
 
@@ -1082,6 +1135,41 @@
 
             const exporter = new RekapExporter(currentKerjasamaId, currentMonth);
             exporter.exportToPDF();
+        }
+
+        // Global Export - All Data
+        async function exportGlobalToExcel() {
+            try {
+                const month = new Date().toISOString().slice(0, 7);
+                const response = await fetch(`/api/v1/all-rekap-export-global?month=${month}`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const result = await response.json();
+                
+                if (!result.success) throw new Error(result.message);
+                const data = result.data;
+
+                const exporter = new RekapExporter(null, month);
+                exporter.exportGlobalToExcel(data);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function exportGlobalToPDF() {
+            try {
+                const month = new Date().toISOString().slice(0, 7);
+                const response = await fetch(`/api/v1/all-rekap-export-global?month=${month}`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const result = await response.json();
+                
+                if (!result.success) throw new Error(result.message);
+                const data = result.data;
+
+                const exporter = new RekapExporter(null, month);
+                exporter.exportGlobalToPDF(data);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
         }
 
         // Close on Escape key

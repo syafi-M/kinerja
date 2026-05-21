@@ -24,7 +24,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('spvw.overtime-application.store') }}" method="POST" x-data="overtimeForm()"
+            <form action="{{ route('spvw.overtime-application.store') }}" method="POST" enctype="multipart/form-data" x-data="overtimeForm()"
                 class="space-y-4">
                 @csrf
 
@@ -67,6 +67,49 @@
                     </div>
                 </section>
 
+                <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5" x-data="imagePreview()">
+                    <label for="foto_bukti" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                        Foto Bukti <span class="text-xs font-normal text-slate-500">(Opsional)</span>
+                    </label>
+                    <p class="mb-3 text-xs text-slate-500">Format PNG, JPG, JPEG, atau WEBP. Maksimal 2MB.</p>
+                    <div @click="$refs.fileInput.click()" @drop.prevent="handleDrop($event)"
+                        @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
+                        :class="isDragging ? 'border-sky-500 bg-sky-50' : 'border-slate-300 bg-slate-50'"
+                        class="p-4 text-center transition border-2 border-dashed rounded-lg cursor-pointer hover:border-sky-400 hover:bg-sky-50 sm:p-6">
+                        <template x-if="!imageUrl">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="inline-flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-sm text-slate-500 ring-1 ring-slate-200">
+                                    <i class="text-2xl ri-upload-cloud-2-line"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-700">Ketuk untuk unggah bukti</p>
+                                    <p class="mt-1 text-xs text-slate-500">Di desktop juga bisa seret dan lepas file.</p>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="imageUrl">
+                            <div class="flex flex-col items-center gap-3">
+                                <img :src="imageUrl" alt="Preview bukti"
+                                    class="object-cover w-full h-40 max-w-xs border rounded-lg border-slate-200">
+                                <div class="max-w-full">
+                                    <p class="text-xs font-medium truncate text-slate-700" x-text="fileName"></p>
+                                    <button type="button" @click.stop="removeImage"
+                                        class="inline-flex items-center justify-center gap-1 px-3 mt-2 text-xs font-semibold text-red-700 rounded-lg min-h-9 bg-red-50 ring-1 ring-red-100">
+                                        <i class="ri-delete-bin-line"></i>
+                                        Hapus file
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        <input type="file" name="foto_bukti" id="foto_bukti" accept="image/*" x-ref="fileInput"
+                            @change="previewImage" class="hidden">
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">Format: JPG/JPEG/PNG/WEBP, maksimal 2MB.</p>
+                    @error('foto_bukti')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </section>
+
                 <section class="p-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-5">
                     <div class="mb-3">
                         <h2 class="text-sm font-semibold text-slate-800">
@@ -97,7 +140,7 @@
                                 {{ old('type_overtime') == 'jam' ? 'checked' : '' }} required>
                             <span class="min-w-0">
                                 <span class="block text-sm font-semibold text-slate-800">Jam</span>
-                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi jumlah jam lembur.</span>
+                                <span class="mt-0.5 block text-xs leading-4 text-slate-500">Isi jumlah jam lembur. (jika waktu bekerja kurang dari jumlah shift)</span>
                             </span>
                         </label>
 
@@ -213,6 +256,33 @@
                             this.manualType = '';
                         }
                     });
+                }
+            }
+        }
+
+        function imagePreview(existingUrl = '', existingName = '') {
+            return {
+                isDragging: false,
+                imageUrl: existingUrl || '',
+                fileName: existingName || '',
+                previewImage(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    this.imageUrl = URL.createObjectURL(file);
+                    this.fileName = file.name;
+                },
+                handleDrop(event) {
+                    this.isDragging = false;
+                    const file = event.dataTransfer.files[0];
+                    if (!file || !file.type.startsWith('image/')) return;
+                    this.$refs.fileInput.files = event.dataTransfer.files;
+                    this.imageUrl = URL.createObjectURL(file);
+                    this.fileName = file.name;
+                },
+                removeImage() {
+                    this.imageUrl = '';
+                    this.fileName = '';
+                    this.$refs.fileInput.value = '';
                 }
             }
         }

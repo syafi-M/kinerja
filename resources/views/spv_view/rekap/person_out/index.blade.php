@@ -421,7 +421,7 @@
             });
             const result = await res.json();
             if (!result.success) return alert(result.message || 'Gagal update status');
-            await loadData();
+            await fetchPersonOutData();
         }
 
         // Update statistics
@@ -597,12 +597,13 @@
 
         // Export to Excel
         function exportToExcel() {
-            if (filteredData.length === 0) {
-                alert('Tidak ada data untuk diekspor');
+            const exportRows = filteredData.filter(item => (item.status || '').toLowerCase() === 'di setujui');
+            if (exportRows.length === 0) {
+                alert('Tidak ada data yang disetujui untuk diekspor');
                 return;
             }
 
-            const data = filteredData.filter(item => (item.status || '').toLowerCase() === 'di setujui').map((item, index) => ({
+            const data = exportRows.map((item, index) => ({
                 'No': index + 1,
                 'Nama Karyawan': item.user?.nama_lengkap || '-',
                 'Mitra Kerja': item.user?.kerjasama?.client?.name || '-',
@@ -645,8 +646,9 @@
 
         // Export to PDF
         function exportToPDF() {
-            if (filteredData.length === 0) {
-                alert('Tidak ada data untuk diekspor');
+            const exportRows = filteredData.filter(item => (item.status || '').toLowerCase() === 'di setujui');
+            if (exportRows.length === 0) {
+                alert('Tidak ada data yang disetujui untuk diekspor');
                 return;
             }
 
@@ -664,10 +666,10 @@
             doc.setFontSize(10);
             doc.setFont(undefined, 'normal');
             doc.text(`Periode: ${document.getElementById('periodDate').textContent}`, 14, 22);
-            doc.text(`Total: ${filteredData.length} | Di Ajukan: ${document.getElementById('approvedCount').textContent}`,
+            doc.text(`Total: ${exportRows.length} | Di Setujui: ${exportRows.length}`,
                 14, 28);
 
-            const tableData = filteredData.map((item, index) => [
+            const tableData = exportRows.map((item, index) => [
                 index + 1,
                 item.user?.nama_lengkap || '-',
                 item.user?.kerjasama?.client.name,

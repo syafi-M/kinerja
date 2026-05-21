@@ -110,6 +110,13 @@
                                 <p class="mt-1 text-xs leading-5 text-slate-600">
                                     {{ $overtime->desc ?? 'Tidak ada keterangan' }}
                                 </p>
+                                @if (!empty($overtime->foto_bukti))
+                                    <a href="{{ asset('storage/' . $overtime->foto_bukti) }}" target="_blank"
+                                        class="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-sky-700 hover:underline">
+                                        <i class="ri-image-line"></i>
+                                        Lihat Foto Bukti
+                                    </a>
+                                @endif
                             </div>
 
                             <div class="grid grid-cols-2 gap-2">
@@ -231,6 +238,13 @@
                                             title="{{ $overtime->desc ?? 'Tidak ada keterangan' }}">
                                             {{ $overtime->desc ?? 'Tidak ada keterangan' }}
                                         </div>
+                                        @if (!empty($overtime->foto_bukti))
+                                            <a href="{{ asset('storage/' . $overtime->foto_bukti) }}" target="_blank"
+                                                class="inline-flex items-center gap-1 mt-1 text-xs font-semibold text-sky-700 hover:underline">
+                                                <i class="ri-image-line"></i>
+                                                Foto Bukti
+                                            </a>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-4">
                                         @if ($status == 'Di Ajukan')
@@ -384,6 +398,16 @@
                         <p class="mb-1 text-xs text-slate-500">Keterangan</p>
                         <p class="text-sm leading-6 text-slate-700" x-text="detail.desc || '-'"></p>
                     </div>
+                    <div x-show="detail.foto_bukti" x-cloak>
+                        <p class="mb-2 text-xs text-slate-500">Foto Bukti</p>
+                        <a :href="`/storage/${detail.foto_bukti}`" target="_blank"
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 hover:underline">
+                            <i class="ri-image-line"></i>
+                            Buka gambar penuh
+                        </a>
+                        <img :src="`/storage/${detail.foto_bukti}`" alt="Foto Bukti"
+                            class="object-cover w-full max-w-md mt-2 border rounded-lg border-slate-200">
+                    </div>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-200">
@@ -521,4 +545,3 @@
         }
     </style>
 </x-app-layout>
-

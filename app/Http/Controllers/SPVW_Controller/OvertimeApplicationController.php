@@ -11,14 +11,17 @@ use App\Notifications\OvertimeSubmitted;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class OvertimeApplicationController extends Controller
 {
     public function create()
     {
+        $allowedJabatanIds = $this->allowedTargetJabatanIds();
         $users = User::select(['id', 'name', 'nama_lengkap'])
             ->where('role_id', '!=', 2)
             ->where('kerjasama_id', '!=', 1)
+            ->when(!empty($allowedJabatanIds), fn($q) => $q->whereIn('jabatan_id', $allowedJabatanIds))
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
             ->orderBy('nama_lengkap')
             ->get();
@@ -32,6 +35,9 @@ class OvertimeApplicationController extends Controller
     {
         try {
             $data = $request->validated();
+            if ($request->hasFile('foto_bukti')) {
+                $data['foto_bukti'] = $request->file('foto_bukti')->store('overtimes/foto-bukti', 'public');
+            }
             $data['created_by_user_id'] = auth()->id();
             Overtime::create($data);
             return redirect()->back()->with('toast', [
@@ -50,12 +56,14 @@ class OvertimeApplicationController extends Controller
     public function history(Request $request)
     {
         $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+        $allowedJabatanIds = $this->allowedTargetJabatanIds();
 
         $overtimes = Overtime::with(['user:id,name,nama_lengkap', 'createdBy:id,nama_lengkap'])
-            ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'created_by_user_id', 'status', 'created_at'])
-            ->whereHas('user', function ($q) {
+            ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'foto_bukti', 'created_by_user_id', 'status', 'created_at'])
+            ->whereHas('user', function ($q) use ($allowedJabatanIds) {
                 $q->where('role_id', '!=', 2)
                     ->where('kerjasama_id', '!=', 1)
+                    ->when(!empty($allowedJabatanIds), fn($userQuery) => $userQuery->whereIn('jabatan_id', $allowedJabatanIds))
                     ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
             })
             ->when($request->status, function ($q) use ($request) {
@@ -88,9 +96,11 @@ class OvertimeApplicationController extends Controller
 
     public function edit($id)
     {
+        $allowedJabatanIds = $this->allowedTargetJabatanIds();
         $users = User::select(['id', 'name', 'nama_lengkap'])
             ->where('role_id', '!=', 2)
             ->where('kerjasama_id', '!=', 1)
+            ->when(!empty($allowedJabatanIds), fn($q) => $q->whereIn('jabatan_id', $allowedJabatanIds))
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
             ->orderBy('nama_lengkap')
             ->get();
@@ -103,9 +113,16 @@ class OvertimeApplicationController extends Controller
 
     public function update(OvertimeStoreRequest $request, $id)
     {
+        $overtime = Overtime::findOrFail($id);
         $data = $request->validated();
+        if ($request->hasFile('foto_bukti')) {
+            if (!empty($overtime->foto_bukti)) {
+                Storage::disk('public')->delete($overtime->foto_bukti);
+            }
+            $data['foto_bukti'] = $request->file('foto_bukti')->store('overtimes/foto-bukti', 'public');
+        }
         $data['created_by_user_id'] = auth()->id();
-        Overtime::findOrFail($id)->update($data);
+        $overtime->update($data);
         return to_route('spvw.overtime-application.history', array_filter([
             'client_id' => $this->selectedClientId(),
         ]))->with('toast', [
@@ -192,9 +209,11 @@ class OvertimeApplicationController extends Controller
                 ? 'MARKETING'
                 : null);
 
-        $overtimes = Overtime::whereHas('user', function ($q) {
+        $allowedJabatanIds = $this->allowedTargetJabatanIds();
+        $overtimes = Overtime::whereHas('user', function ($q) use ($allowedJabatanIds) {
             $q->where('role_id', '!=', 2)
                 ->where('kerjasama_id', '!=', 1)
+                ->when(!empty($allowedJabatanIds), fn($userQuery) => $userQuery->whereIn('jabatan_id', $allowedJabatanIds))
                 ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
         })
             ->whereBetween('date_overtime', [$startDate, $endDate])
@@ -247,10 +266,12 @@ class OvertimeApplicationController extends Controller
     {
         $startDate = Carbon::now()->startOfMonth();
         $endDate = Carbon::now()->endOfMonth();
+        $allowedJabatanIds = $this->allowedTargetJabatanIds();
 
-        return Overtime::whereHas('user', function ($q) {
+        return Overtime::whereHas('user', function ($q) use ($allowedJabatanIds) {
             $q->where('role_id', '!=', 2)
                 ->where('kerjasama_id', '!=', 1)
+                ->when(!empty($allowedJabatanIds), fn($userQuery) => $userQuery->whereIn('jabatan_id', $allowedJabatanIds))
                 ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
         })
             ->whereBetween('date_overtime', [$startDate, $endDate])
@@ -278,5 +299,20 @@ class OvertimeApplicationController extends Controller
         }
 
         return max((int) session($sessionKey, 0), 0);
+    }
+
+    private function allowedTargetJabatanIds(): array
+    {
+        $authJabatanId = (int) (auth()->user()->jabatan_id ?? 0);
+
+        if ($authJabatanId === 35) {
+            return [8, 11, 16, 17, 18];
+        }
+
+        if ($authJabatanId === 20) {
+            return [9, 10, 34, 36];
+        }
+
+        return [];
     }
 }
