@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SPVW_Controller;
 
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\SPVW_Controller\Concerns\HasAllowedSeeData;
 use App\Models\Jabatan;
 use App\Models\PersonIn;
 use App\Models\RekapDueDateSetting;
@@ -16,14 +17,15 @@ use Illuminate\Validation\Rule;
 
 class PersonInController extends Controller
 {
-    use UsesToastRedirects;
+    use UsesToastRedirects, HasAllowedSeeData;
 
     public function index()
     {
         $jabatans = Jabatan::select(['id', 'name_jabatan'])
-            ->where('type_jabatan', auth()->user()->jabatan->type_jabatan)
+            ->whereIn('id', $this->allowedSeeData())
             ->orderBy('name_jabatan')
             ->get();
+
 
         $users = User::select(['id', 'nama_lengkap', 'jabatan_id'])
             ->where('role_id', '!=', 2)
@@ -461,4 +463,3 @@ class PersonInController extends Controller
         return [];
     }
 }
-

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\HasAllowedSeeData;
 use App\Models\PersonIn;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PersonInController extends RekapController
 {
+    use HasAllowedSeeData;
     public function index(Request $request, $kerjasama)
     {
         $kerjasamaModel = \App\Models\Kerjasama::findOrFail($kerjasama);
@@ -45,4 +47,3 @@ class PersonInController extends RekapController
         }
     }
 }
-

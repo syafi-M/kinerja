@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\HasAllowedSeeData;
 use App\Models\PersonOut;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PersonOutController extends RekapController
 {
+    use HasAllowedSeeData;
     public function index(Request $request, $kerjasama)
     {
         $startDate = Carbon::now()->startOfMonth()->startOfDay();
@@ -53,4 +55,3 @@ class PersonOutController extends RekapController
         }
     }
 }
-
