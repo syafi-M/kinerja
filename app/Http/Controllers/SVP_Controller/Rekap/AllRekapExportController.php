@@ -104,7 +104,6 @@ class AllRekapExportController extends RekapController
         if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
         return $query->whereYear('out_date', $date->year)
-            ->whereMonth('out_date', $date->month)
             ->orderBy('user_id')
             ->orderBy('out_date')
             ->get();
@@ -240,7 +239,6 @@ class AllRekapExportController extends RekapController
             }
 
             $personOutsQuery->whereYear('out_date', $date->year)
-                ->whereMonth('out_date', $date->month)
                 ->orderBy('user_id')
                 ->orderBy('out_date');
             // Build cuttings query

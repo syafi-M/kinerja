@@ -17,7 +17,7 @@ class PersonInController extends RekapController
         $personIn = PersonIn::with('jabatan')
             ->where('client_id', $kerjasamaModel->client_id)
             ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
-            ->whereHas('user', fn($q) => $q->whereIn('jabatan_id', $this->allowedSeeData()))
+            ->whereIn('jabatan_id', $this->allowedSeeData())
             ->when($request->month, function ($q) use ($request) {
                 $date = Carbon::createFromFormat('Y-m', $request->month);
                 $q->whereYear('date_in', $date->year)
