@@ -89,10 +89,16 @@ class AllRekapExportController extends RekapController
     {
         $date = Carbon::createFromFormat('Y-m', $month);
 
-        $query = PersonOut::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.kerjasama.client:id,name', 'createdBy:id,nama_lengkap'])
+        $query = PersonOut::with([
+            'user' => fn($q) => $q->withTrashed(),
+            'user.kerjasama.client',
+            'createdBy:id,nama_lengkap'
+        ])
             ->whereHas('user', function ($q) use ($clientId) {
-                $q->withTrashed()->whereNotNull('nama_lengkap')->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
-                $q->whereIn('jabatan_id', $this->allowedSeeData());
+                $q->withTrashed()
+                    ->whereNotNull('nama_lengkap')
+                    ->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
             });
 
         if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
@@ -216,17 +222,27 @@ class AllRekapExportController extends RekapController
                 ->orderBy('date_in');
 
             // Build person_outs query
-            $personOutsQuery = PersonOut::with(['user:id,nama_lengkap,kerjasama_id,jabatan_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan', 'user.kerjasama.client:id,name'])
+            $personOutsQuery = PersonOut::with([
+                'user' => fn($q) => $q->withTrashed(),
+                'user.kerjasama.client',
+                'user.jabatan:id,name_jabatan',
+                'createdBy:id,nama_lengkap'
+            ])
                 ->whereHas('user', function ($q) use ($clients) {
-                    $q->withTrashed()->whereNotNull('nama_lengkap')->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients));
-                    $q->whereIn('jabatan_id', $this->allowedSeeData());
+                    $q->withTrashed()
+                        ->whereNotNull('nama_lengkap')
+                        ->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+
+            if (! $includeAllStatus) {
+                $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            }
+
             $personOutsQuery->whereYear('out_date', $date->year)
                 ->whereMonth('out_date', $date->month)
                 ->orderBy('user_id')
                 ->orderBy('out_date');
-
             // Build cuttings query
             $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
                 ->whereHas('user', function ($q) use ($clients) {

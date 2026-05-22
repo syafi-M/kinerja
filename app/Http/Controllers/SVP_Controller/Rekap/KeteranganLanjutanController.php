@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\HasAllowedSeeData;
 use App\Models\KeteranganLanjutan;
 use Illuminate\Http\Request;
 
 class KeteranganLanjutanController extends RekapController
 {
+    use HasAllowedSeeData;
     public function index()
     {
         $keteranganLanjutans = KeteranganLanjutan::with('user:id,nama_lengkap,kerjasama_id')
@@ -19,7 +21,7 @@ class KeteranganLanjutanController extends RekapController
             ->latest()
             ->paginate(15)
             ->withQueryString();
-        
+
         return response()->json([
             'success' => true,
             'data' => $keteranganLanjutans,

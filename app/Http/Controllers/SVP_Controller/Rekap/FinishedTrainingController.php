@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\SVP_Controller\Rekap;
 
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\HasAllowedSeeData;
 use App\Models\FinishedTraining;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class FinishedTrainingController extends RekapController
 {
+    use HasAllowedSeeData;
     public function index(Request $request, $kerjasama)
     {
         \App\Models\Kerjasama::findOrFail($kerjasama);
@@ -53,4 +55,3 @@ class FinishedTrainingController extends RekapController
         }
     }
 }
-
