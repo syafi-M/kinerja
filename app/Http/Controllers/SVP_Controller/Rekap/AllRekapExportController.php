@@ -20,165 +20,179 @@ class AllRekapExportController extends RekapController
     public function getAllRekapData(Request $request, $kerjasama)
     {
         try {
-            $kerjasamaModel = Kerjasama::with('client')->findOrFail($kerjasama);
-            $clientId = $kerjasamaModel->client_id;
             $month = $request->input('month', now()->format('Y-m'));
-            $includeAllStatus = false; // Debug parameter
+            $date = Carbon::createFromFormat('Y-m', $month);
+            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
+            $endDate = $date->copy()->setDay(25)->endOfDay();
+            $includeAllStatus = false; // Debug parameter to include all status
+
+            // Get all unique clients from kerjasama table
+            $clients = Kerjasama::whereIn('client_id', function ($query) use ($kerjasama) {
+                $query->select('client_id')
+                    ->from('kerjasamas')
+                    ->where('id', $kerjasama);
+            })->distinct()->pluck('client_id');
+
+            // If no clients, return empty success response
+            if ($clients->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'overtimes' => [],
+                        'person_ins' => [],
+                        'person_outs' => [],
+                        'cuttings' => [],
+                        'finished_trainings' => [],
+                        'keterangan_lanjutan' => [],
+                        'client' => ['name' => 'Semua Mitra'],
+                        'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
+                    ]
+                ]);
+            }
+
+            // Build overtimes query
+            $overtimesQuery = Overtime::with([
+                'user:id,id,nama_lengkap,kerjasama_id,jabatan_id',
+                'user.kerjasama:id,client_id',
+                'user.kerjasama.client:id,name',
+                'user.jabatan:id,name_jabatan'
+            ])->whereHas('user', function ($q) use ($clients) {
+                $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            });
+            if (!$includeAllStatus) $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            $overtimesQuery = $overtimesQuery->join('users', 'overtimes.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $overtimesQuery->whereBetween('date_overtime', [$startDate, $endDate]);
+            } else {
+                $overtimesQuery->whereYear('date_overtime', $date->year)
+                    ->whereMonth('date_overtime', $date->month);
+            }
+            $overtimes = $overtimesQuery->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
+                ->orderBy('user_id')
+                ->orderBy('date_overtime')
+                ->get();
+
+            // Build person_ins query
+            $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
+                ->whereIn('client_id', $clients)
+                ->whereIn('jabatan_id', $this->allowedSeeData());
+            if (!$includeAllStatus) $personInsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            if ($startDate && $endDate) {
+                $personInsQuery->whereBetween('date_in', [$startDate, $endDate]);
+            } else {
+                $personInsQuery->whereYear('date_in', $date->year)
+                    ->whereMonth('date_in', $date->month);
+            }
+            $personIns = $personInsQuery->orderBy('date_in')->get();
+
+            // Build person_outs query
+            $personOutsQuery = PersonOut::with([
+                'user' => fn($q) => $q->withTrashed(),
+                'user.kerjasama.client',
+                'user.jabatan:id,name_jabatan',
+                'createdBy:id,nama_lengkap'
+            ])->whereHas('user', function ($q) use ($clients) {
+                $q->withTrashed()
+                    ->whereNotNull('nama_lengkap')
+                    ->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            });
+            if (!$includeAllStatus) $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            $personOutsQuery = $personOutsQuery->join('users', 'person_outs.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $personOutsQuery->whereBetween('out_date', [$startDate, $endDate]);
+            } else {
+                $personOutsQuery->whereYear('out_date', $date->year);
+            }
+            $personOuts = $personOutsQuery->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
+                ->orderBy('user_id')
+                ->orderBy('out_date')
+                ->get();
+
+            // Build cuttings query
+            $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                });
+            if (!$includeAllStatus) $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            $cuttingsQuery = $cuttingsQuery->join('users', 'performance_cuts.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $cuttingsQuery->whereBetween('date_cut', [$startDate, $endDate]);
+            } else {
+                $cuttingsQuery->whereYear('date_cut', $date->year)
+                    ->whereMonth('date_cut', $date->month);
+            }
+            $cuttings = $cuttingsQuery->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
+                ->orderBy('user_id')
+                ->orderBy('date_cut')
+                ->get();
+
+            // Build finished trainings query
+            $finishedTrainingsQuery = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                });
+            if (!$includeAllStatus) $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            $finishedTrainingsQuery = $finishedTrainingsQuery->join('users', 'finished_trainings.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $finishedTrainingsQuery->whereBetween('date_finish_train', [$startDate, $endDate]);
+            } else {
+                $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
+                    ->whereMonth('date_finish_train', $date->month);
+            }
+            $finishedTrainings = $finishedTrainingsQuery->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
+                ->orderBy('user_id')
+                ->orderBy('date_finish_train')
+                ->get();
+
+            // Build keterangan_lanjutan query
+            $keteranganQuery = KeteranganLanjutan::with([
+                'user:id,nama_lengkap,kerjasama_id,jabatan_id',
+                'user.kerjasama:id,client_id',
+                'user.kerjasama.client:id,name',
+                'user.jabatan:id,name_jabatan'
+            ])->whereHas('user', function ($q) use ($clients) {
+                $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            })->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $keterangan = $keteranganQuery->whereBetween('keterangan_lanjutans.created_at', [$startDate, $endDate])
+                    ->orderBy('users.kerjasama_id')
+                    ->orderBy('users.jabatan_id')
+                    ->orderBy('keterangan_lanjutans.created_at')
+                    ->get();
+            } else {
+                $keterangan = $keteranganQuery->whereYear('keterangan_lanjutans.created_at', $date->year)
+                    ->whereMonth('keterangan_lanjutans.created_at', $date->month)
+                    ->orderBy('users.kerjasama_id')
+                    ->orderBy('users.jabatan_id')
+                    ->orderBy('keterangan_lanjutans.created_at')
+                    ->get();
+            }
 
             $data = [
-                'overtimes' => $this->getOvertimesPerMitra($clientId, $month, $includeAllStatus),
-                'person_ins' => $this->getPersonInsPerMitra($clientId, $month, $includeAllStatus),
-                'person_outs' => $this->getPersonOutsPerMitra($clientId, $month, $includeAllStatus),
-                'cuttings' => $this->getCuttingsPerMitra($clientId, $month, $includeAllStatus),
-                'finished_trainings' => $this->getFinishedTrainingsPerMitra($clientId, $month, $includeAllStatus),
-                'keterangan_lanjutan' => $this->getKeteranganLanjutansPerMitra($clientId, $month),
-                'client' => $kerjasamaModel->client,
-                'period' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
+                'overtimes' => $this->transformOvertimes($overtimes),
+                'person_ins' => $personIns,
+                'person_outs' => $personOuts,
+                'cuttings' => $cuttings,
+                'finished_trainings' => $finishedTrainings,
+                'keterangan_lanjutan' => $keterangan,
+                'client' => ['name' => 'Semua Mitra'],
+                'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
             ];
 
             return response()->json(['success' => true, 'data' => $data]);
-        } catch (\Throwable $e) {
+        } catch (
+        Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-    }
-
-    private function getOvertimesPerMitra($clientId, $month, $includeAllStatus = false)
-    {
-        $date = Carbon::createFromFormat('Y-m', $month);
-
-        $query = Overtime::with([
-            'user:id,id,nama_lengkap,kerjasama_id,jabatan_id',
-            'user.kerjasama:id,client_id',
-            'user.kerjasama.client:id,name',
-            'user.jabatan:id,name_jabatan',
-            'createdBy:id,nama_lengkap'
-        ])
-            ->whereHas('user', function ($q) use ($clientId) {
-                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
-            });
-
-        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
-
-        $overtimes = $query->join('users', 'overtimes.user_id', '=', 'users.id')
-            ->whereYear('date_overtime', $date->year)
-            ->whereMonth('date_overtime', $date->month)
-            ->orderBy('users.kerjasama_id')
-            ->orderBy('users.jabatan_id')
-            ->orderBy('user_id')
-            ->orderBy('date_overtime')
-            ->get();
-
-        return $this->transformOvertimes($overtimes);
-    }
-
-    private function getPersonInsPerMitra($clientId, $month, $includeAllStatus = false)
-    {
-        $date = Carbon::createFromFormat('Y-m', $month);
-
-        $query = PersonIn::with(['jabatan:id,name_jabatan', 'createdBy:id,nama_lengkap'])
-            ->where('client_id', $clientId)
-            ->whereIn('jabatan_id', $this->allowedSeeData());
-
-        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
-
-        return $query->whereYear('date_in', $date->year)
-            ->whereMonth('date_in', $date->month)
-            ->orderBy('client_id')
-            ->orderBy('jabatan_id')
-            ->orderBy('date_in')
-            ->get();
-    }
-
-    private function getPersonOutsPerMitra($clientId, $month, $includeAllStatus = false)
-    {
-        $date = Carbon::createFromFormat('Y-m', $month);
-
-        $query = PersonOut::with([
-            'user' => fn($q) => $q->withTrashed(),
-            'user.kerjasama.client',
-            'createdBy:id,nama_lengkap'
-        ])
-            ->whereHas('user', function ($q) use ($clientId) {
-                $q->withTrashed()
-                    ->whereNotNull('nama_lengkap')
-                    ->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
-            });
-
-        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
-
-        return $query->join('users', 'person_outs.user_id', '=', 'users.id')
-            ->whereYear('out_date', $date->year)
-            ->orderBy('users.kerjasama_id')
-            ->orderBy('users.jabatan_id')
-            ->orderBy('user_id')
-            ->orderBy('out_date')
-            ->get();
-    }
-
-    private function getCuttingsPerMitra($clientId, $month, $includeAllStatus = false)
-    {
-        $date = Carbon::createFromFormat('Y-m', $month);
-
-        $query = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'createdBy:id,nama_lengkap'])
-            ->whereHas('user', function ($q) use ($clientId) {
-                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
-            });
-
-        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
-
-        return $query->join('users', 'performance_cuts.user_id', '=', 'users.id')
-            ->whereYear('date_cut', $date->year)
-            ->whereMonth('date_cut', $date->month)
-            ->orderBy('users.kerjasama_id')
-            ->orderBy('users.jabatan_id')
-            ->orderBy('user_id')
-            ->orderBy('date_cut')
-            ->get();
-    }
-
-    private function getFinishedTrainingsPerMitra($clientId, $month, $includeAllStatus = false)
-    {
-        $date = Carbon::createFromFormat('Y-m', $month);
-
-        $query = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'createdBy:id,nama_lengkap'])
-            ->whereHas('user', function ($q) use ($clientId) {
-                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
-            });
-
-        if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
-
-        return $query->join('users', 'finished_trainings.user_id', '=', 'users.id')
-            ->whereYear('date_finish_train', $date->year)
-            ->whereMonth('date_finish_train', $date->month)
-            ->orderBy('users.kerjasama_id')
-            ->orderBy('users.jabatan_id')
-            ->orderBy('user_id')
-            ->orderBy('date_finish_train')
-            ->get();
-    }
-
-    private function getKeteranganLanjutansPerMitra($clientId, $month)
-    {
-        $date = Carbon::createFromFormat('Y-m', $month);
-
-        return KeteranganLanjutan::with([
-            'user:id,nama_lengkap,kerjasama_id,jabatan_id',
-            'user.kerjasama:id,client_id',
-            'user.kerjasama.client:id,name',
-            'user.jabatan:id,name_jabatan'
-        ])
-            ->whereHas('user', function ($q) use ($clientId) {
-                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
-            })
-            ->whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
-            ->orderBy('created_at')
-            ->get();
     }
 
     public function getGlobalRekapData(Request $request)
@@ -186,6 +200,8 @@ class AllRekapExportController extends RekapController
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
+            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
+            $endDate = $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
             // Get all unique clients from kerjasama table
@@ -203,119 +219,164 @@ class AllRekapExportController extends RekapController
                         'finished_trainings' => [],
                         'keterangan_lanjutan' => [],
                         'client' => ['name' => 'Semua Mitra'],
-                        'period' => $date->format('F Y'),
-                    ]
+                        'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
+                    ],
                 ]);
             }
 
-            // Build overtimes query
             $overtimesQuery = Overtime::with([
                 'user:id,id,nama_lengkap,kerjasama_id,jabatan_id',
                 'user.kerjasama:id,client_id',
                 'user.kerjasama.client:id,name',
-                'user.jabatan:id,name_jabatan'
+                'user.jabatan:id,name_jabatan',
             ])
-                ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
-                        ->whereIn('jabatan_id', $this->allowedSeeData());
+            ->whereHas('user', function ($q) use ($clients) {
+                $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
+                ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $overtimesQuery->join('users', 'overtimes.user_id', '=', 'users.id')
-                ->whereYear('date_overtime', $date->year)
-                ->whereMonth('date_overtime', $date->month)
+            if (!$includeAllStatus) {
+                $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            }
+            $overtimesQuery = $overtimesQuery->join('users', 'overtimes.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $overtimesQuery->whereBetween('date_overtime', [$startDate, $endDate]);
+            } else {
+                $overtimesQuery->whereYear('date_overtime', $date->year)
+                    ->whereMonth('date_overtime', $date->month);
+            }
+            $overtimes = $overtimesQuery
                 ->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
-                ->orderBy('date_overtime');
+                ->orderBy('date_overtime')
+                ->get();
 
-            // Build person_ins query
             $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
                 ->whereIn('client_id', $clients)
                 ->whereIn('jabatan_id', $this->allowedSeeData());
-            if (!$includeAllStatus) $personInsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $personInsQuery->whereYear('date_in', $date->year)
-                ->whereMonth('date_in', $date->month)
-                ->orderBy('date_in');
+            if (!$includeAllStatus) {
+                $personInsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            }
+            if ($startDate && $endDate) {
+                $personInsQuery->whereBetween('date_in', [$startDate, $endDate]);
+            } else {
+                $personInsQuery->whereYear('date_in', $date->year)
+                    ->whereMonth('date_in', $date->month);
+            }
+            $personIns = $personInsQuery->orderBy('date_in')->get();
 
-            // Build person_outs query
             $personOutsQuery = PersonOut::with([
-                'user' => fn($q) => $q->withTrashed(),
+                'user' => fn ($q) => $q->withTrashed(),
                 'user.kerjasama.client',
                 'user.jabatan:id,name_jabatan',
-                'createdBy:id,nama_lengkap'
+                'createdBy:id,nama_lengkap',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
                     $q->withTrashed()
                         ->whereNotNull('nama_lengkap')
-                        ->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-
-            if (! $includeAllStatus) {
+            if (!$includeAllStatus) {
                 $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             }
-
-            $personOutsQuery->join('users', 'person_outs.user_id', '=', 'users.id')
-                ->whereYear('out_date', $date->year)
-                ->orderBy('users.kerjasama_id')
+            $personOutsQuery = $personOutsQuery->join('users', 'person_outs.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $personOutsQuery->whereBetween('out_date', [$startDate, $endDate]);
+            } else {
+                $personOutsQuery->whereYear('out_date', $date->year);
+            }
+            $personOuts = $personOutsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
-                ->orderBy('out_date');
-            // Build cuttings query
-            $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
+                ->orderBy('out_date')
+                ->get();
+
+            $cuttingsQuery = PerformanceCuts::with([
+                'user:id,nama_lengkap,kerjasama_id',
+                'user.kerjasama:id,client_id',
+                'user.jabatan:id,name_jabatan',
+            ])
                 ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $cuttingsQuery->join('users', 'performance_cuts.user_id', '=', 'users.id')
-                ->whereYear('date_cut', $date->year)
-                ->whereMonth('date_cut', $date->month)
-                ->orderBy('users.kerjasama_id')
+            if (!$includeAllStatus) {
+                $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            }
+            $cuttingsQuery = $cuttingsQuery->join('users', 'performance_cuts.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $cuttingsQuery->whereBetween('date_cut', [$startDate, $endDate]);
+            } else {
+                $cuttingsQuery->whereYear('date_cut', $date->year)
+                    ->whereMonth('date_cut', $date->month);
+            }
+            $cuttings = $cuttingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
-                ->orderBy('date_cut');
+                ->orderBy('date_cut')
+                ->get();
 
-            // Build finished trainings query
-            $finishedTrainingsQuery = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
+            $finishedTrainingsQuery = FinishedTraining::with([
+                'user:id,nama_lengkap,kerjasama_id',
+                'user.kerjasama:id,client_id',
+                'user.jabatan:id,name_jabatan',
+            ])
                 ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
-            if (!$includeAllStatus) $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $finishedTrainingsQuery->join('users', 'finished_trainings.user_id', '=', 'users.id')
-                ->whereYear('date_finish_train', $date->year)
-                ->whereMonth('date_finish_train', $date->month)
-                ->orderBy('users.kerjasama_id')
+            if (!$includeAllStatus) {
+                $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
+            }
+            $finishedTrainingsQuery = $finishedTrainingsQuery->join('users', 'finished_trainings.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $finishedTrainingsQuery->whereBetween('date_finish_train', [$startDate, $endDate]);
+            } else {
+                $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
+                    ->whereMonth('date_finish_train', $date->month);
+            }
+            $finishedTrainings = $finishedTrainingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
-                ->orderBy('date_finish_train');
+                ->orderBy('date_finish_train')
+                ->get();
 
-            $data = [
-                'overtimes' => $this->transformOvertimes($overtimesQuery->get()),
-                'person_ins' => $personInsQuery->get(),
-                'person_outs' => $personOutsQuery->get(),
-                'cuttings' => $cuttingsQuery->get(),
-                'finished_trainings' => $finishedTrainingsQuery->get(),
-                'keterangan_lanjutan' => KeteranganLanjutan::with([
-                    'user:id,nama_lengkap,kerjasama_id,jabatan_id',
-                    'user.kerjasama:id,client_id',
-                    'user.kerjasama.client:id,name',
-                    'user.jabatan:id,name_jabatan'
-                ])
-                    ->whereHas('user', function ($q) use ($clients) {
-                        $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
-                            ->whereIn('jabatan_id', $this->allowedSeeData());
-                    })
-                    ->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id')
-                    ->whereYear('keterangan_lanjutans.created_at', $date->year)
+            $keteranganQuery = KeteranganLanjutan::with([
+                'user:id,nama_lengkap,kerjasama_id,jabatan_id',
+                'user.kerjasama:id,client_id',
+                'user.kerjasama.client:id,name',
+                'user.jabatan:id,name_jabatan',
+            ])
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
+                })
+                ->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id');
+            if ($startDate && $endDate) {
+                $keterangan = $keteranganQuery->whereBetween('keterangan_lanjutans.created_at', [$startDate, $endDate])
+                    ->orderBy('users.kerjasama_id')
+                    ->orderBy('users.jabatan_id')
+                    ->orderBy('keterangan_lanjutans.created_at')
+                    ->get();
+            } else {
+                $keterangan = $keteranganQuery->whereYear('keterangan_lanjutans.created_at', $date->year)
                     ->whereMonth('keterangan_lanjutans.created_at', $date->month)
                     ->orderBy('users.kerjasama_id')
                     ->orderBy('users.jabatan_id')
                     ->orderBy('keterangan_lanjutans.created_at')
-                    ->get(),
+                    ->get();
+            }
+
+            $data = [
+                'overtimes' => $this->transformOvertimes($overtimes),
+                'person_ins' => $personIns,
+                'person_outs' => $personOuts,
+                'cuttings' => $cuttings,
+                'finished_trainings' => $finishedTrainings,
+                'keterangan_lanjutan' => $keterangan,
                 'client' => ['name' => 'Semua Mitra'],
-                'period' => $date->format('F Y'),
+                'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
             ];
 
             return response()->json(['success' => true, 'data' => $data]);

@@ -198,6 +198,8 @@
                     mitra: (item.user?.kerjasama?.client?.name || "-").toUpperCase(),
                     posisi: (item.user?.jabatan?.name_jabatan || "-").toUpperCase(),
                     tanggal: this.fmt(item.date_overtime),
+                    kerjasama_id: item.user?.kerjasama_id,
+                    jabatan_id: item.user?.jabatan_id,
                     hari: 0,
                     jam: [],
                     lainnya: [],
@@ -209,15 +211,33 @@
             else if (t === "lainnya" && item.type_overtime_manual)
                 grouped[key].lainnya.push(item.type_overtime_manual);
         });
-        const rows = Object.values(grouped).map((e, i) => ({
+        // Sort berdasarkan kerjasama_id, jabatan_id, nama_lengkap (match controller order)
+        const sortedKeys = Object.keys(grouped).sort((a, b) => {
+            const userA = grouped[a];
+            const userB = grouped[b];
+            // Sort by kerjasama_id
+            if (userA.kerjasama_id !== userB.kerjasama_id) {
+                return userA.kerjasama_id - userB.kerjasama_id;
+            }
+
+            // Sort by jabatan_id
+            if (userA.jabatan_id !== userB.jabatan_id) {
+                return userA.jabatan_id - userB.jabatan_id;
+            }
+
+            // Sort by nama (fallback)
+            return userA.nama.localeCompare(userB.nama);
+        });
+
+        const rows = sortedKeys.map((key, i) => ({
             no: i + 1,
-            nama_karyawan: e.nama,
-            mitra_kerja: e.mitra,
-            posisi: e.posisi,
-            tanggal: e.tanggal,
-            hari: e.hari > 0 ? `${e.hari} hari` : "-",
-            jam: e.jam.length ? e.jam.join(", ") : "-",
-            lainnya: e.lainnya.length ? e.lainnya.join(", ") : "-",
+            nama_karyawan: grouped[key].nama,
+            mitra_kerja: grouped[key].mitra,
+            posisi: grouped[key].posisi,
+            tanggal: grouped[key].tanggal,
+            hari: grouped[key].hari > 0 ? `${grouped[key].hari} hari` : "-",
+            jam: grouped[key].jam.length ? grouped[key].jam.join(", ") : "-",
+            lainnya: grouped[key].lainnya.length ? grouped[key].lainnya.join(", ") : "-",
         }));
         if (!rows.length && showEmpty)
             return [
