@@ -60,8 +60,11 @@ class AllRekapExportController extends RekapController
 
         if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
-        $overtimes = $query->whereYear('date_overtime', $date->year)
+        $overtimes = $query->join('users', 'overtimes.user_id', '=', 'users.id')
+            ->whereYear('date_overtime', $date->year)
             ->whereMonth('date_overtime', $date->month)
+            ->orderBy('users.kerjasama_id')
+            ->orderBy('users.jabatan_id')
             ->orderBy('user_id')
             ->orderBy('date_overtime')
             ->get();
@@ -81,6 +84,8 @@ class AllRekapExportController extends RekapController
 
         return $query->whereYear('date_in', $date->year)
             ->whereMonth('date_in', $date->month)
+            ->orderBy('client_id')
+            ->orderBy('jabatan_id')
             ->orderBy('date_in')
             ->get();
     }
@@ -103,7 +108,10 @@ class AllRekapExportController extends RekapController
 
         if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
-        return $query->whereYear('out_date', $date->year)
+        return $query->join('users', 'person_outs.user_id', '=', 'users.id')
+            ->whereYear('out_date', $date->year)
+            ->orderBy('users.kerjasama_id')
+            ->orderBy('users.jabatan_id')
             ->orderBy('user_id')
             ->orderBy('out_date')
             ->get();
@@ -121,8 +129,11 @@ class AllRekapExportController extends RekapController
 
         if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
-        return $query->whereYear('date_cut', $date->year)
+        return $query->join('users', 'performance_cuts.user_id', '=', 'users.id')
+            ->whereYear('date_cut', $date->year)
             ->whereMonth('date_cut', $date->month)
+            ->orderBy('users.kerjasama_id')
+            ->orderBy('users.jabatan_id')
             ->orderBy('user_id')
             ->orderBy('date_cut')
             ->get();
@@ -140,8 +151,11 @@ class AllRekapExportController extends RekapController
 
         if (!$includeAllStatus) $query->whereNotIn('status', ['Di Tolak', 'Pending']);
 
-        return $query->whereYear('date_finish_train', $date->year)
+        return $query->join('users', 'finished_trainings.user_id', '=', 'users.id')
+            ->whereYear('date_finish_train', $date->year)
             ->whereMonth('date_finish_train', $date->month)
+            ->orderBy('users.kerjasama_id')
+            ->orderBy('users.jabatan_id')
             ->orderBy('user_id')
             ->orderBy('date_finish_train')
             ->get();
@@ -206,8 +220,11 @@ class AllRekapExportController extends RekapController
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $overtimesQuery->whereYear('date_overtime', $date->year)
+            $overtimesQuery->join('users', 'overtimes.user_id', '=', 'users.id')
+                ->whereYear('date_overtime', $date->year)
                 ->whereMonth('date_overtime', $date->month)
+                ->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
                 ->orderBy('date_overtime');
 
@@ -238,7 +255,10 @@ class AllRekapExportController extends RekapController
                 $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             }
 
-            $personOutsQuery->whereYear('out_date', $date->year)
+            $personOutsQuery->join('users', 'person_outs.user_id', '=', 'users.id')
+                ->whereYear('out_date', $date->year)
+                ->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
                 ->orderBy('out_date');
             // Build cuttings query
@@ -248,8 +268,11 @@ class AllRekapExportController extends RekapController
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $cuttingsQuery->whereYear('date_cut', $date->year)
+            $cuttingsQuery->join('users', 'performance_cuts.user_id', '=', 'users.id')
+                ->whereYear('date_cut', $date->year)
                 ->whereMonth('date_cut', $date->month)
+                ->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
                 ->orderBy('date_cut');
 
@@ -260,8 +283,11 @@ class AllRekapExportController extends RekapController
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
-            $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
+            $finishedTrainingsQuery->join('users', 'finished_trainings.user_id', '=', 'users.id')
+                ->whereYear('date_finish_train', $date->year)
                 ->whereMonth('date_finish_train', $date->month)
+                ->orderBy('users.kerjasama_id')
+                ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
                 ->orderBy('date_finish_train');
 
@@ -281,9 +307,12 @@ class AllRekapExportController extends RekapController
                         $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                             ->whereIn('jabatan_id', $this->allowedSeeData());
                     })
-                    ->whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
-                    ->orderBy('created_at')
+                    ->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id')
+                    ->whereYear('keterangan_lanjutans.created_at', $date->year)
+                    ->whereMonth('keterangan_lanjutans.created_at', $date->month)
+                    ->orderBy('users.kerjasama_id')
+                    ->orderBy('users.jabatan_id')
+                    ->orderBy('keterangan_lanjutans.created_at')
                     ->get(),
                 'client' => ['name' => 'Semua Mitra'],
                 'period' => $date->format('F Y'),

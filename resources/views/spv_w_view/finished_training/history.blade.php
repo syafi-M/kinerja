@@ -31,7 +31,7 @@
 
             <div class="p-3 mb-4 bg-white border rounded-lg shadow-sm border-slate-200 sm:p-4">
                 <form action="{{ route('spvw.finished-training.history', array_filter(['client_id' => $spvwClientId])) }}" method="GET"
-                    class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    class="grid grid-cols-1 gap-3 sm:grid-cols-4">
                     <select name="status"
                         class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         <option value="">Semua Status</option>
@@ -64,10 +64,10 @@
             <div id="alertBox" class="mb-4"></div>
 
             <div class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
-                <div class="space-y-3 p-3 sm:hidden">
+                <div class="p-3 space-y-3 sm:hidden">
                     @forelse($finishedTrainings as $index => $item)
                         <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
-                            <div class="mb-3 flex items-start justify-between gap-3">
+                            <div class="flex items-start justify-between gap-3 mb-3">
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-800">
                                         {{ $item->user->nama_lengkap ?? '-' }}</p>
@@ -92,7 +92,7 @@
                                             class="ri-time-fill"></i>Pending</span>
                                 @endif
                             </div>
-                            <div class="mb-4 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                            <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-slate-600">
                                 <div class="p-2 rounded-lg bg-slate-50">
                                     <span class="block text-slate-400">Tanggal Lepas Training</span>
                                     <span
@@ -131,7 +131,7 @@
                         </div>
                     @empty
                         <div class="px-4 py-10 text-center">
-                            <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-slate-100">
+                            <div class="flex items-center justify-center mx-auto rounded-full w-14 h-14 bg-slate-100">
                                 <i class="text-3xl ri-inbox-line text-slate-400"></i>
                             </div>
                             <p class="mt-3 font-medium text-slate-600">Belum ada riwayat pengajuan lepas training</p>
@@ -163,7 +163,7 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @forelse($finishedTrainings as $index => $item)
-                                <tr class="hover:bg-slate-50 transition-colors">
+                                <tr class="transition-colors hover:bg-slate-50">
                                     <td class="px-4 py-4 text-sm text-slate-700">
                                         {{ $finishedTrainings->firstItem() + $index }}
                                     </td>
@@ -177,7 +177,7 @@
                                     <td class="px-4 py-4">
                                         @if (($item->status ?? 'pending') == 'Di Ajukan')
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"><i
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full"><i
                                                     class="ri-checkbox-circle-fill"></i>Di Ajukan</span>
                                         @elseif(($item->status ?? 'pending') == 'Di Setujui')
                                     <span
@@ -185,28 +185,28 @@
                                             class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                 @elseif(($item->status ?? 'pending') == 'Di Tolak')
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-lime-100 text-lime-700 text-xs font-medium"><i
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-lime-100 text-lime-700"><i
                                                     class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                         @else
                                             <span
-                                                class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium"><i
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full"><i
                                                     class="ri-time-fill"></i>Pending</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <button onclick="viewDetail({{ $item->id }})"
-                                                class="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center"
+                                                class="flex items-center justify-center text-blue-600 bg-blue-100 rounded-lg w-9 h-9 hover:bg-blue-200"
                                                 title="Lihat"><i class="ri-eye-line"></i></button>
                                             @if (($item->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                                 <button onclick="editData({{ $item->id }})"
-                                                    class="w-9 h-9 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-600 flex items-center justify-center"
+                                                    class="flex items-center justify-center text-yellow-600 bg-yellow-100 rounded-lg w-9 h-9 hover:bg-yellow-200"
                                                     title="Edit"><i class="ri-edit-line"></i></button>
                                                 <button onclick="deleteFinishedTraining({{ $item->id }})"
-                                                    class="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center"
+                                                    class="flex items-center justify-center text-red-600 bg-red-100 rounded-lg w-9 h-9 hover:bg-red-200"
                                                     title="Hapus"><i class="ri-delete-bin-line"></i></button>
                                                 <button onclick="sendFinishedTraining({{ $item->id }})"
-                                                    class="w-9 h-9 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center"
+                                                    class="flex items-center justify-center text-green-600 bg-green-100 rounded-lg w-9 h-9 hover:bg-green-200"
                                                     title="Ajukan"><i class="ri-send-plane-fill"></i></button>
                                             @endif
                                         </div>
@@ -219,7 +219,7 @@
                                             <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100">
                                                 <i class="text-3xl ri-inbox-line text-slate-400"></i>
                                             </div>
-                                            <p class="text-slate-600 font-medium">Belum ada riwayat pengajuan lepas training</p>
+                                            <p class="font-medium text-slate-600">Belum ada riwayat pengajuan lepas training</p>
                                         </div>
                                         <a href="{{ route('spvw.finished-training.index', array_filter(['client_id' => $spvwClientId])) }}"
                                             class="inline-flex items-center gap-2 px-6 py-2 mt-3 text-sm font-semibold rounded-lg min-h-10 bg-amber-400 text-slate-900"><i
@@ -231,7 +231,7 @@
                     </table>
                 </div>
                 @if ($finishedTrainings->total() > 0)
-                    <div class="border-t border-slate-200 px-4 py-4">
+                    <div class="px-4 py-4 border-t border-slate-200">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <form action="{{ route('spvw.finished-training.history', array_filter(['client_id' => $spvwClientId])) }}" method="GET"
                                 class="inline-flex items-center gap-2">
@@ -508,7 +508,7 @@
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         const errors = Object.values(xhr.responseJSON.errors).flat();
                         $('#formErrors').html(
-                            `<div class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"><div class="flex gap-2"><i class="ri-error-warning-line mt-0.5"></i><ul class="list-disc pl-4">${errors.map(err => `<li>${err}</li>`).join('')}</ul></div></div>`
+                            `<div class="px-4 py-3 text-sm border rounded-lg border-rose-200 bg-rose-50 text-rose-700"><div class="flex gap-2"><i class="ri-error-warning-line mt-0.5"></i><ul class="pl-4 list-disc">${errors.map(err => `<li>${err}</li>`).join('')}</ul></div></div>`
                         );
                     } else showAlert('error', xhr.responseJSON?.message ||
                         'Terjadi kesalahan saat memperbarui data lepas training. Silakan coba lagi.');

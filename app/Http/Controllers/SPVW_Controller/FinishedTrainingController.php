@@ -271,9 +271,7 @@ class FinishedTrainingController extends Controller
         return FinishedTraining::with(['user:id,name,nama_lengkap', 'createdBy:id,name,nama_lengkap'])
             ->select(['id', 'user_id', 'created_by_user_id', 'date_in', 'date_finish_train', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
-                $q->whereHas('jabatan', function ($jabatanQuery) {
-                        $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-                    })
+                $q->whereIn('jabatan_id', $this->allowedTargetJabatanIds())
                     ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
             });
     }

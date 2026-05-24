@@ -507,7 +507,7 @@
             <div class="space-y-3" id="clientList">
                 @forelse($client as $mitra)
                     <div
-                        class="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
+                        class="bg-white border border-gray-200 rounded-lg p-4 border-t-2 border-gray-200 border-t-gray-300 first:border-t-0 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <!-- Avatar and Info -->
                             @php

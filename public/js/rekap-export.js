@@ -85,6 +85,7 @@
             "Rekap Lembur",
             this.getOvertimeHeaders(),
             this.toBody(this.formatOvertimes(data.overtimes, true)),
+            2,
         );
         y = this.addSectionTable(
             doc,
@@ -92,6 +93,7 @@
             "Rekap Personil Keluar",
             this.getPersonOutHeaders(),
             this.toBody(this.formatPersonOuts(data.person_outs, true)),
+            2,
         );
         y = this.addSectionTable(
             doc,
@@ -124,6 +126,7 @@
             this.toBody(
                 this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
             ),
+            2,
         );
 
         doc.save(
@@ -131,7 +134,7 @@
         );
     }
 
-    addSectionTable(doc, y, title, headers, body) {
+    addSectionTable(doc, y, title, headers, body, groupColumnIndex = null) {
         if (y > 170) {
             doc.addPage();
             y = 14;
@@ -141,15 +144,42 @@
         doc.text(title, 14, y);
         y += 3;
 
+        const groupBoundaryRows = groupColumnIndex !== null
+            ? this.getGroupBoundaryRows(body, groupColumnIndex)
+            : [];
+
         doc.autoTable({
             head: [headers],
             body,
             startY: y,
-            styles: { fontSize: 8 },
+            styles: { fontSize: 8, lineWidth: 0.15, lineColor: [203, 213, 225] },
             headStyles: { fillColor: [37, 99, 235] },
             theme: "grid",
+            didDrawCell: (data) => {
+                if (data.section === "body" && groupBoundaryRows.includes(data.row.index)) {
+                    doc.setDrawColor(107, 114, 128);
+                    doc.setLineWidth(0.55);
+                    doc.line(
+                        data.cell.x,
+                        data.cell.y + data.cell.height,
+                        data.cell.x + data.cell.width,
+                        data.cell.y + data.cell.height,
+                    );
+                }
+            },
         });
         return doc.lastAutoTable.finalY + 6;
+    }
+
+    getGroupBoundaryRows(body, groupColumnIndex) {
+        if (!Array.isArray(body) || body.length === 0) return [];
+        const boundaries = [];
+        for (let i = 0; i < body.length - 1; i += 1) {
+            if (body[i][groupColumnIndex] !== body[i + 1][groupColumnIndex]) {
+                boundaries.push(i);
+            }
+        }
+        return boundaries;
     }
 
     toBody(rows) {
@@ -390,50 +420,56 @@
         return isNaN(d) ? "-" : d.toLocaleDateString("id-ID");
     }
 
+    prepareSheetFromJson(rows) {
+        const sheet = XLSX.utils.json_to_sheet(rows);
+        if (!sheet || !sheet['!ref']) return sheet;
+        const range = XLSX.utils.decode_range(sheet['!ref']);
+        const numCols = range.e.c - range.s.c + 1;
+        const numRows = range.e.r - range.s.r + 1;
+
+        // A4 landscape width in mm minus left/right margins used in PDF export
+        const a4LandscapeMm = 297;
+        const marginLeftMm = 14;
+        const marginRightMm = 14;
+        const usableWidthMm = a4LandscapeMm - marginLeftMm - marginRightMm;
+
+        // Rough conversion: 1 mm ~= 3.78 px, 1 Excel 'wch' ~= 7 px => wch per mm ~= 0.54
+        const mmToWch = 0.54;
+        const colMm = usableWidthMm / Math.max(1, numCols);
+        const colWch = Math.max(8, Math.round(colMm * mmToWch));
+
+        sheet['!cols'] = Array.from({ length: numCols }, () => ({ wch: colWch }));
+
+        // Row heights (points). Header slightly taller to mimic PDF header style.
+        const headerHpt = 18;
+        const bodyHpt = 16;
+        sheet['!rows'] = Array.from({ length: numRows }, (_, i) => ({ hpt: i === 0 ? headerHpt : bodyHpt }));
+
+        return sheet;
+    }
+
     // Global Export Methods
     exportGlobalToExcel(data) {
         const wb = XLSX.utils.book_new();
 
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(
-                this.formatOvertimes(data.overtimes, true),
-            ),
-            "Rekap Lembur",
-        );
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(
-                this.formatPersonOuts(data.person_outs, true),
-            ),
-            "Rekap Personil Keluar",
-        );
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(
-                this.formatPersonIns(data.person_ins, true),
-            ),
-            "Rekap Personil Masuk",
-        );
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(this.formatCuttings(data.cuttings, true)),
-            "Rekap Cutting",
-        );
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(
-                this.formatFinishedTrainings(data.finished_trainings, true),
-            ),
-            "Rekap Lepas Training",
-        );
-        XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.json_to_sheet(
-                this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
-            ),
-            "Rekap Keterangan Lanjutan",
-        );
+        // Use sized sheets so Excel column widths/row heights resemble PDF output
+        const sheet1 = this.prepareSheetFromJson(this.formatOvertimes(data.overtimes, true));
+        XLSX.utils.book_append_sheet(wb, sheet1, "Rekap Lembur");
+
+        const sheet2 = this.prepareSheetFromJson(this.formatPersonOuts(data.person_outs, true));
+        XLSX.utils.book_append_sheet(wb, sheet2, "Rekap Personil Keluar");
+
+        const sheet3 = this.prepareSheetFromJson(this.formatPersonIns(data.person_ins, true));
+        XLSX.utils.book_append_sheet(wb, sheet3, "Rekap Personil Masuk");
+
+        const sheet4 = this.prepareSheetFromJson(this.formatCuttings(data.cuttings, true));
+        XLSX.utils.book_append_sheet(wb, sheet4, "Rekap Cutting");
+
+        const sheet5 = this.prepareSheetFromJson(this.formatFinishedTrainings(data.finished_trainings, true));
+        XLSX.utils.book_append_sheet(wb, sheet5, "Rekap Lepas Training");
+
+        const sheet6 = this.prepareSheetFromJson(this.formatKeteranganLanjutan(data.keterangan_lanjutan, true));
+        XLSX.utils.book_append_sheet(wb, sheet6, "Rekap Keterangan Lanjutan");
 
         XLSX.writeFile(
             wb,
@@ -459,6 +495,7 @@
             "Rekap Lembur",
             this.getOvertimeHeaders(),
             this.toBody(this.formatOvertimes(data.overtimes, true)),
+            2,
         );
         y = this.addSectionTable(
             doc,
@@ -466,6 +503,7 @@
             "Rekap Personil Keluar",
             this.getPersonOutHeaders(),
             this.toBody(this.formatPersonOuts(data.person_outs, true)),
+            2,
         );
         y = this.addSectionTable(
             doc,
@@ -498,6 +536,7 @@
             this.toBody(
                 this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
             ),
+            2,
         );
 
         doc.save(
