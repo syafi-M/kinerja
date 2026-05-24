@@ -199,7 +199,6 @@
                     posisi: (item.user?.jabatan?.name_jabatan || "-").toUpperCase(),
                     tanggal: this.fmt(item.date_overtime),
                     kerjasama_id: item.user?.kerjasama_id,
-                    jabatan_id: item.user?.jabatan_id,
                     hari: 0,
                     jam: [],
                     lainnya: [],
@@ -215,15 +214,12 @@
         const sortedKeys = Object.keys(grouped).sort((a, b) => {
             const userA = grouped[a];
             const userB = grouped[b];
+            
             // Sort by kerjasama_id
             if (userA.kerjasama_id !== userB.kerjasama_id) {
                 return userA.kerjasama_id - userB.kerjasama_id;
             }
 
-            // Sort by jabatan_id
-            if (userA.jabatan_id !== userB.jabatan_id) {
-                return userA.jabatan_id - userB.jabatan_id;
-            }
 
             // Sort by nama (fallback)
             return userA.nama.localeCompare(userB.nama);
@@ -282,6 +278,7 @@
         const rows = d.map((r, i) => ({
             no: i + 1,
             nama: (r.fullname || r.user?.nama_lengkap || "-").toUpperCase(),
+            mitra_kerja: (r.client_name || r.client?.name || "-").toUpperCase(),
             jabatan: (r.jabatan?.name_jabatan || "-").toUpperCase(),
             tanggal_masuk: this.fmt(r.date_in),
             metode_gaji: (r.method_salary || "-").toUpperCase(),
@@ -292,6 +289,7 @@
                 {
                     no: "-",
                     nama: "TIDAK ADA DATA",
+                    mitra_kerja: "-",
                     jabatan: "-",
                     tanggal_masuk: "-",
                     metode_gaji: "-",
@@ -306,6 +304,7 @@
         const rows = d.map((r, i) => ({
             no: i + 1,
             nama: (r.user?.nama_lengkap || "-").toUpperCase(),
+            mitra_kerja: (r.user?.kerjasama?.client?.name || "-").toUpperCase(),
             tanggal_cutting: this.fmt(r.date_cut),
             jenis_cutting: (r.type_cut || "-").toUpperCase(),
             nominal: (r.manual_type_cut || "-").toUpperCase(),
@@ -316,6 +315,7 @@
                 {
                     no: "-",
                     nama: "TIDAK ADA DATA",
+                    mitra_kerja: "-",
                     tanggal_cutting: "-",
                     jenis_cutting: "-",
                     nominal: "-",
@@ -330,6 +330,7 @@
         const rows = d.map((r, i) => ({
             no: i + 1,
             nama: (r.user?.nama_lengkap || "-").toUpperCase(),
+            mitra_kerja: (r.user?.kerjasama?.client?.name || "-").toUpperCase(),
             tanggal_masuk: this.fmt(r.date_in),
             tanggal_selesai: this.fmt(r.date_finish_train),
             keterangan: (r.desc || "-").toUpperCase(),
@@ -339,6 +340,7 @@
                 {
                     no: "-",
                     nama: "TIDAK ADA DATA",
+                    mitra_kerja: "-",
                     tanggal_masuk: "-",
                     tanggal_selesai: "-",
                     keterangan: "-",
@@ -410,7 +412,8 @@
     getPersonInHeaders() {
         return [
             "No",
-            "Nama",
+            "Nama Karyawan",
+            "Mitra Kerja",
             "Jabatan",
             "Tanggal Masuk",
             "Metode Gaji",
@@ -420,7 +423,8 @@
     getCuttingHeaders() {
         return [
             "No",
-            "Nama",
+            "Nama Karyawan",
+            "Mitra Kerja",
             "Tanggal Cutting",
             "Jenis Cutting",
             "Nominal",
@@ -428,7 +432,7 @@
         ];
     }
     getFinishedTrainingHeaders() {
-        return ["No", "Nama", "Tanggal Masuk", "Tanggal Selesai", "Keterangan"];
+        return ["No", "Nama Karyawan", "Mitra Kerja", "Tanggal Masuk", "Tanggal Selesai", "Keterangan"];
     }
     getKeteranganLanjutanHeaders() {
         return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Tanggal", "Keterangan"];

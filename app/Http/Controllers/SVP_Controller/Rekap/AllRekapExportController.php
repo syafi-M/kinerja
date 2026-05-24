@@ -246,12 +246,9 @@ class AllRekapExportController extends RekapController
             }
             $overtimes = $overtimesQuery
                 ->orderBy('users.kerjasama_id')
-                ->orderBy('users.jabatan_id')
-                ->orderBy('user_id')
-                ->orderBy('date_overtime')
                 ->get();
 
-            $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
+            $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan', 'client:id,name'])
                 ->whereIn('client_id', $clients)
                 ->whereIn('jabatan_id', $this->allowedSeeData());
             if (!$includeAllStatus) {
@@ -296,6 +293,7 @@ class AllRekapExportController extends RekapController
                 'user:id,nama_lengkap,kerjasama_id',
                 'user.kerjasama:id,client_id',
                 'user.jabatan:id,name_jabatan',
+                'user.kerjasama.client:id,name',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
                     $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
@@ -321,6 +319,7 @@ class AllRekapExportController extends RekapController
                 'user:id,nama_lengkap,kerjasama_id',
                 'user.kerjasama:id,client_id',
                 'user.jabatan:id,name_jabatan',
+                'user.kerjasama.client:id,name',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
                     $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
