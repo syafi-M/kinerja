@@ -23,21 +23,18 @@ class OvertimesController extends Controller
         }
 
         try {
-
-            $startDate = Carbon::now()->subMonth()->day(26)->startOfDay();
-            $endDate = Carbon::now()->day(24)->endOfDay();
-
             $overtimes = Overtime::with([
                 'user',
                 'user.jabatan',
-                'user.kerjasama.client'
+                'user.kerjasama.client',
+                'createdBy'
             ])
-                ->whereBetween('date_overtime', [$startDate, $endDate])
                 ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
                 ->whereHas('user', function ($q) use ($kerjasama) {
                     $q->where('kerjasama_id', $kerjasama)
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 })
+                ->latest()
                 ->get();
 
             $employee = User::where('kerjasama_id', $kerjasama)->count();

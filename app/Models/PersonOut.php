@@ -83,4 +83,9 @@ class PersonOut extends Model
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
+
+        public function inputBy()
+        {
+            return $this->belongsTo(User::class, 'created_by_user_id');
+        }
 }

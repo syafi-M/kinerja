@@ -116,11 +116,11 @@
                             <div class="flex items-center gap-3 p-2 mb-4 rounded-lg bg-slate-50">
                                 @if ($imageUrl)
                                     <img src="{{ $imageUrl }}"
-                                        class="object-cover w-14 h-14 rounded-lg border border-slate-200"
+                                        class="object-cover border rounded-lg w-14 h-14 border-slate-200"
                                         alt="Bukti">
                                 @else
                                     <div
-                                        class="flex items-center justify-center w-14 h-14 text-xs rounded-lg bg-white text-slate-400 border border-slate-200">
+                                        class="flex items-center justify-center text-xs bg-white border rounded-lg w-14 h-14 text-slate-400 border-slate-200">
                                         No Image
                                     </div>
                                 @endif
@@ -157,7 +157,7 @@
                         </div>
                     @empty
                         <div class="px-4 py-10 text-center">
-                            <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-slate-100">
+                            <div class="flex items-center justify-center mx-auto rounded-full w-14 h-14 bg-slate-100">
                                 <i class="text-3xl ri-inbox-line text-slate-400"></i>
                             </div>
                             <p class="mt-3 font-medium text-slate-600">Belum ada riwayat pengajuan personil keluar</p>
@@ -176,6 +176,7 @@
                             <tr class="border-b border-slate-200 bg-slate-50">
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Pegawai</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Penginput</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal Keluar</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Jumlah MK</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Alasan</th>
@@ -216,6 +217,9 @@
                                                 </p>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                        {{ capitalizeWords($person->inputBy->nama_lengkap ?? '-' ) }}
                                     </td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($person->out_date ?? now())->format('d M Y') }}
@@ -337,9 +341,9 @@
             </div>
         </div>
     </x-main-div>
-    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-        <div class="fixed inset-0 transition-opacity bg-black/50"></div>
+    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail"
+        @keydown.escape.window="open = false" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+        <div class="fixed inset-0 transition-opacity bg-black/50" @click="open = false"></div>
 
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
             <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
@@ -350,6 +354,7 @@
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Personil Keluar</h3>
                     <button class="flex items-center justify-center w-8 h-8 transition rounded-lg hover:bg-slate-100"
+                        @click="open = false"
                         type="button">
                         <i class="text-xl ri-close-line text-slate-600"></i>
                     </button>
@@ -370,6 +375,11 @@
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Jumlah MK</p>
                             <p class="font-semibold text-slate-800" x-text="detail.total_mk || '-'"></p>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-xs text-slate-500">Nama Penginput</p>
+                            <p class="font-semibold text-slate-800"
+                                x-text="detail.input_by?.nama_lengkap || detail.created_by?.nama_lengkap || '-'"></p>
                         </div>
                     </div>
 
@@ -418,6 +428,7 @@
                 <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-200">
                     <button
                         class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-semibold transition bg-white border rounded-lg min-h-10 border-slate-300 text-slate-700 hover:bg-slate-50 sm:w-auto"
+                        @click="open = false"
                         type="button">
                         Tutup
                     </button>
@@ -541,4 +552,3 @@
         }
     </style>
 </x-app-layout>
-

@@ -82,8 +82,9 @@ class PersonInController extends Controller
         $personIn = $this->filteredHistoryQuery($request)
             ->paginate($perPage)
             ->withQueryString();
+
         $jabatans = Jabatan::select(['id', 'name_jabatan'])
-            ->where('type_jabatan', auth()->user()->jabatan->type_jabatan)
+            ->whereIn('id', $this->allowedSeeData())
             ->orderBy('name_jabatan')
             ->get();
 
@@ -296,7 +297,7 @@ class PersonInController extends Controller
     public function fetchApi($id)
     {
         $personIn = $this->baseQuery()
-            ->with('jabatan')
+            ->with(['jabatan:id,name_jabatan', 'client:id,name', 'createdBy:id,name,nama_lengkap'])
             ->findOrFail($id);
 
         return response()->json([
@@ -309,7 +310,6 @@ class PersonInController extends Controller
     private function filteredHistoryQuery(Request $request)
     {
         return $this->baseQuery()
-            ->with('jabatan')
             ->when($request->filled('status'), function ($q) use ($request) {
                 $q->where('status', $request->status);
             })
@@ -330,16 +330,10 @@ class PersonInController extends Controller
 
     private function baseQuery()
     {
-        return PersonIn::with(['jabatan:id,name_jabatan', 'createdBy:id,name,nama_lengkap'])
+        return PersonIn::with(['jabatan:id,name_jabatan', 'client:id,name', 'createdBy:id,name,nama_lengkap'])
             ->select(['id', 'fullname', 'client_id', 'created_by_user_id', 'jabatan_id', 'date_in', 'method_salary', 'method_salary_manual', 'status', 'created_at'])
-            ->when(
-                $this->selectedClientId() > 0,
-                fn($q) => $q->where('client_id', $this->selectedClientId()),
-                fn($q) => $q->where('client_id', auth()->user()->kerjasama->client_id)
-            )
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            });
+            ->where('client_id', $this->selectedClientId())
+            ->whereIn('jabatan_id', $this->allowedSeeData());
     }
 
     private function rules(Request $request): array
@@ -356,7 +350,7 @@ class PersonInController extends Controller
             'jabatan_id' => [
                 'required',
                 Rule::exists('jabatans', 'id')->where(function ($q) {
-                    $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+                    $q->whereIn('id', $this->allowedSeeData());
                 })
             ],
             'date_in' => ['required', 'date'],

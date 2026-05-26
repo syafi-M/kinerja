@@ -1,22 +1,22 @@
 <x-app-layout>
     <x-main-div>
-        <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="p-4 mx-auto max-w-7xl sm:p-6 lg:p-8">
 
             <!-- Header Section with Back Button -->
             <div class="mb-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div class="flex items-center gap-3 mb-2">
                             <a href="{{ route('manajemen_rekap') }}"
-                                class="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                                class="p-2 transition-colors bg-gray-200 rounded-lg hover:bg-gray-300">
                                 <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 19l-7-7 7-7"></path>
                                 </svg>
                             </a>
                             <div>
-                                <h1 class="text-2xl sm:text-3xl font-bold text-white">Data Lembur</h1>
-                                <p class="text-gray-300 font-semibold text-sm mt-1">{{ $client->name ?? 'Nama Mitra' }}
+                                <h1 class="text-2xl font-bold text-white sm:text-3xl">Data Lembur</h1>
+                                <p class="mt-1 text-sm font-semibold text-gray-300">{{ $client->name ?? 'Nama Mitra' }}
                                 </p>
                             </div>
                         </div>
@@ -47,8 +47,8 @@
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <div class="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-4">
+                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div class="flex items-center gap-3">
                         <div class="p-3 bg-indigo-600 rounded-lg">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,45 +57,45 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Total Lembur</p>
-                            <p class="text-gray-900 text-2xl font-bold" id="totalOvertimes">0</p>
+                            <p class="text-xs font-medium tracking-wide text-gray-500 uppercase">Total Lembur</p>
+                            <p class="text-2xl font-bold text-gray-900" id="totalOvertimes">0</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="p-3 bg-emerald-600 rounded-lg">
+                        <div class="p-3 rounded-lg bg-emerald-600">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Diajukan</p>
-                            <p class="text-gray-900 text-2xl font-bold" id="approvedCount">0</p>
+                            <p class="text-xs font-medium tracking-wide text-gray-500 uppercase">Diajukan</p>
+                            <p class="text-2xl font-bold text-gray-900" id="approvedCount">0</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="p-3 bg-violet-600 rounded-lg">
+                        <div class="p-3 rounded-lg bg-violet-600">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Total Karyawan</p>
-                            <p class="text-gray-900 text-2xl font-bold" id="totalEmployees">0</p>
+                            <p class="text-xs font-medium tracking-wide text-gray-500 uppercase">Total Karyawan</p>
+                            <p class="text-2xl font-bold text-gray-900" id="totalEmployees">0</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="p-3 bg-amber-600 rounded-lg">
+                        <div class="p-3 rounded-lg bg-amber-600">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -103,39 +103,49 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wide font-medium">Periode</p>
-                            <p class="text-gray-900 text-lg font-bold" id="periodDate">{{ now()->format('M Y') }}</p>
+                            <p class="text-xs font-medium tracking-wide text-gray-500 uppercase">Periode</p>
+                            <p class="text-lg font-bold text-gray-900" id="periodDate">{{ now()->format('M Y') }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Filter Section -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-6">
-                <div class="flex flex-col sm:flex-row gap-3">
+            <div class="p-4 mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="flex flex-col gap-3 sm:flex-row">
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cari Karyawan</label>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Cari Karyawan</label>
                         <input type="text" id="searchEmployee" placeholder="Nama karyawan..."
-                            class="w-full input input-sm bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            class="w-full text-gray-900 placeholder-gray-400 bg-white border border-gray-300 rounded-lg input input-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Filter Tanggal</label>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Filter Tanggal</label>
                         <input type="date" id="filterDate"
-                            class="w-full input input-sm bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            class="w-full text-gray-900 bg-white border border-gray-300 rounded-lg input input-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Status</label>
                         <select id="filterStatus"
-                            class="w-full select select-sm bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            class="w-full text-gray-900 bg-white border border-gray-300 rounded-lg select select-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Semua Status</option>
                             <option value="pending">Pending</option>
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>
+                    <div class="flex-1">
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Tipe</label>
+                        <select id="filterType"
+                            class="w-full text-gray-900 bg-white border border-gray-300 rounded-lg select select-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Semua Tipe</option>
+                            <option value="jam">Jam</option>
+                            <option value="shift">Shift</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
                     <div class="flex items-center">
                         <button onclick="resetFilters()"
-                            class="btn btn-error btn-sm mt-2 sm:mt-6 w-full sm:w-auto rounded-lg font-medium transition-colors">
+                            class="w-full mt-2 font-medium transition-colors rounded-lg btn btn-error btn-sm sm:mt-6 sm:w-auto">
                             <i class="ri-close-line"></i>
                             Reset
                         </button>
@@ -144,37 +154,40 @@
             </div>
 
             <!-- Loading State -->
-            <div id="loadingState" class="bg-white border border-gray-200 rounded-lg p-8 text-center shadow-sm">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div id="loadingState" class="p-8 text-center bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-indigo-600 rounded-full animate-spin"></div>
                 <p class="text-gray-600">Memuat data...</p>
             </div>
 
             <!-- Table Section -->
             <div id="tableContainer"
-                class="hidden bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                class="hidden overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200" id="overtimeTable">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     No</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Nama Karyawan</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Nama Penginput</th>
+                                <th
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Tanggal</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Tipe Lembur</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Keterangan</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Status</th>
-                            <th class="px-4 py-3 text-center text-xs uppercase text-gray-500">Aksi</th>
+                            <th class="px-4 py-3 text-xs text-center text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="tableBody">
@@ -184,8 +197,8 @@
             </div>
             <!-- Pagination Section -->
             <div id="paginationContainer"
-                class="hidden bg-white border border-gray-200 rounded-lg p-4 shadow-sm mt-4">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                class="hidden p-4 mt-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
                     <!-- Info -->
                     <div class="text-sm text-gray-700">
                         Menampilkan <span class="font-medium" id="showingFrom">1</span> -
@@ -252,18 +265,18 @@
             </div>
             <!-- Empty State -->
             <div id="emptyState"
-                class="hidden bg-white border border-gray-200 rounded-lg p-8 sm:p-12 text-center shadow-sm">
+                class="hidden p-8 text-center bg-white border border-gray-200 rounded-lg shadow-sm sm:p-12">
                 <div class="max-w-sm mx-auto">
-                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full">
                         <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <p class="text-gray-800 text-base sm:text-lg font-semibold mb-1" id="emptyStateTitle">Tidak ada
+                    <p class="mb-1 text-base font-semibold text-gray-800 sm:text-lg" id="emptyStateTitle">Tidak ada
                         data lembur</p>
-                    <p class="text-gray-500 text-sm" id="emptyStateDesc">Belum ada data lembur untuk periode ini</p>
+                    <p class="text-sm text-gray-500" id="emptyStateDesc">Belum ada data lembur untuk periode ini</p>
                 </div>
             </div>
 
@@ -326,30 +339,44 @@
             document.getElementById('emptyStateDesc').textContent = description;
         }
 
-        // Get overtime type display
-        function getOvertimeTypeDisplay(item) {
+        function formatOvertimeManual(item) {
             const typeOvertime = (item.type_overtime || '').toLowerCase();
+            const rawValue = item.type_overtime_manual;
 
-            if (typeOvertime == 'lainnya') {
-                return item.type_overtime_manual || 'Lainnya';
+            if (!rawValue) {
+                return '-';
             }
 
-            return item.type_overtime || '-';
+            if (typeOvertime !== 'lainnya') {
+                return rawValue;
+            }
+
+            const textValue = String(rawValue).trim();
+            if (/^rp\s?/i.test(textValue)) {
+                return textValue.replace(/^rp\s?/i, 'Rp ');
+            }
+
+            const digitsOnly = textValue.replace(/[^\d]/g, '');
+            if (!digitsOnly) {
+                return textValue;
+            }
+
+            return `Rp ${Number(digitsOnly).toLocaleString('id-ID')}`;
         }
 
         // Get status badge HTML
         function getStatusBadge(status) {
             const statusLower = (status || '').toLowerCase();
             const badges = {
-                'pending': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>',
+                'pending': '<span class="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Pending</span>',
                 'di ajukan': '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-emerald-50 text-emerald-700 ring-emerald-200">Di Ajukan</span>',
                 'di setujui': '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-lime-50 text-lime-700 ring-lime-200">Di Setujui</span>',
                 'di tolak': '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-rose-50 text-rose-700 ring-rose-200">Di Tolak</span>',
-                'approved': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>',
-                'rejected': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>'
+                'approved': '<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Approved</span>',
+                'rejected': '<span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Rejected</span>'
             };
             return badges[statusLower] ||
-                `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">${status || '-'}</span>`;
+                `<span class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full">${status || '-'}</span>`;
         }
 
         // Render table with pagination
@@ -393,23 +420,24 @@
                 let overtimeDisplay = '-';
                 const typeOvertime = (item.type_overtime || '').toLowerCase();
                 if (typeOvertime == 'jam' || typeOvertime == 'lainnya') {
-                    overtimeDisplay = item.type_overtime_manual || '-';
+                    overtimeDisplay = formatOvertimeManual(item);
                 } else if (typeOvertime == 'shift') {
                     overtimeDisplay = item.count > 1 ? `${item.count} Shift` : '1 Shift';
                 }
 
                 row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${startIndex + index + 1}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.user?.nama_lengkap || '-'}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDate(item.date_overtime)}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-800">${overtimeDisplay}</span>
+            <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">${startIndex + index + 1}</td>
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">${item.user?.nama_lengkap || '-'}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">${item.createdBy?.nama_lengkap || '-'}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">${formatDate(item.date_overtime)}</td>
+            <td class="px-6 py-4 text-sm whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-medium text-indigo-800 bg-indigo-100 rounded">${overtimeDisplay}</span>
             </td>
             <td class="px-6 py-4 text-sm text-gray-600">
                 <span class="font-semibold text-indigo-600">${item.desc}</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">${statusBadge}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">${actionButtons(item)}</td>
+            <td class="px-6 py-4 text-sm whitespace-nowrap">${statusBadge}</td>
+            <td class="px-6 py-4 text-sm text-center whitespace-nowrap">${actionButtons(item)}</td>
         `;
 
                 tbody.appendChild(row);
@@ -425,7 +453,7 @@
         function actionButtons(r) {
             if (!r || (r.status || '').toLowerCase() !== 'di ajukan') return '-';
             return `<div class="flex items-center justify-center gap-2">
-                 <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 text-xs">Tolak</button>
+                 <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="px-2 py-1 text-xs text-white rounded bg-rose-600 hover:bg-rose-700">Tolak</button>
              </div>`;
         }
 
@@ -533,6 +561,9 @@
         // Get overtime type display
         function getOvertimeTypeDisplay(item) {
             const typeOvertime = (item.type_overtime || '').toLowerCase();
+            if (typeOvertime == 'lainnya') {
+                return formatOvertimeManual(item);
+            }
             return item.type_overtime || '-';
         }
 
@@ -589,7 +620,8 @@
             const searchTerm = document.getElementById('searchEmployee').value.toLowerCase();
             const filterDate = document.getElementById('filterDate').value;
             const filterStatus = document.getElementById('filterStatus').value.toLowerCase();
-            const filterType = document.getElementById('filterType').value.toLowerCase();
+            const filterTypeEl = document.getElementById('filterType');
+            const filterType = filterTypeEl ? filterTypeEl.value.toLowerCase() : '';
 
             filteredData = overtimeData.filter(item => {
                 const employeeName = (item.user?.nama_lengkap || '').toLowerCase();
@@ -627,7 +659,10 @@
             document.getElementById('searchEmployee').value = '';
             document.getElementById('filterDate').value = '';
             document.getElementById('filterStatus').value = '';
-            document.getElementById('filterType').value = '';
+            const filterTypeEl = document.getElementById('filterType');
+            if (filterTypeEl) {
+                filterTypeEl.value = '';
+            }
             document.getElementById('itemsPerPage').value = '10';
 
             currentPage = 1;
@@ -673,11 +708,11 @@
                     groupedByEmployee[employeeKey].hari += (item.count || 1);
                 } else if (typeOvertime == 'jam') {
                     if (item.type_overtime_manual) {
-                        groupedByEmployee[employeeKey].jam.push(item.type_overtime_manual);
+                        groupedByEmployee[employeeKey].jam.push(formatOvertimeManual(item));
                     }
                 } else if (typeOvertime == 'lainnya') {
                     if (item.type_overtime_manual) {
-                        groupedByEmployee[employeeKey].lainnya.push(item.type_overtime_manual);
+                        groupedByEmployee[employeeKey].lainnya.push(formatOvertimeManual(item));
                     }
                 }
             });
@@ -775,11 +810,11 @@
                     groupedByEmployee[employeeKey].hari += (item.count || 1);
                 } else if (typeOvertime == 'jam') {
                     if (item.type_overtime_manual) {
-                        groupedByEmployee[employeeKey].jam.push(item.type_overtime_manual);
+                        groupedByEmployee[employeeKey].jam.push(formatOvertimeManual(item));
                     }
                 } else if (typeOvertime == 'lainnya') {
                     if (item.type_overtime_manual) {
-                        groupedByEmployee[employeeKey].lainnya.push(item.type_overtime_manual);
+                        groupedByEmployee[employeeKey].lainnya.push(formatOvertimeManual(item));
                     }
                 }
             });

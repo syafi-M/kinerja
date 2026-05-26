@@ -344,7 +344,7 @@
                     date_in: $('#date_in').val(),
                     method_salary: $('input[name="method_salary"]:checked').val(),
                     method_salary_manual: alpineData ? alpineData.manualMethod : '',
-                    additional_reason: $('#additional_reason'),
+                    additional_reason: $('#additional_reason').val(),
                 };
 
                 $.ajax({

@@ -149,8 +149,11 @@
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama
                                     Lengkap</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Penginput</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal
                                     Masuk</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal Lepas
+                                    Training</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Jumlah
                                     Masa Training</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Keterangan
@@ -170,7 +173,11 @@
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $item->user->nama_lengkap ?? '-' }}</td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                        {{ $item->createdBy->nama_lengkap ?? '-' }}</td>
+                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($item->date_in)->format('d M Y') }}</td>
+                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                        {{ \Carbon\Carbon::parse($item->date_finish_train)->format('d M Y') }}</td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $item->masa_training_hari }} hari</td>
                                     <td class="px-4 py-4 text-sm text-slate-700">{{ $item->desc }}</td>
@@ -340,12 +347,15 @@
         </div>
     </div>
 
-    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto" style="display:none;">
-        <div class="fixed inset-0 bg-black/50" @click="open = false"></div>
+    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail"
+        @keydown.escape.window="open = false" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display:none;">
+        <div class="fixed inset-0 transition-opacity bg-black/50" @click="open = false"></div>
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
             <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
-                @click.away="open = false">
+                @click.away="open = false" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Pengajuan Lepas Training</h3><button
                         @click="open = false"
@@ -357,6 +367,10 @@
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Fullname</p>
                             <p class="font-semibold text-slate-800" x-text="detail.user?.nama_lengkap || '-' "></p>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-xs text-slate-500">Nama Penginput</p>
+                            <p class="font-semibold text-slate-800" x-text="detail.created_by?.nama_lengkap || '-' "></p>
                         </div>
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Tanggal Masuk</p>
@@ -392,6 +406,12 @@
                         <p class="mb-1 text-xs text-slate-500">Keterangan</p>
                         <p class="text-slate-800" x-text="detail.desc || '-' "></p>
                     </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-200">
+                    <button class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-semibold transition bg-white border rounded-lg min-h-10 border-slate-300 text-slate-700 hover:bg-slate-50 sm:w-auto"
+                        @click="open = false" type="button">
+                        Tutup
+                    </button>
                 </div>
             </div>
         </div>
@@ -533,4 +553,3 @@
         }
     </style>
 </x-app-layout>
-

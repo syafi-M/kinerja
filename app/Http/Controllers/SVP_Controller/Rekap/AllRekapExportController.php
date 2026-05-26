@@ -22,19 +22,15 @@ class AllRekapExportController extends RekapController
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
-            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
+            $startDate = $date->copy()->subMonth()->setDay(20)->startOfDay();
             $endDate = $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
-            // Get all unique clients from kerjasama table
-            $clients = Kerjasama::whereIn('client_id', function ($query) use ($kerjasama) {
-                $query->select('client_id')
-                    ->from('kerjasamas')
-                    ->where('id', $kerjasama);
-            })->distinct()->pluck('client_id');
+            $kerjasamaData = Kerjasama::with('client:id,name')->findOrFail($kerjasama);
+            $clientId = (int) $kerjasamaData->client_id;
+            $clientName = $kerjasamaData->client?->name ?? 'Semua Mitra';
 
-            // If no clients, return empty success response
-            if ($clients->isEmpty()) {
+            if ($clientId <= 0) {
                 return response()->json([
                     'success' => true,
                     'data' => [
@@ -44,7 +40,7 @@ class AllRekapExportController extends RekapController
                         'cuttings' => [],
                         'finished_trainings' => [],
                         'keterangan_lanjutan' => [],
-                        'client' => ['name' => 'Semua Mitra'],
+                        'client' => ['name' => $clientName],
                         'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
                     ]
                 ]);
@@ -56,8 +52,8 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama:id,client_id',
                 'user.kerjasama.client:id,name',
                 'user.jabatan:id,name_jabatan'
-            ])->whereHas('user', function ($q) use ($clients) {
-                $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+            ])->whereHas('user', function ($q) use ($clientId) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
                     ->whereIn('jabatan_id', $this->allowedSeeData());
             });
             if (!$includeAllStatus) $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
@@ -76,7 +72,7 @@ class AllRekapExportController extends RekapController
 
             // Build person_ins query
             $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
-                ->whereIn('client_id', $clients)
+                ->where('client_id', $clientId)
                 ->whereIn('jabatan_id', $this->allowedSeeData());
             if (!$includeAllStatus) $personInsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             if ($startDate && $endDate) {
@@ -93,10 +89,10 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama.client',
                 'user.jabatan:id,name_jabatan',
                 'createdBy:id,nama_lengkap'
-            ])->whereHas('user', function ($q) use ($clients) {
+            ])->whereHas('user', function ($q) use ($clientId) {
                 $q->withTrashed()
                     ->whereNotNull('nama_lengkap')
-                    ->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                    ->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
                     ->whereIn('jabatan_id', $this->allowedSeeData());
             });
             if (!$includeAllStatus) $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
@@ -114,8 +110,8 @@ class AllRekapExportController extends RekapController
 
             // Build cuttings query
             $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
-                ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                ->whereHas('user', function ($q) use ($clientId) {
+                    $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
@@ -134,8 +130,8 @@ class AllRekapExportController extends RekapController
 
             // Build finished trainings query
             $finishedTrainingsQuery = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
-                ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                ->whereHas('user', function ($q) use ($clientId) {
+                    $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
@@ -157,9 +153,10 @@ class AllRekapExportController extends RekapController
                 'user:id,nama_lengkap,kerjasama_id,jabatan_id',
                 'user.kerjasama:id,client_id',
                 'user.kerjasama.client:id,name',
-                'user.jabatan:id,name_jabatan'
-            ])->whereHas('user', function ($q) use ($clients) {
-                $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                'user.jabatan:id,name_jabatan',
+                'createdBy:id,nama_lengkap'
+            ])->whereHas('user', function ($q) use ($clientId) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
                     ->whereIn('jabatan_id', $this->allowedSeeData());
             })->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id');
             if ($startDate && $endDate) {
@@ -184,7 +181,7 @@ class AllRekapExportController extends RekapController
                 'cuttings' => $cuttings,
                 'finished_trainings' => $finishedTrainings,
                 'keterangan_lanjutan' => $keterangan,
-                'client' => ['name' => 'Semua Mitra'],
+                'client' => ['name' => $clientName],
                 'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
             ];
 
@@ -200,14 +197,15 @@ class AllRekapExportController extends RekapController
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
-            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
+            $startDate = $date->copy()->subMonth()->setDay(20)->startOfDay();
             $endDate = $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
-            // Get all unique clients from kerjasama table
-            $clients = Kerjasama::distinct()->pluck('client_id');
+            $clients = Kerjasama::query()
+                ->whereNotNull('client_id')
+                ->distinct()
+                ->pluck('client_id');
 
-            // If no clients, return empty success response
             if ($clients->isEmpty()) {
                 return response()->json([
                     'success' => true,
@@ -346,6 +344,7 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama:id,client_id',
                 'user.kerjasama.client:id,name',
                 'user.jabatan:id,name_jabatan',
+                'createdBy:id,nama_lengkap',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
                     $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))

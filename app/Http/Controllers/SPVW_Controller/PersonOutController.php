@@ -39,10 +39,13 @@ class PersonOutController extends Controller
     {
         $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
 
-        $personOut = PersonOut::select(['id', 'user_id', 'total_mk', 'reason', 'reason_manual', 'out_date', 'img', 'status', 'created_at'])
+        $personOut = PersonOut::select(['id', 'user_id', 'total_mk', 'reason', 'reason_manual', 'out_date', 'img', 'status', 'created_by_user_id', 'created_at'])
             ->with([
                 'user' => function ($q) {
                     $q->withTrashed()->select(['id', 'name', 'nama_lengkap']);
+                },
+                'inputBy' => function ($q) {
+                    $q->select(['id', 'name', 'nama_lengkap']);
                 }
             ])->whereHas('user', function ($q) {
                 $q->withTrashed()
@@ -306,7 +309,8 @@ class PersonOutController extends Controller
         $personOut = PersonOut::with([
             'user' => function ($q) {
                 $q->withTrashed();
-            }
+            },
+            'inputBy:id,name,nama_lengkap',
         ])->findOrFail($id);
         return response()->json([
             'message' => 'Get data by id',

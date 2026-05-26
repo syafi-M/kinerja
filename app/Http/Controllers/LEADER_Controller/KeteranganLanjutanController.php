@@ -15,7 +15,10 @@ class KeteranganLanjutanController extends Controller
     {
         // If called via API route, return JSON data filtered by kerjasama id
         if ($request->is('api/*') || $request->wantsJson()) {
-            $query = KeteranganLanjutan::with('user:id,nama_lengkap,kerjasama_id')
+            $query = KeteranganLanjutan::with([
+                'user:id,nama_lengkap,kerjasama_id',
+                'createdBy:id,nama_lengkap',
+            ])
                 ->latest();
 
             if ($kerjasama) {
@@ -46,7 +49,10 @@ class KeteranganLanjutanController extends Controller
 
     public function history(Request $request)
     {
-        $keteranganLanjutans = KeteranganLanjutan::with('user:id,nama_lengkap')
+        $keteranganLanjutans = KeteranganLanjutan::with([
+            'user:id,nama_lengkap',
+            'createdBy:id,nama_lengkap',
+        ])
             ->whereHas('user', fn($q) => $q->where('kerjasama_id', auth()->user()->kerjasama_id))
             ->latest()
             ->paginate(15)
@@ -83,6 +89,7 @@ class KeteranganLanjutanController extends Controller
 
         KeteranganLanjutan::create([
             'user_id' => auth()->id(),
+            'created_by_user_id' => auth()->id(),
             'keterangan' => $keterangan,
         ]);
 

@@ -131,7 +131,7 @@
                         </div>
                     @empty
                         <div class="px-4 py-10 text-center">
-                            <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-slate-100">
+                            <div class="flex items-center justify-center mx-auto rounded-full w-14 h-14 bg-slate-100">
                                 <i class="text-3xl ri-inbox-line text-slate-400"></i>
                             </div>
                             <p class="mt-3 font-medium text-slate-600">Belum ada riwayat pengajuan cutting</p>
@@ -149,6 +149,7 @@
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Fullname
                                 </th>
+                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Penginput</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal
                                     Cutting</th>
                                 <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Type
@@ -168,6 +169,8 @@
                                     </td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $cutting->user->nama_lengkap ?? '-' }}</td>
+                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                        {{ $cutting->createdBy->nama_lengkap ?? '-' }}</td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($cutting->date_cut)->format('d M Y') }}</td>
                                     <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
@@ -352,15 +355,16 @@
         </div>
     </div>
 
-    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto" style="display:none;">
-        <div class="fixed inset-0 bg-black/50"></div>
+    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail"
+        @keydown.escape.window="open = false" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display:none;">
+        <div class="fixed inset-0 bg-black/50" @click="open = false"></div>
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
             <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
                 @click.away="open = false">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Pengajuan Cutting</h3><button
-                        class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100"><i
+                        class="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-slate-100"
+                        @click="open = false" type="button"><i
                             class="text-xl ri-close-line text-slate-600"></i></button>
                 </div>
                 <div class="space-y-4">
@@ -378,6 +382,10 @@
                         <div>
                             <p class="mb-1 text-xs text-slate-500">Type Cutting</p>
                             <p class="font-semibold text-slate-800" x-text="detail.type_cut || '-' "></p>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-xs text-slate-500">Nama Penginput</p>
+                            <p class="font-semibold text-slate-800" x-text="detail.created_by?.nama_lengkap || '-' "></p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -597,4 +605,3 @@
         }
     </style>
 </x-app-layout>
-

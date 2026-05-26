@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SPVW_Controller\Concerns\HasAllowedSeeData;
 use App\Models\KeteranganLanjutan;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class KeteranganLanjutanController extends Controller
@@ -19,11 +20,41 @@ class KeteranganLanjutanController extends Controller
 
     public function history()
     {
-        $keteranganLanjutans = KeteranganLanjutan::with('user:id,nama_lengkap,kerjasama_id')
+        $users = User::select(['id', 'nama_lengkap', 'kerjasama_id'])
+            ->where('role_id', '!=', 2)
+            ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())))
+            ->whereHas('jabatan', function ($jabatanQuery) {
+                $jabatanQuery->whereIn('id', $this->allowedSeeData());
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        $keteranganLanjutans = KeteranganLanjutan::with([
+            'user:id,nama_lengkap,kerjasama_id',
+            'createdBy:id,nama_lengkap',
+        ])
             ->whereHas('user', function ($q) {
                 $q->whereHas('jabatan', function ($jabatanQuery) {
                     $jabatanQuery->whereIn('id', $this->allowedSeeData());
                 })->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
+            })
+            ->when(request()->filled('user_id'), function ($q) {
+                $q->where('user_id', request('user_id'));
+            })
+            ->when(request()->filled('periode'), function ($q) {
+                $periode = trim((string) request('periode'));
+                $q->whereRaw('LOWER(keterangan) LIKE ?', ['%' . mb_strtolower($periode) . '%']);
+            })
+            ->when(request()->filled('search'), function ($q) {
+                $keyword = trim((string) request('search'));
+
+                $q->where(function ($subQuery) use ($keyword) {
+                    $lowerKeyword = '%' . mb_strtolower($keyword) . '%';
+
+                    $subQuery->whereHas('user', function ($userQuery) use ($lowerKeyword) {
+                        $userQuery->whereRaw('LOWER(nama_lengkap) LIKE ?', [$lowerKeyword]);
+                    })->orWhereRaw('LOWER(keterangan) LIKE ?', [$lowerKeyword]);
+                });
             })
             ->latest()
             ->paginate(15)
@@ -31,6 +62,7 @@ class KeteranganLanjutanController extends Controller
 
         return view('spv_w_view.keterangan_lanjutan.history', [
             'keteranganLanjutans' => $keteranganLanjutans,
+            'users' => $users,
         ]);
     }
 
@@ -59,6 +91,7 @@ class KeteranganLanjutanController extends Controller
 
         KeteranganLanjutan::create([
             'user_id' => auth()->id(),
+            'created_by_user_id' => auth()->id(),
             'keterangan' => $keterangan,
         ]);
 

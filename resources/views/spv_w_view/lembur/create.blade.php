@@ -150,6 +150,7 @@
                             </label>
                             <input type="number" inputmode="numeric" min="1" name="type_overtime_manual"
                                 id="type_overtime_manual_jam" x-model="manualType" placeholder="Contoh: 2"
+                                @input="limitNumericInput($event)"
                                 value="{{ old('type_overtime_manual') }}"
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 :required="selectedType === 'jam'" :disabled="selectedType !== 'jam'">
@@ -173,13 +174,16 @@
                                 class="mb-1.5 block text-xs font-medium text-slate-600">
                                 Nominal / nilai manual
                             </label>
-                            <input type="number" inputmode="numeric" min="0" name="type_overtime_manual"
-                                id="type_overtime_manual_lainnya" x-model="manualType" placeholder="Contoh: 50000"
-                                value="{{ old('type_overtime_manual') }}"
+                            <input type="text" inputmode="numeric" autocomplete="off"
+                                id="type_overtime_manual_lainnya" x-model="manualTypeDisplay"
+                                @input="syncRupiahInput($event)" @blur="normalizeRupiahInput()"
+                                placeholder="Contoh: Rp. 50.000"
+                                maxlength="13"
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 :required="selectedType === 'lainnya'" :disabled="selectedType !== 'lainnya'">
+                            <input type="hidden" name="type_overtime_manual" :value="manualTypeRaw">
                             <p class="mt-1 text-xs text-slate-500"
-                                x-text="manualType ? `Preview: ${formatRupiah(manualType)}` : 'Gunakan angka, misalnya 50000 atau 20000.'">
+                                x-text="manualTypeRaw ? `Preview: ${formatRupiah(manualTypeRaw)}` : 'Gunakan angka, misalnya 50000 atau 20000.'">
                                 {{ old('type_overtime_manual') ? 'Preview: ' . toRupiah(old('type_overtime_manual')) : 'Gunakan angka, misalnya 50000 atau 20000.' }}
                             </p>
                         </div>
@@ -242,18 +246,48 @@
         function overtimeForm() {
             return {
                 selectedType: '{{ old('type_overtime') ?? '' }}',
-                manualType: '{{ old('type_overtime_manual') ?? '' }}',
+                manualType: @js(old('type_overtime_manual') ?? ''),
+                manualTypeRaw: @js(old('type_overtime_manual') ?? ''),
+                manualTypeDisplay: '',
 
                 formatRupiah(value) {
                     const normalized = String(value ?? '').replace(/[^\d]/g, '');
-                    if (!normalized) return 'Rp. -';
+                    if (!normalized) return '';
                     return `Rp. ${new Intl.NumberFormat('id-ID').format(Number(normalized))}`;
                 },
 
+                syncRupiahInput(event) {
+                    const rawValue = String(event.target.value ?? '').replace(/[^\d]/g, '').slice(0, 7);
+                    this.manualTypeRaw = rawValue;
+                    this.manualTypeDisplay = rawValue ? this.formatRupiah(rawValue) : '';
+                    event.target.value = this.manualTypeDisplay;
+                },
+
+                limitNumericInput(event) {
+                    const rawValue = String(event.target.value ?? '').replace(/[^\d]/g, '').slice(0, 7);
+                    this.manualType = rawValue;
+                    event.target.value = rawValue;
+                },
+
+                normalizeRupiahInput() {
+                    if (!this.manualTypeRaw) {
+                        this.manualTypeDisplay = '';
+                        return;
+                    }
+
+                    this.manualTypeDisplay = this.formatRupiah(this.manualTypeRaw);
+                },
+
                 init() {
+                    this.manualTypeDisplay = this.manualTypeRaw ? this.formatRupiah(this.manualTypeRaw) : '';
                     this.$watch('selectedType', value => {
-                        if (!['jam', 'lainnya'].includes(value)) {
+                        if (value !== 'jam') {
                             this.manualType = '';
+                        }
+
+                        if (value !== 'lainnya') {
+                            this.manualTypeRaw = '';
+                            this.manualTypeDisplay = '';
                         }
                     });
                 }

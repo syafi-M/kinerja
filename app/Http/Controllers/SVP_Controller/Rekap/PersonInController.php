@@ -14,7 +14,7 @@ class PersonInController extends RekapController
     {
         $kerjasamaModel = \App\Models\Kerjasama::findOrFail($kerjasama);
 
-        $personIn = PersonIn::with('jabatan')
+        $personIn = PersonIn::with(['jabatan', 'createdBy'])
             ->where('client_id', $kerjasamaModel->client_id)
             ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
             ->whereIn('jabatan_id', $this->allowedSeeData())

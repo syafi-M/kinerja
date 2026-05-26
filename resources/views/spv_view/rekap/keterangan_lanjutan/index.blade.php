@@ -7,7 +7,7 @@
                         <i class="ri-arrow-left-line text-gray-700"></i>
                     </a>
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-white">Data Personil Masuk</h1>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-white">Data Keterangan Lanjutan</h1>
                         <p class="text-gray-300 text-sm">{{ $client->name ?? 'Mitra' }}</p>
                     </div>
                 </div>
@@ -33,6 +33,7 @@
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">No</th>
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Nama</th>
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Keterangan</th>
+                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Nama Penginput</th>
                             <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Dibuat</th>
                             <th class="px-4 py-3 text-center text-xs uppercase text-gray-500">Aksi</th>
                         </tr>
@@ -47,7 +48,7 @@
                 <div id="detailModal" class="fixed inset-0 z-50 hidden" aria-labelledby="detailModalTitle" role="dialog" aria-modal="true">
                     <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeDetailModal()"></div>
                     <div class="fixed inset-0 flex items-center justify-center p-4">
-                        <div class="bg-white rounded-lg max-w-2xl w-full p-4 shadow-lg">
+                        <div class="bg-white rounded-lg max-w-2xl w-full p-4 shadow-lg" onclick="event.stopPropagation()">
                             <div class="flex items-start justify-between">
                                 <h3 id="detailModalTitle" class="text-lg font-semibold">Detail Keterangan</h3>
                                 <button type="button" onclick="closeDetailModal()" class="text-gray-500 hover:text-gray-700">
@@ -72,6 +73,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <script>
+        let allRows = [];
         let rows = [];
         let details = {};
         let exportRows = [];
@@ -85,6 +87,7 @@
             exportRows = rows.map((r, i) => ({
                 no: i + 1,
                 nama: r.user?.nama_lengkap || r.user_name || '-',
+                dibuat: r.created_by?.nama_lengkap || r.createdBy?.nama_lengkap || '-',
                 keterangan: Array.isArray(r.keterangan) ? r.keterangan.map(e => (typeof e === 'object' ? ((e.periode? e.periode + ' - ' : '') + (e.judul? e.judul + ': ' : '') + (e.keterangan || '')) : e)).join('\n') : (r.keterangan || '-'),
                 created_at: r.created_at ? (new Date(r.created_at)).toISOString().split('T')[0] : (r.createdAt || ''),
             }));
@@ -93,6 +96,7 @@
             rows.forEach((r) => {
                 details[r.id] = {
                     nama: r.user?.nama_lengkap || r.user_name || '-',
+                    dibuat: r.created_by?.nama_lengkap || r.createdBy?.nama_lengkap || '-',
                     entries: Array.isArray(r.keterangan) ? r.keterangan : [r.keterangan || '-'],
                     created: r.created_at ? (new Date(r.created_at)).toISOString().split('T')[0] : (r.createdAt || ''),
                 };
@@ -118,6 +122,7 @@
                     <td class="px-4 py-3 text-sm">${i+1}</td>
                     <td class="px-4 py-3 text-sm">${r.user?.nama_lengkap || r.user_name || '-'}</td>
                     <td class="px-4 py-3 text-sm">${Array.isArray(r.keterangan) ? r.keterangan.map(e => (typeof e === 'object' ? ((e.periode? '<strong>'+ (e.periode) + '</strong>' : '') + (e.judul? ' - '+ e.judul : '')) : e)).join('<br/>') : (r.keterangan || '-')}</td>
+                    <td class="px-4 py-3 text-sm">${r.created_by?.nama_lengkap || r.createdBy?.nama_lengkap || '-'}</td>
                     <td class="px-4 py-3 text-sm">${fmtDate(r.created_at || r.createdAt)}</td>
                     <td class="px-4 py-3 text-sm text-center whitespace-nowrap"><a href="#" onclick="showDetail(${r.id})" class="text-indigo-600 hover:underline">Lihat</a></td>
                 `;
@@ -133,10 +138,12 @@
                 const month = document.getElementById('month').value;
                 const res = await fetch(`/api/v1/keterangan-lanjutan-api/${kerjasamaId}?month=${month}`);
                 const json = await res.json();
-                rows = json.data || json || [];
+                allRows = json.data || json || [];
+                rows = [...allRows];
                 buildExportAndDetails();
                 render();
             } catch (e) {
+                allRows = [];
                 rows = [];
                 render();
             }
@@ -156,8 +163,8 @@
             doc.setFontSize(14);
             doc.text('Keterangan Lanjutan', 14, 14);
 
-            const headers = [['No', 'Nama', 'Keterangan', 'Dibuat']];
-            const body = exportRows.map(r => [r.no, r.nama, r.keterangan, r.created_at]);
+            const headers = [['No', 'Nama', 'Keterangan', 'Nama Penginput', 'Dibuat']];
+            const body = exportRows.map(r => [r.no, r.nama, r.keterangan, r.dibuat, r.created_at]);
 
             doc.autoTable({
                 head: headers,
@@ -176,7 +183,10 @@
             const titleEl = document.getElementById('detailModalTitle');
             const bodyEl = document.getElementById('detailModalBody');
             titleEl.textContent = `${d.nama} — ${d.created ?? ''}`;
-            bodyEl.innerHTML = '';
+            bodyEl.innerHTML = `<div class="mb-4 rounded-lg bg-slate-50 border border-slate-200 p-3">
+                <p class="text-xs uppercase tracking-wide text-slate-500">Nama Penginput</p>
+                <p class="mt-1 font-semibold text-slate-800">${d.dibuat || '-'}</p>
+            </div>`;
             if (Array.isArray(d.entries)) {
                 d.entries.forEach(e => {
                     if (e && typeof e === 'object') {
@@ -204,9 +214,15 @@
             document.getElementById('detailModal').classList.add('hidden');
         }
 
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeDetailModal();
+            }
+        });
+
         document.getElementById('search').addEventListener('input', () => {
             const q = document.getElementById('search').value.toLowerCase();
-            rows = rows.filter(r => (r.user?.nama_lengkap || r.user_name || '').toLowerCase().includes(q));
+            rows = allRows.filter(r => (r.user?.nama_lengkap || r.user_name || '').toLowerCase().includes(q));
             buildExportAndDetails();
             render();
         });

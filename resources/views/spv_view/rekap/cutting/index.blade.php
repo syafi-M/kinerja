@@ -1,51 +1,52 @@
 <x-app-layout>
     <x-main-div>
-        <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            <div class="mb-6 flex items-center justify-between gap-3">
+        <div class="p-4 mx-auto max-w-7xl sm:p-6 lg:p-8">
+            <div class="flex items-center justify-between gap-3 mb-6">
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('manajemen_rekap') }}" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300">
-                        <i class="ri-arrow-left-line text-gray-700"></i>
+                    <a href="{{ route('manajemen_rekap') }}" class="p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                        <i class="text-gray-700 ri-arrow-left-line"></i>
                     </a>
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-white">Data Cutting</h1>
-                        <p class="text-gray-300 text-sm">{{ $client->name ?? 'Mitra' }}</p>
+                        <h1 class="text-2xl font-bold text-white sm:text-3xl">Data Cutting</h1>
+                        <p class="text-sm text-gray-300">{{ $client->name ?? 'Mitra' }}</p>
                     </div>
                 </div>
             </div>
 
             <div
-                class="bg-white rounded-lg p-4 shadow-sm border border-gray-200 mb-4 grid grid-cols-1 sm:grid-cols-5 gap-3">
+                class="grid grid-cols-1 gap-3 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:grid-cols-5">
                 <input id="search" type="text" placeholder="Cari nama..."
-                    class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg">
                 <input id="month" type="month" value="{{ now()->format('Y-m') }}"
-                    class="w-full rounded-lg border border-gray-300 px-3 py-2">
-                <button id="btnReset" class="rounded-lg bg-gray-200 hover:bg-gray-300 px-3 py-2">Reset</button>
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <button id="btnReset" class="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Reset</button>
                 <button onclick="exportToExcel()"
-                    class="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2">Export Excel</button>
+                    class="px-3 py-2 text-white rounded-lg bg-emerald-600 hover:bg-emerald-700">Export Excel</button>
                 <button onclick="exportToPDF()"
-                    class="rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-3 py-2">Export PDF</button>
+                    class="px-3 py-2 text-white rounded-lg bg-rose-600 hover:bg-rose-700">Export PDF</button>
             </div>
 
-            <div id="loading" class="bg-white rounded-lg p-8 text-center border border-gray-200">Memuat data...</div>
+            <div id="loading" class="p-8 text-center bg-white border border-gray-200 rounded-lg">Memuat data...</div>
 
-            <div id="tableWrap" class="hidden bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+            <div id="tableWrap" class="hidden overflow-x-auto bg-white border border-gray-200 rounded-lg shadow-sm">
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">No</th>
-                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Nama</th>
-                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Tanggal</th>
-                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Tipe</th>
-                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Keterangan</th>
-                            <th class="px-4 py-3 text-left text-xs uppercase text-gray-500">Status</th>
-                            <th class="px-4 py-3 text-center text-xs uppercase text-gray-500">Aksi</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">No</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">Nama</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">Nama Penginput</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">Tanggal</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">Tipe</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">Keterangan</th>
+                            <th class="px-4 py-3 text-xs text-left text-gray-500 uppercase">Status</th>
+                            <th class="px-4 py-3 text-xs text-center text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tbody" class="divide-y divide-gray-200"></tbody>
                 </table>
             </div>
 
-            <div id="empty" class="hidden bg-white rounded-lg p-8 text-center border border-gray-200">Tidak ada
+            <div id="empty" class="hidden p-8 text-center bg-white border border-gray-200 rounded-lg">Tidak ada
                 data.</div>
         </div>
     </x-main-div>
@@ -89,6 +90,7 @@
                 tbody.innerHTML += `<tr>
                     <td class="px-4 py-3 text-sm">${i + 1}</td>
                     <td class="px-4 py-3 text-sm">${r.user?.nama_lengkap || '-'}</td>
+                    <td class="px-4 py-3 text-sm">${r.createdBy?.nama_lengkap || '-'}</td>
                     <td class="px-4 py-3 text-sm">${fmtDate(r.date_cut)}</td>
                     <td class="px-4 py-3 text-sm">${r.type_cut || '-'}</td>
                     <td class="px-4 py-3 text-sm">${r.desc || '-'}</td>
@@ -102,7 +104,7 @@
         function actionButtons(r) {
             if (!r || (r.status || '').toLowerCase() !== 'di ajukan') return '-';
             return `<div class="flex items-center justify-center gap-2">
-                 <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 text-xs">Tolak</button>
+                 <button onclick="updateStatus(${r.id}, 'Di Tolak')" class="px-2 py-1 text-xs text-white rounded bg-rose-600 hover:bg-rose-700">Tolak</button>
              </div>`;
          }
 

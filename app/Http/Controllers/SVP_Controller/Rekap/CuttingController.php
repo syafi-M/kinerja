@@ -16,7 +16,7 @@ class CuttingController extends RekapController
 
         $cuttings = PerformanceCuts::with(['user' => function ($q) {
             $q->with(['jabatan', 'kerjasama.client']);
-        }])
+        }, 'createdBy'])
             ->whereIn('status', ['Di Ajukan', 'Di Setujui', 'Di Tolak'])
             ->whereHas('user', function ($q) use ($kerjasama) {
                 $q->where('kerjasama_id', $kerjasama)

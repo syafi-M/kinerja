@@ -65,10 +65,6 @@ class FinishedTrainingController extends Controller
 
         $finishedTrainings = $this->filteredHistoryQuery($request)
             ->paginate($perPage)
-            ->through(function ($item) {
-                $item->masa_training_hari = Carbon::parse($item->date_finish_train)->day;
-                return $item;
-            })
             ->withQueryString();
 
         $users = $this->allowedUsersQuery()
@@ -92,7 +88,6 @@ class FinishedTrainingController extends Controller
     public function show($id)
     {
         $finishedTraining = $this->baseQuery()->findOrFail($id);
-        $finishedTraining->masa_training_hari = Carbon::parse($finishedTraining->date_finish_train)->day;
 
         return response()->json([
             'message' => 'Get finished training',

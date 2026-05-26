@@ -360,20 +360,20 @@
         </div>
     </x-main-div>
 
-    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail" x-cloak
-        class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" @keydown.escape.window="open = false">
-        <div class="fixed inset-0 transition-opacity bg-black/50"></div>
+    <div x-data="{ open: false, detail: {} }" x-show="open" @detail-modal.window="open = true; detail = $event.detail"
+        @keydown.escape.window="open = false" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+        <div class="fixed inset-0 transition-opacity bg-black/50" @click="open = false"></div>
 
         <div class="flex items-center justify-center min-h-full p-3 sm:p-4">
             <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6"
-                @click="open = false" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-lg font-bold text-slate-800 sm:text-xl">Detail Pengajuan Lembur</h3>
                     <button class="flex items-center justify-center w-8 h-8 transition rounded-lg hover:bg-slate-100"
-                        type="button">
+                        @click="open = false" type="button">
                         <i class="text-xl ri-close-line text-slate-600"></i>
                     </button>
                 </div>

@@ -394,6 +394,8 @@
     </x-main-div>
 
     <script>
+        const SPVW_MODE_STORAGE_KEY = 'spvw_rekap_mode';
+
         // Tab switching tanpa reload (seamless)
         function setMode(nextMode) {
             const sections = document.querySelectorAll('[data-mode-section]');
@@ -405,6 +407,13 @@
 
             // Update hidden input so other code can read current mode
             if (modeInput) modeInput.value = nextMode;
+
+            // Persist mode in current browser session
+            try {
+                sessionStorage.setItem(SPVW_MODE_STORAGE_KEY, nextMode);
+            } catch (_) {
+                // ignore browser storage restrictions
+            }
 
             // Update buttons' visual state
             buttons.forEach(btn => {
@@ -460,7 +469,15 @@
 
         // Initialize tab switching on DOM ready
         document.addEventListener('DOMContentLoaded', () => {
-            const currentMode = document.getElementById('spvw-mode-input')?.value || '{{ $selectedMode }}';
+            let storedMode = null;
+            try {
+                storedMode = sessionStorage.getItem(SPVW_MODE_STORAGE_KEY);
+            } catch (_) {
+                storedMode = null;
+            }
+
+            const fallbackMode = document.getElementById('spvw-mode-input')?.value || '{{ $selectedMode }}';
+            const currentMode = ['pengajuan', 'riwayat'].includes(storedMode) ? storedMode : fallbackMode;
             setMode(currentMode);
         });
 

@@ -11,7 +11,10 @@ class KeteranganLanjutanController extends RekapController
     use HasAllowedSeeData;
     public function index()
     {
-        $keteranganLanjutans = KeteranganLanjutan::with('user:id,nama_lengkap,kerjasama_id')
+        $keteranganLanjutans = KeteranganLanjutan::with([
+            'user:id,nama_lengkap,kerjasama_id',
+            'createdBy:id,nama_lengkap',
+        ])
             ->whereHas('user', function ($q) {
                 $q->whereHas('jabatan', function ($jabatanQuery) {
                     $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);

@@ -31,12 +31,15 @@
                 <table class="w-full text-sm text-left">
                     <thead class="border-b bg-slate-50 border-slate-200 text-slate-600">
                         <tr>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase">User</th>
                             <th class="px-4 py-3 text-xs font-semibold uppercase">Keterangan</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase">Dibuat</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($keteranganLanjutans as $item)
                             <tr class="align-top">
+                                <td class="px-4 py-3 font-medium text-slate-800">{{ $item->user->nama_lengkap ?? '-' }}</td>
                                 <td class="px-4 py-3">
                                     <div class="space-y-2">
                                         @foreach (($item->keterangan ?? []) as $row)
@@ -54,10 +57,13 @@
                                         @endforeach
                                     </div>
                                 </td>
+                                <td class="px-4 py-3 text-slate-700">
+                                    {{ $item->createdBy->nama_lengkap ?? '-' }}
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="2" class="px-4 py-8 text-center text-slate-500">Belum ada data.</td>
+                                <td colspan="3" class="px-4 py-8 text-center text-slate-500">Belum ada data.</td>
                             </tr>
                         @endforelse
                     </tbody>

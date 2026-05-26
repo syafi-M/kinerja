@@ -12,10 +12,11 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\SPVW_Controller\Concerns\HasAllowedSeeData;
 
 class CuttingController extends Controller
 {
-    use UsesToastRedirects;
+    use UsesToastRedirects, HasAllowedSeeData;
 
     public function index()
     {
@@ -265,12 +266,10 @@ class CuttingController extends Controller
 
     private function baseQuery()
     {
-        return PerformanceCuts::with(['user:id,name,nama_lengkap', 'createdBy:id,name,nama_lengkap'])
+        return PerformanceCuts::with(['user:id,name,nama_lengkap,jabatan_id', 'createdBy:id,name,nama_lengkap'])
             ->select(['id', 'user_id', 'created_by_user_id', 'date_cut', 'type_cut', 'manual_type_cut', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
-                $q->whereHas('jabatan', function ($jabatanQuery) {
-                        $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-                    })
+                $q->whereIn('jabatan_id', $this->allowedSeeData())
                     ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
             });
     }
@@ -278,7 +277,6 @@ class CuttingController extends Controller
     private function allowedUsersQuery()
     {
         return User::where('role_id', '!=', 2)
-            ->where('kerjasama_id', '!=', 1)
             ->when(!empty($this->allowedTargetJabatanIds()), fn($q) => $q->whereIn('jabatan_id', $this->allowedTargetJabatanIds()))
             ->when($this->selectedClientId() > 0, fn($q) => $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
     }
