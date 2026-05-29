@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Http\Controllers\SPVW_Controller\Concerns\HasAllowedSeeData;
 
 class SlipGajiController extends Controller
 {
+    use HasAllowedSeeData;
     /**
      * Display a listing of the resource.
      */
@@ -120,15 +122,15 @@ class SlipGajiController extends Controller
         
         $penempatan = $request->penempatan;
         
-        if(Auth::user()->divisi->jabatan_id == 10){
+        if(Auth::user()->divisi->jabatan_id == '10') {
             $user = User::where('kerjasama_id', Auth::user()->kerjasama_id)->where('jabatan_id', [9, 10])->pluck('id');
-        }else if(Auth::user()->divisi->jabatan_id == 11){
+        } else if(Auth::user()->divisi->jabatan_id =='11') {
             $user = User::where('kerjasama_id', Auth::user()->kerjasama_id)->where('jabatan_id', [8, 11])->pluck('id');
-        }else if(Auth::user()->devisi_id == 26){
+        } else if(Auth::user()->jabatan_id == '20') {
             $user = User::where('kerjasama_id', '!=', 1)->when($penempatan, function ($query, $penempatan) { return $query->where('kerjasama_id', $penempatan); })->whereNotIn('devisi_id', [6, 11, 23, 13])->pluck('id');
-        }else if(Auth::user()->id == 175) {
-            $user = User::where('jabatan_id', 8)->pluck('id');
-        }else {
+        } else if(Auth::user()->jabatan_id == '35') {
+            $user = User::whereIn('jabatan_id', [8, 11, 16, 17, 18])->pluck('id');
+        } else {
             $user = User::where('kerjasama_id', '!=', 1)->orderBy('kerjasama_id', 'asc')->when($penempatan, function ($query, $penempatan) { return $query->where('kerjasama_id', $penempatan); })->whereNotIn('id', [289, 387])->pluck('id');
         }
         $slip = SlipGaji::with('user')->whereIn('user_id', $user)->where('bulan_tahun', $bulan ? $bulan : Carbon::now()->subMonth()->format('Y-m'))->get();
