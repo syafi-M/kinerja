@@ -10,11 +10,14 @@ use App\Models\CheckPoint;
 use App\Models\News;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Simpan waktu sekarang dan user dalam variabel
         $now = Carbon::now();
@@ -90,12 +93,6 @@ class DashboardController extends Controller
                 && $item->tanggal_absen->month === $currentMonth;
         });
 
-        // Ambil absensi hari ini untuk kondisi sholat
-        $sholat = (clone $absenQueryBase)
-            ->where('tanggal_absen', $today)
-            ->whereNull('absensi_type_pulang')
-            ->first();
-
         // Atau jika ingin menggunakan koleksi yang sudah diambil sebelumnya:
         $cekAbsen = $absen->where('tanggal_absen', $today);
 
@@ -138,54 +135,6 @@ class DashboardController extends Controller
             ->where('type_check', 'dikerjakan')
             ->count();
 
-        $sholatSaatIni = null;
-
-        if ($sholat) {
-            $waktuSekarang = Carbon::now()->format('H:i');
-
-            $waktuSholat = [
-                'subuh' => ['start' => '03:30', 'end' => '04:00', 'status' => $sholat->subuh],
-                'dzuhur' => ['start' => '11:20', 'end' => '14:00', 'status' => $sholat->dzuhur],
-                'asar' => ['start' => '15:00', 'end' => '17:00', 'status' => $sholat->asar],
-                'magrib' => ['start' => '17:20', 'end' => '18:30', 'status' => $sholat->magrib],
-                'isya' => ['start' => '18:30', 'end' => '21:00', 'status' => $sholat->isya],
-            ];
-
-            $waktuSholat2 = [
-                'dzuhur' => ['start' => '11:20', 'end' => '14:00', 'status' => $sholat->dzuhur],
-                'magrib' => ['start' => '17:20', 'end' => '18:30', 'status' => $sholat->magrib],
-            ];
-
-            if ($user->kerjasama_id == 1) {
-                foreach ($waktuSholat as $namaSholat => $waktu) {
-                    if (
-                        $waktu['status'] === "0" &&
-                        $waktuSekarang >= $waktu['start'] &&
-                        $waktuSekarang <= $waktu['end']
-                    ) {
-                        $sholatSaatIni = $namaSholat;
-                        break;
-                    }
-                }
-            } else {
-                foreach ($waktuSholat2 as $namaSholat => $waktu) {
-                    if (
-                        $waktu['status'] === "0" &&
-                        $waktuSekarang >= $waktu['start'] &&
-                        $waktuSekarang <= $waktu['end']
-                    ) {
-                        $sholatSaatIni = $namaSholat;
-                        break;
-                    }
-                }
-            }
-        }
-        $rillSholat = $sholatSaatIni && (
-            $user->kerjasama_id == 1 ||
-            $user->divisi->jabatan->code_jabatan == "CO-CS" ||
-            $user->divisi->jabatan->code_jabatan == "CO-SCR"
-        );
-
         $luweh1Dino = false;
         if ($absenP && $absenP->shift) {
             if ($absenP->shift->is_overnight) {
@@ -225,7 +174,6 @@ class DashboardController extends Controller
                 'absenP',
                 'user',
                 'izin',
-                'sholat',
                 'hitungNews',
                 'cekAbsen',
                 'cex',
@@ -233,8 +181,6 @@ class DashboardController extends Controller
                 'totcex',
                 'lokasiMitra',
                 'warn',
-                'sholatSaatIni',
-                'rillSholat',
                 'luweh1Dino',
                 'shouldTrackPulang',
                 'statusClass',
@@ -247,6 +193,93 @@ class DashboardController extends Controller
     public function sendTestEmail()
     {
         return;
+    }
+
+    public function waktuSholat(Request $request)
+    {
+        $lat = $request->input('lat');
+        $lon = $request->input('lng');
+
+        $user = Auth::user();
+        $now = Carbon::now();
+        $absenQueryBase = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+            ->where('user_id', $user->id)
+            ->whereNull('absensi_type_pulang')
+            ->where('created_at', '>=', $now->copy()->subHours(24))
+            ->latest()
+            ->first();
+        $statusSholat = $absenQueryBase->status_sholat;
+
+        $date = Carbon::now()->format('d-m-Y');
+
+        $response = Http::withHeaders([
+            'Accept-Encoding' => ''
+        ])->get("https://api.aladhan.com/v1/timings/{$date}", [
+            'latitude'                 => $lat,
+            'longitude'                => $lon,
+            'method'                   => '3',
+            'shafaq'                   => 'general',
+            'tune'                     => '5,3,5,7,9,-1,0,8,-6', // %2C otomatis di-encode oleh Laravel menjadi koma
+            'school'                   => '0',
+            'midnightMode'             => '0',
+            'timezonestring'           => '', // Kosongkan agar API mendeteksi timezone otomatis berdasarkan koordinat GPS user
+            'latitudeAdjustmentMethod' => '1',
+            'calendarMethod'           => 'UAQ',
+            'iso8601'                  => 'false'
+        ]);
+        
+        if ($response->successful()) {
+            // 1. Ambil data timings dan timezone dari response API
+            $timings = $response->json('data.timings');
+            $timezone = $response->json('data.meta.timezone');
+
+            // 2. Ambil waktu sekarang berdasarkan timezone lokasi user
+            $now = Carbon::now($timezone);
+
+            // 3. Konversi string jam sholat menjadi objek Carbon penuh
+            $subuh   = Carbon::createFromFormat('H:i', $timings['Fajr'], $timezone);
+            $zuhur   = Carbon::createFromFormat('H:i', $timings['Dhuhr'], $timezone);
+            $ashar   = Carbon::createFromFormat('H:i', $timings['Asr'], $timezone);
+            $maghrib = Carbon::createFromFormat('H:i', $timings['Maghrib'], $timezone);
+            $isya    = Carbon::createFromFormat('H:i', $timings['Isha'], $timezone);
+
+            // 4. Logika penentuan nama waktu sholat dengan gap 15 menit sebelum waktu berikutnya
+            $subuhMulai   = $subuh->copy()->subMinutes(10);
+            $subuhSelesai = $subuh->copy()->addMinutes(90);
+
+            $zuhurMulai   = $zuhur->copy()->subMinutes(10);
+            $zuhurSelesai = $zuhur->copy()->addMinutes(90);
+
+            $asharMulai   = $ashar->copy()->subMinutes(10);
+            $asharSelesai = $ashar->copy()->addMinutes(90);
+
+            $maghribMulai   = $maghrib->copy()->subMinutes(10);
+            $maghribSelesai = $maghrib->copy()->addMinutes(30);
+
+            $isyaMulai   = $isya->copy()->subMinutes(10);
+            $isyaSelesai = $isya->copy()->addMinutes(120);
+
+            $sholatSekarang = null;
+
+            if ($now->between($subuhMulai, $subuhSelesai) && $statusSholat->Subuh == 0) {
+                $sholatSekarang = 'Subuh';
+            } elseif ($now->between($zuhurMulai, $zuhurSelesai) && $statusSholat->Zuhur == 0) {
+                $sholatSekarang = 'Zuhur';
+            } elseif ($now->between($asharMulai, $asharSelesai) && $statusSholat->Ashar == 0) {
+                $sholatSekarang = 'Ashar';
+            } elseif ($now->between($maghribMulai, $maghribSelesai) && $statusSholat->Maghrib == 0) {
+                $sholatSekarang = 'Maghrib';
+            } elseif ($now->between($isyaMulai, $isyaSelesai) && $statusSholat->Isya == 0) {
+                $sholatSekarang = 'Isya';
+            }
+
+            // 5. Hanya mengembalikan nama waktu sholat saja
+            return response()->json([
+                'sholat_sekarang' => $sholatSekarang ?? 'kosong'
+            ]);
+        }
+
+        return response()->json($response->json(), $response->status());   
     }
 
 }

@@ -29,12 +29,12 @@
 		/*}*/
 
 		th {
-			background-color: rgb(19, 110, 170);
+			background-color: #2563eb;
 			color: white;
 		}
 
 		tr:nth-child(even) {
-			background-color: #e2e8f0;
+			background-color: #f8fafc;
 		}
 		
 		/*tr:nth-child(odd) .nama-lengkap {*/
@@ -46,11 +46,19 @@
   /*      }*/
 
 		.page-break {
+			display: block;
 			page-break-before: always;
 		}
 		.table-wrapper {
             page-break-inside: avoid;
         }
+		thead {
+			display: table-header-group;
+		}
+
+		tfoot {
+			display: table-footer-group;
+		}
 	</style>
 </head>
 
@@ -68,11 +76,23 @@
             $rowCounter = 0;
 		@endphp
 		<div>
-    		<div class="title">
-    			<img class="hero" src="{{ $base64 }}" width="60px">
-    			<span class="sub-title" style="vertical-align: 20px; font-weight: bolder; font-size: 25px; ">Rekab Absen Sholat PT. Surya
-    				Amanah Cendekia</span>
-    		</div>
+    		<table style="border:none; margin-bottom:15px;">
+				<tr>
+					<td style="border:none; width:70px;">
+						<img src="{{ $base64 }}" width="60">
+					</td>
+
+					<td style="border:none;">
+						<div style="font-size:24px;font-weight:bold;">
+							Rekap Absensi Sholat
+						</div>
+
+						<div style="font-size:14px;">
+							PT. Surya Amanah Cendekia
+						</div>
+					</td>
+				</tr>
+			</table>
     		
     		<div style="text-align: center; margin: 16px auto 12px auto; font-size: 14px; ">
                 @foreach ($mit as $mitName)
@@ -107,7 +127,7 @@
                                 $isWeekend = $date->isWeekend();
                                 $isHoliday = in_array($date->format('Y-m-j'), $dailyData);
                             @endphp
-    						<th style="{{$isWeekend || $isHoliday ? "background-color: #ef4444" : ""}}; font-size: 14px; padding: 0 2px 0 2px;">{{ $date->format('d') }}</th>
+    						<th style="{{$isWeekend || $isHoliday ? "background-color: #dc2626; color: white; font-weight: bold;" : ""}}; font-size: 14px; padding: 0 2px 0 2px;">{{ $date->format('d') }}</th>
 						@endfor
 					</tr>
 				</thead>
@@ -137,7 +157,7 @@
                                             });
 							        @endphp
 							        
-							        <td style="{{ $absensi?->subuh == 1 ? 'background-color: rgb(112, 226, 112);' : '' }} border-top: 2px solid black;"></td>
+							        <td style="{{ $absensi?->subuh == 1 ? 'background-color: #22c55e;' : '' }} border-top: 2px solid black;"></td>
 							    @endfor
 							</tr>
 							<tr>
@@ -215,11 +235,22 @@
             </li>
 		</ul>
 
-		<div style="right: 25px; position:absolute;">
+		<span style="right: 0; bottom: 150px; position:absolute;">
 			<span>Ponorogo, {{ Carbon\Carbon::now()->format('d-m-Y') }}</span>
 			<span style="right: 0; top: 100px; left: 60px; position:absolute;">TTD</span>
-		</div>
-		<span style="right: 0; bottom: 150px; position:absolute;">PT. Surya Amanah Cendekia</span>
+		</span>
+		<table style="width:100%; margin-top:40px; border:none;">
+			<tr>
+				<td style="border:none;"></td>
+
+				<td style="border:none; text-align:center; width:250px;">
+					Ponorogo, {{ now()->format('d-m-Y') }}
+					<br><br><br><br><br>
+
+					PT. Surya Amanah Cendekia
+				</td>
+			</tr>
+		</table>
 	</main>
 </body>
 

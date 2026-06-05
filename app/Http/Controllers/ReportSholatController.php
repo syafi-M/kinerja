@@ -76,76 +76,75 @@ class ReportSholatController extends Controller
     
     public function download(Request $request)
     {
-        $currentMonth = Carbon::parse($this->ended)->month;
-        $currentYear = Carbon::parse($this->str)->year;
-        
-        $strYear = Carbon::parse($this->str)->year;
-        $endYear = Carbon::parse($this->ended)->year;
-        
-        $loginResponse = Http::get('https://kalenderindonesia.com/api/login');
+        $validated = $request->validate([
+            'str1' => ['required', 'date'],
+            'end1' => ['required', 'date', 'after_or_equal:str1'],
+            'kerjasama_id' => ['nullable', 'integer'],
+            'divisi_id' => ['nullable', 'integer'],
+        ]);
+
+        $str1 = $validated['str1'];
+        $end1 = $validated['end1'];
+
+        $strYear = Carbon::parse($str1)->year;
+        $endYear = Carbon::parse($end1)->year;
+
         $dailyData = [];
-        
-        $cMonth = Carbon::now()->month;
         $getDateLib = Http::get("https://dayoffapi.vercel.app/api");
-        if($getDateLib->successful()){
-            if($strYear == $endYear){
-                $kalenderData = $getDateLib->json();
-                foreach($kalenderData as $dailys) {
+
+        if ($getDateLib->successful()) {
+            if ($strYear == $endYear) {
+                foreach ($getDateLib->json() as $dailys) {
                     $dailyData[] = $dailys['tanggal'];
-                    // dd($dailyData);
                 }
-            }else{
+            } else {
                 $kalenderResponse = Http::get("https://dayoffapi.vercel.app/api?year={$strYear}");
                 $kalenderResponse2 = Http::get("https://dayoffapi.vercel.app/api?year={$endYear}");
+
                 if ($kalenderResponse->successful()) {
-                    $kalenderData = $kalenderResponse->json();
-                    foreach($kalenderData as $dailys) {
+                    foreach ($kalenderResponse->json() as $dailys) {
                         $dailyData[] = $dailys['tanggal'];
-                        // dd($dailyData);
                     }
                 }
+
                 if ($kalenderResponse2->successful()) {
-                    $kalenderData = $kalenderResponse2->json();
-                    foreach($kalenderData as $dailys) {
+                    foreach ($kalenderResponse2->json() as $dailys) {
                         $dailyData[] = $dailys['tanggal'];
-                        // dd($dailyData);
                     }
                 }
             }
         }
-        
-        $tanggalSekarang = Carbon::now();
-        
-        $dataUser = User::all();
+
+        $currentMonth = Carbon::parse($end1)->month;
+        $currentYear = Carbon::parse($str1)->year;
+        $totalHari = Carbon::parse($str1)->diffInDays(Carbon::parse($end1));
+
         $divisi = Divisi::all();
-        $user = Absensi::all();
         $mit = Kerjasama::all();
-        $str1 = $this->str;
-        $end1 = $this->ended;
-        
+
         $mitra = $request->input('kerjasama_id');
         $divisiId = $request->input('divisi_id');
-        $jdwl = $request->input('jadwal'); 
+        $jdwl = $request->input('jadwal');
 
-        // dd($izin);
-        
-        $totalHari =  Carbon::parse($this->ended)->diffInDays(Carbon::parse($this->str));
-        
-        if($request->has(['end1', 'str1'])) {
-            
-         $expPDF = User::with(['absensi' => function ($query) use ($str1, $end1) {
-            return $query->whereBetween('tanggal_absen', [$str1, $end1]);
-        }, 'jadwalUser' => function ($query) use ($str1, $end1) {
-            return $query->whereBetween('created_at', [$str1, $end1]);
-        }])->when($mitra, function($query) use ($mitra) {
+        $expPDF = User::with([
+            'absensi' => function ($query) use ($str1, $end1) {
+                $query->whereBetween('tanggal_absen', [$str1, $end1]);
+            },
+            'jadwalUser' => function ($query) use ($str1, $end1) {
+                $query->whereBetween('created_at', [$str1, $end1]);
+            }
+        ])
+        ->when($mitra, function ($query) use ($mitra) {
             return $query->where('kerjasama_id', $mitra);
-        })->when($divisiId, function($query) use ($divisiId) {
+        })
+        ->when($divisiId, function ($query) use ($divisiId) {
             return $query->where('devisi_id', $divisiId);
-        })->orderBy('nama_lengkap', 'asc')->get();
-        
-        $point = Point::all();
+        })
+        ->orderBy('nama_lengkap', 'asc')
+        ->get();
 
-        $path = 'logo/sac.png';
+
+        $path = public_path('logo/sac.png');
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
@@ -156,26 +155,83 @@ class ReportSholatController extends Controller
         $options->set('defaultFont', 'Arial');
 
         $pdf = new Dompdf($options);
-        $html = view('admin.reportSholat.export', compact('point', 'dailyData', 'expPDF','jdwl', 'base64', 'totalHari', 'user', 'dataUser', 'currentYear', 'currentMonth', 'divisi', 'str1', 'end1', 'mit', 'mitra'))->render();
-        $pdf->loadHtml($html);
+        $html = view('admin.reportSholat.export', compact(
+            'dailyData',
+            'expPDF',
+            'jdwl',
+            'base64',
+            'totalHari',
+            'currentYear',
+            'currentMonth',
+            'divisi',
+            'str1',
+            'end1',
+            'mit',
+            'mitra'
+        ))->render();
 
+        $pdf->loadHtml($html);
         $pdf->setPaper('A4', 'landscape');
         $pdf->render();
 
         $output = $pdf->output();
-        $filename = 'absensi.pdf';
+        $filename = 'absensi-sholat-' . $str1 . '_sampai_' . $end1 . '.pdf';
 
-        if ($request->input('action') == 'download') {
-            return response()->download($output, $filename);
-        }
-
-        return response($output, 200)
+        return response($output)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
-                    
-        }else{
-            toastr()->error('Mohon Masukkan Filter Export', [], 'error');
-            return redirect()->back();
-        }
+            ->header(
+                'Content-Disposition',
+                'inline; filename="'.$filename.'"'
+            );
+    }
+
+    public function detail($id)
+    {
+        $absen = Absensi::with(['user', 'shift', 'kerjasama.client'])->findOrFail($id);
+
+        $toUrl = function ($fileName) {
+            return $fileName
+                ? asset('storage/' . 'sholat/' . $fileName)
+                : null;
+        };
+
+        return response()->json([
+            'id' => $absen->id,
+            'nama' => $absen->user?->nama_lengkap,
+            'tanggal' => $absen->tanggal_absen,
+            'client' => $absen->kerjasama?->client?->name,
+            'shift' => $absen->shift?->shift_name,
+
+            'subuh' => [
+                'status' => (int) $absen->subuh,
+                'lat' => $absen->subuh_lat,
+                'lng' => $absen->subuh_long,
+                'foto' => $toUrl($absen->fotoSubuh),
+            ],
+            'zuhur' => [
+                'status' => (int) $absen->dzuhur,
+                'lat' => $absen->dzuhur_lat,
+                'lng' => $absen->dzuhur_long,
+                'foto' => $toUrl($absen->fotoDzuhur),
+            ],
+            'ashar' => [
+                'status' => (int) $absen->asar,
+                'lat' => $absen->asar_lat,
+                'lng' => $absen->asar_long,
+                'foto' => $toUrl($absen->fotoAsar),
+            ],
+            'maghrib' => [
+                'status' => (int) $absen->magrib,
+                'lat' => $absen->maghrib_lat,
+                'lng' => $absen->maghrib_long,
+                'foto' => $toUrl($absen->fotoMaghrib),
+            ],
+            'isya' => [
+                'status' => (int) $absen->isya,
+                'lat' => $absen->isya_lat,
+                'lng' => $absen->isya_long,
+                'foto' => $toUrl($absen->fotoIsya),
+            ],
+        ]);
     }
 }

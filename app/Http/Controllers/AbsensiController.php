@@ -940,141 +940,51 @@ class AbsensiController extends Controller
         }
     }
 
-    // Subuh
-    public function updateSubuh(Request $request, $id)
+    public function updateAbsenSholat(Request $request, $id)
     {
-        try {
-            $absensi = Absensi::find($id);
-            $clock = Carbon::now()->format('H:i:s');
-
-            $absensi->subuh_lat = $request->lat_user;
-            $absensi->subuh_long = $request->long_user;
-
-            $absensi->subuh = 1;
-            $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
-
-            return redirect()->back();
-        } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
-
-            return redirect()->back();
-        }
-    }
-
-    // dzuhur
-    public function updateDzuhur(Request $request, $id)
-    {
-        $latitud = $request->lat_user;
-        $long = $request->long_user;
-
-        // dd($request->lat_user, $request->long_user);
-
-        if ($latitud != null && $long != null) {
-            $panjangLat = strlen($latitud);
-            $panjangLong = strlen($long);
-
-            $agent = $this->detectDevice($request->header('User-Agent'));
-            $ukuran = $panjangLat + $panjangLong;
-
-            if ($agent == 'android' || $agent == 'unknow') {
-                $sebuahPengukur = 24;
-            } elseif ($agent == 'iphone') {
-                $sebuahPengukur = 35;
+        // try {
+            $waktuSholat = $request->input('waktu_sholat');
+            $absensi = Absensi::findOrFail($id);
+            if($waktuSholat == 'Subuh') {
+                $absensi->subuh = 1;
+                $absensi->subuh_lat = $request->lat_user;
+                $absensi->subuh_long = $request->long_user;
+                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+                $absensi->fotoSubuh = $fileName;
+            } elseif($waktuSholat == 'Zuhur') {
+                $absensi->dzuhur = 1;
+                $absensi->dzuhur_lat = $request->lat_user;
+                $absensi->dzuhur_long = $request->long_user;
+                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+                $absensi->fotoDzuhur = $fileName;
+            } elseif($waktuSholat == 'Ashar') {
+                $absensi->asar = 1;
+                $absensi->asar_lat = $request->lat_user;
+                $absensi->asar_long = $request->long_user;
+                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+                $absensi->fotoAsar = $fileName;
+            } elseif($waktuSholat == 'Maghrib') {
+                $absensi->magrib = 1;
+                $absensi->magrib_lat = $request->lat_user;
+                $absensi->magrib_long = $request->long_user;
+                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+                $absensi->fotoMagrib = $fileName;
+            } elseif($waktuSholat == 'Isya') {
+                $absensi->isya = 1;
+                $absensi->isya_lat = $request->lat_user;
+                $absensi->isya_long = $request->long_user;
+                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+                $absensi->fotoIsya = $fileName;
             }
-            if ($ukuran <= $sebuahPengukur) {
-                try {
-                    $absensi = Absensi::find($id);
-                    $clock = Carbon::now()->format('H:i:s');
-                    $absensi->dzuhur = 1;
-                    $absensi->sig_lat = $request->lat_user;
-                    $absensi->sig_long = $request->long_user;
-
-                    $absensi->save();
-                    toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
-
-                    return redirect()->back();
-                } catch (\Throwable $th) {
-                    toastr()->error('Error Data Tidak Ditemukan', [], 'error');
-
-                    return redirect()->back();
-                }
-            } else {
-                toastr()->error('Gagal Absen Siang !! Matikan Extension Fake GPS !!', [], 'error');
-
-                return redirect()->back();
-            }
-        } else {
-            toastr()->error('Gagal Absen Siang !! Nyalakan GPS !!', [], 'error');
-
-            return redirect()->back();
-        }
-    }
-
-    // asar
-    public function updateAsar(Request $request, $id)
-    {
-        try {
-            $absensi = Absensi::find($id);
-            $clock = Carbon::now()->format('H:i:s');
-
-            $absensi->asar_lat = $request->lat_user;
-            $absensi->asar_long = $request->long_user;
-
-            $absensi->asar = 1;
             $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
+            toastr()->success('Berhasil Absen Shalat Jam : ' . Carbon::now()->format('H:i:s'), [], 'success');
 
             return redirect()->back();
-        } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
+        // } catch (\Throwable $th) {
+        //     toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 
-            return redirect()->back();
-        }
-    }
-
-    // maghrib
-    public function updateMaghrib(Request $request, $id)
-    {
-        try {
-            $absensi = Absensi::find($id);
-            $clock = Carbon::now()->format('H:i:s');
-
-            $absensi->maghrib_lat = $request->lat_user;
-            $absensi->maghrib_long = $request->long_user;
-
-            $absensi->maghrib = 1;
-            $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
-
-            return redirect()->back();
-        } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
-
-            return redirect()->back();
-        }
-    }
-
-    // isya
-    public function updateIsya(Request $request, $id)
-    {
-        try {
-            $absensi = Absensi::find($id);
-            $clock = Carbon::now()->format('H:i:s');
-
-            $absensi->isya_lat = $request->lat_user;
-            $absensi->isya_long = $request->long_user;
-
-            $absensi->isya = 1;
-            $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . $clock, [], 'succes');
-
-            return redirect()->back();
-        } catch (\Throwable $th) {
-            toastr()->error('Error Data Tidak Ditemukan', [], 'error');
-
-            return redirect()->back();
-        }
+        //     return redirect()->back();
+        // }
     }
 
     public function historyAbsensi(Request $request)

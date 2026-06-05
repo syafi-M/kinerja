@@ -11,6 +11,7 @@
     <script type="text/javascript" src="{{ URL::asset('js/jqueryNew.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.min.js') }}"></script>
     <script type="text/javascript" src="{{ URL::asset('js/jquery.lazy.plugins.min.js') }}"></script>
+    @stack('scripts')
 
     <style>
         .custom-scrollbar::-webkit-scrollbar {

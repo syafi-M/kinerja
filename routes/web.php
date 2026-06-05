@@ -199,11 +199,8 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('/absensi-private', [AbsensiController::class, 'indexPrivate']);
     Route::post('/absensi-private-store', [AbsensiController::class, 'storePrivate']);
 
-    Route::put('/subuh/{id}', [AbsensiController::class, 'updateSubuh'])->name('updateSubuh');
-    Route::put('/dhuhur/{id}', [AbsensiController::class, 'updateDzuhur'])->name('updateDzuhur');
-    Route::put('/asar/{id}', [AbsensiController::class, 'updateAsar'])->name('updateAsar');
-    Route::put('/magrib/{id}', [AbsensiController::class, 'updateMaghrib'])->name('updateMagrib');
-    Route::put('/isya/{id}', [AbsensiController::class, 'updateIsya'])->name('updateIsya');
+    Route::get('/api/waktu-sholat', [DashboardController::class, 'waktuSholat'])->name('waktu-sholat');
+    Route::put('absensi-sholat/{id}', [AbsensiController::class, 'updateAbsenSholat'])->name('absensi-sholat.update');
 
     Route::get('/get-shifts/{cli}/{jab}', [AbsensiController::class, 'getShift'])->name('olehShift');
     // laporan Mitra
@@ -542,6 +539,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
 
     Route::get('/report/sholat/by-admin', [ReportSholatController::class, 'index'])->name('admin.report-sholat.index');
     Route::get('/report/sholat/download-as-admin', [ReportSholatController::class, 'download'])->name('admin.report-sholat.download');
+    Route::get('/admin/report-sholat/{id}/detail', [ReportSholatController::class, 'detail'])->name('admin.report-sholat.detail');
     Route::get('/admin/export', [AdminController::class, 'export'])->name('admin.export');
     Route::get('/admin/exportV2', [AdminController::class, 'exportWith'])->name('admin.exportV2');
     Route::get('/admin/export-izin', [AdminController::class, 'exp'])->name('admin.export-izin');

@@ -23,10 +23,25 @@ class Absensi extends Model
         'deskripsi',
         'point_id',
         'subuh',
+        'fotoSubuh',
+        'subuh_lat',
+        'subuh_long',
         'dzuhur',
+        'fotoDzuhur',
+        'dzuhur_lat',
+        'dzuhur_long',
         'asar',
-        'magrib',
+        'fotoAsar',
+        'asar_lat',
+        'asar_long',
+        'maghrib',
+        'fotoMaghrib',
+        'maghrib_lat',
+        'maghrib_long',
         'isya',
+        'fotoIsya',
+        'isya_lat',
+        'isya_long',
         'msk_lat',
         'msk_long',
         'sig_lat',
@@ -40,7 +55,7 @@ class Absensi extends Model
         'tukar_id'
     ];
     
-    protected $guarded = ['user_id', 'kerjasama_id', 'shift_id', 'perlengkapan', 'keterangan', 'absensi_type_masuk', 'tanggal_absen', 'tipe_id', 'absensi_type_pulang', 'image', 'deskripsi', 'point_id', 'subuh', 'dzuhur', 'asar', 'magrib', 'isya', 'msk_lat', 'msk_long', 'sig_lat', 'sig_long', 'plg_lat', 'plg_long', 'masuk', 'tukar', 'lembur', 'terus', 'tukar_id'
+    protected $guarded = ['user_id', 'kerjasama_id', 'shift_id', 'perlengkapan', 'keterangan', 'absensi_type_masuk', 'tanggal_absen', 'tipe_id', 'absensi_type_pulang', 'image', 'deskripsi', 'point_id', 'subuh', 'fotoSubuh', 'subuh_lat', 'subuh_long', 'dzuhur', 'fotoDzuhur', 'dzuhur_lat', 'dzuhur_long', 'asar', 'fotoAsar', 'asar_lat', 'asar_long', 'maghrib', 'fotoMaghrib', 'maghrib_lat', 'maghrib_long', 'isya', 'fotoIsya', 'isya_lat', 'isya_long', 'msk_lat', 'msk_long', 'sig_lat', 'sig_long', 'plg_lat', 'plg_long', 'masuk', 'tukar', 'lembur', 'terus', 'tukar_id'
 
     ];
 
@@ -73,6 +88,17 @@ class Absensi extends Model
     public function point()
     {
         return $this->belongsTo(Point::class);
+    }
+
+    public function getStatusSholatAttribute()
+    {
+        return (object) [
+            'Subuh' => $this->subuh,
+            'Zuhur' => $this->dzuhur,
+            'Ashar' => $this->asar,
+            'Maghrib' => $this->magrib,
+            'Isya' => $this->isya,
+        ];
     }
 
 }

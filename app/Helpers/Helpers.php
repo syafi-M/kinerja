@@ -94,19 +94,19 @@ function UploadImageUser($request, $NameFile)
     }
 }
 
-function UploadImageNew($request, $NameFile)
+function UploadImageNew($request, $NameFile, $path = 'images')
 {
     $file = $request->file($NameFile);
     if (!$file || !$file->isValid()) return null;
 
     $random = mt_rand(1, 999999);
-    $path = public_path('storage/images');
+    $path = public_path("storage/{$path}");
     !file_exists($path) && mkdir($path, 0755, true);
-
+    
     // Get extension with multiple fallbacks
     $ext = strtolower($file->getClientOriginalExtension() ?:
-        pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
-
+    pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+    
     if (empty($ext)) {
         $mime = $file->getMimeType();
         $ext = [
@@ -117,10 +117,10 @@ function UploadImageNew($request, $NameFile)
             'image/webp' => 'webp'
         ][$mime] ?? 'jpg';
     }
-
+    
     $filename = "data{$random}.{$ext}";
     $filepath = "{$path}/{$filename}";
-
+    
     try {
         (new ImageManager(['driver' => 'imagick']))
             ->make($file->getPathname())
