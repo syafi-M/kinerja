@@ -246,7 +246,7 @@
 
                 <div class="border-t border-slate-100 bg-white px-4 sm:px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                     @if (Auth::user()->kerjasama_id == 1)
-                        <form id="prayerForm" action="{{ route('absensi-sholat.update', $absenP->id) }}" method="POST" enctype="multipart/form-data">
+                        <form id="prayerForm" action="{{ route('absensi-sholat.update', $absenP ? $absenP->id : 0) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
                             <input name="lat_user" value="" class="hidden lat" />
