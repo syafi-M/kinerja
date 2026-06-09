@@ -245,27 +245,19 @@
                 </div>
 
                 <div class="border-t border-slate-100 bg-white px-4 sm:px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                    @if (Auth::user()->kerjasama_id == 1)
-                        <form id="prayerForm" action="{{ route('absensi-sholat.update', $absenP ? $absenP->id : 0) }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-                            <input name="lat_user" value="" class="hidden lat" />
-                            <input name="long_user" value="" class="hidden long" />
-                            <input name="waktu_sholat" value="" class="hidden waktuSholat" />
+                    <form id="prayerForm" action="{{ route('absensi-sholat.update', $absenP ? $absenP->id : 0) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <input name="lat_user" value="" class="hidden lat" />
+                        <input name="long_user" value="" class="hidden long" />
+                        <input name="waktu_sholat" value="" class="hidden waktuSholat" />
 
-                            <button type="submit"
-                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-yellow-600 to-amber-600 px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-amber-500/30 transition hover:from-yellow-700 hover:to-amber-700 hover:shadow-xl active:scale-[0.99]">
-                                <i class="ri-check-line text-xl"></i>
-                                <span>Oke Siap</span>
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route(Auth::user()->divisi->jabatan->code_jabatan == 'CO-CS' ? 'leader-absenSholat' : 'danru-absenSholat') }}"
-                            class="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-yellow-600 to-amber-600 px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-amber-500/30 transition hover:from-yellow-700 hover:to-amber-700 hover:shadow-xl">
+                        <button type="submit"
+                            class="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-yellow-600 to-amber-600 px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-amber-500/30 transition hover:from-yellow-700 hover:to-amber-700 hover:shadow-xl active:scale-[0.99]">
                             <i class="ri-check-line text-xl"></i>
-                            <span>Oke</span>
-                        </a>
-                    @endif
+                            <span>Oke Siap</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
