@@ -39,8 +39,14 @@ class ReportSholatController extends Controller
         
         // Build the initial query
         $absenQuery = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+            ->where(function ($query) {
+                foreach (['subuh', 'dzuhur', 'asar', 'magrib', 'isya'] as $field) {
+                    $query->orWhere($field, "1");
+                }
+            })
             ->orderBy('tanggal_absen', 'desc')
             ->orderBy('created_at', 'desc');
+        // how to add where subuh, dzuhur, ashar, is 0
         
         // Apply filters if provided
         if ($filter && $filterDivisi) {
