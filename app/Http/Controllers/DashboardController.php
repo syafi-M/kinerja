@@ -254,7 +254,7 @@ class DashboardController extends Controller
             $asharSelesai = $ashar->copy()->addMinutes(90);
 
             $maghribMulai   = $maghrib->copy()->subMinutes(10);
-            $maghribSelesai = $maghrib->copy()->addMinutes(30);
+            $maghribSelesai = $maghrib->copy()->addMinutes(45);
 
             $isyaMulai   = $isya->copy()->subMinutes(10);
             $isyaSelesai = $isya->copy()->addMinutes(120);

@@ -261,19 +261,34 @@ class MainController extends Controller
 
     public function indexAbsenSholat()
     {
-        $kerjasama = Auth::user()->kerjasama_id;
-        if (Auth::user()->divisi->jabatan->code_jabatan == "CO-CS") {
-            $codeJabatan = ['OCS', 'CO-CS'];
-            $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                $query->whereIn('code_jabatan', $codeJabatan);
-            })->get();
-        } else if (Auth::user()->divisi->jabatan->code_jabatan == "CO-SCR") {
-            $codeJabatan = ['SCR', 'CO-SCR'];
-            $user = User::where('kerjasama_id', $kerjasama)->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
-                $query->whereIn('code_jabatan', $codeJabatan);
-            })->get();
-        }
-        $absen = Absensi::where('kerjasama_id', $kerjasama)->where('tanggal_absen', Carbon::now()->format('Y-m-d'))->get();
+        $authUser = Auth::user()->loadMissing('divisi.jabatan');
+        $kerjasama = $authUser->kerjasama_id;
+        $jabatan = $authUser->divisi->jabatan->code_jabatan ?? null;
+
+        $codeJabatan = match ($jabatan) {
+            'CO-CS' => ['OCS', 'CO-CS', 'TMN', 'TKS', 'SA', 'PBI'],
+            'CO-SCR' => ['SCR', 'CO-SCR', 'RCP', 'JK', 'FO', 'KSR', 'PTR', 'DRV', 'PBI'],
+            default => [],
+        };
+
+        $user = User::query()
+            ->select('id')
+            ->where('kerjasama_id', $kerjasama)
+            ->when($codeJabatan, function ($query) use ($codeJabatan) {
+                $query->whereHas('divisi.jabatan', function ($query) use ($codeJabatan) {
+                    $query->whereIn('code_jabatan', $codeJabatan);
+                });
+            })
+            ->get();
+
+        $absen = Absensi::query()
+            ->select('id', 'user_id', 'subuh', 'dzuhur', 'asar', 'maghrib', 'isya')
+            ->with('user:id,nama_lengkap')
+            ->where('kerjasama_id', $kerjasama)
+            ->where('tanggal_absen', Carbon::now()->format('Y-m-d'))
+            ->latest('id')
+            ->get();
+
         return view('leader_view/absenSholat/index', compact('user', 'absen'));
     }
 

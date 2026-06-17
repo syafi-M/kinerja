@@ -27,6 +27,10 @@
                         Absensi</a>
                 </div>
                 <div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Lizin">
+                    <a href="{{ route('leader-absenSholat') }}" class="btn btn-info w-full"><i
+                            class="ri-checkbox-circle-line text-xl"></i>Data Absen Sholat</a>
+                </div>
+                <div class=" w-full space-y-4  sm:px-16 overflow-hidden" id="Lizin">
                     <a href="{{ route('lead_izin') }}" class="btn btn-info w-full"><i
                             class="ri-shield-user-line text-xl"></i>Data Izin</a>
                 </div>

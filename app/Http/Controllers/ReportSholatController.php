@@ -40,7 +40,7 @@ class ReportSholatController extends Controller
         // Build the initial query
         $absenQuery = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
             ->where(function ($query) {
-                foreach (['subuh', 'dzuhur', 'asar', 'magrib', 'isya'] as $field) {
+                foreach (['subuh', 'dzuhur', 'asar', 'maghrib', 'isya'] as $field) {
                     $query->orWhere($field, "1");
                 }
             })
@@ -227,7 +227,7 @@ class ReportSholatController extends Controller
                 'foto' => $toUrl($absen->fotoAsar),
             ],
             'maghrib' => [
-                'status' => (int) $absen->magrib,
+                'status' => (int) $absen->maghrib,
                 'lat' => $absen->maghrib_lat,
                 'lng' => $absen->maghrib_long,
                 'foto' => $toUrl($absen->fotoMaghrib),

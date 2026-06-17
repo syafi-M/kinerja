@@ -965,11 +965,11 @@ class AbsensiController extends Controller
                 $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
                 $absensi->fotoAsar = $fileName;
             } elseif($waktuSholat == 'Maghrib') {
-                $absensi->magrib = 1;
-                $absensi->magrib_lat = $request->lat_user;
-                $absensi->magrib_long = $request->long_user;
+                $absensi->maghrib = 1;
+                $absensi->maghrib_lat = $request->lat_user;
+                $absensi->maghrib_long = $request->long_user;
                 $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
-                $absensi->fotoMagrib = $fileName;
+                $absensi->fotoMaghrib = $fileName;
             } elseif($waktuSholat == 'Isya') {
                 $absensi->isya = 1;
                 $absensi->isya_lat = $request->lat_user;
