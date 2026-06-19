@@ -7,6 +7,7 @@ use App\Models\Lembur;
 use App\Models\Lokasi;
 use App\Models\Izin;
 use App\Models\CheckPoint;
+use App\Models\Kontrak;
 use App\Models\News;
 use App\Models\User;
 use Carbon\Carbon;
@@ -22,12 +23,22 @@ class DashboardController extends Controller
         // Simpan waktu sekarang dan user dalam variabel
         $now = Carbon::now();
         $today = $now->toDateString();
-        $user = Auth::user();
+        $dayStart = $now->copy()->startOfDay();
+        $dayEnd = $now->copy()->endOfDay();
+        $monthStart = $now->copy()->startOfMonth();
+        $monthEnd = $now->copy()->endOfMonth();
+        $user = Auth::user()->loadMissing(['divisi.jabatan']);
+
+        $kontrak = Kontrak::where('nama_pk_kda', auth()->user()->nama_lengkap)->latest()->first();
+
+        if (! $user->relationLoaded('jabatan') && $user->divisi?->jabatan && $user->jabatan_id === $user->divisi->jabatan->id) {
+            $user->setRelation('jabatan', $user->divisi->jabatan);
+        }
 
         // Hitung news yang masih berlaku berdasarkan tanggal
         $hitungNews = News::query()
-            ->whereDate('tanggal_lihat', '<=', $today)
-            ->whereDate('tanggal_tutup', '>=', $today)
+            ->where('tanggal_lihat', '<=', $today)
+            ->where('tanggal_tutup', '>=', $today)
             ->get();
 
 
@@ -35,39 +46,22 @@ class DashboardController extends Controller
         // $lembur = Lembur::latest('jam_selesai')->get();
 
         // Buat dasar query absensi untuk user
-        $absenQueryBase = Absensi::with(['user', 'shift', 'kerjasama', 'tipeAbsensi'])
+        $absenQueryBase = Absensi::query()
             ->where('user_id', $user->id);
-
-        $tempAbsen = (clone $absenQueryBase)
-            ->whereBetween('created_at', [$now->copy()->subDay()->startOfDay(), $now])
-            ->latest()
-            ->first();
-
-        if ($tempAbsen && $tempAbsen->shift) {
-            // Ambil jam_end dari shift, set ke tanggal hari ini, lalu tambah 2 jam
-            $limitPulang = $now->copy()->startOfDay()->setTimeFromTimeString($tempAbsen->shift->jam_end)->addHours(1)->addMinutes(30);
-
-            // Cek jika ini shift overnight (absen masuk kemarin, pulang pagi ini)
-            // Jika sekarang masih sebelum jam pulang yang ditambah 2 jam, maka batasnya valid
-        } else {
-            // Default jika data shift tidak ditemukan
-            $limitPulang = $now->copy()->startOfDay()->setTime(12, 0, 0);
-        }
-
-        // Ambil data absensi yang belum melakukan absensi pulang
-        $absen = (clone $absenQueryBase)
-            ->whereNull('absensi_type_pulang')
-            ->get();
 
         // Ambil data absensi pada rentang waktu dari kemarin hingga hari ini
         // Fix: ambil absen terakhir yang belum pulang dalam 24 jam terakhir
         // Untuk shift overnight, tetap bisa kebaca di esok hari
         $absenP = (clone $absenQueryBase)
+            ->with([
+                'shift:id,jam_start,jam_end,is_overnight',
+                'kerjasama:id,client_id',
+            ])
             ->whereNull('absensi_type_pulang')
             ->where('created_at', '>=', $now->copy()->subHours(24))
-            ->latest()
+            ->latest('id')
             ->first();
-        
+
         // Filter lagi: jika shift overnight dan sudah lewat batas pulang + 2 jam, anggap expired
         if ($absenP && $absenP->shift && $absenP->shift->is_overnight) {
             // Shift overnight tetap valid sampai jam_end + 2 jam di hari berikutnya
@@ -81,26 +75,31 @@ class DashboardController extends Controller
 
         $lokasiMitra = $shouldTrackPulang && $clientIdPulang
             ? Lokasi::query()
-                ->where('client_id', $clientIdPulang)
-                ->get(['id', 'client_id', 'latitude', 'longtitude', 'radius'])
+            ->where('client_id', $clientIdPulang)
+            ->get(['id', 'client_id', 'latitude', 'longtitude', 'radius'])
             : collect();
 
         // Filter absensi untuk mengambil yang memiliki tipe "Tidak Absen Pulang"
-        // dan terjadi di bulan berjalan. Jika memungkinkan, filter ini juga bisa dilakukan di query.
-        $currentMonth = $now->month;
-        $warn = $absen->filter(function ($item) use ($currentMonth) {
-            return $item->absensi_type_pulang === ''
-                && $item->tanggal_absen->month === $currentMonth;
-        });
+        // dan terjadi di bulan berjalan.
+        $warn = (clone $absenQueryBase)
+            ->whereNull('absensi_type_pulang')
+            ->whereBetween('tanggal_absen', [$monthStart->toDateString(), $monthEnd->toDateString()])
+            ->get(['id', 'absensi_type_pulang', 'tanggal_absen'])
+            ->filter(function ($item) use ($now) {
+                return $item->absensi_type_pulang === ''
+                    && $item->tanggal_absen->month === $now->month;
+            });
 
-        // Atau jika ingin menggunakan koleksi yang sudah diambil sebelumnya:
-        $cekAbsen = $absen->where('tanggal_absen', $today);
+        $cekAbsen = (clone $absenQueryBase)
+            ->whereNull('absensi_type_pulang')
+            ->where('tanggal_absen', $today)
+            ->get(['id', 'tanggal_absen']);
 
         // Ambil data izin untuk user terkait
-        $izin = Izin::with('user')
+        $izin = Izin::query()
             ->where('user_id', $user->id)
-            ->whereDate('updated_at', $today)
-            ->latest()
+            ->whereBetween('updated_at', [$dayStart, $dayEnd])
+            ->latest('id')
             ->first();
         if ($izin) {
             $status = $izin->approve_status;
@@ -119,12 +118,12 @@ class DashboardController extends Controller
             ->where('user_id', $user->id);
 
         $cex = (clone $cpQuery)->where('type_check', 'rencana')
-            ->latest()
+            ->latest('id')
             ->first();
 
         // Ambil CheckPoint dengan tipe 'dikerjakan'
         $cex2 = (clone $cpQuery)->where('type_check', 'dikerjakan')
-            ->latest()
+            ->latest('id')
             ->first();
 
         // Ambil CheckPoint tipe 'dikerjakan' untuk bulan berjalan
@@ -150,18 +149,18 @@ class DashboardController extends Controller
         }
 
         // data untuk dashboard mitra
-        $jumlahKaryawan = User::where('kerjasama_id', $user->kerjasama_id)->count();
-        $jumlahAbsensiHariIni = Absensi::whereHas('user', function ($query) use ($user) {
-            $query->where('kerjasama_id', $user->kerjasama_id);
-        })->whereDate('created_at', $today)->count();
-        $jumlahIzinHariIni = Izin::whereHas('user', function ($query) use ($user) {
-            $query->where('kerjasama_id', $user->kerjasama_id);
-        })->whereDate('updated_at', $today)->count();
-        $jumlahLemburHariIni = Lembur::whereHas('user', function ($query) use ($user) {
-            $query->where('kerjasama_id', $user->kerjasama_id);
-        })->whereDate('created_at', $today)->count();
-        
-        if(Auth::user()->jabatan->code_jabatan == "MITRA") {
+        if ($user->jabatan->code_jabatan == "MITRA") {
+            $jumlahKaryawan = User::where('kerjasama_id', $user->kerjasama_id)->count();
+            $jumlahAbsensiHariIni = Absensi::whereHas('user', function ($query) use ($user) {
+                $query->where('kerjasama_id', $user->kerjasama_id);
+            })->whereBetween('created_at', [$dayStart, $dayEnd])->count();
+            $jumlahIzinHariIni = Izin::whereHas('user', function ($query) use ($user) {
+                $query->where('kerjasama_id', $user->kerjasama_id);
+            })->whereBetween('updated_at', [$dayStart, $dayEnd])->count();
+            $jumlahLemburHariIni = Lembur::whereHas('user', function ($query) use ($user) {
+                $query->where('kerjasama_id', $user->kerjasama_id);
+            })->whereBetween('created_at', [$dayStart, $dayEnd])->count();
+
             return view('mitra_view.index', compact(
                 'jumlahKaryawan',
                 'jumlahAbsensiHariIni',
@@ -170,7 +169,6 @@ class DashboardController extends Controller
             ));
         } else {
             return view('dashboard', compact(
-                'absen',
                 'absenP',
                 'user',
                 'izin',
@@ -184,10 +182,10 @@ class DashboardController extends Controller
                 'luweh1Dino',
                 'shouldTrackPulang',
                 'statusClass',
-                'statusMessage'
+                'statusMessage',
+                'kontrak'
             ));
         }
-
     }
 
     public function sendTestEmail()
@@ -227,7 +225,7 @@ class DashboardController extends Controller
             'calendarMethod'           => 'UAQ',
             'iso8601'                  => 'false'
         ]);
-        
+
         if ($response->successful()) {
             // 1. Ambil data timings dan timezone dari response API
             $timings = $response->json('data.timings');
@@ -279,7 +277,6 @@ class DashboardController extends Controller
             ]);
         }
 
-        return response()->json($response->json(), $response->status());   
+        return response()->json($response->json(), $response->status());
     }
-
 }
