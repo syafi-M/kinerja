@@ -496,7 +496,7 @@
     </div>
 
     <div
-        class="{{ $kontrak->send_to_atasan == 0 && $kontrak->ttd && $kontrak->ttd_atasan ? 'hidden' : '' }} mx-5 mt-5 sm:mx-10">
+        class="{{ $kontrak && $kontrak->send_to_atasan == 0 && $kontrak->ttd && $kontrak->ttd_atasan ? 'hidden' : '' }} mx-5 mt-5 sm:mx-10">
         @if ($kontrak?->ttd == null && $kontrak?->tgl_selesai_kontrak)
             {{-- APPROVED --}}
             <div
@@ -511,18 +511,18 @@
                     </h3>
 
                     <p class="mb-4 text-sm leading-relaxed text-slate-700 sm:text-base">
-                        Selamat! Pengajuan anda telah di approve silahkan
-                        lihat detailnya atau tanda tangan kontrak anda.
+                        Selamat! Pengajuan anda telah di setujui silahkan
+                        lihat detailnya atau tanda tangani kontrak anda.
                     </p>
 
                     <div class="flex flex-col gap-2 sm:flex-row sm:justify-center md:justify-start">
-                        <a href="{{ route('form-kontrak-preview', ['id' => $kontrak?->id]) }}"
+                        <a href="{{ route('form-kontrak-preview', ['token' => \Illuminate\Support\Facades\Crypt::encryptString($kontrak?->id)]) }}"
                             onclick="window.open(this.href, '_blank'); window.location.reload(); return false;"
                             class="rounded-2xl bg-yellow-400 px-4 py-2.5 text-center text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-500">
                             Lihat Detail
                         </a>
 
-                        <a href="{{ route('form-kontrak-index', ['id' => $kontrak?->id]) }}"
+                        <a href="{{ route('form-kontrak-index', ['token' => \Illuminate\Support\Facades\Crypt::encryptString($kontrak?->id)]) }}"
                             class="rounded-2xl bg-green-600 px-4 py-2.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-green-700">
                             Tanda Tangan Kontrak
                         </a>
@@ -534,7 +534,7 @@
                     <i class="ri-check-line text-4xl sm:text-5xl"></i>
                 </div>
             </div>
-        @elseif($kontrak)
+        @elseif($kontrak && $kontrak->isPending())
             {{-- PENDING --}}
             <div
                 class="mx-auto flex max-w-3xl flex-col-reverse gap-4 rounded-xl border border-white/70 bg-gradient-to-br from-white to-blue-50 p-4 shadow-lg shadow-slate-700/10 sm:p-5 md:flex-row md:items-center md:justify-between">

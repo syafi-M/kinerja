@@ -129,18 +129,54 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
-    public function indexKontrak(Request $request)
+    /**
+     * Decode an encrypted kontrak token to its integer ID.
+     * Returns null when the token is invalid, tampered, or not numeric.
+     */
+    private function decodeKontrakToken(?string $token): ?int
     {
-        $kontrak = Kontrak::firstWhere('id', $request->id);
-        // if (!$request->session()->has('seen_kontrak')) {
-        //     $request->session()->put('seen_kontrak', false);
-        // }
+        if (!is_string($token) || $token === '') {
+            return null;
+        }
+
+        try {
+            $decoded = Crypt::decryptString($token);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return ctype_digit((string) $decoded) ? (int) $decoded : null;
+    }
+
+    public function indexKontrak(Request $request, string $token)
+    {
+        $id = $this->decodeKontrakToken($token);
+
+        if ($id === null) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
+        // Ownership check: only contract owner or admin/direksi can view
+        if (Auth::user()->role_id == 2 || Auth::user()->jabatan_id == 24) {
+            $kontrak = Kontrak::firstWhere('id', $id);
+        } else {
+            $kontrak = Kontrak::where('id', $id)
+                ->where('nama_pk_kda', Auth::user()->nama_lengkap)
+                ->first();
+        }
+
+        if (!$kontrak) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('profile.index');
+        }
 
         $request->session()->regenerate();
 
         $sesi = $request->session();
 
-        // dd($request->session());
         return view('profile.kontrak', compact('kontrak', 'sesi'));
     }
 
@@ -170,11 +206,14 @@ class ProfileController extends Controller
                 'kontrak' => 'Pengajuan kontrak tidak dapat dilakukan saat ini.'
             ]);
         } else {
-            $lastNo = Kontrak::latest('id')->value('no_srt');
-            $lastNumber = is_string($lastNo) && preg_match('/^(\d{3})\//', $lastNo, $matches)
-                ? (int) $matches[1]
-                : 0;
-            $noLastKontrak = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            // Use database locking to prevent race condition in contract number generation
+            $noLastKontrak = \DB::transaction(function () {
+                $lastNo = Kontrak::latest('id')->lockForUpdate()->value('no_srt');
+                $lastNumber = is_string($lastNo) && preg_match('/^(\d{3})\//', $lastNo, $matches)
+                    ? (int) $matches[1]
+                    : 0;
+                return str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            });
 
             $monthNumber = Carbon::now()->month;
 
@@ -203,7 +242,7 @@ class ProfileController extends Controller
                 'nama_pk_kda' => $user->nama_lengkap,
                 'tempat_lahir_pk_kda' => $validated['tempat_lhr'],
                 'tgl_lahir_pk_kda' => $validated['tgl_lhr'],
-                'nik_pk_kda' => Crypt::encrypt($validated['nik']),
+                'nik_pk_kda' => Crypt::encryptString($validated['nik']),
                 'alamat_pk_kda' => $validated['alamat_pk_kda'],
                 'jabatan_pk_kda' => $user->divisi?->jabatan?->name_jabatan,
                 'unit_pk_kda' => $user->kerjasama?->client?->name,
@@ -218,12 +257,26 @@ class ProfileController extends Controller
         }
     }
 
-    public function previewKontrak(Request $request)
+    public function previewKontrak(Request $request, string $token)
     {
+        $id = $this->decodeKontrakToken($token);
+
+        if ($id === null) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
         if (Auth::user()->role_id == 2 || Auth::user()->jabatan_id == 24) {
-            $kontrak = Kontrak::where('id', $request->id)->first();
+            $kontrak = Kontrak::where('id', $id)->first();
         } else {
-            $kontrak = Kontrak::where('id', $request->id)->where('nama_pk_kda', Auth::user()->nama_lengkap)->first();
+            $kontrak = Kontrak::where('id', $id)->where('nama_pk_kda', Auth::user()->nama_lengkap)->first();
+        }
+
+        if (!$kontrak) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
         }
 
         // if ($request->session()->has('seen_kontrak')) {
@@ -251,29 +304,41 @@ class ProfileController extends Controller
 
         $pdf = new Dompdf($options);
 
-        if ($kontrak != null) {
-            $html = view('profile.previewKontrak', compact('kontrak', 'Stampel', 'Tapak', 'Header'))->render();
-            $pdf->loadHtml($html);
+        $html = view('profile.previewKontrak', compact('kontrak', 'Stampel', 'Tapak', 'Header'))->render();
+        $pdf->loadHtml($html);
 
-            $pdf->setPaper('Letter', 'portrait');
-            $pdf->render();
+        $pdf->setPaper('Letter', 'portrait');
+        $pdf->render();
 
-            $output = $pdf->output();
-            $filename = strtoupper('Kontrak ' . $kontrak->nama_pk_kda . ' Dibuat Pada ' . Carbon::createFromFormat('Y-m-d', $kontrak->tgl_dibuat)->translatedFormat('j F Y'));
+        $output = $pdf->output();
+        $filename = strtoupper('Kontrak ' . $kontrak->nama_pk_kda . ' Dibuat Pada ' . Carbon::createFromFormat('Y-m-d', $kontrak->tgl_dibuat)->translatedFormat('j F Y'));
 
-            return response($output, 200)
-                ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
-        } else {
-            toastr()->error('Data tidak valid', [], 'error');
+        return response($output, 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
+    }
+
+    public function updateKontrak(Request $request, string $token)
+    {
+        $id = $this->decodeKontrakToken($token);
+
+        if ($id === null) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
 
             return to_route('profile.index');
         }
-        // return $pdf->stream('profile.previewKontrak');
-    }
 
-    public function updateKontrak(Request $request, $id)
-    {
+        // Ownership check: only contract owner can sign
+        $kontrak = Kontrak::where('id', $id)
+            ->where('nama_pk_kda', Auth::user()->nama_lengkap)
+            ->first();
+
+        if (!$kontrak) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
         $svgData = $request->input('signature_svg');
 
         // Clean the base64 SVG
@@ -282,18 +347,16 @@ class ProfileController extends Controller
 
         // $filename = 'signature_' . time() . '.svg';
 
-        $kontrak = [
+        $updateData = [
             'ttd' => $svgDecoded,
             'send_to_atasan' => 1,
         ];
 
-        // dd($kontrak, Kontrak::findOrFail($id));
-
-        Kontrak::findOrFail($id)->update($kontrak);
+        $kontrak->update($updateData);
 
         toastr()->success('Form kontrak berhasil dikirim', [], 'success');
 
-        return to_route('profile.index');
+        return to_route('dashboard.index');
     }
 
     // direksi
@@ -310,20 +373,32 @@ class ProfileController extends Controller
 
     public function accKontrak(Request $request)
     {
-        // dd($request->all());
         $ids = $request->input('kontrak_ids', []);
         $acc = $request->boolean('acc');
 
-        foreach ($ids as $id) {
-            $kontrak = Kontrak::find($id);
-            if ($kontrak) {
-                $kontrak->ttd_atasan = $acc ? 1 : 0;
-                $kontrak->send_to_atasan = 0;
-                $kontrak->save();
-            }
+        // Validate IDs are integers
+        $ids = array_filter($ids, 'is_numeric');
+
+        if (empty($ids)) {
+            toastr()->error('Tidak ada kontrak yang dipilih', [], 'error');
+            return redirect()->back();
         }
 
-        toastr()->success('Kontrak Berhasil di ' . ($acc ? 'Acc' : 'Tolak'), [], 'success');
+        // Only process contracts that are pending approval (send_to_atasan = 1, ttd_atasan = null)
+        $kontraks = Kontrak::whereIn('id', $ids)
+            ->where('send_to_atasan', 1)
+            ->whereNull('ttd_atasan')
+            ->get();
+
+        foreach ($kontraks as $kontrak) {
+            $kontrak->ttd_atasan = $acc ? 1 : 0;
+            $kontrak->send_to_atasan = 0;
+            $kontrak->save();
+        }
+
+        $processedCount = $kontraks->count();
+
+        toastr()->success($processedCount . ' Kontrak Berhasil di ' . ($acc ? 'Acc' : 'Tolak'), [], 'success');
 
         return redirect()->back();
     }

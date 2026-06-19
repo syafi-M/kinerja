@@ -120,7 +120,7 @@
                                             <td class="text-center">{{ toRupiah($i->tj_hadir) }}</td>
                                             <td class="text-center">{{ toRupiah($i->kinerja) }}</td>
                                             <td class="text-center">
-                                                <a href="{{ route('form-kontrak-preview', ['id' => $i->id]) }}"
+                                                <a href="{{ route('form-kontrak-preview', ['token' => \Illuminate\Support\Facades\Crypt::encryptString($i->id)]) }}"
                                                     class="btn btn-sm btn-info text-white text-lg"><i
                                                         class="ri-eye-line"></i></a>
                                             </td>

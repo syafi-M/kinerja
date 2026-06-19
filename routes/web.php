@@ -216,11 +216,11 @@ Route::middleware(['auth', 'apdt'])->group(function () {
 
     Route::get('/slip-gaji-karyawan', [SlipGajiController::class, 'leaderIndex'])->name('slip-karyawan');
 
-    Route::get('/form-kontrak/index', [ProfileController::class, 'indexKontrak'])->name('form-kontrak-index');
-    Route::get('/form-kontrak/pengajuan', [ProfileController::class, 'requestKontrak'])->name('form-kontrak-request');
-    Route::post('/form-kontrak/kirimPengajuan', [ProfileController::class, 'kirimRequest'])->name('form-kontrak-kirimPengajuan');
-    Route::get('/form-kontrak/preview', [ProfileController::class, 'previewKontrak'])->name('form-kontrak-preview');
-    Route::put('/form-kontrak/update/{id}', [ProfileController::class, 'updateKontrak'])->name('form-kontrak-update');
+    Route::get('/form-kontrak/index/{token}', [ProfileController::class, 'indexKontrak'])->middleware('throttle:30,1')->name('form-kontrak-index');
+    Route::get('/form-kontrak/pengajuan', [ProfileController::class, 'requestKontrak'])->middleware('throttle:30,1')->name('form-kontrak-request');
+    Route::post('/form-kontrak/kirimPengajuan', [ProfileController::class, 'kirimRequest'])->middleware('throttle:10,1')->name('form-kontrak-kirimPengajuan');
+    Route::get('/form-kontrak/preview/{token}', [ProfileController::class, 'previewKontrak'])->middleware('throttle:30,1')->name('form-kontrak-preview');
+    Route::put('/form-kontrak/update/{token}', [ProfileController::class, 'updateKontrak'])->middleware('throttle:10,1')->name('form-kontrak-update');
 });
 
 // Untuk Direksi
