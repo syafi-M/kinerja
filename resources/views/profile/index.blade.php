@@ -15,7 +15,7 @@
                 /* top-aligned */
             }
 
-            .profile-image {
+            .profile-image-wrapper .profile-image {
                 width: 100%;
                 height: 100%;
                 border-radius: 50%;
@@ -111,27 +111,13 @@
                         </div>
                     </div>
                 </div>
-                @if ($kontrak)
-                    @if ($kontrak->send_to_atasan == 0 && $kontrak->ttd == null)
-                        <div class="min-w-full flex justify-center items-center">
-                            <a href="{{ route('form-kontrak-index', ['id' => $kontrak?->id]) }}"
-                                class="mx-5 mb-2 bg-yellow-500 rounded-md p-2 px-5 font-semibold">Form Kontrak</a>
-                        </div>
-                    @elseif($kontrak->send_to_atasan == 1)
-                        <div class="min-w-full flex justify-center items-center">
-                            <a href="{{ route('form-kontrak-preview', ['id' => $kontrak?->id]) }}"
-                                onclick="window.open(this.href, '_blank'); window.location.reload(); return false;"
-                                class="mx-5 mb-2 bg-yellow-500 rounded-md p-2 px-5 font-semibold">Lihat Kontrak Saya
-                                (Proses)</a>
-                        </div>
-                    @elseif($kontrak->send_to_atasan == 0 && $kontrak->ttd && $kontrak->ttd_atasan)
-                        <div class="min-w-full flex justify-center items-center">
-                            <a href="{{ route('form-kontrak-preview', ['id' => $kontrak?->id]) }}"
-                                onclick="window.open(this.href, '_blank'); window.location.reload(); return false;"
-                                class="mx-5 mb-2 bg-yellow-500 rounded-md p-2 px-5 font-semibold">Lihat Kontrak Saya
-                                (Berlaku)</a>
-                        </div>
-                    @endif
+                @if ($kontrak && $kontrak->send_to_atasan == 0 && $kontrak->ttd && $kontrak->ttd_atasan)
+                    <div class="min-w-full flex justify-center items-center">
+                        <a href="{{ route('form-kontrak-preview', ['token' => \Illuminate\Support\Facades\Crypt::encryptString($kontrak?->id)]) }}"
+                            onclick="window.open(this.href, '_blank'); window.location.reload(); return false;"
+                            class="mx-5 mb-2 bg-yellow-500 rounded-md p-2 px-5 font-semibold">Lihat Kontrak Saya
+                            (Berlaku)</a>
+                    </div>
                 @endif
             </div>
             <div class="flex justify-center sm:justify-end mt-2 mb-5">

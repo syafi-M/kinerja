@@ -1,211 +1,163 @@
 <x-app-layout>
     <x-main-div>
-        <div class="p-5 py-10">
-			<p class="text-center font-bold text-xl sm:text-2xl uppercase">Laporan Absen Sholat</p>
-			<form action="{{ route('leader-absenSholat-store') }}" method="POST" enctype="multipart/form-data" id="form-absen">
-			    @method('POST')
-				@csrf
-				<div class="flex flex-col  sm:m-0 items-center  justify-center">
-				    <input type="hidden" class="image-tag" id="image-tag" name="fotoSholat" />
-				    <div class="relative">
-					    <video id="video" style="scale: 90%; padding: 0.75rem;" class="bg-slate-200 rounded-md square-video" autoplay></video>
-				    </div>
-					<canvas id="canvas"  style="display:none;"></canvas>
-					<div id="results" class=" sm:mt-0 rounded mb-3"></div>
-				</div>
-				<div class="flex justify-center">
-					<button type=button id="snapButton" class="p-2 px-3 mb-5 text-white bg-blue-400 rounded-full"><i
-							class="ri-camera-fill"></i></button>
-				</div>
-				<div style="padding: 0.75rem;" class="bg-slate-200 rounded-md">
-				    <p class="text-center font-semibold text-sm p-2">~:Nama Karyawan Yang Hadir:~</p>
-				    @forelse($user as $us)
-    			        @php
-    			            $abs = $absen->where('user_id', $us->id)->where('dzuhur', '1')->first();
-    			        @endphp
-    				    <div>
-    						<input type="checkbox" {{ $abs ? 'disabled' : '' }} name="user[]" id="user_{{ $us->id }}" value="{{ $us->id }}"
-    							class="checkbox checkbox-sm m-2">
-    						<label for="user_{{ $us->id }}" style="{{ $abs ? 'text-decoration-line: line-through;' : '' }}" class="break-words whitespace-pre-line font-medium text-sm">{{ $us->nama_lengkap }}</label>
-    					</div>
-    				@empty
-				    @endforelse
-				</div>
-				@php
-				    $wancine = (Carbon\Carbon::now()->format('H:i:s') >= '11:20:00' && Carbon\Carbon::now()->format('H:i:s') <= '14:10:00') || (Carbon\Carbon::now()->format('H:i:s') >= '17:20:00' && Carbon\Carbon::now()->format('H:i:s') <= '18:45:00');
-				@endphp
-				<div class="flex justify-center items-center gap-2 mt-5">
-				    <button type="submit" {{ $wancine ? '' : 'disabled'}} class="p-2 btnAbsen {{ $wancine ? '' : 'btn-disabled'}} my-2 px-4 text-white bg-blue-500 hover:bg-blue-600 rounded transition-all ease-linear .2s"
-						id="btnSholat">Simpan</button>
-					<a href="{{ route('dashboard.index') }}"
-						class="p-2 my-2 px-4 text-white bg-red-500 hover:bg-red-600 rounded transition-all ease-linear .2s">
-						Kembali
-					</a>
-				</div>
-			</form>
-		</div>
-		<script>
-		    $(document).ready(function() {
-            // Mendapatkan elemen video
-        	var video = document.getElementById('video');
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d', { willReadFrequently: true });
-            
-            // Mengatur ukuran canvas sesuai opsi
-            canvas.width = 640;
-            canvas.height = 480;
-        
-            // Mengonfigurasi constraints untuk mendapatkan akses kamera
-            var constraints = {
-                audio: false,
-                video: { facingMode: 'user', width: 1280, height: 720 }
-            };
-        	   //console.log(navigator.mediaDevices.getUserMedia(constraints));
-        
-            // Mengambil akses kamera
-            navigator.mediaDevices.getUserMedia(constraints)
-            .then(function(mediaStream) {
-                // Menampilkan video dari kamera ke elemen video
-                video.srcObject = mediaStream;
-                video.onloadedmetadata = function(e) {
-                    // $('.svg-icon-foto').show();
-        			canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-        			//console.log(canvas.width)
-                    video.play();
-                    checkVideoStatus();
-                    // Memeriksa status video setiap beberapa detik
-                    setInterval(function() {
-                        checkVideoStatus();
-                    }, 1); // Memeriksa setiap 2 detik, sesuaikan jika diperlukan
-                };
-        
-            })
-            .catch(function(err) {
-                console.log('Gagal mengambil akses kamera: ' + err);
-            });
-        	
-        	 function detectColor(data, colorThreshold) {
-                var colorPixels = 0;
-                for (var i = 0; i < data.length; i += 4) {
-                    var red = data[i];
-                    var green = data[i + 1];
-                    var blue = data[i + 2];
-        
-                    // Periksa apakah warna piksel sesuai dengan warna yang ditetapkan
-                    if (red > colorThreshold.red && green < colorThreshold.green && blue < colorThreshold.blue) {
-                        colorPixels++;
-                    }
-                }
-                return colorPixels;
-            }
-        	
-        	// Fungsi untuk mengambil snapshot
-            function takeSnapshot() {
-        
-                // Menggunakan ukuran yang sama dengan elemen video
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-        
-                // Menggambar video pada canvas
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-                // Mengubah gambar menjadi URL data
-                var dataURL = canvas.toDataURL('image/jpeg', 0.8);
-                $('.image-tag').val(dataURL)
-        
-                // Mengirim dataURL ke backend atau melakukan hal lain sesuai kebutuhan Anda
-                //console.log(dataURL);
-        		document.getElementById('results').innerHTML = '<img id="imgprev" width="640" height="480" style="scale: 85%;" class="rounded-md" src="' + dataURL + '"/>';
-            }
-        	
-        	$('#snapButton').click(function() {
-        		takeSnapshot();
-        	});
-        	 
-        
-            // Fungsi untuk memeriksa status video
-            function checkVideoStatus() {
-                // Membuat elemen canvas untuk memproses gambar dari video
-                    
-                    // canvas.width = video.videoWidth;
-                    // canvas.height = video.videoHeight;
-                    
-                    canvas.width = 640;
-                    canvas.height = 480;
-                    
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // console.log(video);           
-            
-                    // Mengambil data piksel dari gambar
-                    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    var data = imageData.data;
-            
-                    // Menghitung jumlah piksel yang berwarna hitam (gelap)
-                    var blackPixels = 0;
-            		var redPixels = 0;
-                    var purplePixels = 0;
-                    var darkBluePixels = 0;
-                    for (var i = 0; i < data.length; i += 4) {
-                        // Mengecek apakah nilai rata-rata warna piksel cukup rendah (mungkin warna hitam)
-                        var avgColor = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                        if (avgColor < 20) { // Sesuaikan nilai ambang batas sesuai kebutuhan
-                            blackPixels++;
-                        }
-                    }
-            		
-            		var redPixels = 0;
-                    var purplePixels = 0;
-                    var darkBluePixels = 0;
-            
-                    // Ambang batas warna
-                    var colorThresholds = {
-                        red: 150,
-                        green: 100,
-                        blue: 100
-                    };
-                    // Memanggil fungsi detectColor untuk warna merah
-                    redPixels = detectColor(data, colorThresholds);
-            
-                    // Mengganti ambang batas warna untuk warna ungu
-                    colorThresholds.red = 150;
-                    colorThresholds.green = 100;
-                    colorThresholds.blue = 150;
-            
-                    // Memanggil fungsi detectColor untuk warna ungu
-                    purplePixels = detectColor(data, colorThresholds);
-            
-                    // Mengganti ambang batas warna untuk warna biru tua
-                    colorThresholds.red = 100;
-                    colorThresholds.green = 100;
-                    colorThresholds.blue = 150;
-                    // Memanggil fungsi detectColor untuk warna biru tua
-                    darkBluePixels = detectColor(data, colorThresholds);
-            
-                    // Memeriksa apakah terlalu banyak warna yang terdeteksi
-                    if (redPixels / (canvas.width * canvas.height) > 0.2 ||
-                        purplePixels / (canvas.width * canvas.height) > 0.2 ||
-                        darkBluePixels / (canvas.width * canvas.height) > 0.2) {
-                        alert('Terlalu banyak warna terdeteksi!');
-            			$('#snapButton').hide()
-                    }else{
-            			$('#snapButton').show()
-            		}
-                    // Jika sebagian besar piksel adalah hitam, mungkin output kamera hitam
-                    if (blackPixels > (canvas.width * canvas.height * 0.9)) { // 90% piksel hitam, sesuaikan jika diperlukan
-                        alert('Output kamera hitam!');
-            			$('#snapButton').hide();
-            // 			$('#snapButton').prop('disabled', true);
-                    }else{
-            			$('#snapButton').show()
-            		}
-            		
-            
-                    // Menutup elemen canvas
-                    canvas.remove();
-            }
-        });
-		</script>
+        <div class="w-full px-3 py-4 mx-auto space-y-3 max-w-screen-2xl sm:px-4 lg:px-6">
+            <!-- Header Section -->
+            <section class="p-3 bg-white border border-gray-100 shadow-sm rounded-xl sm:p-4">
+                <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-600">Absen Sholat</p>
+                <h1 class="mt-0.5 text-lg font-bold tracking-tight text-gray-900 sm:text-xl">Data Absen Sholat</h1>
+                <p class="mt-0.5 text-xs text-gray-500">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
+            </section>
+
+            <!-- Dashboard/Stats Summary -->
+            @php
+                $totalUsers = $user->count();
+                $absenSubuh = $absen->where('subuh', 1)->count();
+                $absenDzuhur = $absen->where('dzuhur', 1)->count();
+                $absenAshar = $absen->where('asar', 1)->count();
+                $absenMaghrib = $absen->where('maghrib', 1)->count();
+                $absenIsya = $absen->where('isya', 1)->count();
+
+                $pct = fn($val) => $totalUsers > 0 ? round(($val / $totalUsers) * 100, 1) : 0;
+            @endphp
+
+            <section class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                <div class="p-3 bg-white border border-gray-100 shadow-sm rounded-xl">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase">Total</p>
+                    <p class="mt-1 text-xl font-bold text-gray-900">{{ $totalUsers }}</p>
+                </div>
+                <div class="p-3 bg-white border border-gray-100 shadow-sm rounded-xl">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase">Subuh</p>
+                    <p class="mt-1 text-xl font-bold text-green-600">{{ $absenSubuh }} <span class="text-[10px] font-normal text-gray-400">({{ $pct($absenSubuh) }}%)</span></p>
+                </div>
+                <div class="p-3 bg-white border border-gray-100 shadow-sm rounded-xl">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase">Dzuhur</p>
+                    <p class="mt-1 text-xl font-bold text-green-600">{{ $absenDzuhur }} <span class="text-[10px] font-normal text-gray-400">({{ $pct($absenDzuhur) }}%)</span></p>
+                </div>
+                <div class="p-3 bg-white border border-gray-100 shadow-sm rounded-xl">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase">Ashar</p>
+                    <p class="mt-1 text-xl font-bold text-green-600">{{ $absenAshar }} <span class="text-[10px] font-normal text-gray-400">({{ $pct($absenAshar) }}%)</span></p>
+                </div>
+                <div class="p-3 bg-white border border-gray-100 shadow-sm rounded-xl col-span-2 sm:col-span-1">
+                    <p class="text-[10px] font-semibold text-gray-500 uppercase">Maghrib/Isya</p>
+                    <p class="mt-1 text-xl font-bold text-green-600">{{ $absenMaghrib + $absenIsya }} <span class="text-[10px] font-normal text-gray-400">({{ $pct($absenMaghrib + $absenIsya) }}%)</span></p>
+                </div>
+            </section>
+
+            <!-- Attendance Records Table -->
+            <section class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <div>
+                        <h2 class="text-sm font-semibold text-gray-800">Rekap Harian</h2>
+                        <p class="mt-0.5 text-xs text-gray-500">
+                            Kehadiran sholat seluruh anggota hari ini
+                        </p>
+                    </div>
+
+                    <span class="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-full">
+                        {{ $absen->count() }} Data
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[700px]">
+                        <thead>
+                            <tr class="text-[11px] uppercase tracking-wider text-gray-500 bg-gray-50">
+                                <th class="px-4 py-3 text-left font-semibold">#</th>
+                                <th class="px-4 py-3 text-left font-semibold">Nama</th>
+                                <th class="px-3 py-3 text-center font-semibold">Sub</th>
+                                <th class="px-3 py-3 text-center font-semibold">Dzu</th>
+                                <th class="px-3 py-3 text-center font-semibold">Ash</th>
+                                <th class="px-3 py-3 text-center font-semibold">Mag</th>
+                                <th class="px-3 py-3 text-center font-semibold">Isya</th>
+                                <th class="px-4 py-3 text-center font-semibold">Progress</th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($absen as $i => $record)
+                                @php
+                                    $total =
+                                        ($record->subuh ?: 0) +
+                                        ($record->dzuhur ?: 0) +
+                                        ($record->asar ?: 0) +
+                                        ($record->maghrib ?: 0) +
+                                        ($record->isya ?: 0);
+
+                                    $pctTotal = ($total / 5) * 100;
+                                @endphp
+
+                                <tr class="transition hover:bg-slate-50">
+                                    <td class="px-4 py-3 text-sm text-gray-500">
+                                        {{ $i + 1 }}
+                                    </td>
+
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-gray-900">
+                                            {{ capitalizeWords($record->user->nama_lengkap ?? '-') }}
+                                        </div>
+                                    </td>
+
+                                    @foreach([
+                                        $record->subuh,
+                                        $record->dzuhur,
+                                        $record->asar,
+                                        $record->maghrib,
+                                        $record->isya,
+                                    ] as $status)
+                                        <td class="px-3 py-3 text-center">
+                                            @if($status)
+                                                <span class="inline-flex items-center justify-center w-7 h-7 text-green-700 rounded-full bg-green-50">
+                                                    ✓
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center justify-center w-7 h-7 text-red-400 rounded-full bg-red-50">
+                                                    ✕
+                                                </span>
+                                            @endif
+                                        </td>
+                                    @endforeach
+
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-1 h-2 overflow-hidden rounded-full bg-gray-100">
+                                                <div
+                                                    class="h-full rounded-full bg-green-500"
+                                                    style="width: {{ $pctTotal }}%">
+                                                </div>
+                                            </div>
+
+                                            <span class="text-xs font-semibold text-gray-700 whitespace-nowrap">
+                                                {{ $total }}/5
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100">
+                                                🕌
+                                            </div>
+
+                                            <p class="font-medium text-gray-700">
+                                                Belum ada data absen
+                                            </p>
+
+                                            <p class="text-xs text-gray-500">
+                                                Data kehadiran sholat hari ini belum tersedia.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <div class="flex justify-end my-1 w-full">
+                <button onclick="history.back()" class="btn btn-error">Kembali</button>
+            </div>
+        </div>
     </x-main-div>
 </x-app-layout>

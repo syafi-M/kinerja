@@ -143,7 +143,20 @@
                     <tr class="table-row">
                       <td></td>
                       <td>NIK</td>
-                      <td>: {{ $kontrak->nik_pk_kda }}</td>
+                      <td>: {{-- NIK terenkripsi di database, didekripsi untuk tampilan --}}
+                        @php
+                            $nikRaw = $kontrak->nik_pk_kda;
+                            $nikDisplay = '-';
+                            if (is_string($nikRaw) && $nikRaw !== '') {
+                                try {
+                                    $nikDisplay = \Illuminate\Support\Facades\Crypt::decryptString($nikRaw);
+                                } catch (\Throwable) {
+                                    $nikDisplay = '-';
+                                }
+                            }
+                        @endphp
+                        {{ $nikDisplay }}
+                      </td>
                     </tr>
                     <tr class="table-row">
                       <td></td>
