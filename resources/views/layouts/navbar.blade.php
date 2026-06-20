@@ -1,5 +1,5 @@
 <nav class="pt-5 mx-5 mb-5 capitalize">
-    <div class="flex justify-between w-full h-auto pl-2 rounded-md shadow-md bg-slate-500">
+    <div class="flex justify-between w-full h-auto p-2 rounded-md shadow-md bg-slate-500">
         @auth
             @php
                 $user = Auth::user();
@@ -10,20 +10,27 @@
                     Storage::disk('public')->exists("user/{$user->image}") => asset("storage/user/{$user->image}"),
                     default => $defaultImg,
                 };
+                $userKontrak = \App\Models\Kontrak::where('nama_pk_kda', $user->nama_lengkap)->latest()->first();
+                $hasSignedContract = $userKontrak && $userKontrak->ttd && $userKontrak->ttd_atasan;
             @endphp
 
-            <a href="{{ route('profile.index') }}" style="width: {{ $user->role_id == 2 ? '70%' : '85%' }};">
-                <div class="flex items-center gap-1">
-                    <div class="flex items-center justify-center mx-2 my-2 overflow-hidden transition-all duration-200 ease-in-out rounded-full shadow-md bg-slate-300 shadow-slate-600 hover:shadow-none"
-                        style="width: 2.5rem; height: 2.5rem; padding: 0.25rem;">
-                        <img class="block object-cover object-center w-full h-full rounded-full" src="{{ $imgSrc }}"
-                            alt="profile-logo" />
-                    </div>
+            <a href="{{ route('profile.index') }}" class="flex items-center gap-2"
+                style="width: {{ $user->role_id == 2 ? '70%' : '85%' }};">
+                <div class="relative flex-shrink-0" style="width: 40px; height: 40px;">
+                    <img class="block object-cover object-center rounded-full shadow-md bg-slate-300 shadow-slate-600 hover:shadow-none transition-all duration-200 ease-in-out"
+                        src="{{ $imgSrc }}" alt="profile-logo" style="width: 40px; height: 40px;" />
+                    @if ($hasSignedContract)
+                        <span
+                            class="absolute bottom-0 right-0 flex items-center justify-center rounded-full bg-green-500 border-2 border-slate-500 shadow-md z-10"
+                            style="width: 18px; height: 18px;">
+                            <i class="ri-check-line text-white" style="font-size: 11px; line-height: 1;"></i>
+                        </span>
+                    @endif
+                </div>
 
-                    <div class="flex flex-row gap-1" style="max-width: 65%;">
-                        <p class="text-sm font-semibold text-white break-words line-clamp-1">
-                            {{ ucwords(strtolower($user->nama_lengkap)) }}</p>
-                    </div>
+                <div class="flex flex-row gap-1 min-w-0">
+                    <p class="text-sm font-semibold text-white break-words line-clamp-1">
+                        {{ ucwords(strtolower($user->nama_lengkap)) }}</p>
                 </div>
             </a>
         @endauth

@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Status;
-use App\Models\Kontrak;
-use App\Models\Employe;
 use App\Models\Kerjasama;
+use App\Models\Kontrak;
+use App\Models\Status;
+use App\Models\User;
+use Carbon\Carbon;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Crypt;
-use Dompdf\Dompdf;
-use Dompdf\Options;
-use Carbon\Carbon;
-use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    
     public function index()
     {
         $dataUser = User::findOrFail(Auth::user()->id);
@@ -36,14 +34,14 @@ class ProfileController extends Controller
             // Secondary contract database is optional in test/limited environments.
             $kontrak = null;
         }
-        
+
         // if(Auth::user()->id == 11){
-            // dd(Kontrak::latest()->where('nama_pk_kda', Auth::user()->nama_lengkap)->where('tgl_selesai_kontrak', '>=', Carbon::now()->format('Y-m-d'))->first());
+        // dd(Kontrak::latest()->where('nama_pk_kda', Auth::user()->nama_lengkap)->where('tgl_selesai_kontrak', '>=', Carbon::now()->format('Y-m-d'))->first());
         // }
-        
+
         return view('profile.index', compact('dataUser', 'kontrak'));
     }
-    
+
     /**
      * Display the user's profile form.
      */
@@ -56,6 +54,7 @@ class ProfileController extends Controller
             return view('profile.edit', compact('dataUser', 'datas'));
         }
         toastr()->error('Data tidak tidak ditemukan', [], 'error');
+
         return redirect()->back();
     }
 
@@ -66,27 +65,25 @@ class ProfileController extends Controller
     {
         $user = [
             'nama_lengkap' => $request->nama_lengkap,
-            'email'     => $request->email,
-            'image'     => $request->image,
-            'nik'       => Crypt::encryptString($request->nik),
-            'no_hp'     => $request->no_hp
+            'email' => $request->email,
+            'image' => $request->image,
+            'nik' => Crypt::encryptString($request->nik),
+            'no_hp' => $request->no_hp,
         ];
-        
 
-        if($request->hasFile('image'))
-        {
-            if($request->oldimage)
-            {
+        if ($request->hasFile('image')) {
+            if ($request->oldimage) {
                 Storage::disk('public')->delete('images/' . $request->oldimage);
             }
 
             $user['image'] = UploadImageV2($request, 'image');
-        }else{
+        } else {
             $user['image'] = $request->oldimage;
         }
         User::findOrFail($id)->update($user);
-    
+
         toastr()->success('Data Berhasil diupdate', [], 'success');
+
         return to_route('profile.index');
     }
 
@@ -117,7 +114,7 @@ class ProfileController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'], 
+            'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
@@ -131,149 +128,217 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
-    
-    public function indexKontrak(Request $request)
+
+    /**
+     * Decode an encrypted kontrak token to its integer ID.
+     * Returns null when the token is invalid, tampered, or not numeric.
+     */
+    private function decodeKontrakToken(?string $token): ?int
     {
-        $kontrak = Kontrak::firstWhere('id', $request->id);
-        // if (!$request->session()->has('seen_kontrak')) {
-        //     $request->session()->put('seen_kontrak', false);
-        // }
+        if (!is_string($token) || $token === '') {
+            return null;
+        }
+
+        try {
+            $decoded = Crypt::decryptString($token);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return ctype_digit((string) $decoded) ? (int) $decoded : null;
+    }
+
+    public function indexKontrak(Request $request, string $token)
+    {
+        $id = $this->decodeKontrakToken($token);
+
+        if ($id === null) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
+        // Ownership check: only contract owner or admin/direksi can view
+        if (Auth::user()->role_id == 2 || Auth::user()->jabatan_id == 24) {
+            $kontrak = Kontrak::firstWhere('id', $id);
+        } else {
+            $kontrak = Kontrak::where('id', $id)
+                ->where('nama_pk_kda', Auth::user()->nama_lengkap)
+                ->first();
+        }
+
+        if (!$kontrak) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('profile.index');
+        }
 
         $request->session()->regenerate();
-        
+
         $sesi = $request->session();
-        // dd($request->session());
+
         return view('profile.kontrak', compact('kontrak', 'sesi'));
     }
-    
+
     public function requestKontrak()
     {
         // $kontrak = Kontrak::firstWhere('no_srt', $request->no);
 
         // $request->session()->regenerate();
-        
+
         // $sesi = $request->session();
         // dd($request->session());
         return view('profile.pengajuanKontrak');
     }
-    
+
     public function kirimRequest(Request $request)
     {
-        $lastNo = Kontrak::latest()->pluck('no_srt')->first(); // e.g., "007/SAC/I/2025"
-        $firstThree = substr($lastNo, 0, 3); // "007"
-        $noLastKontrak = str_pad((intval($firstThree) + 1), 3, '0', STR_PAD_LEFT);
-        
-        $emp = Employe::where('client_id', Auth::user()->kerjasama->client_id)->orderBy('numbers', 'desc')->select('numbers', 'initials')->first();
-        $nextNumber = str_pad(intval($emp->numbers) + 1, 4, '0', STR_PAD_LEFT);
-        // dd($emp, $nextNumber);
-        
-        $monthNumber = Carbon::now()->month;
+        $kontrak = Kontrak::where('nama_pk_kda', auth()->user()->nama_lengkap)->latest()->first();
+        $validated = $request->validate([
+            'tgl_lhr' => ['required', 'date', 'before_or_equal:' . Carbon::now()->subYears(17)->format('Y-m-d')],
+            'tempat_lhr' => ['required', 'string', 'max:255'],
+            'nik' => ['required', 'string', 'max:255'],
+            'alamat_pk_kda' => ['required', 'string', 'max:500'],
+        ]);
+        if ($kontrak?->isPending() || $kontrak?->isActive()) {
+            toastr()->error('Pengajuan kontrak tidak dapat dilakukan saat ini.', [], 'error');
+            return back()->withErrors([
+                'kontrak' => 'Pengajuan kontrak tidak dapat dilakukan saat ini.'
+            ]);
+        } else {
+            // Use database locking to prevent race condition in contract number generation
+            $noLastKontrak = \DB::transaction(function () {
+                $lastNo = Kontrak::latest('id')->lockForUpdate()->value('no_srt');
+                $lastNumber = is_string($lastNo) && preg_match('/^(\d{3})\//', $lastNo, $matches)
+                    ? (int) $matches[1]
+                    : 0;
+                return str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            });
 
-        $romanMonths = [
-            1  => 'I',
-            2  => 'II',
-            3  => 'III',
-            4  => 'IV',
-            5  => 'V',
-            6  => 'VI',
-            7  => 'VII',
-            8  => 'VIII',
-            9  => 'IX',
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
-        ];
-        
-        $romanMonth = $romanMonths[$monthNumber];
-        
-        $employe = [
-            'name' => $request->name,
-            'ttl' => $request->tempat_lhr . ', ' . $request->tgl_lhr,
-            'nik' => $request->nik,
-            'no_kk' => Crypt::encryptString($request->no_kk),
-            'no_ktp' => Crypt::encryptString($request->nik),
-            'client_id' => $request->client_id,
-            'numbers' => $nextNumber,
-            'initials' => $emp->initials,
-            'date_real' => '2999-01',
-        ];
-        $kontrak = [
-            'no_srt' => $noLastKontrak . '/SAC/' . $romanMonth . '/' . Carbon::now()->year,
-            'send_to_operator' => 0,
-            'send_to_atasan' => 0,
-            'nama_pk_kda' => $request->name,
-            'tempat_lahir_pk_kda' => $request->tempat_lhr,
-            'tgl_lahir_pk_kda' => $request->tgl_lhr,
-            'nik_pk_kda' => $request->nik,
-            'alamat_pk_kda' => $request->alamat_pk_kda,
-            'jabatan_pk_kda' => Auth::user()->divisi->jabatan->name_jabatan,
-            'unit_pk_kda' => Auth::user()->kerjasama->client->name,
-            'status_pk_kda' => 'Pengajuan',
-            'tgl_mulai_kontrak' => '2999-01-01',
-            'tgl_selesai_kontrak' => '2999-12-01',
-        ];
-        // dd($employe, $kontrak);
-        
-        Kontrak::create($kontrak);
-    
-        toastr()->success('Form Pengajuan berhasil dikirim', [], 'success');
-        return to_route('profile.index');
-    }
-    
-    public function previewKontrak(Request $request)
-    {
-        if(Auth::user()->role_id == 2 || Auth::user()->jabatan_id == 24){
-            $kontrak = Kontrak::where('id', $request->id)->first();
-        }else{
-            $kontrak = Kontrak::where('id', $request->id)->where('nama_pk_kda', Auth::user()->nama_lengkap)->first();
+            $monthNumber = Carbon::now()->month;
+
+            $romanMonths = [
+                1 => 'I',
+                2 => 'II',
+                3 => 'III',
+                4 => 'IV',
+                5 => 'V',
+                6 => 'VI',
+                7 => 'VII',
+                8 => 'VIII',
+                9 => 'IX',
+                10 => 'X',
+                11 => 'XI',
+                12 => 'XII',
+            ];
+
+            $romanMonth = $romanMonths[$monthNumber];
+            $user = $request->user();
+
+            $kontrak = [
+                'no_srt' => $noLastKontrak . '/SAC/' . $romanMonth . '/' . Carbon::now()->year,
+                'send_to_operator' => 0,
+                'send_to_atasan' => 0,
+                'nama_pk_kda' => $user->nama_lengkap,
+                'tempat_lahir_pk_kda' => $validated['tempat_lhr'],
+                'tgl_lahir_pk_kda' => $validated['tgl_lhr'],
+                'nik_pk_kda' => Crypt::encryptString($validated['nik']),
+                'alamat_pk_kda' => $validated['alamat_pk_kda'],
+                'jabatan_pk_kda' => $user->divisi?->jabatan?->name_jabatan,
+                'unit_pk_kda' => $user->kerjasama?->client?->name,
+                'status_pk_kda' => 'Pengajuan',
+            ];
+
+            Kontrak::create($kontrak);
+
+            toastr()->success('Form Pengajuan berhasil dikirim', [], 'success');
+
+            return to_route('dashboard.index');
         }
-        
+    }
+
+    public function previewKontrak(Request $request, string $token)
+    {
+        $id = $this->decodeKontrakToken($token);
+
+        if ($id === null) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
+        if (Auth::user()->role_id == 2 || Auth::user()->jabatan_id == 24) {
+            $kontrak = Kontrak::where('id', $id)->first();
+        } else {
+            $kontrak = Kontrak::where('id', $id)->where('nama_pk_kda', Auth::user()->nama_lengkap)->first();
+        }
+
+        if (!$kontrak) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
         // if ($request->session()->has('seen_kontrak')) {
         //     $request->session()->put('seen_kontrak', true);
         // }
         $logoPath = public_path('logo/Stampel.png');
         $logoData = base64_encode(file_get_contents($logoPath));
         $Stampel = 'data:image/png;base64,' . $logoData;
-        
+
         $logoPath2 = public_path('logo/tapak.png');
         $logoData2 = base64_encode(file_get_contents($logoPath2));
         $Tapak = 'data:image/png;base64,' . $logoData2;
-        
+
         $logoPath3 = public_path('logo/headerSurat.png');
         $logoData3 = base64_encode(file_get_contents($logoPath3));
         $Header = 'data:image/png;base64,' . $logoData3;
 
         $request->session()->regenerate();
         // dd($Stampel, $Tapak, $Header);
-        
-        $options = new Options();
+
+        $options = new Options;
         $options->setIsHtml5ParserEnabled(true);
         $options->set('isRemoteEnabled', false);
         $options->set('defaultFont', 'Times New Roman');
 
         $pdf = new Dompdf($options);
-        
-        if($kontrak != null) {
-            $html = view('profile.previewKontrak', compact('kontrak', 'Stampel', 'Tapak', 'Header'))->render();
-            $pdf->loadHtml($html);
-    
-            $pdf->setPaper('Letter', 'portrait');
-            $pdf->render();
-            
-            $output = $pdf->output();
-            $filename = strtoupper('Kontrak ' . $kontrak->nama_pk_kda . ' Dibuat Pada ' . Carbon::createFromFormat('Y-m-d', $kontrak->tgl_dibuat)->translatedFormat('j F Y'));
-            return response($output, 200)
-                ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'inline; filename="'.$filename.'"');
-        }else {
-            toastr()->error('Data tidak valid', [], 'error');
+
+        $html = view('profile.previewKontrak', compact('kontrak', 'Stampel', 'Tapak', 'Header'))->render();
+        $pdf->loadHtml($html);
+
+        $pdf->setPaper('Letter', 'portrait');
+        $pdf->render();
+
+        $output = $pdf->output();
+        $filename = strtoupper('Kontrak ' . $kontrak->nama_pk_kda . ' Dibuat Pada ' . Carbon::createFromFormat('Y-m-d', $kontrak->tgl_dibuat)->translatedFormat('j F Y'));
+
+        return response($output, 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
+    }
+
+    public function updateKontrak(Request $request, string $token)
+    {
+        $id = $this->decodeKontrakToken($token);
+
+        if ($id === null) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
             return to_route('profile.index');
         }
-        // return $pdf->stream('profile.previewKontrak');
-    }
-    
-    public function updateKontrak(Request $request, $id)
-    {
+
+        // Ownership check: only contract owner can sign
+        $kontrak = Kontrak::where('id', $id)
+            ->where('nama_pk_kda', Auth::user()->nama_lengkap)
+            ->first();
+
+        if (!$kontrak) {
+            toastr()->error('Tautan kontrak tidak valid atau Anda tidak memiliki akses', [], 'error');
+
+            return to_route('dashboard.index');
+        }
+
         $svgData = $request->input('signature_svg');
 
         // Clean the base64 SVG
@@ -281,20 +346,19 @@ class ProfileController extends Controller
         $svgDecoded = base64_decode($svgData);
 
         // $filename = 'signature_' . time() . '.svg';
-        
-        $kontrak = [
+
+        $updateData = [
             'ttd' => $svgDecoded,
-            'send_to_atasan' => 1
+            'send_to_atasan' => 1,
         ];
-        
-        // dd($kontrak, Kontrak::findOrFail($id));
-        
-        Kontrak::findOrFail($id)->update($kontrak);
-    
+
+        $kontrak->update($updateData);
+
         toastr()->success('Form kontrak berhasil dikirim', [], 'success');
-        return to_route('profile.index');
+
+        return to_route('dashboard.index');
     }
-    
+
     // direksi
     public function cekKontrak(Request $request)
     {
@@ -302,25 +366,40 @@ class ProfileController extends Controller
         $user = User::where('kerjasama_id', $filterMitra)->pluck('nama_lengkap');
         $kontrak = Kontrak::latest()->whereIn('nama_pk_kda', $user)->get();
         $mitra = Kerjasama::all();
+
         // dd($kontrak, $user);
         return view('leader_view.kontrak.check', compact('filterMitra', 'kontrak', 'mitra'));
     }
+
     public function accKontrak(Request $request)
     {
-        // dd($request->all());
         $ids = $request->input('kontrak_ids', []);
         $acc = $request->boolean('acc');
-        
-        foreach ($ids as $id) {
-            $kontrak = Kontrak::find($id);
-            if ($kontrak) {
-                $kontrak->ttd_atasan = $acc ? 1 : 0;
-                $kontrak->send_to_atasan = 0;
-                $kontrak->save();
-            }
+
+        // Validate IDs are integers
+        $ids = array_filter($ids, 'is_numeric');
+
+        if (empty($ids)) {
+            toastr()->error('Tidak ada kontrak yang dipilih', [], 'error');
+            return redirect()->back();
         }
-        
-        toastr()->success('Kontrak Berhasil di ' . ($acc ? 'Acc' : 'Tolak'), [], 'success');
+
+        // Only process contracts that are pending approval (send_to_atasan = 1, ttd_atasan = null)
+        $kontraks = Kontrak::whereIn('id', $ids)
+            ->where('send_to_atasan', 1)
+            ->whereNull('ttd_atasan')
+            ->get();
+
+        foreach ($kontraks as $kontrak) {
+            $kontrak->ttd_atasan = $acc ? 1 : 0;
+            $kontrak->send_to_atasan = 0;
+            $kontrak->save();
+        }
+
+        $processedCount = $kontraks->count();
+
+        toastr()->success($processedCount . ' Kontrak Berhasil di ' . ($acc ? 'Acc' : 'Tolak'), [], 'success');
+
         return redirect()->back();
     }
 }
