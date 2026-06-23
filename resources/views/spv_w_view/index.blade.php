@@ -5,11 +5,12 @@
 
     @php
         $selectedClientId = (int) ($selectedClientId ?? 0);
-        $selectedClientName = $selectedClientId > 0
-            ? optional(collect($clients ?? [])->firstWhere('id', $selectedClientId))->name
-            : null;
-        $appendClient = function(string $url) use ($selectedClientId) {
-            if ($selectedClientId <= 0) return $url;
+        $selectedClientName =
+            $selectedClientId > 0 ? optional(collect($clients ?? [])->firstWhere('id', $selectedClientId))->name : null;
+        $appendClient = function (string $url) use ($selectedClientId) {
+            if ($selectedClientId <= 0) {
+                return $url;
+            }
 
             // Remove existing client_id parameter if present to avoid duplicates
             $clean = preg_replace('/([?&])client_id=\d+(&?)/', '$1', $url);
@@ -25,8 +26,12 @@
                 'icon' => 'ri-time-line',
                 'icon_bg' => 'bg-sky-100 ring-sky-200',
                 'icon_color' => 'text-sky-700',
-                'pengajuan_url' => $appendClient(route('spvw.overtime-application.create', array_filter(['client_id' => $spvwClientId]))),
-                'riwayat_url' => $appendClient(route('spvw.overtime-application.history', array_filter(['client_id' => $spvwClientId]))),
+                'pengajuan_url' => $appendClient(
+                    route('spvw.overtime-application.create', array_filter(['client_id' => $spvwClientId])),
+                ),
+                'riwayat_url' => $appendClient(
+                    route('spvw.overtime-application.history', array_filter(['client_id' => $spvwClientId])),
+                ),
             ],
             [
                 'key' => 'personil-keluar',
@@ -35,8 +40,12 @@
                 'icon' => 'ri-user-unfollow-line',
                 'icon_bg' => 'bg-amber-100 ring-amber-200',
                 'icon_color' => 'text-amber-700',
-                'pengajuan_url' => $appendClient(route('spvw.person-is-out.create', array_filter(['client_id' => $spvwClientId]))),
-                'riwayat_url' => $appendClient(route('spvw.person-is-out.history', array_filter(['client_id' => $spvwClientId]))),
+                'pengajuan_url' => $appendClient(
+                    route('spvw.person-is-out.create', array_filter(['client_id' => $spvwClientId])),
+                ),
+                'riwayat_url' => $appendClient(
+                    route('spvw.person-is-out.history', array_filter(['client_id' => $spvwClientId])),
+                ),
             ],
             [
                 'key' => 'personil-masuk',
@@ -45,8 +54,12 @@
                 'icon' => 'ri-user-follow-line',
                 'icon_bg' => 'bg-emerald-100 ring-emerald-200',
                 'icon_color' => 'text-emerald-700',
-                'pengajuan_url' => $appendClient(route('spvw.person-in.index', array_filter(['client_id' => $spvwClientId]))),
-                'riwayat_url' => $appendClient(route('spvw.person.in.history', array_filter(['client_id' => $spvwClientId]))),
+                'pengajuan_url' => $appendClient(
+                    route('spvw.person-in.index', array_filter(['client_id' => $spvwClientId])),
+                ),
+                'riwayat_url' => $appendClient(
+                    route('spvw.person.in.history', array_filter(['client_id' => $spvwClientId])),
+                ),
             ],
             [
                 'key' => 'potongan',
@@ -55,8 +68,12 @@
                 'icon' => 'ri-auction-fill',
                 'icon_bg' => 'bg-red-100 ring-red-200',
                 'icon_color' => 'text-red-700',
-                'pengajuan_url' => $appendClient(route('spvw.cutting.index', array_filter(['client_id' => $spvwClientId]))),
-                'riwayat_url' => $appendClient(route('spvw.cutting.history', array_filter(['client_id' => $spvwClientId]))),
+                'pengajuan_url' => $appendClient(
+                    route('spvw.cutting.index', array_filter(['client_id' => $spvwClientId])),
+                ),
+                'riwayat_url' => $appendClient(
+                    route('spvw.cutting.history', array_filter(['client_id' => $spvwClientId])),
+                ),
             ],
             [
                 'key' => 'lepas-training',
@@ -65,8 +82,12 @@
                 'icon' => 'ri-footprint-fill',
                 'icon_bg' => 'bg-indigo-100 ring-indigo-200',
                 'icon_color' => 'text-indigo-700',
-                'pengajuan_url' => $appendClient(route('spvw.finished-training.index', array_filter(['client_id' => $spvwClientId]))),
-                'riwayat_url' => $appendClient(route('spvw.finished-training.history', array_filter(['client_id' => $spvwClientId]))),
+                'pengajuan_url' => $appendClient(
+                    route('spvw.finished-training.index', array_filter(['client_id' => $spvwClientId])),
+                ),
+                'riwayat_url' => $appendClient(
+                    route('spvw.finished-training.history', array_filter(['client_id' => $spvwClientId])),
+                ),
             ],
             [
                 'key' => 'keterangan-lanjutan',
@@ -75,15 +96,21 @@
                 'icon' => 'ri-file-text-line',
                 'icon_bg' => 'bg-violet-100 ring-violet-200',
                 'icon_color' => 'text-violet-700',
-                'pengajuan_url' => $appendClient(route('spvw.keterangan-lanjutan.index', array_filter(['client_id' => $spvwClientId]))),
-                'riwayat_url' => $appendClient(route('spvw.keterangan-lanjutan.history', array_filter(['client_id' => $spvwClientId]))),
+                'pengajuan_url' => $appendClient(
+                    route('spvw.keterangan-lanjutan.index', array_filter(['client_id' => $spvwClientId])),
+                ),
+                'riwayat_url' => $appendClient(
+                    route('spvw.keterangan-lanjutan.history', array_filter(['client_id' => $spvwClientId])),
+                ),
             ],
         ];
 
         $isSPV = in_array(strtoupper(auth()->user()->jabatan->code_jabatan ?? ''), ['SPV-W'], true);
-        $dueDateLabel = ($dueDate ?? null) ? \Carbon\Carbon::parse($dueDate->due_date)->format('d M Y') : null;
+        $dueDateLabel = $dueDate ?? null ? \Carbon\Carbon::parse($dueDate->due_date)->format('d M Y') : null;
         $codeJabatan = strtoupper(auth()->user()->jabatan->code_jabatan ?? '');
-        $selectedMode = in_array(($selectedMode ?? 'pengajuan'), ['pengajuan', 'riwayat'], true) ? $selectedMode : 'pengajuan';
+        $selectedMode = in_array($selectedMode ?? 'pengajuan', ['pengajuan', 'riwayat'], true)
+            ? $selectedMode
+            : 'pengajuan';
     @endphp
 
     @push('styles')
@@ -127,7 +154,9 @@
                             </div>
                         </div>
 
-                        <form method="GET" action="{{ route('spvw.rekap.index', array_filter(['client_id' => $spvwClientId])) }}" id="spvw-client-filter-form"
+                        <form method="GET"
+                            action="{{ route('spvw.rekap.index', array_filter(['client_id' => $spvwClientId])) }}"
+                            id="spvw-client-filter-form"
                             class="mt-4 rounded-xl border border-slate-200 bg-white/90 p-2.5 shadow-sm ring-1 ring-slate-900/5">
                             <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
                                 <div
@@ -142,9 +171,8 @@
                                         onchange="window.handleSpvwClientFilterChange && window.handleSpvwClientFilterChange()"
                                         class="w-full text-sm font-medium bg-white rounded-lg min-h-11 border-slate-300 text-slate-700 focus:border-2 focus:border-sky-500 focus:ring-sky-500">
                                         <option value="">Semua Mitra</option>
-                                        @foreach (($clients ?? collect()) as $client)
-                                            <option value="{{ $client->id }}"
-                                                @selected($selectedClientId === (int) $client->id)>
+                                        @foreach ($clients ?? collect() as $client)
+                                            <option value="{{ $client->id }}" @selected($selectedClientId === (int) $client->id)>
                                                 {{ capitalizeWords($client->name) ?: 'Mitra #' . $client->id }}
                                             </option>
                                         @endforeach
@@ -157,7 +185,8 @@
                                         <i class="text-base ri-search-line"></i>
                                         <span>Pakai</span>
                                     </button>
-                                    <a href="{{ route('spvw.rekap.index', ['reset_filter' => 1]) }}" id="spvw-reset-filter"
+                                    <a href="{{ route('spvw.rekap.index', ['reset_filter' => 1]) }}"
+                                        id="spvw-reset-filter"
                                         class="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                                         <i class="text-base ri-refresh-line"></i>
                                         <span>Reset Filter</span>
@@ -165,23 +194,24 @@
                                 </div>
                             </div>
 
-                            <div class="mt-2 flex min-h-7 items-center justify-between rounded-lg bg-slate-50 px-2.5 py-1.5">
+                            <div
+                                class="mt-2 flex min-h-7 items-center justify-between rounded-lg bg-slate-50 px-2.5 py-1.5">
                                 <p id="spvw-filter-hint" class="text-[11px] text-slate-500">
                                     {{ $selectedClientId > 0 ? 'Filter mitra tetap aktif sampai logout.' : 'Mode cepat: filter langsung aktif saat mitra dipilih.' }}
                                 </p>
-                                <div id="spvw-filter-active" class="flex items-center gap-1.5 {{ $selectedClientId > 0 ? '' : 'hidden' }}">
-                                        <span
-                                            id="spvw-filter-name"
-                                            class="hidden sm:inline-flex items-center gap-1 rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200">
-                                            <i class="ri-building-line"></i>
-                                            {{ capitalizeWords($selectedClientName ?: 'Mitra #' . $selectedClientId) }}
-                                        </span>
-                                        <span
-                                            class="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
-                                            <i class="ri-check-line"></i>
-                                            Aktif
-                                        </span>
-                                    </div>
+                                <div id="spvw-filter-active"
+                                    class="flex items-center gap-1.5 {{ $selectedClientId > 0 ? '' : 'hidden' }}">
+                                    <span id="spvw-filter-name"
+                                        class="hidden sm:inline-flex items-center gap-1 rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200">
+                                        <i class="ri-building-line"></i>
+                                        {{ capitalizeWords($selectedClientName ?: 'Mitra #' . $selectedClientId) }}
+                                    </span>
+                                    <span
+                                        class="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
+                                        <i class="ri-check-line"></i>
+                                        Aktif
+                                    </span>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -196,7 +226,8 @@
                                 <div>
                                     <p class="text-xs font-medium text-slate-500">Batas rekap
                                     </p>
-                                    <p class="text-base font-semibold text-slate-900">{{ $dueDateLabel ?? 'Belum diatur' }}
+                                    <p class="text-base font-semibold text-slate-900">
+                                        {{ $dueDateLabel ?? 'Belum diatur' }}
                                     </p>
                                 </div>
                             </div>
@@ -254,12 +285,14 @@
                         </div>
                         @if (($isExempted ?? false) === false)
                             @if (($isAfterDueDate ?? false) === false)
-                                <form method="POST" action="{{ route('spvw.rekap.exemption.self') }}" class="lg:shrink-0">
+                                <form method="POST" action="{{ route('spvw.rekap.exemption.self') }}"
+                                    class="lg:shrink-0">
                                     @csrf
                                     <button type="submit"
-                                        class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition lg:w-auto {{ ($isRekapEmpty ?? false) ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2' : 'cursor-not-allowed bg-slate-200 text-slate-500' }}"
-                                        {{ ($isRekapEmpty ?? false) ? '' : 'disabled' }}>
-                                        <i class="{{ ($isRekapEmpty ?? false) ? 'ri-shield-check-line' : 'ri-lock-line' }}"></i>
+                                        class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition lg:w-auto {{ $isRekapEmpty ?? false ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2' : 'cursor-not-allowed bg-slate-200 text-slate-500' }}"
+                                        {{ $isRekapEmpty ?? false ? '' : 'disabled' }}>
+                                        <i
+                                            class="{{ $isRekapEmpty ?? false ? 'ri-shield-check-line' : 'ri-lock-line' }}"></i>
                                         Aktifkan pengecualian penalti
                                     </button>
                                 </form>
@@ -276,26 +309,27 @@
                 </div>
             @endif
 
-            <form id="spvw-mode-form" method="GET" action="{{ route('spvw.rekap.index', array_filter(['client_id' => $spvwClientId])) }}" class="hidden">
+            <form id="spvw-mode-form" method="GET"
+                action="{{ route('spvw.rekap.index', array_filter(['client_id' => $spvwClientId])) }}" class="hidden">
                 <input type="hidden" name="mode" id="spvw-mode-input" value="{{ $selectedMode }}">
                 <input type="hidden" name="client_id" value="{{ $selectedClientId }}">
             </form>
 
-            <section
-                x-data="{
-                    mode: '{{ $selectedMode }}',
-                    setMode(nextMode) {
-                        this.mode = nextMode;
-                        const input = document.getElementById('spvw-mode-input');
-                        if (!input) return;
-                        input.value = nextMode;
-                    }
-                }"
+            <section x-data="{
+                mode: '{{ $selectedMode }}',
+                setMode(nextMode) {
+                    this.mode = nextMode;
+                    const input = document.getElementById('spvw-mode-input');
+                    if (!input) return;
+                    input.value = nextMode;
+                }
+            }"
                 class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
                 <div class="p-3 border-b border-slate-200 bg-slate-50 sm:p-4">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex items-center gap-2.5">
-                            <span class="inline-flex items-center justify-center w-8 h-8 text-white rounded-lg bg-slate-900">
+                            <span
+                                class="inline-flex items-center justify-center w-8 h-8 text-white rounded-lg bg-slate-900">
                                 <i class="ri-command-line"></i>
                             </span>
                             <div>
@@ -319,9 +353,11 @@
                     </div>
 
                     @if ($selectedClientId <= 0)
-                        <div class="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                        <div
+                            class="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
                             <i class="ri-error-warning-line mt-0.5 text-sm min-w-4"></i>
-                            <p>Pilih mitra terlebih dahulu. Setelah itu menu pengajuan dan riwayat baru bisa dipakai.</p>
+                            <p>Pilih mitra terlebih dahulu. Setelah itu menu pengajuan dan riwayat baru bisa dipakai.
+                            </p>
                         </div>
                     @endif
                 </div>
@@ -329,8 +365,7 @@
                 <div data-mode-section="pengajuan">
                     <div class="divide-y divide-slate-100">
                         @foreach ($rekapMenus as $menu)
-                            <a href="{{ $selectedClientId > 0 ? $menu['pengajuan_url'] : '#' }}"
-                                data-menu-link
+                            <a href="{{ $selectedClientId > 0 ? $menu['pengajuan_url'] : '#' }}" data-menu-link
                                 data-base-url="{{ preg_replace('/([&?])client_id=\d+/', '$1', $menu['pengajuan_url']) }}"
                                 @if ($selectedClientId <= 0) aria-disabled="true" @endif
                                 class="flex items-center justify-between gap-3 px-4 py-3 transition group min-h-16 {{ $selectedClientId > 0 ? 'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-inset active:bg-slate-100' : 'cursor-not-allowed bg-slate-50/70 opacity-70' }}">
@@ -361,8 +396,7 @@
                 <div data-mode-section="riwayat">
                     <div class="divide-y divide-slate-100">
                         @foreach ($rekapMenus as $menu)
-                            <a href="{{ $selectedClientId > 0 ? $menu['riwayat_url'] : '#' }}"
-                                data-menu-link
+                            <a href="{{ $selectedClientId > 0 ? $menu['riwayat_url'] : '#' }}" data-menu-link
                                 data-base-url="{{ preg_replace('/([&?])client_id=\d+/', '$1', $menu['riwayat_url']) }}"
                                 @if ($selectedClientId <= 0) aria-disabled="true" @endif
                                 class="flex items-center justify-between gap-3 px-4 py-3 transition group min-h-16 {{ $selectedClientId > 0 ? 'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-inset active:bg-slate-100' : 'cursor-not-allowed bg-slate-50/70 opacity-70' }}">
@@ -395,6 +429,7 @@
 
     <script>
         const SPVW_MODE_STORAGE_KEY = 'spvw_rekap_mode';
+        const SPVW_CLIENT_STORAGE_KEY = 'spvw_selected_client_id';
 
         // Tab switching tanpa reload (seamless)
         function setMode(nextMode) {
@@ -458,11 +493,14 @@
 
                 // Classes
                 if (!hasClient) {
-                    el.className = 'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 bg-slate-100 text-slate-500 ring-slate-200';
+                    el.className =
+                        'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 bg-slate-100 text-slate-500 ring-slate-200';
                 } else if (nextMode === 'pengajuan') {
-                    el.className = 'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 bg-emerald-100 text-emerald-800 ring-emerald-200 shadow-sm transition';
+                    el.className =
+                        'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 bg-emerald-100 text-emerald-800 ring-emerald-200 shadow-sm transition';
                 } else {
-                    el.className = 'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 bg-indigo-100 text-indigo-800 ring-indigo-200 shadow-sm transition';
+                    el.className =
+                        'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 bg-indigo-100 text-indigo-800 ring-indigo-200 shadow-sm transition';
                 }
             });
         }
@@ -491,9 +529,12 @@
             if (clientId) params.set('client_id', clientId);
             const targetUrl = `${form.action.split('?')[0]}${params.toString() ? `?${params.toString()}` : ''}`;
 
-            try { await fetch(targetUrl, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } }); } catch (_) {}
             window.history.replaceState({}, '', targetUrl);
-
+            try {
+                sessionStorage.setItem(SPVW_CLIENT_STORAGE_KEY, clientId);
+            } catch (_) {
+                // ignore browser storage restrictions
+            }
             const selectedText = select.options[select.selectedIndex]?.text?.trim() || '';
             const hasClient = Boolean(clientId);
 
@@ -503,7 +544,8 @@
                 if (hasClient) {
                     el.removeAttribute('aria-disabled');
                     el.classList.remove('cursor-not-allowed', 'bg-slate-50/70', 'opacity-70');
-                    el.classList.add('hover:bg-slate-50', 'focus:outline-none', 'focus:ring-2', 'focus:ring-slate-400', 'focus:ring-inset', 'active:bg-slate-100');
+                    el.classList.add('hover:bg-slate-50', 'focus:outline-none', 'focus:ring-2',
+                        'focus:ring-slate-400', 'focus:ring-inset', 'active:bg-slate-100');
                 } else {
                     el.setAttribute('aria-disabled', 'true');
                     el.classList.add('cursor-not-allowed', 'bg-slate-50/70', 'opacity-70');
@@ -514,7 +556,8 @@
             if (typeof setMode === 'function') setMode(currentMode);
 
             const hint = document.getElementById('spvw-filter-hint');
-            if (hint) hint.textContent = hasClient ? 'Filter mitra tetap aktif sampai logout.' : 'Mode cepat: filter langsung aktif saat mitra dipilih.';
+            if (hint) hint.textContent = hasClient ? 'Filter mitra tetap aktif sampai logout.' :
+                'Mode cepat: filter langsung aktif saat mitra dipilih.';
             const active = document.getElementById('spvw-filter-active');
             if (active) active.classList.toggle('hidden', !hasClient);
             const name = document.getElementById('spvw-filter-name');
@@ -531,7 +574,12 @@
 
                 // First call the reset URL so server middleware clears the session
                 try {
-                    await fetch(resetBtn.href, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    await fetch(resetBtn.href, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
                 } catch (_) {
                     // ignore network errors and continue to update UI client-side
                 }

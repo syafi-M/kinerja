@@ -190,6 +190,7 @@ class FinishedTrainingController extends Controller
 
     public function bulkStatus(Request $request)
     {
+        dd($request->all());
         if ($this->isSubmissionLockedByDueDate()) {
             return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
