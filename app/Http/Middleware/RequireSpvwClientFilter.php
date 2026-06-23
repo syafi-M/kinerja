@@ -10,7 +10,7 @@ class RequireSpvwClientFilter
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $selectedClientId = (int) $request->query('client_id', (int) $request->session()->get('spvw.selected_client_id', 0));
+        $selectedClientId = (int) $request->input('client_id', (int) $request->session()->get('spvw.selected_client_id', 0));
 
         if ($selectedClientId <= 0) {
             return redirect()

@@ -111,39 +111,44 @@ Route::get('/check-email', function (\Illuminate\Http\Request $request) {
 });
 
 Route::get('/seed-username-counter', function () {
-    // Find the highest number from the 'users' table
-    $lastUserNumber = User::where('name', 'LIKE', 'SAC%')
+
+    // ===== 1. USER TABLE (lebih ringan, langsung extract angka) =====
+    $userNumbers = User::where('name', 'LIKE', 'SAC%')
         ->pluck('name')
         ->map(fn($name) => (int) substr($name, 3))
-        ->max() ?? 99; // Default to 99 if no users exist
+        ->filter()
+        ->toArray();
 
-    // Find the highest number from the 'temp_users' table
-    // FIX: Added COLLATE to the whereRaw clause to solve the collation mismatch error.
-
-    $lastTempUserNumber = TempUser::whereRaw(
-        "json_unquote(json_extract(`data`, '$.\"username\"'))
-             COLLATE utf8mb3_unicode_ci LIKE ?",
-        ['SAC%']
-    )
+    // ===== 2. TEMP USER (hindari ->all(), ambil hanya data) =====
+    $tempNumbers = TempUser::select('data')
         ->get()
-        ->map(function ($tempUser) {
-            $data = json_decode($tempUser->data);
-            return $data && isset($data->username)
-                ? (int) substr($data->username, 3)
-                : null;
+        ->map(function ($temp) {
+            $data = json_decode($temp->data, true);
+            $username = $data['username'] ?? null;
+
+            if (!$username || !str_starts_with($username, 'SAC')) {
+                return null;
+            }
+
+            return (int) substr($username, 3);
         })
         ->filter()
-        ->max() ?? 99;
+        ->toArray();
 
+    // ===== 3. COMBINE + UNIQUE =====
+    $used = array_flip(array_unique(array_merge($userNumbers, $tempNumbers)));
 
-    // Find the absolute highest number
-    $highestNumber = max($lastUserNumber, $lastTempUserNumber);
+    // ===== 4. FIND FIRST AVAILABLE NUMBER (FAST O(n)) =====
+    $start = 100;
 
-    // Set the counter to this highest number.
-    // The next `increment()` call will give us $highestNumber + 1.
-    Cache::forever('sac_username_counter', $highestNumber);
+    while (isset($used[$start])) {
+        $start++;
+    }
 
-    return "Username counter has been seeded to: " . $highestNumber;
+    // ===== 5. CACHE =====
+    Cache::forever('sac_username_counter', $start);
+
+    return "Next available SAC number: SAC{$start}";
 });
 
 Route::get('/notifications/{id}', function ($id) {

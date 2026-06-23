@@ -72,13 +72,19 @@ class PersonOutController extends Controller
         return view('spv_w_view.person_out.show', [
             'personOut' => $personOut,
             'isSubmissionLocked' => $isSubmissionLocked,
-            'canBulkSubmit' => !$isSubmissionLocked && PersonOut::whereHas('user', function ($q) {
-                $q->withTrashed()
-                    ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
-            })->where(function ($q) {
-                $q->whereNull('status')
-                    ->orWhereRaw('LOWER(status) = ?', ['pending']);
-            })->exists(),
+            'canBulkSubmit' => !$isSubmissionLocked && (function () {
+                $allowedJabatanIds = $this->allowedTargetJabatanIds();
+                return PersonOut::whereHas('user', function ($q) use ($allowedJabatanIds) {
+                    $q->withTrashed()
+                        ->where('role_id', '!=', 2)
+                        ->where('kerjasama_id', '!=', 1)
+                        ->when(!empty($allowedJabatanIds), fn($uq) => $uq->whereIn('jabatan_id', $allowedJabatanIds))
+                        ->when($this->selectedClientId() > 0, fn($uq) => $uq->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
+                })->where(function ($q) {
+                    $q->whereNull('status')
+                        ->orWhereRaw('LOWER(status) = ?', ['pending']);
+                })->exists();
+            })(),
         ]);
     }
 
@@ -258,9 +264,13 @@ class PersonOutController extends Controller
             return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
         }
 
-        $personOuts = PersonOut::whereHas('user', function ($q) {
+        $allowedJabatanIds = $this->allowedTargetJabatanIds();
+        $personOuts = PersonOut::whereHas('user', function ($q) use ($allowedJabatanIds) {
             $q->withTrashed()
-                ->where('kerjasama_id', auth()->user()->kerjasama_id);
+                ->where('role_id', '!=', 2)
+                ->where('kerjasama_id', '!=', 1)
+                ->when(!empty($allowedJabatanIds), fn($uq) => $uq->whereIn('jabatan_id', $allowedJabatanIds))
+                ->when($this->selectedClientId() > 0, fn($uq) => $uq->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
         })
             ->where(function ($q) {
                 $q->whereNull('status')
