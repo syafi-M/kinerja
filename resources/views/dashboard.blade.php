@@ -496,8 +496,8 @@
     </div>
 
     <div
-        class="{{ $kontrak && $kontrak->send_to_atasan == 0 && $kontrak->ttd && $kontrak->ttd_atasan ? 'hidden' : '' }} mx-5 mt-5 sm:mx-10">
-        @if ($kontrak?->ttd == null && $kontrak?->tgl_selesai_kontrak)
+        class="{{ $kontrak && $kontrak->isPending() ? 'hidden' : '' }} mx-5 mt-5 sm:mx-10">
+        @if ($kontrak && $kontrak->isActive())
             {{-- APPROVED --}}
             <div
                 class="mx-auto flex max-w-3xl flex-col-reverse gap-4 rounded-xl border border-white/70 bg-gradient-to-br from-white to-green-50 p-4 shadow-lg shadow-slate-700/10 sm:p-5 md:flex-row md:items-center md:justify-between">
@@ -559,6 +559,30 @@
                 <div
                     class="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-blue-500 text-white shadow-lg shadow-blue-700/20 sm:h-20 sm:w-20 md:mx-0">
                     <i class="ri-information-line text-4xl sm:text-5xl"></i>
+                </div>
+            </div>
+        @elseif ($kontrak && $kontrak->isProses())
+            {{-- PROSES --}}
+            <div
+                class="mx-auto flex max-w-3xl flex-col-reverse gap-4 rounded-xl border border-white/70 bg-gradient-to-br from-white to-blue-50 p-4 shadow-lg shadow-slate-700/10 sm:p-5 md:flex-row md:items-center md:justify-between">
+                <div class="w-full text-center md:text-left">
+                    <span
+                        class="mb-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-700">
+                        Proses
+                    </span>
+                    <h3 class="mb-2 text-lg font-black text-amber-700 sm:text-xl">
+                        Status Pengajuan Saat Ini
+                    </h3>
+
+                    <p class="text-sm leading-relaxed text-slate-700 sm:text-base">
+                        Data anda telah terkirim ke HRD perusahaan,
+                        dan sedang di proses oleh HRD, harap Ditunggu.
+                    </p>
+                </div>
+
+                <div
+                    class="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-amber-500 text-white shadow-lg shadow-amber-700/20 sm:h-20 sm:w-20 md:mx-0">
+                    <i class="ri-time-line text-4xl sm:text-5xl"></i>
                 </div>
             </div>
         @endif

@@ -33,13 +33,16 @@ class Kontrak extends Model
 
     public function isPending()
     {
-        return is_null($this->tgl_selesai_kontrak)
-            && $this->created_at->addDays(30)->isFuture();
+        return is_null($this->tgl_selesai_kontrak) && $this->send_to_operator == '0' && $this->created_at->addDays(30)->isFuture();
+    }
+
+    public function isProses()
+    {
+        return $this->tgl_selesai_kontrak && is_null($this->ttd_atasan) && Carbon::parse($this->tgl_selesai_kontrak)->isFuture();
     }
 
     public function isActive()
     {
-        return $this->tgl_selesai_kontrak
-            && Carbon::parse($this->tgl_selesai_kontrak)->isFuture();
+        return $this->tgl_selesai_kontrak && $this->send_to_operator == '1' && $this->send_to_atasan == '0' && Carbon::parse($this->tgl_selesai_kontrak)->isFuture();
     }
 }
