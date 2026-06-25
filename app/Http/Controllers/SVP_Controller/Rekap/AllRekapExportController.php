@@ -22,7 +22,7 @@ class AllRekapExportController extends RekapController
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
-            $startDate = $date->copy()->subMonth()->setDay(20)->startOfDay();
+            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
             $endDate = $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
@@ -197,7 +197,7 @@ class AllRekapExportController extends RekapController
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
-            $startDate = $date->copy()->subMonth()->setDay(20)->startOfDay();
+            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
             $endDate = $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
@@ -258,7 +258,10 @@ class AllRekapExportController extends RekapController
                 $personInsQuery->whereYear('date_in', $date->year)
                     ->whereMonth('date_in', $date->month);
             }
-            $personIns = $personInsQuery->orderBy('date_in')->get();
+            $personIns = $personInsQuery
+                ->orderBy('client_id')
+                ->oldest('date_in')
+                ->get();
 
             $personOutsQuery = PersonOut::with([
                 'user' => fn ($q) => $q->withTrashed(),
@@ -276,15 +279,21 @@ class AllRekapExportController extends RekapController
                 $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             }
             $personOutsQuery = $personOutsQuery->join('users', 'person_outs.user_id', '=', 'users.id');
+            $personOutsQuery = $personOutsQuery->join('kerjasamas', 'users.kerjasama_id', '=', 'kerjasamas.id');
+
             if ($startDate && $endDate) {
                 $personOutsQuery->whereBetween('out_date', [$startDate, $endDate]);
             } else {
                 $personOutsQuery->whereYear('out_date', $date->year);
             }
-            $personOuts = $personOutsQuery->orderBy('users.kerjasama_id')
+
+            $personOutsQuery->select('person_outs.*');
+
+            $personOuts = $personOutsQuery
+                ->orderBy('kerjasamas.id')
                 ->orderBy('users.jabatan_id')
-                ->orderBy('user_id')
-                ->orderBy('out_date')
+                ->oldest('person_outs.out_date')
+                ->orderBy('person_outs.user_id')
                 ->get();
 
             $cuttingsQuery = PerformanceCuts::with([
@@ -310,7 +319,7 @@ class AllRekapExportController extends RekapController
             $cuttings = $cuttingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
-                ->orderBy('date_cut')
+                ->oldest('date_cut')
                 ->get();
 
             $finishedTrainingsQuery = FinishedTraining::with([
@@ -336,7 +345,7 @@ class AllRekapExportController extends RekapController
             $finishedTrainings = $finishedTrainingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
                 ->orderBy('user_id')
-                ->orderBy('date_finish_train')
+                ->oldest('date_finish_train')
                 ->get();
 
             $keteranganQuery = KeteranganLanjutan::with([
@@ -355,14 +364,14 @@ class AllRekapExportController extends RekapController
                 $keterangan = $keteranganQuery->whereBetween('keterangan_lanjutans.created_at', [$startDate, $endDate])
                     ->orderBy('users.kerjasama_id')
                     ->orderBy('users.jabatan_id')
-                    ->orderBy('keterangan_lanjutans.created_at')
+                    ->oldest('keterangan_lanjutans.created_at')
                     ->get();
             } else {
                 $keterangan = $keteranganQuery->whereYear('keterangan_lanjutans.created_at', $date->year)
                     ->whereMonth('keterangan_lanjutans.created_at', $date->month)
                     ->orderBy('users.kerjasama_id')
                     ->orderBy('users.jabatan_id')
-                    ->orderBy('keterangan_lanjutans.created_at')
+                    ->oldest('keterangan_lanjutans.created_at')
                     ->get();
             }
 

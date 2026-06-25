@@ -12,6 +12,7 @@ use App\Models\TempUser;
 use App\Models\Jabatan;
 use App\Notifications\OtpNotif;
 use App\Notifications\RegSukses;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,10 @@ use SadiqSalau\LaravelOtp\Facades\Otp;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private UserService $userService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -282,8 +287,7 @@ class UserController extends Controller
     public function addKaryawanStore(Request $request)
     {
         try {
-            $nextNumber = Cache::increment('sac_username_counter', 1, 100);
-            $newUsername = 'SAC' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            $newUsername = $this->userService->generateSacUsername();
         } catch (\Throwable $th) {
             Log::error('Username generation failed. Ensure your cache driver supports atomic operations (e.g., Redis). ' . $th->getMessage());
             toastr()->error('System is busy, please try again in a moment.', [], 'Error');

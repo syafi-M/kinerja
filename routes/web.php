@@ -67,6 +67,7 @@ use App\Http\Controllers\SPVW_Controller\PersonInController as SPVWPersonInContr
 use App\Http\Controllers\SPVW_Controller\PersonOutController as SPVWPersonOutController;
 use App\Models\TempUser;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
@@ -110,45 +111,10 @@ Route::get('/check-email', function (\Illuminate\Http\Request $request) {
     return response()->json(['email' => $email, 'phone' => $phone]);
 });
 
-Route::get('/seed-username-counter', function () {
+Route::get('/seed-username-counter', function (UserService $userService) {
+    $number = $userService->initUsernameCounter();
 
-    // ===== 1. USER TABLE (lebih ringan, langsung extract angka) =====
-    $userNumbers = User::where('name', 'LIKE', 'SAC%')
-        ->pluck('name')
-        ->map(fn($name) => (int) substr($name, 3))
-        ->filter()
-        ->toArray();
-
-    // ===== 2. TEMP USER (hindari ->all(), ambil hanya data) =====
-    $tempNumbers = TempUser::select('data')
-        ->get()
-        ->map(function ($temp) {
-            $data = json_decode($temp->data, true);
-            $username = $data['username'] ?? null;
-
-            if (!$username || !str_starts_with($username, 'SAC')) {
-                return null;
-            }
-
-            return (int) substr($username, 3);
-        })
-        ->filter()
-        ->toArray();
-
-    // ===== 3. COMBINE + UNIQUE =====
-    $used = array_flip(array_unique(array_merge($userNumbers, $tempNumbers)));
-
-    // ===== 4. FIND FIRST AVAILABLE NUMBER (FAST O(n)) =====
-    $start = 100;
-
-    while (isset($used[$start])) {
-        $start++;
-    }
-
-    // ===== 5. CACHE =====
-    Cache::forever('sac_username_counter', $start);
-
-    return "Next available SAC number: SAC{$start}";
+    return "Counter initialized to SAC{$number}";
 });
 
 Route::get('/notifications/{id}', function ($id) {

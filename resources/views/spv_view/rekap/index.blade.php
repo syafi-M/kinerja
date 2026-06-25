@@ -458,6 +458,10 @@
                                 format Excel atau PDF</p>
                         </div>
                         <div class="flex flex-wrap gap-3">
+                            <div class="flex flex-col justify-center gap-1 items-center">
+                                <label for="bulanRekap" class="label label-text pb-0">Bulan tgl(26-25)</label>
+                                <input id="bulanRekap" type="month" name="bulanRekap" value="{{ \Carbon\Carbon::now()->format('Y-m') }}" onchange="bulanRekap = this.value" class="input input-sm input-bordered"/>
+                            </div>
                             <button onclick="exportGlobalToExcel()"
                                 class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1109,13 +1113,12 @@
 
         // Rekap Exporter - DRY & SOLID approach
         let currentKerjasamaId = null;
-        let currentMonth = null;
+        let bulanRekap = document.getElementById('bulanRekap').value;
 
         // Override openModal to capture kerjasamaId
         const originalOpenModal = window.openModal;
         window.openModal = function(mitraId, mitraName) {
             currentKerjasamaId = mitraId;
-            currentMonth = new Date().toISOString().slice(0, 7);
             originalOpenModal(mitraId, mitraName);
         };
 
@@ -1126,7 +1129,7 @@
                 return;
             }
 
-            const exporter = new RekapExporter(currentKerjasamaId, currentMonth);
+            const exporter = new RekapExporter(currentKerjasamaId, bulanRekap);
             exporter.exportToExcel();
         }
 
@@ -1137,22 +1140,21 @@
                 return;
             }
 
-            const exporter = new RekapExporter(currentKerjasamaId, currentMonth);
+            const exporter = new RekapExporter(currentKerjasamaId, bulanRekap);
             exporter.exportToPDF();
         }
 
         // Global Export - All Data
         async function exportGlobalToExcel() {
             try {
-                const month = new Date().toISOString().slice(0, 7);
-                const response = await fetch(`/api/v1/all-rekap-export-global?month=${month}`);
+                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
 
                 if (!result.success) throw new Error(result.message);
                 const data = result.data;
 
-                const exporter = new RekapExporter(null, month);
+                const exporter = new RekapExporter(null, bulanRekap);
                 exporter.exportGlobalToExcel(data);
             } catch (e) {
                 alert('Error: ' + e.message);
@@ -1161,15 +1163,15 @@
 
         async function exportGlobalToPDF() {
             try {
-                const month = new Date().toISOString().slice(0, 7);
-                const response = await fetch(`/api/v1/all-rekap-export-global?month=${month}`);
+                console.log(bulanRekap);
+                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
 
                 if (!result.success) throw new Error(result.message);
                 const data = result.data;
 
-                const exporter = new RekapExporter(null, month);
+                const exporter = new RekapExporter(null, bulanRekap);
                 exporter.exportGlobalToPDF(data);
             } catch (e) {
                 alert('Error: ' + e.message);
