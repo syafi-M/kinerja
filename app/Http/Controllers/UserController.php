@@ -119,8 +119,7 @@ class UserController extends Controller
         $data = Kerjasama::all();
         $jabatan = Jabatan::all();
 
-        $excludedUserIDs = [9, 7, 55, 261, 3, 109, 292, 11, 58, 146, 8, 1, 6, 60];
-        $lastUser = User::whereNotIn('id', $excludedUserIDs)->latest()->where('name', 'REGEXP', '[0-9]')->first();
+        $lastUser = $this->userService->generateSacUsername(); 
 
         return view('admin.user.create', compact('data', 'dev', 'lastUser', 'jabatan'));
     }

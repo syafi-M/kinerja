@@ -262,13 +262,17 @@
                         </div>
 
                         {{-- Button Pengajuan Kontrak --}}
+                        @php
+                            $kontrakSelesai = $kontrak?->tgl_selesai_kontrak
+                                ? \Carbon\Carbon::parse($kontrak->tgl_selesai_kontrak)->isPast()
+                                : false;
+                            $kontrakBerjalan = $kontrak && ($kontrak->isPending() || $kontrak->isActive() || $kontrak->isProses());
+                            $bisaAjukanKontrak = ! $kontrak || $kontrakSelesai || ! $kontrakBerjalan;
+                        @endphp
                         <div
-                            class="{{ !optional($kontrak)->tgl_mulai_kontrak ||
-                            \Carbon\Carbon::parse(optional($kontrak)->tgl_selesai_kontrak)->isPast()
-                                ? 'flex'
-                                : 'hidden' }} flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                            <a href="{{ $kontrak?->isPending() || $kontrak?->isActive() ? 'javascript:void(0)' : route('form-kontrak-request') }}"
-                                class="{{ $kontrak?->isPending() || $kontrak?->isActive() ? 'bg-gray-400/40 text-gray-600 cursor-not-allowed' : 'bg-amber-400 hover:bg-amber-500 transition-all ease-linear .2s' }} w-full h-11 rounded-md flex justify-center items-center gap-2 ">
+                            class="{{ $bisaAjukanKontrak ? 'flex' : 'hidden' }} flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
+                            <a href="{{ $bisaAjukanKontrak ? route('form-kontrak-request') : 'javascript:void(0)' }}"
+                                class="{{ $bisaAjukanKontrak ? 'bg-amber-400 hover:bg-amber-500 transition-all ease-linear .2s' : 'bg-gray-400/40 text-gray-600 cursor-not-allowed' }} w-full h-11 rounded-md flex justify-center items-center gap-2 ">
                                 <i class="text-xl ri-file-list-3-line"></i>
                                 <span class="text-sm font-bold uppercase">Pengajuan Kontrak</span>
                             </a>
