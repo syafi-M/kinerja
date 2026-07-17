@@ -88,7 +88,7 @@ class KerjasamaController extends Controller
            return redirect()->back();
         }
             toastr()->success('Data Berhasil Di Update', [], 'success');
-            return redirect()->to(route('kerjasamas.index'));
+            return redirect()->to(route('admin.kerjasama.index'));
     }
 
     public function destroy($id)

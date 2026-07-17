@@ -139,17 +139,16 @@
                     {{ Carbon\Carbon::createFromFormat('Y-m', $bulan)->isoFormat('MMMM Y') }}</p>
             </div>
 
-            <div class="flex justify-center items-center gap-2 rounded-md">
-                <div class="flex flex-col gap-2 mt-5 bg-slate-200 p-4 drop-shadow-md rounded-md w-fit">
-                    <p class="text-center font-semibold text-sm"> ~>Filter Bulan<~ </p>
-                            <div class="flex gap-2 justify-center sm:justify-start overflow-hidden">
-                                <form action="" method="get" class="overflow-hidden">
-                                    <input type="month" name="bulan" value="{{ $bulan }}" id="month"
-                                        class="input input-sm input-bordered">
-                                    <button type="submit" class="overflow-hidden btn btn-info btn-sm">Cari</button>
-                                </form>
-                            </div>
-                </div>
+            <div class="mt-5 flex justify-center px-4">
+                <form action="" method="get"
+                    class="flex w-full max-w-md flex-col gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-end">
+                    <div class="flex-1">
+                        <label for="month" class="mb-1 block text-sm font-medium text-slate-700">Filter Bulan</label>
+                        <input type="month" name="bulan" value="{{ $bulan }}" id="month"
+                            class="input input-sm input-bordered w-full bg-slate-50">
+                    </div>
+                    <button type="submit" class="btn btn-info btn-sm w-full sm:w-auto">Cari</button>
+                </form>
             </div>
             @if ($slip)
                 <div class="flex flex-col items-center mx-2 my-5 sm:justify-center justify-start">

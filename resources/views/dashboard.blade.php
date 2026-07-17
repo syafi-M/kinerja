@@ -65,13 +65,13 @@
         @endif
 
         @include('dashboard.partials.prayer-modal')
-        <div class="mx-5 rounded-md shadow-md sm:mx-10 bg-slate-500">
+        <div class="sm:mx-10">
             <main>
                 @auth
                     @php
                         $jabatan = Auth::user()->divisi->jabatan->code_jabatan;
                     @endphp
-                    @if (in_array($jabatan, ['MITRA', 'LEADER', 'CO-CS']))
+                    @if (in_array($jabatan, ['MITRA', 'LEADER', 'CO-CS', 'CO-SCR', 'DIREKSI', 'SPV-W']))
                         <div class="flex justify-start px-4 mr-10 bg-amber-500 w-fit"
                             style="border-radius: 5px 0px 24px 0px;">
                             <span class="my-1 text-xs font-semibold text-center text-white sm:pr-5">
@@ -85,7 +85,7 @@
                     <div class="py-5">
                         <div class="flex items-end justify-end mr-3">
                             <span style="max-width: 250px; background-color: #0C642F"
-                                class="flex justify-center gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
+                                class="flex justify-start gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
                                 <span id="jam"></span>
                             </span>
                         </div>
