@@ -33,11 +33,7 @@ class KeteranganLanjutanController extends Controller
             'user:id,nama_lengkap,kerjasama_id',
             'createdBy:id,nama_lengkap',
         ])
-            ->whereHas('user', function ($q) {
-                $q->whereHas('jabatan', function ($jabatanQuery) {
-                    $jabatanQuery->whereIn('id', $this->allowedSeeData());
-                })->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
-            })
+            ->where('created_by_user_id', auth()->user()->id)
             ->when(request()->filled('user_id'), function ($q) {
                 $q->where('user_id', request('user_id'));
             })
@@ -59,7 +55,7 @@ class KeteranganLanjutanController extends Controller
             ->latest()
             ->paginate(15)
             ->withQueryString();
-
+            
         return view('spv_w_view.keterangan_lanjutan.history', [
             'keteranganLanjutans' => $keteranganLanjutans,
             'users' => $users,
