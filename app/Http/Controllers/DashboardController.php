@@ -206,6 +206,10 @@ class DashboardController extends Controller
             ->where('created_at', '>=', $now->copy()->subHours(24))
             ->latest()
             ->first();
+        if (!$absenQueryBase) {
+            return response()->json(['sholat_sekarang' => 'kosong']);
+        }
+
         $statusSholat = $absenQueryBase->status_sholat;
 
         $date = Carbon::now()->format('d-m-Y');

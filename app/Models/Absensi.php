@@ -96,7 +96,7 @@ class Absensi extends Model
             'Subuh' => $this->subuh,
             'Zuhur' => $this->dzuhur,
             'Ashar' => $this->asar,
-            'Maghrib' => $this->magrib,
+            'Maghrib' => $this->maghrib,
             'Isya' => $this->isya,
         ];
     }
