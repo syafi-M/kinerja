@@ -314,7 +314,7 @@ class AbsensiController extends Controller
         $radiusMitra = (float) $harLok->radius;
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
         $radius = round($jarak['meters']);
-        $canBypassRadius = $authCode === 'SPV-W' || (int) $authUser->devisi_id === 12;
+        $canBypassRadius = auth()->user()->jabatan->code_jabatan == 'SPV-W' || (int) auth()->user()->devisi_id == 12;
         $isUmg = $request->kerjasama_id == "29" || $request->kerjasama_id == "32";
 
         if ($canBypassRadius || $isUmg || $radius <= $radiusMitra) {

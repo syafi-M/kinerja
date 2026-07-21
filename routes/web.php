@@ -302,6 +302,7 @@ Route::middleware(['auth', 'spv-w', 'apdt', 'spvw.client-filter'])->group(functi
     Route::resource('/spvw-monev', MonevController::class);
 
     Route::get('/SPVW/rekap-data', [SPVWDataRekapController::class, 'index'])->name('spvw.rekap.index');
+    Route::get('/SPVW/api/v1/all-rekap-export-global', [AllRekapExportController::class, 'getGlobalRekapData'])->name('spvw.api-all-rekap-export-global');
 
     Route::middleware('spvw.client-required')->group(function () {
         Route::get('/SPVW/overtime-application/create', [SPVWOvertimeApplicationController::class, 'create'])->name('spvw.overtime-application.create');

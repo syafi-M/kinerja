@@ -1,4 +1,8 @@
 <x-app-layout>
+    @push('scripts')
+        <script src={{ URL::asset('js/rekap-export.js') }}></script>
+    @endpush
+
     @php
         $spvwClientId = request('client_id', session('spvw.selected_client_id'));
     @endphp
@@ -264,6 +268,30 @@
                 <input type="hidden" name="client_id" value="{{ $selectedClientId }}">
             </form>
 
+            <div class="mb-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-base font-semibold text-slate-900">Export Data Keseluruhan</h2>
+                        <p class="text-xs text-slate-500">Export seluruh rekap bulanan semua mitra.</p>
+                    </div>
+                    <div class="flex flex-wrap items-end gap-2">
+                        <label class="text-xs font-medium text-slate-600">
+                            Bulan tgl(26-25)
+                            <input id="bulanRekap" type="month" value="{{ now()->format('Y-m') }}" onchange="bulanRekap = this.value"
+                                class="mt-1 block rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
+                        </label>
+                        <button type="button" onclick="exportGlobalToExcel()"
+                            class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                            <i class="ri-file-excel-2-line"></i> Excel
+                        </button>
+                        <button type="button" onclick="exportGlobalToPDF()"
+                            class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                            <i class="ri-file-pdf-2-line"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <section x-data="{
                 mode: '{{ $selectedMode }}',
                 setMode(nextMode) {
@@ -390,6 +418,22 @@
         const SPVW_MODE_STORAGE_KEY = 'spvw_rekap_mode';
         const SPVW_CLIENT_STORAGE_KEY = 'spvw_selected_client_id';
         const REKAP_LOCKED = {{ ($isAfterDueDate ?? false) ? 'true' : 'false' }};
+        let bulanRekap = document.getElementById('bulanRekap')?.value || new Date().toISOString().slice(0, 7);
+
+        async function exportGlobal(type) {
+            try {
+                const response = await fetch(`/SPVW/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message);
+                new RekapExporter(null, bulanRekap)[type](result.data);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function exportGlobalToExcel() { exportGlobal('exportGlobalToExcel'); }
+        function exportGlobalToPDF() { exportGlobal('exportGlobalToPDF'); }
 
         // Tab switching tanpa reload (seamless)
         function setMode(nextMode) {
