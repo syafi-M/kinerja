@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\LocksRekapByDueDate;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SPVW_Controller\Concerns\HasAllowedSeeData;
 use App\Models\Jabatan;
 use App\Models\PersonIn;
-use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\PersonInSubmitted;
 use Carbon\Carbon;
@@ -17,10 +17,14 @@ use Illuminate\Validation\Rule;
 
 class PersonInController extends Controller
 {
-    use UsesToastRedirects, HasAllowedSeeData;
+    use LocksRekapByDueDate, UsesToastRedirects, HasAllowedSeeData;
 
     public function index()
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $jabatans = Jabatan::select(['id', 'name_jabatan'])
             ->whereIn('id', $this->allowedSeeData())
             ->orderBy('name_jabatan')
@@ -117,6 +121,10 @@ class PersonInController extends Controller
 
     public function store(Request $request)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $validated = $request->validate($this->rules($request));
             unset($validated['has_account']);
@@ -167,6 +175,10 @@ class PersonInController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $personIn = $this->baseQuery()->findOrFail($id);
 
@@ -205,6 +217,10 @@ class PersonInController extends Controller
 
     public function destroy($id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $personIn = $this->baseQuery()->findOrFail($id);
         $personIn->delete();
 
@@ -221,11 +237,8 @@ class PersonInController extends Controller
 
     public function changeStatus($id)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $personIn = $this->baseQuery()->findOrFail($id);
@@ -250,11 +263,8 @@ class PersonInController extends Controller
 
     public function bulkStatus(Request $request)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $query = $this->filteredHistoryQuery($request)
@@ -284,14 +294,6 @@ class PersonInController extends Controller
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua personil masuk sesuai filter!',
         ]);
-    }
-
-    private function isSubmissionLockedByDueDate(): bool
-    {
-        $dueDate = RekapDueDateSetting::latest()->first();
-
-        return $dueDate !== null
-            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     public function fetchApi($id)

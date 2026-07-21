@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\LocksRekapByDueDate;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\PersonOut;
-use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\PersonOutSubmitted;
 use Carbon\Carbon;
@@ -18,10 +18,14 @@ use Illuminate\Validation\Rule;
 
 class PersonOutController extends Controller
 {
-    use UsesToastRedirects;
+    use LocksRekapByDueDate, UsesToastRedirects;
 
     public function create()
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $users = User::select(['id', 'name', 'nama_lengkap'])
             ->where('id', '!=', auth()->user()->id)
             ->where('role_id', '!=', 2)
@@ -95,6 +99,10 @@ class PersonOutController extends Controller
 
     public function store(Request $request)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $validated = $request->validate([
                 'user_id' => ['required', 'exists:users,id', Rule::unique('person_outs', 'user_id')],
@@ -148,6 +156,10 @@ class PersonOutController extends Controller
 
     public function edit($id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $personOut = PersonOut::findOrFail($id);
         $users = User::select(['id', 'name', 'nama_lengkap'])
             ->where('id', '!=', auth()->user()->id)
@@ -165,6 +177,10 @@ class PersonOutController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $validated = $request->validate([
                 'user_id' => ['required', 'exists:users,id'],
@@ -224,6 +240,10 @@ class PersonOutController extends Controller
 
     public function destroy(PersonOut $personOut)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $personOut->delete();
 
         return $this->redirectBackWithToast('success', 'Data personil keluar berhasil dihapus!');
@@ -231,8 +251,8 @@ class PersonOutController extends Controller
 
     public function changeStatus($id)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $personOut = PersonOut::findOrFail($id);
@@ -260,8 +280,8 @@ class PersonOutController extends Controller
 
     public function bulkStatus()
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $allowedJabatanIds = $this->allowedTargetJabatanIds();
@@ -303,14 +323,6 @@ class PersonOutController extends Controller
         }
 
         return $this->backWithToast('success', 'Berhasil mengajukan semua personil keluar!');
-    }
-
-    private function isSubmissionLockedByDueDate(): bool
-    {
-        $dueDate = RekapDueDateSetting::latest()->first();
-
-        return $dueDate !== null
-            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
 

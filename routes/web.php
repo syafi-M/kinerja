@@ -336,7 +336,6 @@ Route::middleware(['auth', 'spv-w', 'apdt', 'spvw.client-filter'])->group(functi
     Route::resource('/spvw-monev', MonevController::class);
 
     Route::get('/SPVW/rekap-data', [SPVWDataRekapController::class, 'index'])->name('spvw.rekap.index');
-    Route::post('/SPVW/rekap/exemption/self', [SPVWDataRekapController::class, 'exemptSelf'])->name('spvw.rekap.exemption.self');
 
     Route::middleware('spvw.client-required')->group(function () {
         Route::get('/SPVW/overtime-application/create', [SPVWOvertimeApplicationController::class, 'create'])->name('spvw.overtime-application.create');
@@ -400,7 +399,6 @@ Route::middleware(['auth', 'spv-w', 'apdt', 'spvw.client-filter'])->group(functi
 
 Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {
     Route::get('/rekap-data', [DataRekapController::class, 'index'])->name('index.rekap.data.leader');
-    Route::post('/rekap/exemption/self', [DataRekapController::class, 'exemptSelf'])->name('rekap.exemption.self');
     Route::get('/overtime-application/history', [OvertimeApplicationController::class, 'history'])->name('overtime-application.history');
     Route::resource('/overtime-application', OvertimeApplicationController::class);
     Route::get('/api/v1/get-overtime/{id}', [OvertimeApplicationController::class, 'fetchApi'])->name('get-overtime-id');
@@ -512,6 +510,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
 
             Route::get('/settings', [RekapSettingsController::class, 'index'])->name('settings');
             Route::post('/settings', [RekapSettingsController::class, 'update'])->name('settings.update');
+            Route::delete('/settings', [RekapSettingsController::class, 'reset'])->name('settings.reset');
         });
 
         Route::prefix('api/v1/rekap')->name('admin.rekap.api.')->group(function () {

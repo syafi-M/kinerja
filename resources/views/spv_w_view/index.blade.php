@@ -105,12 +105,13 @@
             ],
         ];
 
-        $isSPV = in_array(strtoupper(auth()->user()->jabatan->code_jabatan ?? ''), ['SPV-W'], true);
-        $dueDateLabel = $dueDate ?? null ? \Carbon\Carbon::parse($dueDate->due_date)->format('d M Y') : null;
-        $codeJabatan = strtoupper(auth()->user()->jabatan->code_jabatan ?? '');
+        $dueDateLabel = $dueDate ?? null
+            ? 'Setiap tgl ' . (int) \Carbon\Carbon::parse($dueDate->due_date)->day . ' pukul ' . \Carbon\Carbon::parse($dueDate->due_date)->format('H:i')
+            : null;
         $selectedMode = in_array($selectedMode ?? 'pengajuan', ['pengajuan', 'riwayat'], true)
             ? $selectedMode
             : 'pengajuan';
+        $codeJabatan = strtoupper(auth()->user()->jabatan->code_jabatan ?? auth()->user()->divisi?->jabatan?->code_jabatan ?? '');
     @endphp
 
     @push('styles')
@@ -232,29 +233,23 @@
                                 </div>
                             </div>
 
-                            @if (($isExempted ?? false) === true)
-                                <div
-                                    class="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-                                    <i class="ri-shield-check-line"></i>
-                                    Pengecualian aktif permanen
-                                </div>
-                            @elseif (($isAfterDueDate ?? false) === true)
+                            @if (($isAfterDueDate ?? false) === true)
                                 <div
                                     class="inline-flex w-fit items-center gap-2 rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
                                     <i class="ri-lock-line"></i>
-                                    Pengecualian sudah ditutup
+                                    Rekap dikunci
                                 </div>
                             @elseif ($dueDateLabel)
                                 <div
                                     class="inline-flex w-fit items-center gap-2 rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-800">
                                     <i class="ri-time-line"></i>
-                                    Pengecualian masih tersedia
+                                    Masih terbuka
                                 </div>
                             @else
                                 <div
                                     class="inline-flex w-fit items-center gap-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
                                     <i class="ri-error-warning-line"></i>
-                                    Menunggu pengaturan admin
+                                    Belum diatur (buka semua)
                                 </div>
                             @endif
                         </div>
@@ -262,52 +257,6 @@
                 </div>
             </div>
 
-            @if ($isSPV)
-                <div class="p-3 mb-4 bg-white border rounded-lg shadow-sm border-slate-200">
-                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                        <div class="flex items-center gap-2.5 text-sm text-slate-600">
-                            <span
-                                class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
-                                <i class="ri-information-line"></i>
-                            </span>
-                            <div class="flex items-center">
-                                @if ($dueDate ?? null)
-                                    <p>Batas rekap:
-                                        <span class="font-semibold text-slate-800">{{ $dueDateLabel }}</span>
-                                    </p>
-                                @else
-                                    <p class="font-medium text-amber-700">Batas rekap belum diatur admin.</p>
-                                @endif
-                                @if (($isExempted ?? false) === true)
-                                    <p class="mt-1 text-emerald-700">Pengecualian penalti aktif permanen.</p>
-                                @endif
-                            </div>
-                        </div>
-                        @if (($isExempted ?? false) === false)
-                            @if (($isAfterDueDate ?? false) === false)
-                                <form method="POST" action="{{ route('spvw.rekap.exemption.self') }}"
-                                    class="lg:shrink-0">
-                                    @csrf
-                                    <button type="submit"
-                                        class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition lg:w-auto {{ $isRekapEmpty ?? false ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2' : 'cursor-not-allowed bg-slate-200 text-slate-500' }}"
-                                        {{ $isRekapEmpty ?? false ? '' : 'disabled' }}>
-                                        <i
-                                            class="{{ $isRekapEmpty ?? false ? 'ri-shield-check-line' : 'ri-lock-line' }}"></i>
-                                        Aktifkan pengecualian penalti
-                                    </button>
-                                </form>
-                            @else
-                                <button type="button"
-                                    class="inline-flex min-h-10 cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-500"
-                                    disabled>
-                                    <i class="ri-lock-line"></i>
-                                    Pengecualian sudah ditutup
-                                </button>
-                            @endif
-                        @endif
-                    </div>
-                </div>
-            @endif
 
             <form id="spvw-mode-form" method="GET"
                 action="{{ route('spvw.rekap.index', array_filter(['client_id' => $spvwClientId])) }}" class="hidden">
@@ -363,12 +312,22 @@
                 </div>
 
                 <div data-mode-section="pengajuan">
+                    @if ($isAfterDueDate ?? false)
+                        <div class="px-4 py-3 text-sm text-slate-600 bg-slate-50 border-b border-slate-100">
+                            <i class="ri-lock-line"></i> Pengajuan rekap dikunci karena melewati batas waktu.
+                        </div>
+                    @endif
                     <div class="divide-y divide-slate-100">
                         @foreach ($rekapMenus as $menu)
-                            <a href="{{ $selectedClientId > 0 ? $menu['pengajuan_url'] : '#' }}" data-menu-link
+                            @php
+                                $locked = ($isAfterDueDate ?? false) === true;
+                                $needsClient = $selectedClientId <= 0;
+                                $disabled = $locked || $needsClient;
+                            @endphp
+                            <a href="{{ $disabled ? '#' : $menu['pengajuan_url'] }}" data-menu-link
                                 data-base-url="{{ preg_replace('/([&?])client_id=\d+/', '$1', $menu['pengajuan_url']) }}"
-                                @if ($selectedClientId <= 0) aria-disabled="true" @endif
-                                class="flex items-center justify-between gap-3 px-4 py-3 transition group min-h-16 {{ $selectedClientId > 0 ? 'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-inset active:bg-slate-100' : 'cursor-not-allowed bg-slate-50/70 opacity-70' }}">
+                                @if ($disabled) aria-disabled="true" @endif
+                                class="flex items-center justify-between gap-3 px-4 py-3 transition group min-h-16 {{ $disabled ? 'cursor-not-allowed bg-slate-50/70 opacity-70' : 'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-inset active:bg-slate-100' }}">
                                 <span class="flex items-center min-w-0 gap-3">
                                     <span
                                         class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ring-1 {{ $menu['icon_bg'] }}">
@@ -384,9 +343,9 @@
                                     </span>
                                 </span>
                                 <span data-menu-cta
-                                    class="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 {{ $selectedClientId > 0 ? 'bg-emerald-100 text-emerald-800 ring-emerald-200 shadow-sm transition' : 'bg-slate-100 text-slate-500 ring-slate-200' }}">
-                                    {{ $selectedClientId > 0 ? 'Buat' : 'Pilih Mitra' }}
-                                    <i class="ri-arrow-right-line"></i>
+                                    class="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold ring-1 {{ $disabled ? 'bg-slate-100 text-slate-500 ring-slate-200' : 'bg-emerald-100 text-emerald-800 ring-emerald-200 shadow-sm transition' }}">
+                                    {{ $locked ? 'Terkunci' : ($needsClient ? 'Pilih Mitra' : 'Buat') }}
+                                    <i class="{{ $locked ? 'ri-lock-line' : 'ri-arrow-right-line' }}"></i>
                                 </span>
                             </a>
                         @endforeach
@@ -430,6 +389,7 @@
     <script>
         const SPVW_MODE_STORAGE_KEY = 'spvw_rekap_mode';
         const SPVW_CLIENT_STORAGE_KEY = 'spvw_selected_client_id';
+        const REKAP_LOCKED = {{ ($isAfterDueDate ?? false) ? 'true' : 'false' }};
 
         // Tab switching tanpa reload (seamless)
         function setMode(nextMode) {
@@ -540,8 +500,11 @@
 
             document.querySelectorAll('[data-menu-link]').forEach((el) => {
                 const base = el.getAttribute('data-base-url') || '#';
-                el.href = hasClient ? `${base}${base.includes('?') ? '&' : '?'}client_id=${clientId}` : '#';
-                if (hasClient) {
+                const section = el.closest('[data-mode-section]')?.getAttribute('data-mode-section');
+                const sectionLocked = REKAP_LOCKED && section === 'pengajuan';
+                const enabled = hasClient && !sectionLocked;
+                el.href = enabled ? `${base}${base.includes('?') ? '&' : '?'}client_id=${clientId}` : '#';
+                if (enabled) {
                     el.removeAttribute('aria-disabled');
                     el.classList.remove('cursor-not-allowed', 'bg-slate-50/70', 'opacity-70');
                     el.classList.add('hover:bg-slate-50', 'focus:outline-none', 'focus:ring-2',
@@ -549,6 +512,16 @@
                 } else {
                     el.setAttribute('aria-disabled', 'true');
                     el.classList.add('cursor-not-allowed', 'bg-slate-50/70', 'opacity-70');
+                }
+                const cta = el.querySelector('[data-menu-cta]');
+                if (cta && section === 'pengajuan') {
+                    cta.textContent = '';
+                    const label = sectionLocked ? 'Terkunci' : (hasClient ? 'Buat' : 'Pilih Mitra');
+                    const icon = sectionLocked ? 'ri-lock-line' : 'ri-arrow-right-line';
+                    cta.append(document.createTextNode(label + ' '));
+                    const i = document.createElement('i');
+                    i.className = icon;
+                    cta.appendChild(i);
                 }
             });
             // Re-apply current mode to update CTA texts and classes
