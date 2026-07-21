@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\LEADER_Controller;
 
+use App\Http\Controllers\Concerns\LocksRekapByDueDate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OvertimeStoreRequest;
 use App\Models\Overtime;
-use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\OvertimeSubmitted;
 use Carbon\Carbon;
@@ -15,8 +15,14 @@ use Illuminate\Support\Facades\Storage;
 
 class OvertimeApplicationController extends Controller
 {
+    use LocksRekapByDueDate;
+
     public function create()
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $users = User::select(['id', 'name', 'nama_lengkap'])
             ->where('kerjasama_id', auth()->user()->kerjasama_id)
             ->whereHas('jabatan', function ($q) {
@@ -32,6 +38,10 @@ class OvertimeApplicationController extends Controller
 
     public function store(OvertimeStoreRequest $request)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $data = $request->validated();
             if ($request->hasFile('foto_bukti')) {
@@ -94,6 +104,10 @@ class OvertimeApplicationController extends Controller
 
     public function edit($id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $users = User::select(['id', 'name', 'nama_lengkap'])
             ->where('kerjasama_id', auth()->user()->kerjasama_id)
             ->whereHas('jabatan', function ($q) {
@@ -110,6 +124,10 @@ class OvertimeApplicationController extends Controller
 
     public function update(OvertimeStoreRequest $request, $id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $overtime = Overtime::findOrFail($id);
         $data = $request->validated();
         if ($request->hasFile('foto_bukti')) {
@@ -128,6 +146,10 @@ class OvertimeApplicationController extends Controller
 
     public function destroy($id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         Overtime::findOrFail($id)->delete();
         return redirect()->back()->with('toast', [
             'type' => 'warning',
@@ -147,11 +169,8 @@ class OvertimeApplicationController extends Controller
 
     public function changeStatus($id)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return redirect()->back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $overtime = Overtime::findOrFail($id);
@@ -187,11 +206,8 @@ class OvertimeApplicationController extends Controller
 
     public function bulkStatus()
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return back()->with('toast', [
-                'type' => 'info',
-                'message' => 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.',
-            ]);
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $startDate = Carbon::now()->startOfMonth();
@@ -242,14 +258,6 @@ class OvertimeApplicationController extends Controller
             'type' => 'success',
             'message' => 'Berhasil mengajukan semua lembur!',
         ]);
-    }
-
-    private function isSubmissionLockedByDueDate(): bool
-    {
-        $dueDate = RekapDueDateSetting::latest()->first();
-
-        return $dueDate !== null
-            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     private function hasBulkSubmittableOvertime(): bool

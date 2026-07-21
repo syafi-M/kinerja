@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\LEADER_Controller;
 
+use App\Http\Controllers\Concerns\LocksRekapByDueDate;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\FinishedTraining;
-use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\FinishedTrainingSubmitted;
 use App\Services\ApprovalNotificationService;
@@ -15,10 +15,14 @@ use Illuminate\Validation\Rule;
 
 class FinishedTrainingController extends Controller
 {
-    use UsesToastRedirects;
+    use LocksRekapByDueDate, UsesToastRedirects;
 
     public function index()
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $users = $this->allowedUsersQuery()
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap']);
@@ -103,6 +107,10 @@ class FinishedTrainingController extends Controller
 
     public function store(Request $request)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $validated = $request->validate($this->rules());
 
@@ -132,6 +140,10 @@ class FinishedTrainingController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $finishedTraining = $this->baseQuery()->findOrFail($id);
             $validated = $request->validate($this->rules());
@@ -161,6 +173,10 @@ class FinishedTrainingController extends Controller
 
     public function destroy($id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $finishedTraining = $this->baseQuery()->findOrFail($id);
         $finishedTraining->delete();
 
@@ -177,8 +193,8 @@ class FinishedTrainingController extends Controller
 
     public function changeStatus($id)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $finishedTraining = $this->baseQuery()->findOrFail($id);
@@ -195,8 +211,8 @@ class FinishedTrainingController extends Controller
 
     public function bulkStatus(Request $request)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $query = $this->filteredHistoryQuery($request)
@@ -220,14 +236,6 @@ class FinishedTrainingController extends Controller
         }
 
         return $this->backWithToast('success', 'Berhasil mengajukan semua data lepas training sesuai filter!');
-    }
-
-    private function isSubmissionLockedByDueDate(): bool
-    {
-        $dueDate = RekapDueDateSetting::latest()->first();
-
-        return $dueDate !== null
-            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     public function fetchApi($id)
