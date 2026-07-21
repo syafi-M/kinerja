@@ -27,3 +27,7 @@ docs
 .playwright-cli
 CLAUDE.md
 .claude
+nul
+skills-lock.*
+keybackup.*
+*log

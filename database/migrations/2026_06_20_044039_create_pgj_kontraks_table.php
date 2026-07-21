@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::connection('mysql2')->hasTable('p_g_j__kontraks')) {
+            return;
+        }
+
         Schema::connection('mysql2')->create('p_g_j__kontraks', function (Blueprint $table) {
             $table->id();
             $table->string('no_srt')->nullable();

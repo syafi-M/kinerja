@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\SPVW_Controller;
 
+use App\Http\Controllers\Concerns\LocksRekapByDueDate;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\PerformanceCuts;
-use App\Models\RekapDueDateSetting;
 use App\Models\User;
 use App\Notifications\CuttingSubmitted;
 use Carbon\Carbon;
@@ -16,10 +16,14 @@ use App\Http\Controllers\SPVW_Controller\Concerns\HasAllowedSeeData;
 
 class CuttingController extends Controller
 {
-    use UsesToastRedirects, HasAllowedSeeData;
+    use LocksRekapByDueDate, UsesToastRedirects, HasAllowedSeeData;
 
     public function index()
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $users = $this->allowedUsersQuery()
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap']);
@@ -100,6 +104,10 @@ class CuttingController extends Controller
 
     public function store(Request $request)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $validated = $request->validate($this->rules($request));
 
@@ -130,6 +138,10 @@ class CuttingController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         try {
             $cutting = $this->baseQuery()->findOrFail($id);
             $validated = $request->validate($this->rules($request));
@@ -160,6 +172,10 @@ class CuttingController extends Controller
 
     public function destroy($id)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $cutting = $this->baseQuery()->findOrFail($id);
         $cutting->delete();
 
@@ -176,8 +192,8 @@ class CuttingController extends Controller
 
     public function changeStatus($id)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return $this->redirectBackWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $cutting = $this->baseQuery()->findOrFail($id);
@@ -194,8 +210,8 @@ class CuttingController extends Controller
 
     public function bulkStatus(Request $request)
     {
-        if ($this->isSubmissionLockedByDueDate()) {
-            return $this->backWithToast('info', 'Masa pengajuan rekap bulan ini sudah ditutup. Silakan tunggu bulan berikutnya.');
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
         }
 
         $query = $this->filteredHistoryQuery($request)
@@ -219,14 +235,6 @@ class CuttingController extends Controller
         }
 
         return $this->backWithToast('success', 'Berhasil mengajukan semua data cutting sesuai filter!');
-    }
-
-    private function isSubmissionLockedByDueDate(): bool
-    {
-        $dueDate = RekapDueDateSetting::latest()->first();
-
-        return $dueDate !== null
-            && Carbon::today()->gt(Carbon::parse($dueDate->due_date)->endOfDay());
     }
 
     public function fetchApi($id)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\LEADER_Controller;
 
+use App\Http\Controllers\Concerns\LocksRekapByDueDate;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\KeteranganLanjutan;
@@ -9,7 +10,7 @@ use Illuminate\Http\Request;
 
 class KeteranganLanjutanController extends Controller
 {
-    use UsesToastRedirects;
+    use LocksRekapByDueDate, UsesToastRedirects;
 
     public function index(Request $request, $kerjasama = null)
     {
@@ -44,6 +45,10 @@ class KeteranganLanjutanController extends Controller
             ]);
         }
 
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         return view('leader_view.data_rekap.keterangan_lanjutan.index');
     }
 
@@ -65,6 +70,10 @@ class KeteranganLanjutanController extends Controller
 
     public function store(Request $request)
     {
+        if ($response = $this->rejectIfRekapLocked()) {
+            return $response;
+        }
+
         $validated = $request->validate([
             'entries' => ['required', 'array', 'min:1'],
             'entries.*.periode' => ['required', 'string', 'max:255'],
