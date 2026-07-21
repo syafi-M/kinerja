@@ -72,7 +72,7 @@
                 @endif
 
                 {{-- Logout --}}
-                <form action="{{ route('logout') }}" method="post">
+                <form action="{{ route('logout') }}" method="post" onsubmit="sessionStorage.removeItem('leaderRekapMode')">
                     @csrf
                     <button type="submit"
                         class="inline-flex items-center px-2 mt-4 font-semibold transition duration-200 ease-in-out bg-yellow-300 rounded-md shadow-md text-slate-700 hover:bg-yellow-400 hover:text-white">

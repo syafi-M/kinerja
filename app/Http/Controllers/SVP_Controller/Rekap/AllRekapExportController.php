@@ -24,11 +24,18 @@ class AllRekapExportController extends RekapController
             $date = Carbon::createFromFormat('Y-m', $month);
             $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
             $endDate = $date->copy()->setDay(25)->endOfDay();
-            $includeAllStatus = false; // Debug parameter to include all status
+            $includeAllStatus = $request->boolean('include_all_status');
 
             $kerjasamaData = Kerjasama::with('client:id,name')->findOrFail($kerjasama);
             $clientId = (int) $kerjasamaData->client_id;
             $clientName = $kerjasamaData->client?->name ?? 'Semua Mitra';
+            $allowedJabatanIds = $this->allowedSeeData();
+            $authTypeJabatan = auth()->user()->jabatan->type_jabatan ?? null;
+            $filterJabatan = function ($q) use ($allowedJabatanIds, $authTypeJabatan) {
+                return !empty($allowedJabatanIds)
+                    ? $q->whereIn('jabatan_id', $allowedJabatanIds)
+                    : $q->whereHas('jabatan', fn ($j) => $j->where('type_jabatan', $authTypeJabatan));
+            };
 
             if ($clientId <= 0) {
                 return response()->json([
@@ -52,9 +59,9 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama:id,client_id',
                 'user.kerjasama.client:id,name',
                 'user.jabatan:id,name_jabatan'
-            ])->whereHas('user', function ($q) use ($clientId) {
-                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            ])->whereHas('user', function ($q) use ($clientId, $filterJabatan) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
+                $filterJabatan($q);
             });
             if (!$includeAllStatus) $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $overtimesQuery = $overtimesQuery->join('users', 'overtimes.user_id', '=', 'users.id');
@@ -72,8 +79,8 @@ class AllRekapExportController extends RekapController
 
             // Build person_ins query
             $personInsQuery = PersonIn::with(['jabatan:id,name_jabatan'])
-                ->where('client_id', $clientId)
-                ->whereIn('jabatan_id', $this->allowedSeeData());
+                ->where('client_id', $clientId);
+            $filterJabatan($personInsQuery);
             if (!$includeAllStatus) $personInsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             if ($startDate && $endDate) {
                 $personInsQuery->whereBetween('date_in', [$startDate, $endDate]);
@@ -89,11 +96,11 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama.client',
                 'user.jabatan:id,name_jabatan',
                 'createdBy:id,nama_lengkap'
-            ])->whereHas('user', function ($q) use ($clientId) {
+            ])->whereHas('user', function ($q) use ($clientId, $filterJabatan) {
                 $q->withTrashed()
                     ->whereNotNull('nama_lengkap')
-                    ->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
+                    ->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
+                $filterJabatan($q);
             });
             if (!$includeAllStatus) $personOutsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $personOutsQuery = $personOutsQuery->join('users', 'person_outs.user_id', '=', 'users.id');
@@ -109,10 +116,10 @@ class AllRekapExportController extends RekapController
                 ->get();
 
             // Build cuttings query
-            $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
-                ->whereHas('user', function ($q) use ($clientId) {
-                    $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                        ->whereIn('jabatan_id', $this->allowedSeeData());
+            $cuttingsQuery = PerformanceCuts::with(['user:id,nama_lengkap,kerjasama_id,jabatan_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
+                ->whereHas('user', function ($q) use ($clientId, $filterJabatan) {
+                    $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
+                    $filterJabatan($q);
                 });
             if (!$includeAllStatus) $cuttingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $cuttingsQuery = $cuttingsQuery->join('users', 'performance_cuts.user_id', '=', 'users.id');
@@ -129,10 +136,10 @@ class AllRekapExportController extends RekapController
                 ->get();
 
             // Build finished trainings query
-            $finishedTrainingsQuery = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
-                ->whereHas('user', function ($q) use ($clientId) {
-                    $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                        ->whereIn('jabatan_id', $this->allowedSeeData());
+            $finishedTrainingsQuery = FinishedTraining::with(['user:id,nama_lengkap,kerjasama_id,jabatan_id', 'user.kerjasama:id,client_id', 'user.jabatan:id,name_jabatan'])
+                ->whereHas('user', function ($q) use ($clientId, $filterJabatan) {
+                    $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
+                    $filterJabatan($q);
                 });
             if (!$includeAllStatus) $finishedTrainingsQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
             $finishedTrainingsQuery = $finishedTrainingsQuery->join('users', 'finished_trainings.user_id', '=', 'users.id');
@@ -155,9 +162,9 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama.client:id,name',
                 'user.jabatan:id,name_jabatan',
                 'createdBy:id,nama_lengkap'
-            ])->whereHas('user', function ($q) use ($clientId) {
-                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId))
-                    ->whereIn('jabatan_id', $this->allowedSeeData());
+            ])->whereHas('user', function ($q) use ($clientId, $filterJabatan) {
+                $q->whereHas('kerjasama', fn($k) => $k->where('client_id', $clientId));
+                $filterJabatan($q);
             })->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id');
             if ($startDate && $endDate) {
                 $keterangan = $keteranganQuery->whereBetween('keterangan_lanjutans.created_at', [$startDate, $endDate])
@@ -183,11 +190,11 @@ class AllRekapExportController extends RekapController
                 'keterangan_lanjutan' => $keterangan,
                 'client' => ['name' => $clientName],
                 'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
+                'show_status' => $request->boolean('with_status'),
             ];
 
             return response()->json(['success' => true, 'data' => $data]);
-        } catch (
-        Throwable $e) {
+        } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

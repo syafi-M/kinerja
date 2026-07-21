@@ -31,16 +31,16 @@
                 <table class="w-full text-sm text-left">
                     <thead class="border-b bg-slate-50 border-slate-200 text-slate-600">
                         <tr>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase">User</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase">Keterangan</th>
-                            <th class="px-4 py-3 text-xs font-semibold uppercase">Dibuat</th>
+                            <th class="px-3 py-2 text-xs font-semibold uppercase">User</th>
+                            <th class="px-3 py-2 text-xs font-semibold uppercase">Keterangan</th>
+                            <th class="px-3 py-2 text-xs font-semibold uppercase">Dibuat</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($keteranganLanjutans as $item)
                             <tr class="align-top">
-                                <td class="px-4 py-3 font-medium text-slate-800">{{ $item->user->nama_lengkap ?? '-' }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-2 font-medium text-slate-800">{{ $item->user->nama_lengkap ?? '-' }}</td>
+                                <td class="px-3 py-2">
                                     <div class="space-y-2">
                                         @foreach (($item->keterangan ?? []) as $row)
                                             <div class="p-2 border rounded-md border-slate-200 bg-slate-50">
@@ -57,7 +57,7 @@
                                         @endforeach
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-slate-700">
+                                <td class="px-3 py-2 text-slate-700">
                                     {{ $item->createdBy->nama_lengkap ?? '-' }}
                                 </td>
                             </tr>

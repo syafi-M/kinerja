@@ -366,6 +366,7 @@ Route::middleware(['auth', 'spv-w', 'apdt', 'spvw.client-filter'])->group(functi
 
 Route::middleware(['auth', 'only:CO-CS,CO-SCR', 'apdt'])->group(function () {
     Route::get('/rekap-data', [DataRekapController::class, 'index'])->name('index.rekap.data.leader');
+    Route::get('/api/v1/all-rekap-export/{kerjasama}', [AllRekapExportController::class, 'getAllRekapData'])->name('leader.api-all-rekap-export');
     Route::post('/rekap/exemption/self', [DataRekapController::class, 'exemptSelf'])->name('rekap.exemption.self');
     Route::get('/overtime-application/history', [OvertimeApplicationController::class, 'history'])->name('overtime-application.history');
     Route::resource('/overtime-application', OvertimeApplicationController::class);

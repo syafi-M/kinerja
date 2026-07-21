@@ -1,4 +1,24 @@
 <x-app-layout>
+    @push('scripts')
+        <script src="{{ URL::asset('js/rekap-export.js') }}"></script>
+        <script>
+            async function exportLeader(format) {
+                try {
+                    const month = document.getElementById('bulanRekap').value;
+                    const fetcher = new RekapExporter({{ auth()->user()->kerjasama_id }}, month);
+                    fetcher.apiUrl += '&include_all_status=1&with_status=1';
+                    const result = await fetcher.fetchAllData();
+                    if (!result.success) throw new Error(result.message);
+
+                    const exporter = new RekapExporter(null, month);
+                    format === 'pdf' ? exporter.exportGlobalToPDF(result.data) : exporter.exportGlobalToExcel(result.data);
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                }
+            }
+        </script>
+    @endpush
+
     @php
         $rekapMenus = [
             [
@@ -199,35 +219,58 @@
                 </div>
             @endif
 
-            <section x-data="{ mode: 'pengajuan' }"
-                class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
-                <div class="p-3 border-b border-slate-200 bg-slate-50 sm:p-4">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-2.5">
-                            <span class="inline-flex items-center justify-center w-8 h-8 text-white rounded-lg bg-slate-900">
-                                <i class="ri-command-line"></i>
+            <section x-data="{
+                mode: 'pengajuan',
+                key: 'leaderRekapMode',
+                init() { this.mode = sessionStorage.getItem(this.key) || 'pengajuan' },
+                setMode(mode) { this.mode = mode; sessionStorage.setItem(this.key, mode) },
+            }" class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
+                <div class="border-b border-slate-200 bg-slate-50 p-3 sm:p-4">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-start gap-3">
+                            <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white">
+                                <i class="ri-command-line text-lg"></i>
                             </span>
-                            <div>
+                            <div class="min-w-0">
                                 <h2 class="text-base font-semibold text-slate-900">Aksi Rekap</h2>
                                 <p class="text-xs leading-4 text-slate-500">Pilih jenis rekap sesuai kebutuhan.</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 p-1 bg-white rounded-lg shadow-sm ring-1 ring-slate-200 sm:w-72">
-                            <button type="button" @click="mode = 'pengajuan'"
-                                class="inline-flex items-center justify-center gap-2 px-3 text-sm font-semibold transition rounded-md min-h-9"
-                                :class="mode === 'pengajuan' ? 'bg-emerald-600 text-white shadow-sm' :
-                                    'text-slate-600 hover:bg-slate-50'">
-                                <i class="ri-file-add-line"></i>
-                                Pengajuan
+                        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+                            <button type="button" @click="setMode(mode === 'exportAll' ? 'pengajuan' : 'exportAll')"
+                                class="flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left shadow-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                :class="mode === 'exportAll'
+                                    ? 'border-emerald-600 bg-emerald-600 text-white shadow-md'
+                                    : 'border-emerald-200 bg-white text-slate-800 hover:border-emerald-400 hover:bg-emerald-50'">
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
+                                    :class="mode === 'exportAll' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'">
+                                    <i class="text-xl" :class="mode === 'exportAll' ? 'ri-close-line' : 'ri-download-2-line'"></i>
+                                </span>
+                                <span class="min-w-0">
+                                    <span class="block text-sm font-bold">Export Semua Data</span>
+                                    <span class="block text-xs" :class="mode === 'exportAll' ? 'text-emerald-50' : 'text-slate-500'">
+                                        Download seluruh rekap bulanan ke Excel / PDF
+                                    </span>
+                                </span>
                             </button>
-                            <button type="button" @click="mode = 'riwayat'"
-                                class="inline-flex items-center justify-center gap-2 px-3 text-sm font-semibold transition rounded-md min-h-9"
-                                :class="mode === 'riwayat' ? 'bg-indigo-600 text-white shadow-sm' :
-                                    'text-slate-600 hover:bg-slate-50'">
-                                <i class="ri-history-line"></i>
-                                Riwayat
-                            </button>
+
+                            <div class="grid grid-cols-2 rounded-xl bg-white p-1 shadow-sm ring-1 ring-slate-200">
+                                <button type="button" @click="setMode('pengajuan')"
+                                    class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold transition"
+                                    :class="mode === 'pengajuan' ? 'bg-emerald-600 text-white shadow-sm' :
+                                        'text-slate-600 hover:bg-slate-50'">
+                                    <i class="ri-file-add-line"></i>
+                                    Pengajuan
+                                </button>
+                                <button type="button" @click="setMode('riwayat')"
+                                    class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold transition"
+                                    :class="mode === 'riwayat' ? 'bg-indigo-600 text-white shadow-sm' :
+                                        'text-slate-600 hover:bg-slate-50'">
+                                    <i class="ri-history-line"></i>
+                                    Riwayat
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -258,6 +301,51 @@
                                 </span>
                             </a>
                         @endforeach
+                    </div>
+                </div>
+
+                <div x-show="mode === 'exportAll'" x-cloak>
+                    <div class="p-4 sm:p-5">
+                        <div class="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm ring-1 ring-slate-900/5">
+                            <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 sm:p-5">
+                                <div class="flex items-start gap-3">
+                                    <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                                        <i class="ri-download-cloud-2-line text-xl"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <h3 class="text-base font-bold text-slate-900">Export Data Keseluruhan</h3>
+                                        <p class="mt-1 text-sm leading-5 text-slate-600">
+                                            Pilih periode, lalu download seluruh rekap bulanan.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-4 p-4 sm:p-5 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-end">
+                                <label class="block text-sm font-semibold text-slate-700">
+                                    Periode rekap <span class="text-xs font-normal text-slate-500">(tgl 1-sekarang)</span>
+                                    <input id="bulanRekap" type="month" value="{{ now()->format('Y-m') }}"
+                                        class="mt-2 block w-full rounded-xl border-slate-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                </label>
+
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <button type="button" onclick="exportLeader('excel')"
+                                        class="group flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 group-hover:bg-white/20">
+                                            <i class="ri-file-excel-2-line text-xl"></i>
+                                        </span>
+                                        Download Excel
+                                    </button>
+                                    <button type="button" onclick="exportLeader('pdf')"
+                                        class="group flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 group-hover:bg-white/20">
+                                            <i class="ri-file-pdf-2-line text-xl"></i>
+                                        </span>
+                                        Download PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

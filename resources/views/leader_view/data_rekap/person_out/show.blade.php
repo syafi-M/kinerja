@@ -67,7 +67,7 @@
                                     : ucfirst((string) $person->reason);
                             $imageUrl = $person->img ? asset('storage/images/' . $person->img) : null;
                         @endphp
-                        <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
+                        <div class="p-3 bg-white border rounded-lg shadow-sm border-slate-200">
                             <div class="flex items-start justify-between gap-3 mb-3">
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold truncate text-slate-800">
@@ -79,28 +79,28 @@
                                 </div>
                                 @if ($status == 'Di Ajukan')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
                                         <i class="ri-checkbox-circle-fill"></i>Diajukan
                                     </span>
                                 @elseif($status == 'Di Tolak')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700">
                                         <i class="ri-close-circle-fill"></i>Ditolak
                                     </span>
                                 @else
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700">
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[11px] font-medium text-yellow-700">
                                         <i class="ri-time-fill"></i>Pending
                                     </span>
                                 @endif
                             </div>
 
                             <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-slate-600">
-                                <div class="p-2 rounded-lg bg-slate-50">
+                                <div class="rounded-lg bg-slate-50 p-1.5">
                                     <span class="block text-slate-400">Jumlah MK</span>
                                     <span class="font-medium text-slate-700">{{ $person->total_mk ?? '-' }}</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-slate-50">
+                                <div class="rounded-lg bg-slate-50 p-1.5">
                                     <span class="block text-slate-400">Alasan</span>
                                     <span class="font-medium text-slate-700">{{ $reasonLabel }}</span>
                                 </div>
@@ -124,24 +124,24 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-2 gap-1.5">
                                 <button onclick="viewDetail({{ $person->id ?? 0 }})"
-                                    class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg min-h-10 bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                    class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-sky-50 px-2 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-100"
                                     type="button">
                                     <i class="ri-eye-line"></i>Lihat
                                 </button>
                                 @if ($status == 'pending' && !($isSubmissionLocked ?? false))
                                     <button onclick="sendPersonOut({{ $person->id ?? 0 }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100"
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-green-50 px-2 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-100"
                                         type="button">
                                         <i class="ri-send-plane-fill"></i>Ajukan
                                     </button>
                                     <a href="{{ route('person-is-out.edit', $person->id) }}"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-yellow-700 rounded-lg min-h-10 bg-yellow-50 hover:bg-yellow-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-1.5 text-xs font-semibold text-yellow-700 hover:bg-yellow-100">
                                         <i class="ri-edit-line"></i>Edit
                                     </a>
                                     <button onclick="deletePersonOut({{ $person->id ?? 0 }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 rounded-lg min-h-10 bg-red-50 hover:bg-red-100"
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
                                         type="button">
                                         <i class="ri-delete-bin-line"></i>Hapus
                                     </button>
@@ -167,14 +167,14 @@
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50">
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama Pegawai</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal Keluar</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Jumlah MK</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Alasan</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Bukti</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Status</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-slate-500">Aksi</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">No</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Nama Pegawai</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Tanggal Keluar</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Jumlah MK</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Alasan</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Bukti</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Status</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-center text-slate-500">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
@@ -189,10 +189,10 @@
                                     $imageUrl = $person->img ? asset('storage/images/' . $person->img) : null;
                                 @endphp
                                 <tr class="transition-colors hover:bg-slate-50">
-                                    <td class="px-4 py-4 text-sm text-slate-700">
+                                    <td class="px-3 py-2 text-sm text-slate-700">
                                         {{ method_exists($personOut, 'firstItem') ? $personOut->firstItem() + $index : $index + 1 }}
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         <div class="flex items-center gap-3">
                                             <div
                                                 class="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full bg-sky-100">
@@ -210,20 +210,20 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($person->out_date ?? now())->format('d M Y') }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $person->total_mk ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         <span
                                             class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-sky-100 text-sky-700 whitespace-nowrap">
                                             <i class="ri-logout-box-r-line"></i>
                                             {{ $reasonLabel }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         @if ($imageUrl)
                                             <img src="{{ $imageUrl }}"
                                                 class="object-cover w-16 h-16 border rounded-lg border-slate-200"
@@ -235,7 +235,7 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         @if ($status == 'Di Ajukan')
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full whitespace-nowrap">
@@ -253,7 +253,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         <div class="flex items-center justify-center gap-2">
                                             <button onclick="viewDetail({{ $person->id ?? 0 }})"
                                                 class="flex items-center justify-center text-blue-600 transition bg-blue-100 rounded-lg w-9 h-9 hover:bg-blue-200"
@@ -307,7 +307,7 @@
                 </div>
 
                 @if (isset($personOut) && $personOut->hasPages())
-                    <div class="px-4 py-4 border-t border-slate-200">
+                    <div class="px-3 py-2 border-t border-slate-200">
                         {{ $personOut->links() }}
                     </div>
                 @endif

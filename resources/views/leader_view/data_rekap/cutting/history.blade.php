@@ -60,7 +60,7 @@
             <div class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
                 <div class="p-3 space-y-3 sm:hidden">
                     @forelse($cuttings as $index => $cutting)
-                        <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
+                        <div class="p-3 bg-white border rounded-lg shadow-sm border-slate-200">
                             <div class="flex items-start justify-between gap-3 mb-3">
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-800">
@@ -69,29 +69,29 @@
                                 </div>
                                 @if (($cutting->status ?? 'pending') == 'Di Ajukan')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700"><i
                                             class="ri-checkbox-circle-fill"></i>Diajukan</span>
                                 @elseif(($cutting->status ?? 'pending') == 'Di Setujui')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2.5 py-1 text-xs font-medium text-lime-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2 py-0.5 text-[11px] font-medium text-lime-700"><i
                                             class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                 @elseif(($cutting->status ?? 'pending') == 'Di Tolak')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700"><i
                                             class="ri-close-circle-fill"></i>Ditolak</span>
                                 @else
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[11px] font-medium text-yellow-700"><i
                                             class="ri-time-fill"></i>Pending</span>
                                 @endif
                             </div>
                             <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-slate-600">
-                                <div class="p-2 rounded-lg bg-slate-50">
+                                <div class="rounded-lg bg-slate-50 p-1.5">
                                     <span class="block text-slate-400">Tanggal Cutting</span>
                                     <span
                                         class="font-medium text-slate-700">{{ \Carbon\Carbon::parse($cutting->date_cut)->format('d M Y') }}</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-slate-50">
+                                <div class="rounded-lg bg-slate-50 p-1.5">
                                     <span class="block text-slate-400">Tipe Manual</span>
                                     <span
                                         class="font-medium text-slate-700">{{ $cutting->manual_type_cut ?: '-' }}</span>
@@ -101,22 +101,22 @@
                                 <span class="block text-xs text-slate-400">Keterangan</span>
                                 <p class="mt-1 text-xs leading-5 text-slate-600">{{ $cutting->desc }}</p>
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-2 gap-1.5">
                                 <button onclick="viewDetail({{ $cutting->id }})"
-                                    class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg min-h-10 bg-sky-50 text-sky-700 hover:bg-sky-100">
+                                    class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-sky-50 px-2 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-100">
                                     <i class="ri-eye-line"></i>Lihat
                                 </button>
                                 @if (($cutting->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                     <button onclick="sendCutting({{ $cutting->id }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-green-50 px-2 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-100">
                                         <i class="ri-send-plane-fill"></i>Ajukan
                                     </button>
                                     <button onclick="editData({{ $cutting->id }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-yellow-700 rounded-lg min-h-10 bg-yellow-50 hover:bg-yellow-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-1.5 text-xs font-semibold text-yellow-700 hover:bg-yellow-100">
                                         <i class="ri-edit-line"></i>Edit
                                     </button>
                                     <button onclick="deleteCutting({{ $cutting->id }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 rounded-lg min-h-10 bg-red-50 hover:bg-red-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">
                                         <i class="ri-delete-bin-line"></i>Hapus
                                     </button>
                                 @endif
@@ -136,43 +136,43 @@
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50">
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Fullname
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">No</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Fullname
                                 </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Tanggal
                                     Cutting</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Type
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Type
                                     Cutting</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Type
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Type
                                     Manual</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Status
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Status
                                 </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-slate-500">Aksi
+                                <th class="px-3 py-2 text-xs font-semibold text-center text-slate-500">Aksi
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @forelse($cuttings as $index => $cutting)
                                 <tr class="transition-colors hover:bg-slate-50">
-                                    <td class="px-4 py-4 text-sm text-slate-700">{{ $cuttings->firstItem() + $index }}
+                                    <td class="px-3 py-2 text-sm text-slate-700">{{ $cuttings->firstItem() + $index }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $cutting->user->nama_lengkap ?? '-' }}</td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($cutting->date_cut)->format('d M Y') }}</td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $cutting->type_cut }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $cutting->manual_type_cut ?: '-' }}</td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         @if (($cutting->status ?? 'pending') == 'Di Ajukan')
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full"><i
                                                     class="ri-checkbox-circle-fill"></i>Di Ajukan</span>
                                         @elseif(($cutting->status ?? 'pending') == 'Di Setujui')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2.5 py-1 text-xs font-medium text-lime-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2 py-0.5 text-[11px] font-medium text-lime-700"><i
                                             class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                 @elseif(($cutting->status ?? 'pending') == 'Di Tolak')
                                             <span
@@ -184,7 +184,7 @@
                                                     class="ri-time-fill"></i>Pending</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         <div class="flex items-center justify-center gap-2">
                                             <button onclick="viewDetail({{ $cutting->id }})"
                                                 class="flex items-center justify-center text-blue-600 bg-blue-100 rounded-lg w-9 h-9 hover:bg-blue-200"
@@ -217,7 +217,7 @@
                     </table>
                 </div>
                 @if ($cuttings->total() > 0)
-                    <div class="px-4 py-4 border-t border-slate-200">
+                    <div class="px-3 py-2 border-t border-slate-200">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <form action="{{ route('cutting.history') }}" method="GET"
                                 class="inline-flex items-center gap-2">
@@ -552,7 +552,7 @@
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         const errors = Object.values(xhr.responseJSON.errors).flat();
                         $('#formErrors').html(
-                            `<div class="px-4 py-3 text-sm border rounded-lg shadow-sm border-rose-200 bg-rose-50 text-rose-700"><div class="flex items-start gap-2"><i class="ri-error-warning-line mt-0.5"></i><ul class="pl-5 list-disc">${errors.map(err => `<li>${err}</li>`).join('')}</ul></div></div>`
+                            `<div class="px-3 py-2 text-sm border rounded-lg shadow-sm border-rose-200 bg-rose-50 text-rose-700"><div class="flex items-start gap-2"><i class="ri-error-warning-line mt-0.5"></i><ul class="pl-5 list-disc">${errors.map(err => `<li>${err}</li>`).join('')}</ul></div></div>`
                         );
                     } else showAlert('error', xhr.responseJSON?.message ||
                         'Terjadi kesalahan saat memperbarui data cutting. Silakan coba lagi.');

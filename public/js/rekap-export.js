@@ -475,26 +475,31 @@
     }
 
     // Global Export Methods
+    withStatus(rows, source, enabled) {
+        if (!enabled) return rows;
+        return rows.map((row, i) => ({ ...row, status: (source?.[i]?.status || '-').toUpperCase() }));
+    }
+
     exportGlobalToExcel(data) {
         const wb = XLSX.utils.book_new();
+        const withStatus = !!data.show_status;
 
-        // Use sized sheets so Excel column widths/row heights resemble PDF output
-        const sheet1 = this.prepareSheetFromJson(this.formatOvertimes(data.overtimes, true));
+        const sheet1 = this.prepareSheetFromJson(this.withStatus(this.formatOvertimes(data.overtimes, true), data.overtimes, withStatus));
         XLSX.utils.book_append_sheet(wb, sheet1, "Rekap Lembur");
 
-        const sheet2 = this.prepareSheetFromJson(this.formatPersonOuts(data.person_outs, true));
+        const sheet2 = this.prepareSheetFromJson(this.withStatus(this.formatPersonOuts(data.person_outs, true), data.person_outs, withStatus));
         XLSX.utils.book_append_sheet(wb, sheet2, "Rekap Personil Keluar");
 
-        const sheet3 = this.prepareSheetFromJson(this.formatPersonIns(data.person_ins, true));
+        const sheet3 = this.prepareSheetFromJson(this.withStatus(this.formatPersonIns(data.person_ins, true), data.person_ins, withStatus));
         XLSX.utils.book_append_sheet(wb, sheet3, "Rekap Personil Masuk");
 
-        const sheet4 = this.prepareSheetFromJson(this.formatCuttings(data.cuttings, true));
+        const sheet4 = this.prepareSheetFromJson(this.withStatus(this.formatCuttings(data.cuttings, true), data.cuttings, withStatus));
         XLSX.utils.book_append_sheet(wb, sheet4, "Rekap Cutting");
 
-        const sheet5 = this.prepareSheetFromJson(this.formatFinishedTrainings(data.finished_trainings, true));
+        const sheet5 = this.prepareSheetFromJson(this.withStatus(this.formatFinishedTrainings(data.finished_trainings, true), data.finished_trainings, withStatus));
         XLSX.utils.book_append_sheet(wb, sheet5, "Rekap Lepas Training");
 
-        const sheet6 = this.prepareSheetFromJson(this.formatKeteranganLanjutan(data.keterangan_lanjutan, true));
+        const sheet6 = this.prepareSheetFromJson(this.withStatus(this.formatKeteranganLanjutan(data.keterangan_lanjutan, true), data.keterangan_lanjutan, withStatus));
         XLSX.utils.book_append_sheet(wb, sheet6, "Rekap Keterangan Lanjutan");
 
         XLSX.writeFile(
@@ -506,62 +511,59 @@
     exportGlobalToPDF(data) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF("l", "mm", "a4");
+        const withStatus = !!data.show_status;
 
         let y = 14;
         doc.setFontSize(14);
         doc.text(`Data Rekap - ${data.period}`, 14, y);
         y += 6;
         doc.setFontSize(10);
-        doc.text(`Data Keseluruhan Semua Mitra`, 14, y);
+        doc.text(`Data Keseluruhan ${data.client?.name || 'Semua Mitra'}`, 14, y);
         y += 6;
 
         y = this.addSectionTable(
             doc,
             y,
             "Rekap Lembur",
-            this.getOvertimeHeaders(),
-            this.toBody(this.formatOvertimes(data.overtimes, true)),
+            withStatus ? [...this.getOvertimeHeaders(), 'Status'] : this.getOvertimeHeaders(),
+            this.toBody(this.withStatus(this.formatOvertimes(data.overtimes, true), data.overtimes, withStatus)),
             2,
         );
         y = this.addSectionTable(
             doc,
             y,
             "Rekap Personil Keluar",
-            this.getPersonOutHeaders(),
-            this.toBody(this.formatPersonOuts(data.person_outs, true)),
+            withStatus ? [...this.getPersonOutHeaders(), 'Status'] : this.getPersonOutHeaders(),
+            this.toBody(this.withStatus(this.formatPersonOuts(data.person_outs, true), data.person_outs, withStatus)),
             2,
         );
         y = this.addSectionTable(
             doc,
             y,
             "Rekap Personil Masuk",
-            this.getPersonInHeaders(),
-            this.toBody(this.formatPersonIns(data.person_ins, true)),
+            withStatus ? [...this.getPersonInHeaders(), 'Status'] : this.getPersonInHeaders(),
+            this.toBody(this.withStatus(this.formatPersonIns(data.person_ins, true), data.person_ins, withStatus)),
         );
         y = this.addSectionTable(
             doc,
             y,
             "Rekap Cutting",
-            this.getCuttingHeaders(),
-            this.toBody(this.formatCuttings(data.cuttings, true)),
+            withStatus ? [...this.getCuttingHeaders(), 'Status'] : this.getCuttingHeaders(),
+            this.toBody(this.withStatus(this.formatCuttings(data.cuttings, true), data.cuttings, withStatus)),
         );
         y = this.addSectionTable(
             doc,
             y,
             "Rekap Lepas Training",
-            this.getFinishedTrainingHeaders(),
-            this.toBody(
-                this.formatFinishedTrainings(data.finished_trainings, true),
-            ),
+            withStatus ? [...this.getFinishedTrainingHeaders(), 'Status'] : this.getFinishedTrainingHeaders(),
+            this.toBody(this.withStatus(this.formatFinishedTrainings(data.finished_trainings, true), data.finished_trainings, withStatus)),
         );
         y = this.addSectionTable(
             doc,
             y,
             "Rekap Keterangan Lanjutan",
-            this.getKeteranganLanjutanHeaders(),
-            this.toBody(
-                this.formatKeteranganLanjutan(data.keterangan_lanjutan, true),
-            ),
+            withStatus ? [...this.getKeteranganLanjutanHeaders(), 'Status'] : this.getKeteranganLanjutanHeaders(),
+            this.toBody(this.withStatus(this.formatKeteranganLanjutan(data.keterangan_lanjutan, true), data.keterangan_lanjutan, withStatus)),
             2,
         );
 

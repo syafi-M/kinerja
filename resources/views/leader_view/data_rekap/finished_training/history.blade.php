@@ -57,10 +57,10 @@
             <div id="alertBox" class="mb-4"></div>
 
             <div class="overflow-hidden bg-white border rounded-lg shadow-sm border-slate-200">
-                <div class="space-y-3 p-3 sm:hidden">
+                <div class="space-y-2 p-2 sm:hidden">
                     @forelse($finishedTrainings as $index => $item)
-                        <div class="p-4 bg-white border rounded-lg shadow-sm border-slate-200">
-                            <div class="mb-3 flex items-start justify-between gap-3">
+                        <div class="p-3 bg-white border rounded-lg shadow-sm border-slate-200">
+                            <div class="mb-2 flex items-start justify-between gap-2">
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-800">
                                         {{ $item->user->nama_lengkap ?? '-' }}</p>
@@ -69,29 +69,29 @@
                                 </div>
                                 @if (($item->status ?? 'pending') == 'Di Ajukan')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700"><i
                                             class="ri-checkbox-circle-fill"></i>Diajukan</span>
                                 @elseif(($item->status ?? 'pending') == 'Di Setujui')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2.5 py-1 text-xs font-medium text-lime-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2 py-0.5 text-[11px] font-medium text-lime-700"><i
                                             class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                 @elseif(($item->status ?? 'pending') == 'Di Tolak')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700"><i
                                             class="ri-close-circle-fill"></i>Ditolak</span>
                                 @else
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[11px] font-medium text-yellow-700"><i
                                             class="ri-time-fill"></i>Pending</span>
                                 @endif
                             </div>
-                            <div class="mb-4 grid grid-cols-2 gap-2 text-xs text-slate-600">
-                                <div class="p-2 rounded-lg bg-slate-50">
+                            <div class="mb-3 grid grid-cols-2 gap-1.5 text-xs text-slate-600">
+                                <div class="rounded-lg bg-slate-50 p-1.5">
                                     <span class="block text-slate-400">Tanggal Lepas Training</span>
                                     <span
                                         class="font-medium text-slate-700">{{ \Carbon\Carbon::parse($item->date_finish_train)->format('d M Y') }}</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-slate-50">
+                                <div class="rounded-lg bg-slate-50 p-1.5">
                                     <span class="block text-slate-400">Jumlah Masa Training</span>
                                     <span class="font-medium text-slate-700">{{ $item->masa_training_hari }}
                                         hari</span>
@@ -101,22 +101,22 @@
                                 <span class="block text-xs text-slate-400">Keterangan</span>
                                 <p class="mt-1 text-xs leading-5 text-slate-600">{{ $item->desc }}</p>
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-2 gap-1.5">
                                 <button onclick="viewDetail({{ $item->id }})"
-                                    class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg min-h-10 bg-sky-50 text-sky-700 hover:bg-sky-100">
+                                    class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-sky-50 px-2 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-100">
                                     <i class="ri-eye-line"></i>Lihat
                                 </button>
                                 @if (($item->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                     <button onclick="sendFinishedTraining({{ $item->id }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-green-700 rounded-lg min-h-10 bg-green-50 hover:bg-green-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-green-50 px-2 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-100">
                                         <i class="ri-send-plane-fill"></i>Ajukan
                                     </button>
                                     <button onclick="editData({{ $item->id }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-yellow-700 rounded-lg min-h-10 bg-yellow-50 hover:bg-yellow-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-1.5 text-xs font-semibold text-yellow-700 hover:bg-yellow-100">
                                         <i class="ri-edit-line"></i>Edit
                                     </button>
                                     <button onclick="deleteFinishedTraining({{ $item->id }})"
-                                        class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 rounded-lg min-h-10 bg-red-50 hover:bg-red-100">
+                                        class="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100">
                                         <i class="ri-delete-bin-line"></i>Hapus
                                     </button>
                                 @endif
@@ -136,42 +136,42 @@
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50">
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">No</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Nama
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">No</th>
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Nama
                                     Lengkap</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Tanggal
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Tanggal
                                     Masuk</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Jumlah
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Jumlah
                                     Masa Training</th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Keterangan
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Keterangan
                                 </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-left text-slate-500">Status
+                                <th class="px-3 py-2 text-xs font-semibold text-left text-slate-500">Status
                                 </th>
-                                <th class="px-4 py-3 text-xs font-semibold text-center text-slate-500">Aksi
+                                <th class="px-3 py-2 text-xs font-semibold text-center text-slate-500">Aksi
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @forelse($finishedTrainings as $index => $item)
                                 <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-4 py-4 text-sm text-slate-700">
+                                    <td class="px-3 py-2 text-sm text-slate-700">
                                         {{ $finishedTrainings->firstItem() + $index }}
                                     </td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $item->user->nama_lengkap ?? '-' }}</td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($item->date_in)->format('d M Y') }}</td>
-                                    <td class="px-4 py-4 text-sm text-slate-700 whitespace-nowrap">
+                                    <td class="px-3 py-2 text-sm text-slate-700 whitespace-nowrap">
                                         {{ $item->masa_training_hari }} hari</td>
-                                    <td class="px-4 py-4 text-sm text-slate-700">{{ $item->desc }}</td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2 text-sm text-slate-700">{{ $item->desc }}</td>
+                                    <td class="px-3 py-2">
                                         @if (($item->status ?? 'pending') == 'Di Ajukan')
                                             <span
                                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"><i
                                                     class="ri-checkbox-circle-fill"></i>Di Ajukan</span>
                                         @elseif(($item->status ?? 'pending') == 'Di Setujui')
                                     <span
-                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2.5 py-1 text-xs font-medium text-lime-700"><i
+                                        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-lime-100 px-2 py-0.5 text-[11px] font-medium text-lime-700"><i
                                             class="ri-checkbox-circle-fill"></i>Di Setujui</span>
                                 @elseif(($item->status ?? 'pending') == 'Di Tolak')
                                             <span
@@ -183,20 +183,20 @@
                                                     class="ri-time-fill"></i>Pending</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-3 py-2">
                                         <div class="flex items-center justify-center gap-2">
                                             <button onclick="viewDetail({{ $item->id }})"
-                                                class="w-9 h-9 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center"
+                                                class="h-8 w-8 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center"
                                                 title="Lihat"><i class="ri-eye-line"></i></button>
                                             @if (($item->status ?? 'pending') === 'pending' && !($isSubmissionLocked ?? false))
                                                 <button onclick="editData({{ $item->id }})"
-                                                    class="w-9 h-9 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-600 flex items-center justify-center"
+                                                    class="h-8 w-8 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-600 flex items-center justify-center"
                                                     title="Edit"><i class="ri-edit-line"></i></button>
                                                 <button onclick="deleteFinishedTraining({{ $item->id }})"
-                                                    class="w-9 h-9 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center"
+                                                    class="h-8 w-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center"
                                                     title="Hapus"><i class="ri-delete-bin-line"></i></button>
                                                 <button onclick="sendFinishedTraining({{ $item->id }})"
-                                                    class="w-9 h-9 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center"
+                                                    class="h-8 w-8 rounded-lg bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center"
                                                     title="Ajukan"><i class="ri-send-plane-fill"></i></button>
                                             @endif
                                         </div>
