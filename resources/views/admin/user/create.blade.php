@@ -105,7 +105,7 @@
                                 value="{{ old('name') }}"
                                 required
                                 autocomplete="name"
-                                placeholder="Username (terakhir: {{ optional($lastUser)->name ?? '-' }})"
+                                placeholder="Username (available: {{ $lastUser ?? '-' }})"
                                 class="input input-bordered w-full border-gray-200 bg-white focus:outline-none"
                                 :class="density === 'ultra_compact' ? 'input-sm h-9 text-xs' : 'h-11 text-sm'"
                             />

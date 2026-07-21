@@ -598,6 +598,7 @@
             $('#formErrors').html('');
             const id = $('#person_in_id').val();
             const payload = {
+                _method: 'PUT',
                 fullname: $('#fullname').val(),
                 jabatan_id: $('#jabatan_id').val(),
                 date_in: $('#date_in').val(),
@@ -606,7 +607,7 @@
             };
             $.ajax({
                     url: "{{ route('spvw.person-in.update', ':id') }}".replace(':id', id),
-                    method: 'PUT',
+                    method: 'POST',
                     data: payload
                 })
                 .done(() => {

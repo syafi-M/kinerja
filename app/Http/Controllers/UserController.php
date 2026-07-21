@@ -12,6 +12,7 @@ use App\Models\TempUser;
 use App\Models\Jabatan;
 use App\Notifications\OtpNotif;
 use App\Notifications\RegSukses;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,10 @@ use SadiqSalau\LaravelOtp\Facades\Otp;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private UserService $userService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -114,8 +119,7 @@ class UserController extends Controller
         $data = Kerjasama::all();
         $jabatan = Jabatan::all();
 
-        $excludedUserIDs = [9, 7, 55, 261, 3, 109, 292, 11, 58, 146, 8, 1, 6, 60];
-        $lastUser = User::whereNotIn('id', $excludedUserIDs)->latest()->where('name', 'REGEXP', '[0-9]')->first();
+        $lastUser = $this->userService->generateSacUsername(); 
 
         return view('admin.user.create', compact('data', 'dev', 'lastUser', 'jabatan'));
     }
@@ -282,8 +286,7 @@ class UserController extends Controller
     public function addKaryawanStore(Request $request)
     {
         try {
-            $nextNumber = Cache::increment('sac_username_counter', 1, 100);
-            $newUsername = 'SAC' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            $newUsername = $this->userService->generateSacUsername();
         } catch (\Throwable $th) {
             Log::error('Username generation failed. Ensure your cache driver supports atomic operations (e.g., Redis). ' . $th->getMessage());
             toastr()->error('System is busy, please try again in a moment.', [], 'Error');

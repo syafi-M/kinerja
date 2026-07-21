@@ -259,6 +259,7 @@
             mitra_kerja: (item.user?.kerjasama?.client?.name || "-").toUpperCase(),
             posisi: (item.user?.jabatan?.name_jabatan || "-").toUpperCase(),
             jumlah_mk: item.total_mk || "0",
+            tanggal_keluar: this.fmt(item.out_date) || "-"
         }));
         if (!rows.length && showEmpty)
             return [
@@ -268,6 +269,7 @@
                     mitra_kerja: "-",
                     posisi: "-",
                     jumlah_mk: "-",
+                    tanggal_keluar: "-",
                 },
             ];
         return rows;
@@ -407,7 +409,7 @@
         ];
     }
     getPersonOutHeaders() {
-        return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Jumlah MK"];
+        return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Jumlah MK", "Tanggal Keluar"];
     }
     getPersonInHeaders() {
         return [
@@ -563,8 +565,13 @@
             2,
         );
 
-        doc.save(
-            `Data_Rekap_${data.period}_${new Date().toISOString().split("T")[0]}.pdf`,
-        );
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        window.open(pdfUrl, '_blank');
+
+        // doc.save(
+        //     `Data_Rekap_${data.period}_${new Date().toISOString().split("T")[0]}.pdf`,
+        // );
     }
 }

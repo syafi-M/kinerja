@@ -42,6 +42,7 @@ class PersonOutController extends Controller
     public function history(Request $request)
     {
         $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
+        $targetJabatanIds = $this->allowedTargetJabatanIds();
 
         $personOut = PersonOut::select(['id', 'user_id', 'total_mk', 'reason', 'reason_manual', 'out_date', 'img', 'status', 'created_by_user_id', 'created_at'])
             ->with([
@@ -51,8 +52,9 @@ class PersonOutController extends Controller
                 'inputBy' => function ($q) {
                     $q->select(['id', 'name', 'nama_lengkap']);
                 }
-            ])->whereHas('user', function ($q) {
+            ])->whereHas('user', function ($q) use ($targetJabatanIds) {
                 $q->withTrashed()
+                    ->when(!empty($targetJabatanIds), fn($userQuery) => $userQuery->whereIn('jabatan_id', $targetJabatanIds))
                     ->when($this->selectedClientId() > 0, fn($userQuery) => $userQuery->whereHas('kerjasama', fn($k) => $k->where('client_id', $this->selectedClientId())));
             })
             ->when($request->status, function ($q) use ($request) {

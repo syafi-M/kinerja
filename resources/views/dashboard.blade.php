@@ -65,13 +65,13 @@
         @endif
 
         @include('dashboard.partials.prayer-modal')
-        <div class="mx-5 rounded-md shadow-md sm:mx-10 bg-slate-500">
+        <div class="sm:mx-10">
             <main>
                 @auth
                     @php
                         $jabatan = Auth::user()->divisi->jabatan->code_jabatan;
                     @endphp
-                    @if (in_array($jabatan, ['MITRA', 'LEADER', 'CO-CS']))
+                    @if (in_array($jabatan, ['MITRA', 'LEADER', 'CO-CS', 'CO-SCR', 'DIREKSI', 'SPV-W']))
                         <div class="flex justify-start px-4 mr-10 bg-amber-500 w-fit"
                             style="border-radius: 5px 0px 24px 0px;">
                             <span class="my-1 text-xs font-semibold text-center text-white sm:pr-5">
@@ -85,7 +85,7 @@
                     <div class="py-5">
                         <div class="flex items-end justify-end mr-3">
                             <span style="max-width: 250px; background-color: #0C642F"
-                                class="flex justify-center gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
+                                class="flex justify-start gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
                                 <span id="jam"></span>
                             </span>
                         </div>
@@ -262,13 +262,17 @@
                         </div>
 
                         {{-- Button Pengajuan Kontrak --}}
+                        @php
+                            $kontrakSelesai = $kontrak?->tgl_selesai_kontrak
+                                ? \Carbon\Carbon::parse($kontrak->tgl_selesai_kontrak)->isPast()
+                                : false;
+                            $kontrakBerjalan = $kontrak && ($kontrak->isPending() || $kontrak->isActive() || $kontrak->isProses());
+                            $bisaAjukanKontrak = ! $kontrak || $kontrakSelesai || ! $kontrakBerjalan;
+                        @endphp
                         <div
-                            class="{{ !optional($kontrak)->tgl_mulai_kontrak ||
-                            \Carbon\Carbon::parse(optional($kontrak)->tgl_selesai_kontrak)->isPast()
-                                ? 'flex'
-                                : 'hidden' }} flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                            <a href="{{ $kontrak?->isPending() || $kontrak?->isActive() ? 'javascript:void(0)' : route('form-kontrak-request') }}"
-                                class="{{ $kontrak?->isPending() || $kontrak?->isActive() ? 'bg-gray-400/40 text-gray-600 cursor-not-allowed' : 'bg-amber-400 hover:bg-amber-500 transition-all ease-linear .2s' }} w-full h-11 rounded-md flex justify-center items-center gap-2 ">
+                            class="{{ $bisaAjukanKontrak ? 'flex' : 'hidden' }} flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
+                            <a href="{{ $bisaAjukanKontrak ? route('form-kontrak-request') : 'javascript:void(0)' }}"
+                                class="{{ $bisaAjukanKontrak ? 'bg-amber-400 hover:bg-amber-500 transition-all ease-linear .2s' : 'bg-gray-400/40 text-gray-600 cursor-not-allowed' }} w-full h-11 rounded-md flex justify-center items-center gap-2 ">
                                 <i class="text-xl ri-file-list-3-line"></i>
                                 <span class="text-sm font-bold uppercase">Pengajuan Kontrak</span>
                             </a>
@@ -496,8 +500,8 @@
     </div>
 
     <div
-        class="{{ $kontrak && $kontrak->send_to_atasan == 0 && $kontrak->ttd && $kontrak->ttd_atasan ? 'hidden' : '' }} mx-5 mt-5 sm:mx-10">
-        @if ($kontrak?->ttd == null && $kontrak?->tgl_selesai_kontrak)
+        class="{{ $kontrak && $kontrak->isPending() ? 'hidden' : '' }} mx-5 mt-5 sm:mx-10">
+        @if ($kontrak && $kontrak->isActive())
             {{-- APPROVED --}}
             <div
                 class="mx-auto flex max-w-3xl flex-col-reverse gap-4 rounded-xl border border-white/70 bg-gradient-to-br from-white to-green-50 p-4 shadow-lg shadow-slate-700/10 sm:p-5 md:flex-row md:items-center md:justify-between">
@@ -559,6 +563,30 @@
                 <div
                     class="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-blue-500 text-white shadow-lg shadow-blue-700/20 sm:h-20 sm:w-20 md:mx-0">
                     <i class="ri-information-line text-4xl sm:text-5xl"></i>
+                </div>
+            </div>
+        @elseif ($kontrak && $kontrak->isProses())
+            {{-- PROSES --}}
+            <div
+                class="mx-auto flex max-w-3xl flex-col-reverse gap-4 rounded-xl border border-white/70 bg-gradient-to-br from-white to-blue-50 p-4 shadow-lg shadow-slate-700/10 sm:p-5 md:flex-row md:items-center md:justify-between">
+                <div class="w-full text-center md:text-left">
+                    <span
+                        class="mb-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-700">
+                        Proses
+                    </span>
+                    <h3 class="mb-2 text-lg font-black text-amber-700 sm:text-xl">
+                        Status Pengajuan Saat Ini
+                    </h3>
+
+                    <p class="text-sm leading-relaxed text-slate-700 sm:text-base">
+                        Data anda telah terkirim ke HRD perusahaan,
+                        dan sedang di proses oleh HRD, harap Ditunggu.
+                    </p>
+                </div>
+
+                <div
+                    class="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-amber-500 text-white shadow-lg shadow-amber-700/20 sm:h-20 sm:w-20 md:mx-0">
+                    <i class="ri-time-line text-4xl sm:text-5xl"></i>
                 </div>
             </div>
         @endif

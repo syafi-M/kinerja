@@ -17,7 +17,7 @@
             <a href="{{ route('profile.index') }}" class="flex items-center gap-2"
                 style="width: {{ $user->role_id == 2 ? '70%' : '85%' }};">
                 <div class="relative flex-shrink-0" style="width: 40px; height: 40px;">
-                    <img class="block object-cover object-center rounded-full shadow-md bg-slate-300 shadow-slate-600 hover:shadow-none transition-all duration-200 ease-in-out"
+                    <img class="block object-cover object-center rounded-full p-[2px] shadow-md bg-slate-300 shadow-slate-600 hover:shadow-none transition-all duration-200 ease-in-out"
                         src="{{ $imgSrc }}" alt="profile-logo" style="width: 40px; height: 40px;" />
                     @if ($hasSignedContract)
                         <span
@@ -37,7 +37,7 @@
 
         @auth
             {{-- Mobile Slip Gaji Button --}}
-            <div class="flex items-center mx-5 md:hidden" style="width: 28%;">
+            <div class="flex items-center ml-5 md:hidden" style="width: 28%;">
                 <form action="{{ route('slip-gaji.index') }}" method="get">
                     <input type="hidden" name="bulan" value="{{ now()->subMonth()->format('Y-m') }}" />
                     <button class="overflow-hidden btn btn-sm btn-warning">

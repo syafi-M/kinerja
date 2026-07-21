@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PersonInController extends Controller
 {
@@ -201,6 +202,17 @@ class PersonInController extends Controller
             }
 
             return $this->redirectBackWithToast('success', 'Data personil masuk berhasil diperbarui!');
+        } catch (ValidationException $th) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Data personil masuk tidak valid.',
+                    'data' => null,
+                    'error' => $th->getMessage(),
+                    'errors' => $th->errors(),
+                ], 422);
+            }
+
+            return $this->redirectBackWithInputToast('error', 'Data personil masuk tidak valid.');
         } catch (\Throwable $th) {
             report($th);
             if ($request->expectsJson()) {
