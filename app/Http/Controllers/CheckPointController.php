@@ -21,22 +21,17 @@ class CheckPointController extends Controller
     {
         $type = $request->get('type');
 
-        $tanggalAwal = now()->subMonth()->startOfMonth();
-        $tanggalAkhir = now()->endOfWeek();
+        $tanggalAwal = now()->subMonths(2)->startOfMonth();
+        $tanggalAkhir = now();
 
         // Base query with casts so pekerjaan_cp_id becomes array automatically
         $checkPointQuery = CheckPoint::query()
             ->where('user_id', Auth::id())
+            ->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir])
             ->latest();
 
         if ($type) {
-            if ($type === 'rencana') {
-                $checkPointQuery->where('type_check', $type)
-                    ->whereBetween('created_at', [now()->subWeek(), $tanggalAkhir]);
-            } else {
-                $checkPointQuery->where('type_check', $type)
-                    ->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir]);
-            }
+            $checkPointQuery->where('type_check', $type);
         }
 
         // Fetch checkpoints

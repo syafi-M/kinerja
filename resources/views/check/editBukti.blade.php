@@ -1,18 +1,43 @@
 <x-app-layout>
     <x-main-div>
-        <div class="px-5 py-10">
-            <div>
-                <p class="text-center text-lg sm:text-2xl font-bold py-5 uppercase">{{ 'Kirim Bukti Pekerjaan' }}</p>
-            </div>
-            <form method="POST" action="{{ route('uploadBukti-checkpoint-user') }}" class=" my-10" id="form-cp"
-                enctype="multipart/form-data">
-                @csrf
-                <div class="bg-slate-100 px-5 py-5 rounded shadow">
-                    <div class="flex flex-col justify-between">
-                        <label class="font-semibold">Nama: </label>
-                        <input type="text" id="user_id" name="user_id" value="{{ Auth::user()->id }}" hidden>
-                        <input type="text" value="{{ Auth::user()->nama_lengkap }}" disabled
-                            class="input input-bordered">
+        <div class="mx-auto w-full max-w-5xl px-3 py-5 sm:px-5 lg:px-6">
+            <div class="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-900/5">
+                <div class="border-b border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 py-4 sm:px-6">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-start gap-3">
+                            <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400 text-white shadow-sm ring-1 ring-emerald-300">
+                                <i class="ri-camera-line text-2xl"></i>
+                            </span>
+                            <div class="min-w-0">
+                                <div class="mb-1 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                                    <i class="ri-image-add-line"></i>
+                                    Upload Bukti
+                                </div>
+                                <h1 class="text-xl font-bold leading-tight text-slate-900 sm:text-2xl">Kirim Bukti Pekerjaan</h1>
+                                <p class="mt-1 text-sm leading-5 text-slate-600">Upload foto untuk setiap checkpoint yang dikerjakan.</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('dashboard.index') }}" class="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                            <i class="ri-arrow-left-line"></i>
+                            Kembali
+                        </a>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('uploadBukti-checkpoint-user') }}" id="form-cp" enctype="multipart/form-data" class="p-4 sm:p-6">
+                    @csrf
+                    <div class="mb-4 grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <p class="text-xs font-medium text-slate-500">Nama</p>
+                            <p class="mt-1 truncate text-sm font-semibold text-slate-900">{{ Auth::user()->nama_lengkap }}</p>
+                            <input type="hidden" id="user_id" name="user_id" value="{{ Auth::id() }}">
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <p class="text-xs font-medium text-slate-500">Bermitra Dengan</p>
+                            <p class="mt-1 truncate text-sm font-semibold text-slate-900">{{ Auth::user()->kerjasama->client->name }}</p>
+                            <input type="hidden" name="divisi_id" id="divisi_id" value="{{ Auth::user()->divisi->id }}">
+                        </div>
+                    </div>
+                    <div class="space-y-3">
                     </div>
                     <div class="flex flex-col  justify-between mt-3">
                         <label class="font-semibold">Bermitra Dengan: </label>
