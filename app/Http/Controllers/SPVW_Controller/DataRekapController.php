@@ -22,9 +22,12 @@ class DataRekapController extends Controller
             ? (int) request('client_id', 0)
             : (int) session($sessionKey, 0);
 
+        $authClientKabupaten = auth()->user()->kerjasama?->client?->kabupaten;
+
         $clients = Client::query()
             ->select(['id', 'name'])
             ->where('id', '!=', 1)
+            ->when($authClientKabupaten, fn ($query) => $query->where('kabupaten', 'like', "%{$authClientKabupaten}%"))
             ->when(in_array((int) (auth()->user()->jabatan_id ?? 0), [35, 20], true), function ($query) {
                 $allowedJabatanIds = ((int) (auth()->user()->jabatan_id ?? 0) === 35)
                     ? [8, 11, 16, 17, 18]

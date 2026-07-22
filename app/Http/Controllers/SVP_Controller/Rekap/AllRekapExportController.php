@@ -9,6 +9,7 @@ use App\Models\KeteranganLanjutan;
 use App\Models\PerformanceCuts;
 use App\Models\PersonIn;
 use App\Models\PersonOut;
+use App\Models\User;
 use Carbon\Carbon;
 use App\Http\Controllers\SVP_Controller\Rekap\Concerns\TransformOvertimes;
 use Illuminate\Http\Request;
@@ -208,8 +209,23 @@ class AllRekapExportController extends RekapController
             $endDate = $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
-            $clients = Kerjasama::query()
-                ->whereNotNull('client_id')
+            $clientsQuery = Kerjasama::query()
+                ->whereNotNull('client_id');
+
+            if ($request->routeIs('spvw.*')) {
+                $authClientKabupaten = auth()->user()->kerjasama?->client?->kabupaten;
+                $allowedJabatanIds = $this->allowedSeeData();
+
+                $clientsQuery
+                    ->where('client_id', '!=', 1)
+                    ->when($authClientKabupaten, fn ($query) => $query->whereHas('client', fn ($client) => $client->where('kabupaten', 'like', "%{$authClientKabupaten}%")))
+                    ->when(!empty($allowedJabatanIds), fn ($query) => $query->whereIn('id', User::query()
+                        ->select('kerjasama_id')
+                        ->whereIn('jabatan_id', $allowedJabatanIds)
+                        ->whereNotNull('kerjasama_id')));
+            }
+
+            $clients = $clientsQuery
                 ->distinct()
                 ->pluck('client_id');
 
