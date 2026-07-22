@@ -23,11 +23,16 @@ class DataRekapController extends Controller
             : (int) session($sessionKey, 0);
 
         $authClientKabupaten = auth()->user()->kerjasama?->client?->kabupaten;
+        $allowedKabupaten = $this->nearbyKabupatenTerms($authClientKabupaten);
 
         $clients = Client::query()
             ->select(['id', 'name'])
             ->where('id', '!=', 1)
-            ->when($authClientKabupaten, fn ($query) => $query->where('kabupaten', 'like', "%{$authClientKabupaten}%"))
+            ->when($allowedKabupaten, fn ($query) => $query->where(function ($q) use ($allowedKabupaten) {
+                foreach ($allowedKabupaten as $kabupaten) {
+                    $q->orWhere('kabupaten', 'like', "%{$kabupaten}%");
+                }
+            }))
             ->when(in_array((int) (auth()->user()->jabatan_id ?? 0), [35, 20], true), function ($query) {
                 $allowedJabatanIds = ((int) (auth()->user()->jabatan_id ?? 0) === 35)
                     ? [8, 11, 16, 17, 18]
@@ -72,5 +77,20 @@ class DataRekapController extends Controller
             'isAfterDueDate' => $isAfterDueDate,
             'isSubmissionLocked' => $isAfterDueDate,
         ]);
+    }
+
+    private function nearbyKabupatenTerms(?string $kabupaten): array
+    {
+        $kabupaten = strtolower((string) $kabupaten);
+
+        foreach (config('client_area', []) as $terms) {
+            foreach ($terms as $term) {
+                if (str_contains($kabupaten, $term)) {
+                    return $terms;
+                }
+            }
+        }
+
+        return $kabupaten ? [$kabupaten] : [];
     }
 }

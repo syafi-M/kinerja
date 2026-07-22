@@ -214,11 +214,16 @@ class AllRekapExportController extends RekapController
 
             if ($request->routeIs('spvw.*')) {
                 $authClientKabupaten = auth()->user()->kerjasama?->client?->kabupaten;
+                $allowedKabupaten = $this->nearbyKabupatenTerms($authClientKabupaten);
                 $allowedJabatanIds = $this->allowedSeeData();
 
                 $clientsQuery
                     ->where('client_id', '!=', 1)
-                    ->when($authClientKabupaten, fn ($query) => $query->whereHas('client', fn ($client) => $client->where('kabupaten', 'like', "%{$authClientKabupaten}%")))
+                    ->when($allowedKabupaten, fn ($query) => $query->whereHas('client', fn ($client) => $client->where(function ($q) use ($allowedKabupaten) {
+                        foreach ($allowedKabupaten as $kabupaten) {
+                            $q->orWhere('kabupaten', 'like', "%{$kabupaten}%");
+                        }
+                    })))
                     ->when(!empty($allowedJabatanIds), fn ($query) => $query->whereIn('id', User::query()
                         ->select('kerjasama_id')
                         ->whereIn('jabatan_id', $allowedJabatanIds)
@@ -413,5 +418,20 @@ class AllRekapExportController extends RekapController
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    private function nearbyKabupatenTerms(?string $kabupaten): array
+    {
+        $kabupaten = strtolower((string) $kabupaten);
+
+        foreach (config('client_area', []) as $terms) {
+            foreach ($terms as $term) {
+                if (str_contains($kabupaten, $term)) {
+                    return $terms;
+                }
+            }
+        }
+
+        return $kabupaten ? [$kabupaten] : [];
     }
 }
