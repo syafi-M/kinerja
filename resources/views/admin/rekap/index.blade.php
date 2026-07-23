@@ -387,36 +387,48 @@
         </div>
 
         <!-- Global Export Section -->
-        <div class="my-6">
-            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div class="my-6 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl">
+            <div class="p-5 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 sm:p-6">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h3 class="mb-1 text-lg font-semibold text-gray-900">Export Data Keseluruhan</h3>
-                        <p class="text-sm text-gray-600">Export seluruh data rekap bulanan dari semua mitra dalam
-                            format Excel atau PDF</p>
-                    </div>
-                    <div class="flex flex-wrap gap-3">
-                        <div class="flex flex-col justify-center gap-1 items-center">
-                            <label for="bulanRekap" class="label label-text pb-0">Bulan tgl(26-25)</label>
-                            <input id="bulanRekap" type="month" name="bulanRekap" value="{{ \Carbon\Carbon::now()->format('Y-m') }}" onchange="bulanRekap = this.value" class="input input-sm input-bordered"/>
+                    <div class="flex items-start gap-4">
+                        <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 bg-white/15 rounded-xl ring-1 ring-white/25">
+                            <i class="text-2xl text-white ri-file-download-line"></i>
                         </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Export Semua Rekap</h3>
+                            <p class="mt-1 text-sm text-white/80">Semua mitra, periode 26-25, format Excel atau PDF.</p>
+                        </div>
+                    </div>
+                    <div class="px-3 py-1 text-xs font-semibold text-white rounded-full bg-white/15 ring-1 ring-white/20 w-max">
+                        {{ $client->total() }} Mitra
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 sm:p-6">
+                <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                    <div>
+                        <label for="bulanRekap" class="block mb-2 text-sm font-semibold text-gray-700">Periode Rekap</label>
+                        <div class="relative max-w-xs">
+                            <i class="absolute text-lg text-gray-400 -translate-y-1/2 pointer-events-none ri-calendar-line left-3 top-1/2"></i>
+                            <input id="bulanRekap" type="month" name="bulanRekap"
+                                value="{{ \Carbon\Carbon::now()->format('Y-m') }}"
+                                onchange="bulanRekap = this.value"
+                                class="w-full py-3 pl-10 pr-4 text-sm border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">Rentang otomatis: tanggal 26 bulan sebelumnya sampai 25 bulan dipilih.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 sm:flex">
                         <button onclick="exportGlobalToExcel()"
-                            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
-                            <span>Excel</span>
+                            class="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white transition shadow-sm rounded-xl bg-emerald-600 hover:bg-emerald-700">
+                            <i class="text-lg ri-file-excel-2-line"></i>
+                            Excel
                         </button>
                         <button onclick="exportGlobalToPDF()"
-                            class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                            <span>PDF</span>
+                            class="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white transition shadow-sm rounded-xl bg-red-600 hover:bg-red-700">
+                            <i class="text-lg ri-file-pdf-2-line"></i>
+                            PDF
                         </button>
                     </div>
                 </div>
