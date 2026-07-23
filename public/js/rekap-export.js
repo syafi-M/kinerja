@@ -259,7 +259,8 @@
             mitra_kerja: (item.user?.kerjasama?.client?.name || "-").toUpperCase(),
             posisi: (item.user?.jabatan?.name_jabatan || "-").toUpperCase(),
             jumlah_mk: item.total_mk || "0",
-            tanggal_keluar: this.fmt(item.out_date) || "-"
+            tanggal_keluar: this.fmt(item.out_date) || "-",
+            tanggal_dibuat: this.fmt(item.created_at) || "-"
         }));
         if (!rows.length && showEmpty)
             return [
@@ -270,6 +271,7 @@
                     posisi: "-",
                     jumlah_mk: "-",
                     tanggal_keluar: "-",
+                    tanggal_dibuat: "-",
                 },
             ];
         return rows;
@@ -409,7 +411,7 @@
         ];
     }
     getPersonOutHeaders() {
-        return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Jumlah MK", "Tanggal Keluar"];
+        return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Jumlah MK", "Tanggal Keluar", "Tanggal Dibuat"];
     }
     getPersonInHeaders() {
         return [
@@ -442,8 +444,15 @@
 
     fmt(v) {
         if (!v) return "-";
+
         const d = new Date(v);
-        return isNaN(d) ? "-" : d.toLocaleDateString("id-ID");
+        if (isNaN(d)) return "-";
+
+        return d.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric"
+        });
     }
 
     prepareSheetFromJson(rows) {

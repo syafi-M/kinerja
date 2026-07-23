@@ -1,5 +1,8 @@
 <x-admin-layout :fullWidth="true">
     @section('title', 'Dashboard Rekap')
+    @push('scripts')
+        <script src="{{ URL::asset('js/rekap-export.js') }}?v={{ time() }}"></script>
+    @endpush
     @push('styles')
         <style>
             #detailModal {
@@ -380,6 +383,43 @@
                         @endif
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Global Export Section -->
+        <div class="my-6">
+            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h3 class="mb-1 text-lg font-semibold text-gray-900">Export Data Keseluruhan</h3>
+                        <p class="text-sm text-gray-600">Export seluruh data rekap bulanan dari semua mitra dalam
+                            format Excel atau PDF</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <div class="flex flex-col justify-center gap-1 items-center">
+                            <label for="bulanRekap" class="label label-text pb-0">Bulan tgl(26-25)</label>
+                            <input id="bulanRekap" type="month" name="bulanRekap" value="{{ \Carbon\Carbon::now()->format('Y-m') }}" onchange="bulanRekap = this.value" class="input input-sm input-bordered"/>
+                        </div>
+                        <button onclick="exportGlobalToExcel()"
+                            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <span>Excel</span>
+                        </button>
+                        <button onclick="exportGlobalToPDF()"
+                            class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <span>PDF</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -968,6 +1008,40 @@
             }, 300);
 
             button.setAttribute('aria-expanded', 'false');
+        }
+
+        let bulanRekap = document.getElementById('bulanRekap').value;
+
+        async function exportGlobalToExcel() {
+            try {
+                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const result = await response.json();
+
+                if (!result.success) throw new Error(result.message);
+                const data = result.data;
+
+                const exporter = new RekapExporter(null, bulanRekap);
+                exporter.exportGlobalToExcel(data);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function exportGlobalToPDF() {
+            try {
+                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                const result = await response.json();
+
+                if (!result.success) throw new Error(result.message);
+                const data = result.data;
+
+                const exporter = new RekapExporter(null, bulanRekap);
+                exporter.exportGlobalToPDF(data);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
         }
 
         // Close on Escape key
