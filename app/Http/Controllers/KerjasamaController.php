@@ -11,8 +11,9 @@ class KerjasamaController extends Controller
 {
     public function index()
     {
-        $kerjasama = Kerjasama::paginate(10);
-        return view('admin.kerjasama.index', ['kerjasama' => $kerjasama]);
+        $kerjasama = Kerjasama::with('client')->orderBy('experied')->paginate(10);
+        $allKerjasama = Kerjasama::with('client')->orderBy('experied')->get();
+        return view('admin.kerjasama.index', compact('kerjasama', 'allKerjasama'));
     }
 
     public function create()

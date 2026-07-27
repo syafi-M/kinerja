@@ -15,6 +15,9 @@
                         <input type="search" id="searchInput" class="w-full text-sm text-gray-700 bg-transparent border-none placeholder:text-gray-400 focus:outline-none" placeholder="Cari client, approval, expired..." />
                     </label>
                     <div class="flex items-center gap-2">
+                        <button type="button" id="exportPdfBtn" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-red-600 rounded-xl hover:bg-red-700">
+                            <i class="ri-file-pdf-2-line mr-1.5 text-base"></i> Export PDF
+                        </button>
                         <a href="{{ route('admin.kerjasama.create') }}" class="inline-flex items-center h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700">
                             <i class="ri-add-line mr-1.5 text-base"></i> Tambah Kerjasama
                         </a>
@@ -41,16 +44,24 @@
                         </tr>
                     </thead>
                     <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
-                        @php $no = 1; @endphp
+                        @php
+                            $no = 1;
+                            $bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                        @endphp
                         @forelse ($kerjasama as $i)
-                            <tr class="transition-colors hover:bg-blue-50/40">
+                            @php
+                                $expired = \Carbon\Carbon::parse($i->experied);
+                                $daysLeft = now()->startOfDay()->diffInDays($expired, false);
+                                $statusClass = $daysLeft < 30 ? 'border-l-4 border-red-500 bg-red-50/70' : ($daysLeft <= 90 ? 'border-l-4 border-yellow-500 bg-yellow-50/70' : 'border-l-4 border-green-500 bg-green-50/70');
+                            @endphp
+                            <tr class="{{ $statusClass }} transition-colors hover:bg-blue-50/40">
                                 <td class="px-4 py-3 text-gray-500 sm:px-5">{{ $no++ }}</td>
                                 <td class="px-4 py-3 sm:px-5">
-                                    <p class="font-semibold text-gray-800">{{ $i->client->name }}</p>
+                                    <p class="font-semibold text-gray-800">{{ mb_convert_case(mb_strtolower($i->client->name ?? '-', 'UTF-8'), MB_CASE_TITLE, 'UTF-8') }}</p>
                                     <p class="text-xs text-gray-500 md:hidden">{{ $i->approve1 }}</p>
                                 </td>
                                 <td class="px-4 py-3 font-medium text-gray-800 sm:px-5">{{ toRupiah($i->value) }}</td>
-                                <td class="px-4 py-3 sm:px-5">{{ $i->experied }}</td>
+                                <td class="px-4 py-3 sm:px-5">{{ $expired->format('d') }} {{ $bulan[(int) $expired->format('n')] }} {{ $expired->format('Y') }}</td>
                                 <td class="hidden px-4 py-3 md:table-cell sm:px-5">{{ $i->approve1 }}</td>
                                 <td class="px-4 py-3 sm:px-5">
                                     <div class="flex justify-end gap-2">
@@ -108,5 +119,47 @@
         <style>
             [x-cloak] { display: none !important; }
         </style>
+        @php
+            $exportRows = $allKerjasama->values()->map(function ($i, $index) use ($bulan) {
+                $expired = \Carbon\Carbon::parse($i->experied);
+                $daysLeft = now()->startOfDay()->diffInDays($expired, false);
+
+                return [
+                    'data' => [
+                        $index + 1,
+                        $i->client?->name ?? '-',
+                        toRupiah($i->value),
+                        $expired->format('d') . ' ' . $bulan[(int) $expired->format('n')] . ' ' . $expired->format('Y'),
+                        $i->approve1,
+                    ],
+                    'color' => $daysLeft < 30 ? [254, 226, 226] : ($daysLeft <= 90 ? [254, 249, 195] : [220, 252, 231]),
+                ];
+            });
+        @endphp
+        <script>
+            (() => {
+                const rows = @json($exportRows);
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.getElementById('exportPdfBtn')?.addEventListener('click', () => {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF('l', 'mm', 'a4');
+
+                        doc.text('Data Kerjasama', 14, 14);
+                        doc.autoTable({
+                            head: [['#', 'Client', 'Value', 'Expired', 'Approved 1']],
+                            body: rows.map(row => row.data),
+                            startY: 26,
+                            styles: { fontSize: 8 },
+                            headStyles: { fillColor: [37, 99, 235] },
+                            didParseCell: ({ section, row, cell }) => {
+                                if (section === 'body') cell.styles.fillColor = rows[row.index].color;
+                            },
+                        });
+                        window.open(doc.output('bloburl'), '_blank');
+                    });
+                });
+            })();
+        </script>
     @endpush
 </x-admin-layout>

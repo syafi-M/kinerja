@@ -31,3 +31,6 @@ nul
 skills-lock.*
 keybackup.*
 *log
+.codesight
+AGENTS.md
+codex.md
