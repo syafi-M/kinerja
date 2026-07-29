@@ -1,61 +1,108 @@
 <x-app-layout>
     <x-main-div>
-        <div class="py-10 sm:mx-10">
-            <p class="text-lg font-bold text-center uppercase sm:text-2xl">
-                List Karyawan,<br>
-                {{ auth()->id() == 175 ? 'Semua Mitra' : Auth::user()->kerjasama->client->name }}
-            </p>
+        <div class="px-3 py-6 sm:px-8 lg:px-10">
+            @php
+                $jabatan = Auth::user()->divisi->jabatan->code_jabatan ?? Auth::user()->divisi->code_jabatan;
+                $isMcs = (Auth::user()->jabatan->code_jabatan ?? null) === 'MCS';
+                $penempatan = auth()->id() == 175 || $isMcs ? 'Semua Mitra' : (Auth::user()->kerjasama->client->name ?? '-');
+            @endphp
 
-            <div class="flex flex-col items-center justify-start mx-2 my-2 sm:justify-center">
-                {{-- Top Controls --}}
-                <div class="flex items-center justify-center w-full gap-2 mt-5 sm:justify-between">
-                    <div style="width: 44.44%;">
-                        @php
-                            $jabatan = Auth::user()->divisi->jabatan->code_jabatan ?? Auth::user()->divisi->code_jabatan;
-                        @endphp
-                        <a href="{{
-                            $jabatan === 'CO-CS' ? route('leaderView') :
-                            ($jabatan === 'CO-SCR' ? route('danruView') : route('dashboard.index'))
-                        }}" class="btn btn-error">Kembali</a>
-                    </div>
-
-                    <div style="width: 55.55%;" class="mt-5">
-                        <x-search />
-                    </div>
-                </div>
-
-                {{-- Mitra Filter (visible only for user ID 175) --}}
-                @if(auth()->id() == 175)
-                    <form action="{{ route('danru_user') }}" method="GET" class="flex items-center justify-center w-full gap-1 px-2 py-3 mb-5 rounded bg-slate-100">
-                        <div style="width: 66.66%;" class="w-2/3">
-                            <label class="text-xs label sm:text-base">Pilih Mitra</label>
-                            <select name="mitra" class="w-full text-xs text-black select select-bordered select-sm">
-                                <option disabled selected>~Pilih Mitra~</option>
-                                @forelse($mitra as $i)
-                                    <option value="{{ $i->id }}" {{ $filterMitra == $i->id ? 'selected' : '' }}>{{ $i->client->name }}</option>
-                                @empty
-                                    <option disabled>~Mitra Kosong~</option>
-                                @endforelse
-                            </select>
+            <div class="mx-auto w-full max-w-7xl space-y-5">
+                <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600">Data Karyawan</p>
+                            <h1 class="mt-1 text-2xl font-extrabold text-slate-900">List Karyawan</h1>
+                            <p class="mt-1 text-sm text-slate-500">{{ $penempatan }}</p>
                         </div>
-                        <div style="width: 33.33%;" class="flex items-end w-1/3">
-                            <button class="w-full btn btn-primary btn-sm sm:btn-md">Filter</button>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <a href="{{
+                                $jabatan === 'CO-CS' ? route('leaderView') :
+                                ($jabatan === 'CO-SCR' ? route('danruView') : route('dashboard.index'))
+                            }}" class="btn btn-error btn-sm sm:btn-md">Kembali</a>
+                            <div class="min-w-[240px]">
+                                <x-search />
+                            </div>
                         </div>
-                    </form>
-                @endif
+                    </div>
+                </section>
 
-                {{-- Table --}}
-                <div class="w-full mx-2 overflow-x-scroll md:overflow-hidden sm:mx-10">
-                    <table id="searchTable" class="table text-xs font-semibold table-xs table-zebra sm:table-md bg-slate-50 sm:text-md">
+                <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                    <div class="mb-3 flex items-center justify-between gap-3">
+                        <h2 class="text-sm font-bold text-slate-800">Total User per Jabatan</h2>
+                        <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">{{ $jabatanCounts->sum() }} User</span>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        @forelse ($jabatanCounts as $jabatanName => $total)
+                            <div class="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                <p class="text-xs font-semibold text-slate-500">{{ $jabatanName }}</p>
+                                <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $total }}</p>
+                            </div>
+                        @empty
+                            <div class="rounded-xl border border-slate-100 bg-slate-50 p-4 text-center text-sm text-slate-500 sm:col-span-2 lg:col-span-4">~ Data Kosong ~</div>
+                        @endforelse
+                    </div>
+                </section>
+
+                {{-- Mobile Cards --}}
+                <section id="userCards" class="space-y-3 md:hidden">
+                    @php $mobileNo = 1; @endphp
+                    @forelse ($user as $i)
+                        @continue(in_array($i->nama_lengkap, ['admin', 'user', 'MITRA SAC']))
+                        <article class="user-card rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex gap-3">
+                                @if ($i->image !== 'no-image.jpg' && Storage::disk('public')->exists('images/' . $i->image))
+                                    <img class="lazy lazy-image h-14 w-14 shrink-0 rounded-full object-cover" loading="lazy"
+                                         src="{{ asset('storage/images/' . $i->image) }}"
+                                         data-src="{{ asset('storage/images/' . $i->image) }}"
+                                         alt="{{ $i->nama_lengkap }}">
+                                @else
+                                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-slate-100"><x-no-img /></div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h3 class="break-words text-sm font-extrabold text-slate-900">{{ ucwords(strtolower($i->nama_lengkap)) }}</h3>
+                                        <span class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700">#{{ $mobileNo++ }}</span>
+                                    </div>
+                                    <p class="mt-0.5 text-xs font-semibold text-slate-500">{{ $i->name }}</p>
+                                    <div class="mt-2 flex flex-wrap gap-1.5">
+                                        <span class="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">{{ $i->divisi->jabatan->code_jabatan ?? 'Jabatan Kosong ?' }}</span>
+                                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                                            @php
+                                                $name = $i->kerjasama->client->name ?? null;
+                                                if ($name) {
+                                                    preg_match('/\((.*?)\)/', $name, $match);
+                                                    $suffix = isset($match[0]) ? ' ' . $match[0] : '';
+                                                    $cleanName = preg_replace('/\s*\(.*?\)\s*/', ' ', $name);
+                                                    echo collect(explode(' ', trim($cleanName)))->map(fn($word) => strtoupper(substr(str_replace("'", '', $word), 0, 1)))->implode('') . $suffix;
+                                                } else {
+                                                    echo 'kosong';
+                                                }
+                                            @endphp
+                                        </span>
+                                    </div>
+                                    <p class="mt-2 break-all text-xs text-slate-500">{{ $i->email }}</p>
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">~ Data Kosong ~</div>
+                    @endforelse
+                </section>
+
+                {{-- Desktop Table --}}
+                <section class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
+                    <div class="overflow-x-auto">
+                    <table id="searchTable" class="table min-w-[820px] text-xs font-semibold table-zebra bg-white sm:text-sm">
                         <thead>
-                            <tr class="text-center">
-                                <th class="p-1 py-2 bg-slate-300 rounded-tl-2xl">#</th>
-                                <th class="p-1 py-2 bg-slate-300">Profil</th>
-                                <th class="p-1 py-2 bg-slate-300">Username</th>
-                                <th class="p-1 py-2 bg-slate-300">Nama Lengkap</th>
-                                <th class="p-1 py-2 bg-slate-300">Jabatan</th>
-                                <th class="p-1 py-2 bg-slate-300">Email</th>
-                                <th class="p-1 py-2 bg-slate-300 rounded-tr-2xl">Penempatan</th>
+                            <tr class="text-left text-slate-600">
+                                <th class="bg-slate-50 px-4 py-3">#</th>
+                                <th class="bg-slate-50 px-4 py-3">Profil</th>
+                                <th class="bg-slate-50 px-4 py-3">Username</th>
+                                <th class="bg-slate-50 px-4 py-3">Nama Lengkap</th>
+                                <th class="bg-slate-50 px-4 py-3">Jabatan</th>
+                                <th class="bg-slate-50 px-4 py-3">Email</th>
+                                <th class="bg-slate-50 px-4 py-3">Penempatan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,24 +110,24 @@
                             @forelse ($user as $i)
                                 @continue(in_array($i->nama_lengkap, ['admin', 'user', 'MITRA SAC']))
                                 <tr>
-                                    <td class="p-1">{{ $n++ }}</td>
-                                    <td>
+                                    <td class="px-4 py-3 text-slate-500">{{ $n++ }}</td>
+                                    <td class="px-4 py-3">
                                         @if ($i->image !== 'no-image.jpg' && Storage::disk('public')->exists('images/' . $i->image))
-                                            <img class="lazy lazy-image" loading="lazy"
+                                            <img class="lazy lazy-image h-12 w-12 rounded-full object-cover" loading="lazy"
                                                  src="{{ asset('storage/images/' . $i->image) }}"
                                                  data-src="{{ asset('storage/images/' . $i->image) }}"
-                                                 alt="" width="120px">
+                                                 alt="{{ $i->nama_lengkap }}">
                                         @else
                                             <x-no-img />
                                         @endif
                                     </td>
-                                    <td class="p-1">{{ $i->name }}</td>
-                                    <td class="p-1 break-words whitespace-pre-wrap">{{ ucwords(strtolower($i->nama_lengkap)) }}</td>
-                                    <td class="p-1 break-words whitespace-pre-wrap" style="width: 90px">
-                                        {{ $i->divisi->jabatan->code_jabatan ?? 'Jabatan Kosong ?' }}
+                                    <td class="px-4 py-3 text-slate-700">{{ $i->name }}</td>
+                                    <td class="px-4 py-3 font-bold text-slate-800">{{ ucwords(strtolower($i->nama_lengkap)) }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{{ $i->divisi->jabatan->code_jabatan ?? 'Jabatan Kosong ?' }}</span>
                                     </td>
-                                    <td class="p-1 break-words whitespace-pre-line">{{ $i->email }}</td>
-                                    <td class="p-1 break-words whitespace-pre-line">
+                                    <td class="px-4 py-3 text-slate-600">{{ $i->email }}</td>
+                                    <td class="px-4 py-3 text-slate-700">
                                         @php
                                             $name = $i->kerjasama->client->name ?? null;
                                             if ($name) {
@@ -104,11 +151,19 @@
                             @endforelse
                         </tbody>
                     </table>
-                </div>
+                    </div>
+                </section>
 
-                <div id="pag-1" class="mt-5 mb-5">
+                <div id="pag-1" class="py-2">
                     {{ $user->links() }}
                 </div>
+
+                <script>
+                    document.getElementById('searchInput')?.addEventListener('input', function () {
+                        const q = this.value.toLowerCase();
+                        document.querySelectorAll('.user-card').forEach(card => card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(q)));
+                    });
+                </script>
             </div>
         </div>
     </x-main-div>
