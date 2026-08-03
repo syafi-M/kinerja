@@ -51,6 +51,7 @@ class AbsensiController extends Controller
             };
 
             $shift = Shift::query()
+                ->where('is_active', true)
                 ->where('jam_start', '>=', $startTime)
                 ->where('client_id', $user->kerjasama->client_id)
                 ->where('jabatan_id', $user->jabatan_id)
@@ -162,7 +163,7 @@ class AbsensiController extends Controller
     public function getShift($cli, $jab)
     {
         $dev = Divisi::with(['jabatan', 'perlengkapan'])->get();
-        $shiftFirst = Shift::with(['jabatan'])->orderBy('jam_start', 'asc');
+        $shiftFirst = Shift::with(['jabatan'])->where('is_active', true)->orderBy('jam_start', 'asc');
         $todayName = Carbon::now()->translatedFormat('l'); // Nama hari dalam bahasa lokal
         $shift1 = $shiftFirst->where('jam_start', '>=', '04:00')->where('client_id', $cli)->where('jabatan_id', $jab)->get();
         $shift2 = $shiftFirst->where('jam_start', '>=', '11:00')->where('client_id', $cli)->where('jabatan_id', $jab)->get();
@@ -411,7 +412,7 @@ class AbsensiController extends Controller
         $user = Auth::user()->id;
         $dev = Divisi::all();
         $client = Client::all();
-        $shift = Shift::orderBy('jam_start', 'asc')->get();
+        $shift = Shift::where('is_active', true)->orderBy('jam_start', 'asc')->get();
         $jadwal = JadwalUser::where('user_id', $user)->latest()->get();
         $cekAbsen = Absensi::where('user_id', $user)
             ->where('tanggal_absen', Carbon::now()->format('Y-m-d'))
@@ -533,7 +534,7 @@ class AbsensiController extends Controller
         $user = Auth::user()->id;
         $dev = Divisi::all();
         $client = Client::all();
-        $shift = Shift::orderBy('jam_start', 'asc')->get();
+        $shift = Shift::where('is_active', true)->orderBy('jam_start', 'asc')->get();
         $jadwal = JadwalUser::where('user_id', $user)->latest()->get();
         $absensi = Absensi::where('user_id', $user)->latest()->get();
         // dd($absensi);

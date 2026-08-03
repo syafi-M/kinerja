@@ -39,6 +39,7 @@
                             <th class="hidden px-4 py-3 md:table-cell sm:px-5">Mulai</th>
                             <th class="hidden px-4 py-3 md:table-cell sm:px-5">Selesai</th>
                             <th class="hidden px-4 py-3 lg:table-cell sm:px-5">Overnight</th>
+                            <th class="px-4 py-3 sm:px-5">Status</th>
                             <th class="px-4 py-3 sm:px-5">Hari</th>
                             <th class="px-4 py-3 text-right sm:px-5">Aksi</th>
                         </tr>
@@ -57,6 +58,21 @@
                                 <td class="hidden px-4 py-3 md:table-cell sm:px-5">{{ $i->jam_start }}</td>
                                 <td class="hidden px-4 py-3 md:table-cell sm:px-5">{{ $i->jam_end }}</td>
                                 <td class="hidden px-4 py-3 lg:table-cell sm:px-5">{{ $i->is_overnight == 1 ? 'Ya' : 'Tidak' }}</td>
+                                <td class="px-4 py-3 sm:px-5">
+                                    <button
+                                        type="button"
+                                        data-id="{{ $i->id }}"
+                                        data-active="{{ $i->is_active ? '1' : '0' }}"
+                                        onclick="toggleShiftActive(this)"
+                                        class="shift-toggle relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $i->is_active ? 'bg-green-500' : 'bg-gray-300' }}"
+                                        title="{{ $i->is_active ? 'Aktif' : 'Nonaktif' }}"
+                                        aria-label="Toggle status shift {{ $i->shift_name }}"
+                                        aria-checked="{{ $i->is_active ? 'true' : 'false' }}"
+                                        role="switch"
+                                    >
+                                        <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $i->is_active ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                                    </button>
+                                </td>
                                 <td class="px-4 py-3 sm:px-5">
                                     <div class="flex flex-wrap gap-1">
                                         @php
@@ -141,5 +157,30 @@
         <style>
             [x-cloak] { display: none !important; }
         </style>
+        <script>
+            function toggleShiftActive(btn) {
+                const id = btn.dataset.id;
+                const isActive = btn.dataset.active === '1';
+                fetch(`/shift/${id}/toggle-active`, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(r => r.json())
+                .then(data => {
+                    const active = data.is_active;
+                    btn.dataset.active = active ? '1' : '0';
+                    btn.className = btn.className
+                        .replace(active ? 'bg-gray-300' : 'bg-green-500', active ? 'bg-green-500' : 'bg-gray-300');
+                    btn.querySelector('span').className = btn.querySelector('span').className
+                        .replace(active ? 'translate-x-0' : 'translate-x-5', active ? 'translate-x-5' : 'translate-x-0');
+                    btn.title = active ? 'Aktif' : 'Nonaktif';
+                    btn.setAttribute('aria-checked', active ? 'true' : 'false');
+                })
+                .catch(() => alert('Gagal mengubah status shift.'));
+            }
+        </script>
     @endpush
 </x-admin-layout>

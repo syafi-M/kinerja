@@ -16,11 +16,13 @@ class Shift extends Model
         'jam_start',
         'jam_end',
         'is_overnight',
+        'is_active',
         'hari',
     ];
 
     protected $casts = [
         'is_overnight' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function jabatan()
