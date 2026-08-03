@@ -6,12 +6,13 @@ use App\Http\Requests\ShiftRequest;
 use App\Models\Client;
 use App\Models\Jabatan;
 use App\Models\Shift;
+use Illuminate\Http\Request;
 
 class ShiftController extends Controller
 {
     public function index()
     {
-        $shift = Shift::orderBy('client_id', 'asc')->paginate(99999);
+        $shift = Shift::with(['jabatan', 'client'])->orderBy('client_id', 'asc')->paginate(99999);
 
         return view('admin.shift.index', compact('shift'));
     }
@@ -36,6 +37,7 @@ class ShiftController extends Controller
             'jam_start' => $request->jam_start,
             'jam_end' => $request->jam_end,
             'is_overnight' => $isOvernight,
+            'is_active' => $request->boolean('is_active', true),
             'hari' => json_encode($request->hari),
         ];
 
@@ -81,6 +83,7 @@ class ShiftController extends Controller
             'jam_start' => $request->jam_start,
             'jam_end' => $request->jam_end,
             'is_overnight' => $isOvernight,
+            'is_active' => $request->boolean('is_active', true),
             'hari' => json_encode($request->hari),
         ];
 
@@ -88,6 +91,14 @@ class ShiftController extends Controller
         toastr()->success('Shift berhasil diupdate', [], 'success');
 
         return to_route('admin.shift.index');
+    }
+
+    public function toggleActive(Request $request, $id)
+    {
+        $shift = Shift::findOrFail($id);
+        $shift->update(['is_active' => !$shift->is_active]);
+
+        return response()->json(['is_active' => $shift->is_active]);
     }
 
     public function destroy($id)

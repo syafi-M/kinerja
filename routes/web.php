@@ -533,6 +533,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::resource('/data-lembur', LemburController::class);
     Route::get('/data-lembur-saat-ini', [LemburController::class, 'lemburIndexAdmin'])->name('lemburList');
     Route::resource('/shift', ShiftController::class)->names('admin.shift');
+    Route::patch('/shift/{id}/toggle-active', [ShiftController::class, 'toggleActive'])->name('admin.shift.toggle-active');
     Route::resource('/jabatan', JabatanController::class)->names('admin.jabatan');
 
     Route::delete('/laporans/{id}', [LaporanController::class, 'destroy']);

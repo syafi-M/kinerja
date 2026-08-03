@@ -60,6 +60,18 @@
                             <option value="1" {{ $shift->is_overnight == 1 ? 'selected' : '' }}>Ya</option>
                         </select>
                     </div>
+                    <div class="md:col-span-2 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-600">Status Shift</p>
+                            <p class="mt-0.5 text-xs text-gray-500">Shift aktif akan muncul di pilihan absensi.</p>
+                        </div>
+                        <label class="relative inline-flex cursor-pointer items-center">
+                            <input type="hidden" name="is_active" value="0">
+                            <input type="checkbox" name="is_active" id="is_active" value="1" {{ $shift->is_active ? 'checked' : '' }} class="sr-only peer">
+                            <div class="peer h-6 w-11 rounded-full bg-gray-300 transition-colors duration-200 peer-checked:bg-green-500 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform after:duration-200 peer-checked:after:translate-x-5"></div>
+                            <span class="ml-2 text-sm font-medium text-gray-700">{{ $shift->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="mt-4">
