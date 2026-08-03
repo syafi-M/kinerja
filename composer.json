@@ -10,7 +10,7 @@
     "require": {
         "php": "^8.2",
         "creagia/laravel-sign-pad": "^3.0",
-        "dompdf/dompdf": "^2.0",
+        "dompdf/dompdf": "^3.1.6",
         "guzzlehttp/guzzle": "^7.7",
         "intervention/image": "^2.7",
         "jaybizzle/crawler-detect": "^1.2",
