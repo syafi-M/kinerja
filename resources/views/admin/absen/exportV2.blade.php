@@ -93,7 +93,7 @@
                     @php
                         $rowCount = 0;
                         $noGap = $kantor ? 13 : 26;
-                        $noGap2 = $kantor ? 20 : 38;
+                        $noGap2 = $kantor ? 20 : 19;
                     @endphp
                     @foreach ($processedUsers as $userRow)
                         <!--@if ($rowCount < $noGap)-->
@@ -217,34 +217,47 @@
 		    @endif
 		
 
-		<h2 style="padding-top: 10px" class="page-break">Keterangan</h2>
+		@php
+            $totalRows = count($processedUsers);
+            if ($kantor) {
+                $usedRows = $totalRows;
+            } else {
+                $usedRows = $totalRows <= $noGap ? $totalRows : (($totalRows - $noGap) % $noGap2);
+                $usedRows = ($usedRows === 0 && $totalRows > $noGap) ? $noGap2 : $usedRows;
+            }
+            $keteranganStyle = 'page-break-inside: avoid; margin-top: 12px;';
+        @endphp
+		<section style="{{ $keteranganStyle }}">
+            <h2 style="padding-top: 10px; margin-bottom: 6px;">Keterangan</h2>
 
-		<table style="border: none; border-collapse: collapse;">
-            <tbody>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>HE</strong></td><td style="border: none;">: Hari Efektif</td></tr>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>M</strong></td><td style="border: none;">: Hadir</td></tr>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>TP</strong></td><td style="border: none;">: Tidak Pulang</td></tr>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>I</strong></td><td style="border: none;">: Izin</td></tr>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>T</strong></td><td style="border: none;">: Telat</td></tr>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>L</strong></td><td style="border: none;">: Libur</td></tr>
-        
-                @if(!$kantor)
-                    <tr style="background: none; border: none;"><td style="border: none;"><strong>MS</strong></td><td style="border: none;">: Menggantikan Shift</td></tr>
-                    <tr style="background: none; border: none;"><td style="border: none;"><strong>ST</strong></td><td style="border: none;">: Shift Tergantikan</td></tr>
-                    <tr style="background: none; border: none;"><td style="border: none;"><strong>N</strong></td><td style="border: none;">: Meneruskan Shift</td></tr>
-                    <tr style="background: none; border: none;"><td style="border: none;"><strong>NT</strong></td><td style="border: none;">: Meneruskan Shift tapi telat</td></tr>
-                @endif
-        
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>-</strong></td><td style="border: none;">: Kosong</td></tr>
-                <tr style="background: none; border: none;"><td style="border: none;"><strong>//</strong></td><td style="border: none;">: Libur/merah</td></tr>
-            </tbody>
-        </table>
+            <table style="border: none; border-collapse: collapse; font-size: 11px; width: 100%;">
+                <tbody>
+                    <tr style="background: none; border: none;">
+                        <td style="border: none; padding: 3px 6px;"><strong>HE</strong> = Hari Efektif</td>
+                        <td style="border: none; padding: 3px 6px;"><strong>M</strong> = Hadir</td>
+                        <td style="border: none; padding: 3px 6px;"><strong>TP</strong> = Tidak Pulang</td>
+                        <td style="border: none; padding: 3px 6px;"><strong>I</strong> = Izin</td>
+                        <td style="border: none; padding: 3px 6px;"><strong>T</strong> = Telat</td>
+                        <td style="border: none; padding: 3px 6px;"><strong>L</strong> = Libur</td>
+                    </tr>
+                    <tr style="background: none; border: none;">
+                        @if(!$kantor)
+                            <td style="border: none; padding: 3px 6px;"><strong>MS</strong> = Menggantikan Shift</td>
+                            <td style="border: none; padding: 3px 6px;"><strong>ST</strong> = Shift Tergantikan</td>
+                            <td style="border: none; padding: 3px 6px;"><strong>N</strong> = Meneruskan Shift</td>
+                            <td style="border: none; padding: 3px 6px;"><strong>NT</strong> = Meneruskan Shift tapi Telat</td>
+                        @endif
+                        <td style="border: none; padding: 3px 6px;"><strong>-</strong> = Kosong</td>
+                        <td style="border: none; padding: 3px 6px;"><strong>//</strong> = Libur / Tanggal Merah</td>
+                    </tr>
+                </tbody>
+            </table>
 
-		<div style="right: 25px; bottom: 250px; position:absolute;">
-			<span>Ponorogo, {{ Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</span>
-			<!--<span style="right: 0; top: 100px; left: 60px; position:absolute;">TTD</span>-->
-		</div>
-		<span style="right: 0; bottom: 150px; position:absolute;">PT. Surya Amanah Cendekia</span>
+            <div style="text-align: right; margin-top: 70px; padding-right: 15px;">
+                <div>Ponorogo, {{ Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</div>
+                <div style="margin-top: 4px;">PT. Surya Amanah Cendekia</div>
+            </div>
+        </section>
 	</main>
 	
 	

@@ -299,7 +299,7 @@ class AdminController extends Controller
                 'subuh',
                 'dzuhur',
                 'asar',
-                'magrib',
+                'maghrib',
                 'isya',
                 'msk_lat',
                 'msk_long',
@@ -546,7 +546,7 @@ class AdminController extends Controller
         $libur = $request->input('libur');
         $jdwl = $request->input('jadwal');
 
-        $totalHari = Carbon::parse($this->ended)->diffInDays(Carbon::parse($this->str));
+        $totalHari = Carbon::parse($this->str)->diffInDays(Carbon::parse($this->ended));
 
         if ($request->has(['libur', 'end1', 'str1'])) {
             $expPDF = User::query()
