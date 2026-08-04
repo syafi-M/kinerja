@@ -70,8 +70,9 @@
                         <div class="p-3 bg-white border rounded-lg shadow-sm border-slate-200">
                             <div class="flex items-start justify-between gap-3 mb-3">
                                 <div class="min-w-0">
-                                    <p class="text-sm font-semibold truncate text-slate-800">
-                                        {{ $person->user->nama_lengkap ?? '-' }}
+                                    <p class="text-sm font-semibold truncate {{ $person->user ? 'text-slate-800' : 'text-red-600' }}">
+                                        {{ $person->user->nama_lengkap ?? '' }}
+                                        @if(!$person->user)<span class="inline-flex items-center gap-1 text-xs font-medium text-red-500"><i class="ri-delete-bin-line"></i> Dihapus permanen</span>@endif
                                     </p>
                                     <p class="mt-0.5 text-xs text-slate-500">
                                         Keluar {{ \Carbon\Carbon::parse($person->out_date ?? now())->format('d M Y') }}
@@ -196,13 +197,14 @@
                                         <div class="flex items-center gap-3">
                                             <div
                                                 class="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full bg-sky-100">
-                                                <span class="text-sm font-semibold text-sky-700">
-                                                    {{ substr($person->user->nama_lengkap ?? 'N', 0, 1) }}
+                                                <span class="text-sm font-semibold {{ $person->user ? 'text-sky-700' : 'text-red-600' }}">
+                                                    {{ $person->user ? substr($person->user->nama_lengkap, 0, 1) : '!' }}
                                                 </span>
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="font-medium truncate text-slate-800">
-                                                    {{ $person->user->name ?? 'N/A' }}
+                                                <p class="font-medium truncate {{ $person->user ? 'text-slate-800' : 'text-red-600' }}">
+                                                    {{ $person->user->name ?? '' }}
+                                                    @if(!$person->user)<span class="text-xs font-medium text-red-500"><i class="ri-alert-line"></i> Akun dihapus permanen</span>@endif
                                                 </p>
                                                 <p class="text-xs text-slate-500 whitespace-nowrap">
                                                     {{ $person->user->nama_lengkap ?? '-' }}

@@ -23,9 +23,8 @@
     <div class="flex flex-col h-full">
         <!-- Sidebar Header -->
         <div class="flex items-center h-16 px-4 border-b border-gray-100">
-            <div
-                class="flex items-center justify-center w-10 h-10 shadow-lg bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shrink-0">
-                <i class="text-xl text-white ri-flashlight-fill"></i>
+            <div class="shrink-0">
+                <img src="{{ asset('logo/logo_admin.png') }}" alt="Logo" class="w-10 h-10 object-contain">
             </div>
             <span x-show="sidebarOpen" x-transition:enter.opacity.duration.150ms x-transition:leave.opacity.duration.75ms class="ml-3 text-lg font-bold text-gray-800 whitespace-nowrap">KINERJA APP</span>
         </div>
