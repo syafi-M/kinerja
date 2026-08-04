@@ -79,7 +79,6 @@ class AdminController extends Controller
         $notActiveUsers = Cache::remember('not_active_users', 60, function () use ($inactiveUsersQuery) {
             return $inactiveUsersQuery()
                 ->orderBy('latest_absensi.last_attendance')
-                ->limit(33)
                 ->get();
         });
 
@@ -904,6 +903,111 @@ class AdminController extends Controller
 
         toastr()->warning('Data Sudah Dihapus', [], 'success');
         return redirect()->back();
+    }
+
+    public function checkUserRelations(int $id)
+    {
+        $user = User::findOrFail($id);
+
+        // sacpocom_absensi
+        $absensiTables = ['absensis', 'lemburs', 'izins', 'laporans', 'overtimes', 'finished_trainings', 'performance_cuts'];
+        $absensiCount = 0;
+        foreach ($absensiTables as $t) {
+            $absensiCount += DB::connection('mysql')->table($t)->where('user_id', $id)->count();
+        }
+
+        // sacpocom_edata — employes match by user_id OR name == nama_lengkap
+        $employesByUserId = DB::connection('mysql2')->table('employes')
+            ->where('user_id', $id)->count();
+        $employesByName = DB::connection('mysql2')->table('employes')
+            ->where('name', $user->nama_lengkap)->count();
+
+        // sacpocom_edata — slip_gajis by user_id
+        $slipGajiCount = DB::connection('mysql2')->table('slip_gajis')
+            ->where('user_id', $id)->count();
+
+        // sacpocom_rekap — semua tabel yang pakai user_id
+        $rekapTables = [
+            'findings',
+            'fixed_images',
+            'upload_images',
+            'upload_tambahans',
+            'user_settings',
+            'pending_syncs',
+        ];
+        $rekapCounts = [];
+        foreach ($rekapTables as $table) {
+            $count = DB::connection('mysql3')->table($table)
+                ->where('user_id', $id)->count();
+            if ($count > 0) {
+                $rekapCounts[$table] = $count;
+            }
+        }
+
+        return response()->json([
+            'user'             => ['id' => $user->id, 'name' => $user->name, 'nama_lengkap' => $user->nama_lengkap],
+            'absensi'          => $absensiCount,
+            'employes_user_id' => $employesByUserId,
+            'employes_by_name' => $employesByName,
+            'slip_gaji'        => $slipGajiCount,
+            'rekap'            => $rekapCounts,
+            'rekap_total'      => array_sum($rekapCounts),
+        ]);
+    }
+
+    public function hardDeleteUser(int $id)
+    {
+        $user = User::findOrFail($id);
+        $namaLengkap = $user->nama_lengkap;
+        $userName    = $user->name;
+
+        // Cross-DB: tiap connection punya transaction sendiri.
+        // Urutan: relasi jauh dulu → user utama terakhir.
+        // Kalau mysql3/mysql2 gagal → mysql (absensi + user) tidak disentuh → data konsisten.
+        // Kalau mysql2 sukses tapi mysql gagal → mysql2 sudah committed (tidak bisa rollback lintas DB).
+        // ponytail: untuk atomic cross-DB pakai saga/outbox pattern.
+
+        try {
+            // 1. sacpocom_rekap
+            DB::connection('mysql3')->transaction(function () use ($id) {
+                foreach (['user_settings', 'pending_syncs', 'findings', 'upload_tambahans', 'upload_images', 'fixed_images'] as $table) {
+                    DB::connection('mysql3')->table($table)->where('user_id', $id)->delete();
+                }
+            });
+
+            // 2. sacpocom_edata
+            DB::connection('mysql2')->transaction(function () use ($id, $namaLengkap) {
+                DB::connection('mysql2')->table('employes')
+                    ->where('user_id', $id)
+                    ->orWhere('name', $namaLengkap)
+                    ->delete();
+                DB::connection('mysql2')->table('slip_gajis')
+                    ->where('user_id', $id)
+                    ->orWhere('karyawan', $namaLengkap)
+                    ->delete();
+                DB::connection('mysql2')->table('p_g_j__kontraks')
+                    ->where('nama_pk_kda', $namaLengkap)
+                    ->delete();
+            });
+
+            // 3. sacpocom_absensi + relasi + user utama
+            DB::connection('mysql')->transaction(function () use ($id, $user) {
+                foreach (['lemburs', 'izins', 'laporans', 'overtimes', 'finished_trainings', 'performance_cuts'] as $table) {
+                    DB::connection('mysql')->table($table)->where('user_id', $id)->delete();
+                }
+                DB::connection('mysql')->table('absensis')->where('user_id', $id)->delete();
+                $user->delete();
+            });
+        } catch (\Throwable $e) {
+            toastr()->error('Gagal menghapus: ' . $e->getMessage(), [], 'Error');
+            return redirect()->back();
+        }
+
+        Cache::forget('not_active_users');
+        Cache::forget('admin.dashboard.inactive-users-count');
+
+        toastr()->warning('User ' . $userName . ' dan semua data terkait berhasil dihapus.', [], 'Dihapus');
+        return redirect()->route('admin.index');
     }
 
     public function indexSlip(Request $request)

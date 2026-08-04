@@ -22,11 +22,11 @@
                 <div
                     class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span class="text-xs font-medium text-emerald-700">{{ $online ?? '0' }} Online</span>
+                    <span class="text-xs font-medium text-emerald-700">{{ request()->root() }}</span>
                 </div>
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg border border-gray-200">
                     <i class="text-sm text-gray-600 ri-global-line"></i>
-                    <span class="font-mono text-xs text-gray-700">{{ $ip ?? '127.0.0.1' }}</span>
+                    <span class="font-mono text-xs text-gray-700">{{ request()->ip() }}</span>
                 </div>
             </div>
         </div>

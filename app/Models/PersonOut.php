@@ -76,16 +76,22 @@ class PersonOut extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by_user_id');
+        return $this->belongsTo(User::class, 'created_by_user_id')->withTrashed();
     }
 
-        public function inputBy()
-        {
-            return $this->belongsTo(User::class, 'created_by_user_id');
-        }
+    public function inputBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id')->withTrashed();
+    }
+
+    /** True kalau user hard-deleted (relasi null, bukan soft-deleted) */
+    public function getUserDeletedPermanentlyAttribute(): bool
+    {
+        return is_null($this->getRelationValue('user')) && !is_null($this->user_id);
+    }
 }
