@@ -34,7 +34,7 @@ class DataRekapController extends Controller
                 }
             }))
             ->when(in_array((int) (auth()->user()->jabatan_id ?? 0), [35, 20], true), function ($query) {
-                $allowedJabatanIds = ((int) (auth()->user()->jabatan_id ?? 0) === 35)
+                $allowedJabatanIds = ((int) (auth()->user()->jabatan_id ?? 0) == 35)
                     ? [8, 11, 16, 17, 18]
                     : [9, 10, 34, 36];
 
