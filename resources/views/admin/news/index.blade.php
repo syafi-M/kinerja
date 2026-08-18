@@ -27,6 +27,7 @@
                             <th class="px-4 py-3 sm:px-5">#</th>
                             <th class="px-4 py-3 sm:px-5">Foto Berita</th>
                             <th class="px-4 py-3 sm:px-5">Tanggal Berlaku</th>
+                            <th class="px-4 py-3 sm:px-5">Muncul Tanggal</th>
                             <th class="px-4 py-3 text-right sm:px-5">Aksi</th>
                         </tr>
                     </thead>
@@ -43,6 +44,13 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 sm:px-5">{{ $n->tanggal_lihat }} - {{ $n->tanggal_tutup }}</td>
+                                <td class="px-4 py-3 sm:px-5">
+                                    <div class="flex max-w-xs flex-wrap gap-1">
+                                        @foreach (($n->tanggal_muncul ?? []) as $tanggal)
+                                            <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg bg-blue-50 px-2 text-xs font-semibold text-blue-700">{{ $tanggal }}</span>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td class="px-4 py-3 sm:px-5">
                                     <div class="flex justify-end gap-1.5">
                                         <a
@@ -68,7 +76,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-sm text-center text-gray-500 sm:px-5">Berita saat ini kosong.</td>
+                                <td colspan="5" class="px-4 py-8 text-sm text-center text-gray-500 sm:px-5">Berita saat ini kosong.</td>
                             </tr>
                         @endforelse
                     </tbody>

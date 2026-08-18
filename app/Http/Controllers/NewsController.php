@@ -27,7 +27,8 @@ class NewsController extends Controller
         $news = [
             'image' => $request->image,
             'tanggal_lihat' => $request->tanggal_lihat,
-            'tanggal_tutup' => $request->tanggal_tutup
+            'tanggal_tutup' => $request->tanggal_tutup,
+            'tanggal_muncul' => $request->tanggal_muncul,
         ];
         
          if ($request->hasFile('image')) {
@@ -61,7 +62,8 @@ class NewsController extends Controller
         $news = [
             'image' => $request->image,
             'tanggal_lihat' => $request->tanggal_lihat,
-            'tanggal_tutup' => $request->tanggal_tutup
+            'tanggal_tutup' => $request->tanggal_tutup,
+            'tanggal_muncul' => $request->tanggal_muncul,
         ];
         
         if($request->hasFile('image'))
@@ -103,7 +105,12 @@ class NewsController extends Controller
     
     public function NewsBefore()
     {
-        $newsId = News::all();
+        $today = now()->toDateString();
+        $newsId = News::whereDate('tanggal_lihat', '<=', $today)
+            ->whereDate('tanggal_tutup', '>=', $today)
+            ->whereJsonContains('tanggal_muncul', (int) now()->day)
+            ->get();
+
         return view('tes.index', compact('newsId'));
     }
     

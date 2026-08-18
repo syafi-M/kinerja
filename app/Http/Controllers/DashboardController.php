@@ -35,10 +35,11 @@ class DashboardController extends Controller
             $user->setRelation('jabatan', $user->divisi->jabatan);
         }
 
-        // Hitung news yang masih berlaku berdasarkan tanggal
+        // Hitung news yang masih berlaku dan dipilih pada tanggal hari ini
         $hitungNews = News::query()
             ->where('tanggal_lihat', '<=', $today)
             ->where('tanggal_tutup', '>=', $today)
+            ->whereJsonContains('tanggal_muncul', (int) $now->day)
             ->get();
 
 

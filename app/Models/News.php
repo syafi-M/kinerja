@@ -9,5 +9,9 @@ class News extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['image', 'tanggal_lihat', 'tanggal_tutup'];
+    protected $fillable = ['image', 'tanggal_lihat', 'tanggal_tutup', 'tanggal_muncul'];
+
+    protected $casts = [
+        'tanggal_muncul' => 'array',
+    ];
 }

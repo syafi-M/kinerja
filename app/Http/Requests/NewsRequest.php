@@ -24,7 +24,9 @@ class NewsRequest extends FormRequest
         return [
             'image' => 'required|image|mimes:jpg,jpeg,png,svg,gif|max:2048',
             'tanggal_lihat' => 'required',
-            'tanggal_tutup' => 'required'
+            'tanggal_tutup' => 'required',
+            'tanggal_muncul' => 'required|array',
+            'tanggal_muncul.*' => 'integer|min:1|max:31',
         ];
     }
 }

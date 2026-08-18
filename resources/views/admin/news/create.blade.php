@@ -35,6 +35,27 @@
                             <x-input-error :messages="$errors->get('tanggal_tutup')" class="mt-2" />
                         </div>
                     </div>
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50/70 p-3">
+                        <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600">Muncul Setiap Tanggal</label>
+                                <p class="mt-1 text-xs text-gray-500">Pilih tanggal 1-31. Berita hanya tampil pada tanggal yang dipilih.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" data-check-all="tanggal_muncul[]" class="h-8 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-100">Pilih semua</button>
+                                <button type="button" data-clear-all="tanggal_muncul[]" class="h-8 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 hover:bg-gray-100">Hapus</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-2 sm:grid-cols-10">
+                            @for ($i = 1; $i <= 31; $i++)
+                                <label class="cursor-pointer">
+                                    <input type="checkbox" name="tanggal_muncul[]" value="{{ $i }}" class="peer sr-only" @checked(in_array($i, old('tanggal_muncul', [])))>
+                                    <span class="flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 shadow-sm transition peer-checked:border-blue-600 peer-checked:bg-blue-600 peer-checked:text-white peer-focus:ring-2 peer-focus:ring-blue-200 hover:border-blue-300 hover:bg-blue-50">{{ $i }}</span>
+                                </label>
+                            @endfor
+                        </div>
+                        <x-input-error :messages="$errors->get('tanggal_muncul')" class="mt-2" />
+                    </div>
                 </div>
                 <div class="mt-5 flex justify-end gap-2">
                     <a href="{{ route('admin.news.index') }}" class="inline-flex h-10 items-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-100">Batal</a>
@@ -56,6 +77,14 @@
                         $('#newsPreviewWrap').removeClass('hidden');
                     };
                     reader.readAsDataURL(file);
+                });
+
+                $('[data-check-all]').on('click', function() {
+                    $(`[name="${$(this).data('check-all')}"]`).prop('checked', true);
+                });
+
+                $('[data-clear-all]').on('click', function() {
+                    $(`[name="${$(this).data('clear-all')}"]`).prop('checked', false);
                 });
             });
         </script>
