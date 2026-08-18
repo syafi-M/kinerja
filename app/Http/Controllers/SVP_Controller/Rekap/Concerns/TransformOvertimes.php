@@ -6,12 +6,32 @@ trait TransformOvertimes
 {
     protected function transformOvertimes($overtimes)
     {
+        // $grouped = $overtimes->groupBy(function ($item) {
+        //     return $item->user_id . '_' . strtolower($item->type_overtime);
+        // });
+
+        // dd(
+        //     $grouped->map(function ($group, $key) {
+        //         return [
+        //             'key' => $key,
+        //             'count' => $group->count(),
+        //             'dates' => $group->pluck('date_overtime')->values()->toArray(),
+        //         ];
+        //     })->toArray()
+        // );
         return $overtimes->groupBy(function ($item) {
             return $item->user_id . '_' . strtolower($item->type_overtime);
         })->map(function ($group) {
 
             $first = $group->first();
             $typeOvertime = strtolower($first->type_overtime);
+
+            $tgl = $group
+                ->pluck('date_overtime')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
 
             if (in_array($typeOvertime, ['jam', 'lainnya'])) {
 
@@ -28,6 +48,7 @@ trait TransformOvertimes
                         $totalRupiah += $value['value'];
                     }
                 }
+
 
                 $formattedOvertime = '';
 
@@ -49,6 +70,7 @@ trait TransformOvertimes
                     'total_rupiah' => $totalRupiah,
                     'status' => $first->status,
                     'desc' => $first->desc,
+                    'tgl' => $tgl,
                     'count' => $group->count(),
                     'createdBy' => $first->createdBy ?? null,
                 ];
@@ -62,6 +84,7 @@ trait TransformOvertimes
                 'type_overtime_manual' => $first->type_overtime_manual,
                 'status' => $first->status,
                 'desc' => $first->desc,
+                'tgl' => $tgl,
                 'count' => $group->count(),
                 'createdBy' => $first->createdBy ?? null,
             ];
