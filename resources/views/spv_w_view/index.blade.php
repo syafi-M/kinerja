@@ -287,6 +287,16 @@
                                 onchange="bulanRekap = this.value"
                                 class="mt-1 block rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
                         </label>
+                        <label class="text-xs font-medium text-slate-600">
+                            Dari
+                            <input id="tanggalDariRekap" type="date"
+                                class="mt-1 block rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
+                        </label>
+                        <label class="text-xs font-medium text-slate-600">
+                            Sampai
+                            <input id="tanggalSampaiRekap" type="date"
+                                class="mt-1 block rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
+                        </label>
                         <button type="button" onclick="exportGlobalToExcel()"
                             class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
                             <i class="ri-file-excel-2-line"></i> Excel
@@ -429,7 +439,15 @@
 
         async function exportGlobal(type) {
             try {
-                const response = await fetch(`/SPVW/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                const params = new URLSearchParams({ month: bulanRekap });
+                const startDate = document.getElementById('tanggalDariRekap')?.value;
+                const endDate = document.getElementById('tanggalSampaiRekap')?.value;
+                if (startDate && endDate) {
+                    params.set('start_date', startDate);
+                    params.set('end_date', endDate);
+                }
+
+                const response = await fetch(`/SPVW/api/v1/all-rekap-export-global?${params}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
                 if (!result.success) throw new Error(result.message);

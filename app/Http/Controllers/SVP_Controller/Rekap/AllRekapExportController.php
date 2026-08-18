@@ -205,8 +205,12 @@ class AllRekapExportController extends RekapController
         try {
             $month = $request->input('month', now()->format('Y-m'));
             $date = Carbon::createFromFormat('Y-m', $month);
-            $startDate = $date->copy()->subMonth()->setDay(26)->startOfDay();
-            $endDate = $date->copy()->setDay(25)->endOfDay();
+            $startDate = $request->filled(['start_date', 'end_date'])
+                ? Carbon::parse($request->start_date)->startOfDay()
+                : $date->copy()->subMonth()->setDay(26)->startOfDay();
+            $endDate = $request->filled(['start_date', 'end_date'])
+                ? Carbon::parse($request->end_date)->endOfDay()
+                : $date->copy()->setDay(25)->endOfDay();
             $includeAllStatus = false; // Debug parameter to include all status
 
             $clientsQuery = Kerjasama::query()

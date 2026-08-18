@@ -462,6 +462,14 @@
                                 <label for="bulanRekap" class="label label-text pb-0">Bulan tgl(26-25)</label>
                                 <input id="bulanRekap" type="month" name="bulanRekap" value="{{ \Carbon\Carbon::now()->format('Y-m') }}" onchange="bulanRekap = this.value" class="input input-sm input-bordered"/>
                             </div>
+                            <div class="flex flex-col justify-center gap-1 items-center">
+                                <label for="tanggalDariRekap" class="label label-text pb-0">Dari</label>
+                                <input id="tanggalDariRekap" type="date" class="input input-sm input-bordered"/>
+                            </div>
+                            <div class="flex flex-col justify-center gap-1 items-center">
+                                <label for="tanggalSampaiRekap" class="label label-text pb-0">Sampai</label>
+                                <input id="tanggalSampaiRekap" type="date" class="input input-sm input-bordered"/>
+                            </div>
                             <button onclick="exportGlobalToExcel()"
                                 class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1145,9 +1153,20 @@
         }
 
         // Global Export - All Data
+        function globalExportParams() {
+            const params = new URLSearchParams({ month: bulanRekap });
+            const startDate = document.getElementById('tanggalDariRekap')?.value;
+            const endDate = document.getElementById('tanggalSampaiRekap')?.value;
+            if (startDate && endDate) {
+                params.set('start_date', startDate);
+                params.set('end_date', endDate);
+            }
+            return params;
+        }
+
         async function exportGlobalToExcel() {
             try {
-                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                const response = await fetch(`/api/v1/all-rekap-export-global?${globalExportParams()}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
 
@@ -1163,8 +1182,7 @@
 
         async function exportGlobalToPDF() {
             try {
-                console.log(bulanRekap);
-                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                const response = await fetch(`/api/v1/all-rekap-export-global?${globalExportParams()}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
 

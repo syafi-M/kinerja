@@ -235,10 +235,7 @@
         });
 
         const rows = sortedKeys.map((key, i) => {
-            const tanggal = [...new Set(grouped[key].tanggal)]
-                .sort()
-                .map((date) => this.fmt(date))
-                .join(", ");
+            const tanggal = this.fmtOvertimeDates(grouped[key].tanggal);
 
             return {
                 no: i + 1,
@@ -475,6 +472,32 @@
             month: "long",
             year: "numeric"
         });
+    }
+
+    fmtOvertimeDates(values) {
+        const dates = [...new Set(values)]
+            .map((value) => new Date(value))
+            .filter((date) => !isNaN(date))
+            .sort((a, b) => a - b);
+
+        if (!dates.length) return "-";
+
+        const sameMonthYear = dates.every((date) =>
+            date.getMonth() === dates[0].getMonth() &&
+            date.getFullYear() === dates[0].getFullYear()
+        );
+
+        if (!sameMonthYear) {
+            return dates.map((date) => this.fmt(date)).join(", ");
+        }
+
+        const monthYear = dates[0].toLocaleDateString("id-ID", {
+            month: "long",
+            year: "numeric"
+        });
+        const days = dates.map((date) => String(date.getDate()).padStart(2, "0"));
+
+        return `${days.join(", ")} ${monthYear}`;
     }
 
     prepareSheetFromJson(rows) {
