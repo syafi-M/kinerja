@@ -25,8 +25,7 @@ class DashboardRekapController extends RekapController
 
             $query->where(function ($q) use ($searchTerm) {
                 $q->whereHas('client', function ($c) use ($searchTerm) {
-                    $c->where('name', 'like', '%' . $searchTerm . '%')->orWhere('email', 'like', '%' . $searchTerm . '%')
-                        ->orWhere('phone', 'like', '%' . $searchTerm . '%');
+                    $c->where('name', 'like', '%' . $searchTerm . '%');
                 });
             });
         }
