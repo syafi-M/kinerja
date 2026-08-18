@@ -28,7 +28,7 @@ class DataRekapController extends Controller
         $clients = Client::query()
             ->select(['id', 'name'])
             ->where('id', '!=', 1)
-            ->when($allowedKabupaten, fn ($query) => $query->where(function ($q) use ($allowedKabupaten) {
+            ->when($allowedKabupaten, fn($query) => $query->where(function ($q) use ($allowedKabupaten) {
                 foreach ($allowedKabupaten as $kabupaten) {
                     $q->orWhere('kabupaten', 'like', "%{$kabupaten}%");
                 }

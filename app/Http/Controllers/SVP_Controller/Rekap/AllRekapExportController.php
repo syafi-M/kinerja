@@ -35,7 +35,7 @@ class AllRekapExportController extends RekapController
             $filterJabatan = function ($q) use ($allowedJabatanIds, $authTypeJabatan) {
                 return !empty($allowedJabatanIds)
                     ? $q->whereIn('jabatan_id', $allowedJabatanIds)
-                    : $q->whereHas('jabatan', fn ($j) => $j->where('type_jabatan', $authTypeJabatan));
+                    : $q->whereHas('jabatan', fn($j) => $j->where('type_jabatan', $authTypeJabatan));
             };
 
             if ($clientId <= 0) {
@@ -219,12 +219,12 @@ class AllRekapExportController extends RekapController
 
                 $clientsQuery
                     ->where('client_id', '!=', 1)
-                    ->when($allowedKabupaten, fn ($query) => $query->whereHas('client', fn ($client) => $client->where(function ($q) use ($allowedKabupaten) {
+                    ->when($allowedKabupaten, fn($query) => $query->whereHas('client', fn($client) => $client->where(function ($q) use ($allowedKabupaten) {
                         foreach ($allowedKabupaten as $kabupaten) {
                             $q->orWhere('kabupaten', 'like', "%{$kabupaten}%");
                         }
                     })))
-                    ->when(!empty($allowedJabatanIds), fn ($query) => $query->whereIn('id', User::query()
+                    ->when(!empty($allowedJabatanIds), fn($query) => $query->whereIn('id', User::query()
                         ->select('kerjasama_id')
                         ->whereIn('jabatan_id', $allowedJabatanIds)
                         ->whereNotNull('kerjasama_id')));
@@ -256,9 +256,9 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama.client:id,name',
                 'user.jabatan:id,name_jabatan',
             ])
-            ->whereHas('user', function ($q) use ($clients) {
-                $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
-                ->whereIn('jabatan_id', $this->allowedSeeData());
+                ->whereHas('user', function ($q) use ($clients) {
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
+                        ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) {
                 $overtimesQuery->whereNotIn('status', ['Di Tolak', 'Pending']);
@@ -292,7 +292,7 @@ class AllRekapExportController extends RekapController
                 ->get();
 
             $personOutsQuery = PersonOut::with([
-                'user' => fn ($q) => $q->withTrashed(),
+                'user' => fn($q) => $q->withTrashed(),
                 'user.kerjasama.client',
                 'user.jabatan:id,name_jabatan',
                 'createdBy:id,nama_lengkap',
@@ -300,7 +300,7 @@ class AllRekapExportController extends RekapController
                 ->whereHas('user', function ($q) use ($clients) {
                     $q->withTrashed()
                         ->whereNotNull('nama_lengkap')
-                        ->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
+                        ->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) {
@@ -331,7 +331,7 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama.client:id,name',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) {
@@ -357,7 +357,7 @@ class AllRekapExportController extends RekapController
                 'user.kerjasama.client:id,name',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 });
             if (!$includeAllStatus) {
@@ -384,7 +384,7 @@ class AllRekapExportController extends RekapController
                 'createdBy:id,nama_lengkap',
             ])
                 ->whereHas('user', function ($q) use ($clients) {
-                    $q->whereHas('kerjasama', fn ($k) => $k->whereIn('client_id', $clients))
+                    $q->whereHas('kerjasama', fn($k) => $k->whereIn('client_id', $clients))
                         ->whereIn('jabatan_id', $this->allowedSeeData());
                 })
                 ->join('users', 'keterangan_lanjutans.user_id', '=', 'users.id');
@@ -414,6 +414,8 @@ class AllRekapExportController extends RekapController
                 'period' => $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y'),
             ];
 
+            // dd($data['overtimes']);
+            // ACHMAD SYAIFUL ROBIANSYAH
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
