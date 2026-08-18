@@ -206,7 +206,6 @@ class FinishedTrainingController extends Controller
 
     public function bulkStatus(Request $request)
     {
-        dd($request->all());
         if ($response = $this->rejectIfRekapLocked()) {
             return $response;
         }
