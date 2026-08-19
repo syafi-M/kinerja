@@ -464,11 +464,11 @@
                             </div>
                             <div class="flex flex-col justify-center gap-1 items-center">
                                 <label for="tanggalDariRekap" class="label label-text pb-0">Dari</label>
-                                <input id="tanggalDariRekap" type="date" class="input input-sm input-bordered"/>
+                                <input id="tanggalDariRekap" type="date" value="{{ now()->subMonth()->format('Y-m-d') }}" class="input input-sm input-bordered"/>
                             </div>
                             <div class="flex flex-col justify-center gap-1 items-center">
                                 <label for="tanggalSampaiRekap" class="label label-text pb-0">Sampai</label>
-                                <input id="tanggalSampaiRekap" type="date" class="input input-sm input-bordered"/>
+                                <input id="tanggalSampaiRekap" type="date" value="{{ now()->format('Y-m-d') }}" class="input input-sm input-bordered"/>
                             </div>
                             <button onclick="exportGlobalToExcel()"
                                 class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 whitespace-nowrap">

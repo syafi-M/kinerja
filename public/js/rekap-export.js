@@ -461,43 +461,44 @@
         return ["No", "Nama Karyawan", "Mitra Kerja", "Posisi", "Tanggal", "Keterangan"];
     }
 
+    parseDate(v) {
+        if (!v) return null;
+        if (v instanceof Date) return isNaN(v) ? null : v;
+
+        const match = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        const d = match
+            ? new Date(+match[1], +match[2] - 1, +match[3])
+            : new Date(v);
+
+        return isNaN(d) ? null : d;
+    }
+
+    monthYear(d) {
+        return d.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+    }
+
     fmt(v) {
-        if (!v) return "-";
-
-        const d = new Date(v);
-        if (isNaN(d)) return "-";
-
-        return d.toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric"
-        });
+        const d = this.parseDate(v);
+        return d ? `${d.getDate()} ${this.monthYear(d)}` : "-";
     }
 
     fmtOvertimeDates(values) {
         const dates = [...new Set(values)]
-            .map((value) => new Date(value))
-            .filter((date) => !isNaN(date))
+            .map((value) => this.parseDate(value))
+            .filter(Boolean)
             .sort((a, b) => a - b);
 
         if (!dates.length) return "-";
 
-        const sameMonthYear = dates.every((date) =>
-            date.getMonth() === dates[0].getMonth() &&
-            date.getFullYear() === dates[0].getFullYear()
-        );
-
-        if (!sameMonthYear) {
-            return dates.map((date) => this.fmt(date)).join(", ");
-        }
-
-        const monthYear = dates[0].toLocaleDateString("id-ID", {
-            month: "long",
-            year: "numeric"
+        const groups = new Map();
+        dates.forEach((date) => {
+            const key = `${date.getFullYear()}-${date.getMonth()}`;
+            groups.set(key, [...(groups.get(key) || []), date]);
         });
-        const days = dates.map((date) => String(date.getDate()).padStart(2, "0"));
 
-        return `${days.join(", ")} ${monthYear}`;
+        return [...groups.values()]
+            .map((group) => `${group.map((date) => date.getDate()).join(", ")} ${this.monthYear(group[0])}`)
+            .join(", ");
     }
 
     prepareSheetFromJson(rows) {

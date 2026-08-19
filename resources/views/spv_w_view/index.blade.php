@@ -289,12 +289,12 @@
                         </label>
                         <label class="text-xs font-medium text-slate-600">
                             Dari
-                            <input id="tanggalDariRekap" type="date"
+                            <input id="tanggalDariRekap" type="date" value="{{ now()->subMonth()->format('Y-m-d') }}"
                                 class="mt-1 block rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
                         </label>
                         <label class="text-xs font-medium text-slate-600">
                             Sampai
-                            <input id="tanggalSampaiRekap" type="date"
+                            <input id="tanggalSampaiRekap" type="date" value="{{ now()->format('Y-m-d') }}"
                                 class="mt-1 block rounded-lg border-slate-300 text-sm focus:border-sky-500 focus:ring-sky-500">
                         </label>
                         <button type="button" onclick="exportGlobalToExcel()"
