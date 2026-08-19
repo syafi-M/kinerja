@@ -5,8 +5,13 @@
             async function exportLeader(format) {
                 try {
                     const month = document.getElementById('bulanRekap').value;
+                    const startDate = document.getElementById('tanggalDariRekap')?.value;
+                    const endDate = document.getElementById('tanggalSampaiRekap')?.value;
                     const fetcher = new RekapExporter({{ auth()->user()->kerjasama_id }}, month);
                     fetcher.apiUrl += '&include_all_status=1&with_status=1';
+                    if (startDate && endDate) {
+                        fetcher.apiUrl += `&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+                    }
                     const result = await fetcher.fetchAllData();
                     if (!result.success) throw new Error(result.message);
 
@@ -286,12 +291,24 @@
                                 </div>
                             </div>
 
-                            <div class="grid gap-4 p-4 sm:p-5 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-end">
-                                <label class="block text-sm font-semibold text-slate-700">
-                                    Periode rekap <span class="text-xs font-normal text-slate-500">(tgl 1-sekarang)</span>
-                                    <input id="bulanRekap" type="month" value="{{ now()->format('Y-m') }}"
-                                        class="mt-2 block w-full rounded-xl border-slate-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                                </label>
+                            <div class="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+                                <div class="grid gap-3 sm:grid-cols-3">
+                                    <label class="block text-sm font-semibold text-slate-700">
+                                        Periode rekap <span class="text-xs font-normal text-slate-500">(tgl 26-25)</span>
+                                        <input id="bulanRekap" type="month" value="{{ now()->format('Y-m') }}"
+                                            class="mt-2 block w-full rounded-xl border-slate-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    </label>
+                                    <label class="block text-sm font-semibold text-slate-700">
+                                        Dari
+                                        <input id="tanggalDariRekap" type="date" value="{{ now()->subMonth()->format('Y-m-d') }}"
+                                            class="mt-2 block w-full rounded-xl border-slate-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    </label>
+                                    <label class="block text-sm font-semibold text-slate-700">
+                                        Sampai
+                                        <input id="tanggalSampaiRekap" type="date" value="{{ now()->format('Y-m-d') }}"
+                                            class="mt-2 block w-full rounded-xl border-slate-300 bg-white text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                    </label>
+                                </div>
 
                                 <div class="grid gap-3 sm:grid-cols-2">
                                     <button type="button" onclick="exportLeader('excel')"

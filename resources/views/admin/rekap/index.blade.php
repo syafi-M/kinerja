@@ -408,13 +408,24 @@
             <div class="p-5 sm:p-6">
                 <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
                     <div>
-                        <label for="bulanRekap" class="block mb-2 text-sm font-semibold text-gray-700">Periode Rekap</label>
-                        <div class="relative max-w-xs">
-                            <i class="absolute text-lg text-gray-400 -translate-y-1/2 pointer-events-none ri-calendar-line left-3 top-1/2"></i>
-                            <input id="bulanRekap" type="month" name="bulanRekap"
-                                value="{{ \Carbon\Carbon::now()->format('Y-m') }}"
-                                onchange="bulanRekap = this.value"
-                                class="w-full py-3 pl-10 pr-4 text-sm border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Periode Rekap
+                                <input id="bulanRekap" type="month" name="bulanRekap"
+                                    value="{{ \Carbon\Carbon::now()->format('Y-m') }}"
+                                    onchange="bulanRekap = this.value"
+                                    class="mt-2 w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                            </label>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Dari
+                                <input id="tanggalDariRekap" type="date" value="{{ now()->subMonth()->format('Y-m-d') }}"
+                                    class="mt-2 w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                            </label>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Sampai
+                                <input id="tanggalSampaiRekap" type="date" value="{{ now()->format('Y-m-d') }}"
+                                    class="mt-2 w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
+                            </label>
                         </div>
                         <p class="mt-2 text-xs text-gray-500">Rentang otomatis: tanggal 26 bulan sebelumnya sampai 25 bulan dipilih.</p>
                     </div>
@@ -1024,9 +1035,20 @@
 
         let bulanRekap = document.getElementById('bulanRekap').value;
 
+        function globalExportParams() {
+            const params = new URLSearchParams({ month: bulanRekap });
+            const startDate = document.getElementById('tanggalDariRekap')?.value;
+            const endDate = document.getElementById('tanggalSampaiRekap')?.value;
+            if (startDate && endDate) {
+                params.set('start_date', startDate);
+                params.set('end_date', endDate);
+            }
+            return params;
+        }
+
         async function exportGlobalToExcel() {
             try {
-                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                const response = await fetch(`/api/v1/all-rekap-export-global?${globalExportParams()}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
 
@@ -1042,7 +1064,7 @@
 
         async function exportGlobalToPDF() {
             try {
-                const response = await fetch(`/api/v1/all-rekap-export-global?month=${bulanRekap}`);
+                const response = await fetch(`/api/v1/all-rekap-export-global?${globalExportParams()}`);
                 if (!response.ok) throw new Error('Failed to fetch data');
                 const result = await response.json();
 
