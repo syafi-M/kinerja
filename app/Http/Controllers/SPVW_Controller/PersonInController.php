@@ -368,6 +368,7 @@ class PersonInController extends Controller
                 })
             ],
             'date_in' => ['required', 'date'],
+            'total_mk' => ['required', 'string', 'max:255'],
             'method_salary' => ['required', Rule::in(['transfer', 'cash', 'manual'])],
             'method_salary_manual' => [
                 'nullable',

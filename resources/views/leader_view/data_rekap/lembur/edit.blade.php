@@ -181,7 +181,7 @@
                                 maxlength="13"
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 :required="selectedType === 'lainnya'" :disabled="selectedType !== 'lainnya'">
-                            <input type="hidden" name="type_overtime_manual" :value="manualTypeRaw">
+                            <input type="hidden" name="type_overtime_manual" :value="manualTypeRaw" :disabled="selectedType !== 'lainnya'">
                             <p class="mt-1 text-xs text-slate-500"
                                 x-text="manualTypeRaw ? `Preview: ${formatRupiah(manualTypeRaw)}` : 'Gunakan angka, misalnya 50000 atau 20000.'">
                                 {{ old('type_overtime_manual', $overtime->type_overtime_manual) ? 'Preview: ' . toRupiah(old('type_overtime_manual', $overtime->type_overtime_manual)) : 'Gunakan angka, misalnya 50000 atau 20000.' }}
@@ -266,6 +266,7 @@
                 limitNumericInput(event) {
                     const rawValue = String(event.target.value ?? '').replace(/[^\d]/g, '').slice(0, 7);
                     this.manualType = rawValue;
+                    this.manualTypeRaw = rawValue;
                     event.target.value = rawValue;
                 },
 
