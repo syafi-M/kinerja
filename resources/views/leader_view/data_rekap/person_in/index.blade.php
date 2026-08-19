@@ -381,6 +381,7 @@
                     fullname: fullname,
                     jabatan_id: $('#jabatan_id').val(),
                     date_in: $('#date_in').val(),
+                    total_mk: $('#total_mk').val(),
                     method_salary: $('input[name="method_salary"]:checked').val(),
                     method_salary_manual: alpineData ? alpineData.manualMethod : '',
                     additional_reason: $('#additional_reason').val()

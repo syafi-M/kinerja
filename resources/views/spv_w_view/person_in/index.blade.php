@@ -125,6 +125,15 @@
                                 class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                                 required>
                         </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="total_mk" class="mb-1.5 block text-sm font-semibold text-slate-700">
+                                Jumlah MK <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="total_mk" id="total_mk"
+                                class="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+                                required placeholder="Contoh: 12 bulan">
+                        </div>
                     </div>
                 </section>
 
@@ -342,6 +351,7 @@
                     fullname: fullname,
                     jabatan_id: $('#jabatan_id').val(),
                     date_in: $('#date_in').val(),
+                    total_mk: $('#total_mk').val(),
                     method_salary: $('input[name="method_salary"]:checked').val(),
                     method_salary_manual: alpineData ? alpineData.manualMethod : '',
                     additional_reason: $('#additional_reason').val(),
