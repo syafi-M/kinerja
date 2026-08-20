@@ -1,8 +1,8 @@
     <script>
         // Store user data once to avoid repeated server-side calls
-        const userName = @json(Auth::user()->name);
-        const userJabatanCode = @json(Auth::user()->jabatan->code_jabatan);
-        const userDevisiId = @json(Auth::user()->devisi_id);
+        const userName = @json($user->name);
+        const userJabatanCode = @json($directJabatan);
+        const userDevisiId = @json($user->devisi_id);
         const isSupervisorOrSpecialDept = userJabatanCode === "SPV-W" || userDevisiId === 12;
         const isOvernightShift = @json((bool) $absenP?->shift?->is_overnight);
 

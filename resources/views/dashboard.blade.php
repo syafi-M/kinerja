@@ -32,6 +32,13 @@
 </head>
 
 <body class="font-sans antialiased bg-slate-400">
+    @php
+        $user = Auth::user();
+        $jabatan = $user?->divisi?->jabatan?->code_jabatan;
+        $directJabatan = $user?->jabatan?->code_jabatan;
+        $roleId = $user?->role_id;
+        $kerjasamaId = $user?->kerjasama_id;
+    @endphp
     <div class="min-h-screen" style="padding-bottom: 4rem;">
         @include('../layouts/navbar')
         <div class="flex items-center justify-start">
@@ -54,7 +61,7 @@
             @endif
         </div>
 
-        @if (Auth::user()->kerjasama_id == 1 && session()->has('point'))
+        @if ($kerjasamaId == 1 && session()->has('point'))
             <div class="flex items-center justify-end mx-5 mb-5">
                 <div class="flex flex-row px-4 py-1 text-xs text-white rounded-md shadow-sm gap-x-2 sm:w-fit"
                     style="background-color: #0C642F">
@@ -68,9 +75,6 @@
         <div class="sm:mx-10">
             <main>
                 @auth
-                    @php
-                        $jabatan = Auth::user()->divisi->jabatan->code_jabatan;
-                    @endphp
                     @if (in_array($jabatan, ['MITRA', 'LEADER', 'CO-CS', 'CO-SCR', 'DIREKSI', 'SPV-W']))
                         <div class="flex justify-start px-4 mr-10 bg-amber-500 w-fit"
                             style="border-radius: 5px 0px 24px 0px;">
@@ -98,9 +102,9 @@
                             </div>
 
                             {{-- Handle Check Kode Jabatan --}}
-                            @if (Auth::user()->divisi->jabatan->code_jabatan != 'MITRA' &&
-                                    Auth::user()->divisi->jabatan->code_jabatan != 'LEADER' &&
-                                    Auth::user()->divisi->jabatan->code_jabatan != 'DIREKSI')
+                            @if ($jabatan != 'MITRA' &&
+                                    $jabatan != 'LEADER' &&
+                                    $jabatan != 'DIREKSI')
 
                                 {{-- absensi --}}
                                 <div id="btnAbsensi"
@@ -113,9 +117,9 @@
                                     $hariIni = Carbon\Carbon::now()->format('N');
                                     $tampilkanAbsensi =
                                         !in_array($hariIni, [6, 7]) ||
-                                        Auth::user()->kerjasama_id != 1 ||
-                                        Auth::user()->devisi_id != 26;
-                                    $codeJabatan = Auth::user()->divisi->jabatan->code_jabatan;
+                                        $kerjasamaId != 1 ||
+                                        $user->devisi_id != 26;
+                                    $codeJabatan = $jabatan;
                                     $absensiRoute = match ($codeJabatan) {
                                         'CO-CS' => 'absensi-karyawan-co-cs.index',
                                         'CO-SCR' => 'absensi-karyawan-co-scr.index',
@@ -158,7 +162,7 @@
                                 default => false,
                             };
                         @endphp
-                        @if ($jabatanMatch && Auth::user()->id != '7')
+                        @if ($jabatanMatch && $user->id != '7')
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnRekap"
                                     onclick="window.location='{{ $codeJabatan == 'SPV-W' ? route('spvw.rekap.index') : route('index.rekap.data.leader') }}'"
@@ -173,7 +177,7 @@
 
                         {{-- TO Manajemen SPV And MRT --}}
 
-                        @if (auth()->user()->jabatan_id == 4 || auth()->user()->jabatan_id == 14)
+                        @if (in_array($user->jabatan_id, [4, 14]))
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnRekap" onclick="window.location='{{ route('manajemen_rekap') }}'"
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
@@ -187,7 +191,7 @@
 
                         {{-- End Handle --}}
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                            @if (Auth::user()->kerjasama_id == 1)
+                            @if ($kerjasamaId == 1)
                                 <div id="btnCP"
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="ri-list-check-3"></i>
@@ -229,15 +233,15 @@
                                 <button class="text-sm font-bold uppercase">Rating</button>
                             </div>
                             <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="cekMe">
-                                <a href="{{ route('ratingSaya', Auth::user()->id) }}"
+                                <a href="{{ route('ratingSaya', $user->id) }}"
                                     class="w-full btn btn-info">Check Rating Saya</a>
                             </div>
-                            @if (Auth::user()->role_id == 2)
+                            @if ($roleId == 2)
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="cekRate">
                                     <a href="{{ route('admin.rating.index') }}"
                                         class="w-full btn btn-info">Rating</a>
                                 </div>
-                            @elseif(Auth::user()->divisi->jabatan->code_jabatan == 'LEADER')
+                            @elseif($jabatan == 'LEADER')
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="cekRate">
                                     <a href="{{ route('leader-rating.index') }}"
                                         class="w-full btn btn-info">Rating</a>
@@ -278,48 +282,48 @@
                             </a>
                         </div>
 
-                        @if (Auth::user()->id == 7 || Auth::user()->id == 10 || Auth::user()->id == 5)
+                        @if ($user->id == 7 || $user->id == 10 || $user->id == 5)
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                                <a href="{{ route('slip-karyawan') }}" id=""
+                                <a href="{{ route('slip-karyawan') }}"
                                     class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="text-xl ri-wallet-3-line"></i>
-                                    <button class="text-sm font-bold uppercase">Slip Gaji Karyawan</button>
+                                    <span class="text-sm font-bold uppercase">Slip Gaji Karyawan</span>
                                 </a>
                             </div>
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                                <a href="{{ route('manajemen_absensi') }}" id=""
+                                <a href="{{ route('manajemen_absensi') }}"
                                     class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="text-xl ri-wallet-3-line"></i>
-                                    <button class="text-sm font-bold uppercase">Absensi Karyawan</button>
+                                    <span class="text-sm font-bold uppercase">Absensi Karyawan</span>
                                 </a>
                             </div>
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                                <a href="{{ route('manajemen_laporan') }}" id=""
+                                <a href="{{ route('manajemen_laporan') }}"
                                     class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="text-xl ri-wallet-3-line"></i>
-                                    <button class="text-sm font-bold uppercase">Laporan Karyawan</button>
+                                    <span class="text-sm font-bold uppercase">Laporan Karyawan</span>
                                 </a>
                             </div>
                             <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                                <a href="{{ route('manajemen_user') }}" id=""
+                                <a href="{{ route('manajemen_user') }}"
                                     class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="text-xl ri-wallet-3-line"></i>
-                                    <button class="text-sm font-bold uppercase">Data Karyawan</button>
+                                    <span class="text-sm font-bold uppercase">Data Karyawan</span>
                                 </a>
                             </div>
                         @endif
 
-                        @if (Auth::user()->divisi->jabatan->code_jabatan == 'CO-CS')
+                        @if ($jabatan == 'CO-CS')
                             <div class="flex items-center w-full px-5 mt-5 space-y-4 overflow-hidden sm:px-16">
                                 <a href="{{ route('leaderView') }}" class="w-full btn btn-info"><i
                                         class="text-xl ri-pass-pending-line"></i>Menu Leader</a>
                             </div>
-                        @elseif(Auth::user()->divisi->jabatan->code_jabatan == 'CO-SCR')
+                        @elseif($jabatan == 'CO-SCR')
                             <div class="flex items-center w-full mt-5 space-y-4 overflow-hidden sm:px-16">
                                 <a href="{{ route('danruView') }}" class="w-full btn btn-info"><i
                                         class="text-xl ri-pass-pending-line"></i>Menu Danru</a>
                             </div>
-                        @elseif(Auth::user()?->jabatan?->code_jabatan == 'SPV-W')
+                        @elseif($directJabatan == 'SPV-W')
                             <div class="flex items-center w-full mt-5 space-y-4 overflow-hidden sm:px-16">
                                 <a href="{{ route('SPVWiew') }}" class="w-full btn btn-info"><i
                                         class="text-xl ri-pass-pending-line"></i>Menu SPV Wilayah</a>
@@ -327,12 +331,10 @@
                         @endif
                     @else
                         @php
-                            $jabatan = Auth::user()->divisi->jabatan->code_jabatan;
-                            $role_id = Auth::user()->role_id;
                             $routes = [
                                 'MITRA' => [
                                     'karyawan' => 'mitra_user',
-                                    'jadwal' => $role_id == 2 ? 'admin.jadwal.index' : 'mitra_jadwal',
+                                    'jadwal' => $roleId == 2 ? 'admin.jadwal.index' : 'mitra_jadwal',
                                     'absensi' => 'mitra_absensi',
                                     'izin' => 'mitra_izin',
                                     'lembur' => 'mitra_lembur',
@@ -342,7 +344,7 @@
                                 ],
                                 'LEADER' => [
                                     'karyawan' => 'lead_user',
-                                    'jadwal' => $role_id == 2 ? 'admin.jadwal.index' : 'leader-jadwal.index',
+                                    'jadwal' => $roleId == 2 ? 'admin.jadwal.index' : 'leader-jadwal.index',
                                     'absensi' => 'lead_absensi',
                                     'izin' => 'lead_izin',
                                     'lembur' => 'lead_lembur',
@@ -351,7 +353,7 @@
                                 ],
                                 'DIREKSI' => [
                                     'karyawan' => 'direksi_user',
-                                    'jadwal' => $role_id == 2 ? 'admin.jadwal.index' : 'direksi_jadwal',
+                                    'jadwal' => $roleId == 2 ? 'admin.jadwal.index' : 'direksi_jadwal',
                                     'absensi' => 'direksi_absensi',
                                     'izin' => 'direksi_izin',
                                     'lembur' => 'direksi_lembur',
@@ -376,7 +378,7 @@
                         @endphp
                         @if (array_key_exists($jabatan, $routes))
                             <div class="w-full gap-2">
-                                @if (Auth::user()->divisi->jabatan->code_jabatan == 'DIREKSI')
+                                @if ($jabatan == 'DIREKSI')
                                     {{-- absensi --}}
                                     <div id="btnAbsensi"
                                         class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
@@ -387,8 +389,8 @@
                                     @php
                                         $hariIni = Carbon\Carbon::now()->format('N');
                                         $tampilkanAbsensi =
-                                            !in_array($hariIni, [6, 7]) || Auth::user()->kerjasama_id != 1;
-                                        $codeJabatan = Auth::user()?->divisi?->jabatan?->code_jabatan;
+                                            !in_array($hariIni, [6, 7]) || $kerjasamaId != 1;
+                                        $codeJabatan = $jabatan;
                                         $absensiRoute = match ($codeJabatan) {
                                             'CO-CS' => 'absensi-karyawan-co-cs.index',
                                             'CO-SCR' => 'absensi-karyawan-co-scr.index',
@@ -459,15 +461,15 @@
 
                         {{-- quran --}}
                         <div class="flex items-center justify-center w-full gap-x-2">
-                            <div id="btnAbsi" style="{{ Auth::user()->kerjasama_id != 1 ?: 'width: 50%;' }}"
+                            <div id="btnAbsi" style="{{ $kerjasamaId != 1 ?: 'width: 50%;' }}"
                                 class=" px-2 mt-5 flex justify-center items-center gap-2 bg-blue-400 rounded-md h-11 hover:bg-blue-500 transition-all ease-linear .2s">
                                 <i class="text-xl ri-git-repository-line"></i>
                                 <a href="https://baca-alquran.sac-po.com" class="text-sm font-bold uppercase">
-                                    {{ Auth::user()->kerjasama_id != 1 ? 'Baca Al-Qur`an' : 'Al-Qur`an' }}
+                                    {{ $kerjasamaId != 1 ? 'Baca Al-Qur`an' : 'Al-Qur`an' }}
                                 </a>
                             </div>
-                            <div style="{{ Auth::user()->kerjasama_id != 1 ?: 'width: 50%;' }}"
-                                class="{{ Auth::user()->kerjasama_id == 1 ? 'flex' : 'hidden' }} px-5 mt-5 justify-center items-center gap-2 bg-blue-400 rounded-md h-11 hover:bg-blue-500 transition-all ease-linear .2s">
+                            <div style="{{ $kerjasamaId != 1 ?: 'width: 50%;' }}"
+                                class="{{ $kerjasamaId == 1 ? 'flex' : 'hidden' }} px-5 mt-5 justify-center items-center gap-2 bg-blue-400 rounded-md h-11 hover:bg-blue-500 transition-all ease-linear .2s">
                                 <i class="text-xl ri-newspaper-line"></i>
                                 <a href="https://sppd-online.sac-po.com/login" class="text-sm font-bold uppercase">
                                     SPPD

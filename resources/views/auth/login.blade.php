@@ -10,9 +10,9 @@
             @csrf
 
             <div>
-                <label class="block text-xs font-semibold text-stone-700">Nama Pengguna</label>
+                <label for="name" class="block text-xs font-semibold text-stone-700">Nama Pengguna</label>
                 <div class="mt-1">
-                    <input name="name" value="{{ old('name') }}" type="text" required autofocus
+                    <input id="name" name="name" value="{{ old('name') }}" type="text" required autofocus
                         class="w-full rounded-lg border border-amber-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
                         placeholder="Masukkan Username..." />
                 </div>
@@ -22,12 +22,12 @@
             </div>
 
             <div x-data="{ show: false }">
-                <label class="block text-xs font-semibold text-stone-700">Kata Sandi</label>
+                <label for="password" class="block text-xs font-semibold text-stone-700">Kata Sandi</label>
                 <div class="mt-1 relative">
-                    <input name="password" :type="show ? 'text' : 'password'" required
+                    <input id="password" name="password" :type="show ? 'text' : 'password'" required
                         class="w-full rounded-lg border border-amber-200 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-amber-300 transition"
                         placeholder="Masukkan Password..." />
-                    <button type="button" @click="show = !show"
+                    <button type="button" @click="show = !show" :aria-label="show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'"
                         class="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-amber-700 hover:text-amber-900">
                         <!-- Eye (when hidden) -->
                         <i class="ri-eye-line text-xl" x-show="!show"></i>
@@ -44,14 +44,14 @@
             <div class="flex items-center justify-between text-sm">
                 <label class="inline-flex items-center gap-2">
                     <input type="checkbox" name="remember" class="rounded text-amber-500 focus:ring-0" />
-                    <span class="text-stone-700">Remember me</span>
+                    <span class="text-stone-700">Ingat saya</span>
                 </label>
             </div>
 
             <div>
-                <button type="button"
+                <button type="submit"
                     class="w-full btnLogin bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg shadow">
-                    Log In
+                    Masuk
                 </button>
             </div>
         </form>
@@ -63,12 +63,10 @@
     </div>
     <script>
         $(document).ready(function() {
-            $('.btnLogin').on('click', function() {
-                $(this).html(
+            $('form').on('submit', function() {
+                $('.btnLogin').html(
                     '<div class="animate-pulse flex justify-center items-center gap-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Tunggu...</div>'
-                );
-                $(this).attr('disabled', true);
-                $(this).closest('form').submit();
+                ).attr('disabled', true);
             });
         });
     </script>

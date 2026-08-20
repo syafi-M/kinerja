@@ -19,8 +19,8 @@
 
                 // Get location data from server
                 const lokasiMitra = @json($lokasiMitra);
-                const userCoopId = @json(Auth::user()->kerjasama_id);
-                const userName = @json(Auth::user()->name);
+                const userCoopId = @json($kerjasamaId);
+                const userName = @json($user->name);
                 const initialAttendancePosition = {
                     lat: parseFloat(@json($absenP?->msk_lat)),
                     lng: parseFloat(@json($absenP?->msk_long))
