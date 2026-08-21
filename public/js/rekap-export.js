@@ -1,8 +1,13 @@
 ﻿class RekapExporter {
-    constructor(kerjasamaId, month = null) {
+    constructor(kerjasamaId, month = null, baseUrl = "/api/v1/all-rekap-export", startDate = null, endDate = null) {
         this.kerjasamaId = kerjasamaId;
         this.month = month || new Date().toISOString().slice(0, 7);
-        this.apiUrl = `/api/v1/all-rekap-export/${kerjasamaId}?month=${this.month}`;
+        const params = new URLSearchParams({ month: this.month });
+        if (startDate && endDate) {
+            params.set('start_date', startDate);
+            params.set('end_date', endDate);
+        }
+        this.apiUrl = `${baseUrl}/${kerjasamaId}?${params}`;
     }
 
     async fetchAllData() {

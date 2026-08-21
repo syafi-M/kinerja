@@ -256,7 +256,7 @@ Route::middleware(['auth', 'apdt'])->group(function () {
         Route::get('/api/v1/person-in-api/{kerjasama}', [RekapPersonInController::class, 'index'])->name('api-person-in');
         Route::get('/api/v1/cutting-api/{kerjasama}', [RekapCuttingController::class, 'index'])->name('api-cutting');
         Route::get('/api/v1/finished-training-api/{kerjasama}', [RekapFinishedTrainingController::class, 'index'])->name('api-finished-training');
-        Route::get('/api/v1/all-rekap-export/{kerjasama}', [AllRekapExportController::class, 'getAllRekapData'])->name('api-all-rekap-export');
+        Route::get('/Management/api/v1/all-rekap-export/{kerjasama}', [AllRekapExportController::class, 'getAllRekapData'])->name('management.api-all-rekap-export');
         Route::get('/api/v1/all-rekap-export-global', [AllRekapExportController::class, 'getGlobalRekapData'])->name('api-all-rekap-export-global');
         Route::get('/api/v1/keterangan-lanjutan-api/{kerjasama}', [KeteranganLanjutanController::class, 'index'])->name('api-keterangan-lanjutan');
         Route::patch('/api/v1/rekap/overtimes/{id}/status', [OvertimesController::class, 'updateStatus'])->name('api-overtimes-status');
