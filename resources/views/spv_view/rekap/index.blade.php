@@ -758,8 +758,16 @@
                                     </button>
                                 </div>
                                 <div class="flex items-center justify-end">
-                                    <!-- Export Buttons -->
-                                    <div class="flex flex-wrap gap-2">
+                                    <!-- Export Date Range + Buttons -->
+                                    <div class="flex flex-wrap items-end gap-2">
+                                        <label class="flex flex-col gap-1 text-xs text-gray-600">
+                                            Dari
+                                            <input id="modalTanggalDariRekap" type="date" class="px-2 py-2 text-sm border border-gray-300 rounded-lg">
+                                        </label>
+                                        <label class="flex flex-col gap-1 text-xs text-gray-600">
+                                            Sampai
+                                            <input id="modalTanggalSampaiRekap" type="date" class="px-2 py-2 text-sm border border-gray-300 rounded-lg">
+                                        </label>
                                         <button onclick="exportToExcel()"
                                             class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-1.5">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor"
@@ -1137,7 +1145,7 @@
                 return;
             }
 
-            const exporter = new RekapExporter(currentKerjasamaId, bulanRekap);
+            const exporter = new RekapExporter(currentKerjasamaId, bulanRekap, '/Management/api/v1/all-rekap-export', document.getElementById('modalTanggalDariRekap')?.value, document.getElementById('modalTanggalSampaiRekap')?.value);
             exporter.exportToExcel();
         }
 
@@ -1148,7 +1156,7 @@
                 return;
             }
 
-            const exporter = new RekapExporter(currentKerjasamaId, bulanRekap);
+            const exporter = new RekapExporter(currentKerjasamaId, bulanRekap, '/Management/api/v1/all-rekap-export', document.getElementById('modalTanggalDariRekap')?.value, document.getElementById('modalTanggalSampaiRekap')?.value);
             exporter.exportToPDF();
         }
 
@@ -1173,7 +1181,7 @@
                 if (!result.success) throw new Error(result.message);
                 const data = result.data;
 
-                const exporter = new RekapExporter(null, bulanRekap);
+                const exporter = new RekapExporter(null, bulanRekap, '/Management/api/v1/all-rekap-export');
                 exporter.exportGlobalToExcel(data);
             } catch (e) {
                 alert('Error: ' + e.message);
@@ -1189,7 +1197,7 @@
                 if (!result.success) throw new Error(result.message);
                 const data = result.data;
 
-                const exporter = new RekapExporter(null, bulanRekap);
+                const exporter = new RekapExporter(null, bulanRekap, '/Management/api/v1/all-rekap-export');
                 exporter.exportGlobalToPDF(data);
             } catch (e) {
                 alert('Error: ' + e.message);

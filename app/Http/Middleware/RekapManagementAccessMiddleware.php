@@ -20,16 +20,35 @@ class RekapManagementAccessMiddleware
             return $next($request);
         }
 
-        $nameJabatan = strtoupper(trim((string) optional($user->jabatan)->name_jabatan));
-        $codeJabatan = strtoupper(trim((string) optional($user->jabatan)->code_jabatan));
+        $jabatans = collect([
+            $user->jabatan,
+            $user->divisi?->jabatan,
+        ])->filter();
 
-        $allowedNames = ['MARKETING', 'SPV'];
-        $allowedCodes = ['MARKETING', 'SPV', 'SVP-P', 'SPV-A'];
+        $allowedNames = [
+            'MARKETING',
+            'SPV',
+        ];
 
-        if (in_array($nameJabatan, $allowedNames, true) || in_array($codeJabatan, $allowedCodes, true)) {
-            return $next($request);
+        $allowedCodes = [
+            'MARKETING',
+            'SPV',
+            'SVP-P',
+            'SPV-A',
+        ];
+
+        $hasAccess = $jabatans->contains(function ($jabatan) use ($allowedNames, $allowedCodes): bool {
+            $nameJabatan = strtoupper(trim((string) $jabatan->name_jabatan));
+            $codeJabatan = strtoupper(trim((string) $jabatan->code_jabatan));
+
+            return in_array($nameJabatan, $allowedNames, true) ||
+                in_array($codeJabatan, $allowedCodes, true);
+        });
+
+        if (!$hasAccess) {
+            abort(403, 'Unauthorized');
         }
 
-        abort(403, 'Unauthorized');
+        return $next($request);
     }
 }
