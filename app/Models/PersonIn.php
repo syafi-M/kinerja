@@ -9,6 +9,10 @@ class PersonIn extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'date_in' => 'date:Y-m-d',
+    ];
+
     protected $fillable = [
         'fullname',
         'client_id',

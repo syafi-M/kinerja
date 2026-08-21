@@ -42,7 +42,7 @@ class PersonOutController extends Controller
     {
         $isSubmissionLocked = $this->isSubmissionLockedByDueDate();
 
-        $personOut = PersonOut::select(['id', 'user_id', 'total_mk', 'reason', 'reason_manual', 'out_date', 'img', 'status', 'created_at'])
+        $personOut = PersonOut::select(['id', 'user_id', 'total_mk', 'reason', 'reason_manual', 'out_date', 'img', 'status', 'created_at', 'updated_at'])
             ->with([
                 'user' => function ($q) {
                     $q->withTrashed()->select(['id', 'name', 'nama_lengkap']);

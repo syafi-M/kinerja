@@ -135,6 +135,7 @@ class PersonInController extends Controller
             // Check if person already exists with same fullname, client_id, and date_in
             $personIn = PersonIn::where('fullname', $validated['fullname'])
                 ->where('client_id', $validated['client_id'])
+                ->whereDate('date_in', $validated['date_in'])
                 ->first();
 
             if ($personIn) {

@@ -10,6 +10,10 @@ class PersonOut extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'out_date' => 'date:Y-m-d',
+    ];
+
     protected $fillable = [
         'user_id',
         'total_mk',
