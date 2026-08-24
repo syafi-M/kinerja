@@ -11,12 +11,13 @@ use App\Models\PersonIn;
 use App\Models\PersonOut;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Http\Controllers\SVP_Controller\Rekap\Concerns\TransformCuttings;
 use App\Http\Controllers\SVP_Controller\Rekap\Concerns\TransformOvertimes;
 use Illuminate\Http\Request;
 
 class AllRekapExportController extends RekapController
 {
-    use TransformOvertimes;
+    use TransformOvertimes, TransformCuttings;
 
     public function getAllRekapData(Request $request, $kerjasama)
     {
@@ -190,7 +191,7 @@ class AllRekapExportController extends RekapController
                 'overtimes' => $this->transformOvertimes($overtimes),
                 'person_ins' => $personIns,
                 'person_outs' => $personOuts,
-                'cuttings' => $cuttings,
+                'cuttings' =>  $this->transformCuttings($cuttings),
                 'finished_trainings' => $finishedTrainings,
                 'keterangan_lanjutan' => $keterangan,
                 'client' => ['name' => $clientName],
@@ -415,7 +416,7 @@ class AllRekapExportController extends RekapController
                 'overtimes' => $this->transformOvertimes($overtimes),
                 'person_ins' => $personIns,
                 'person_outs' => $personOuts,
-                'cuttings' => $cuttings,
+                'cuttings' => $this->transformCuttings($cuttings),
                 'finished_trainings' => $finishedTrainings,
                 'keterangan_lanjutan' => $keterangan,
                 'client' => ['name' => 'Semua Mitra'],
