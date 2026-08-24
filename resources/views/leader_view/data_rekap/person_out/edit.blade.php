@@ -37,6 +37,7 @@
                                 @foreach ($users as $user)
                                     <option {{ $personOut->user_id == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} - {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
+                                        ({{ $user->kerjasama?->client?->panggilan ?: $user->kerjasama?->client?->name ?? 'Mitra kosong' }})
                                     </option>
                                 @endforeach
                             </select>

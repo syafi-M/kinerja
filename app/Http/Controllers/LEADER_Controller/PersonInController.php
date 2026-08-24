@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Concerns\LocksRekapByDueDate;
+use App\Http\Controllers\Concerns\ScopesLeaderMitra;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
@@ -16,7 +17,7 @@ use Illuminate\Validation\Rule;
 
 class PersonInController extends Controller
 {
-    use LocksRekapByDueDate, UsesToastRedirects;
+    use LocksRekapByDueDate, ScopesLeaderMitra, UsesToastRedirects;
 
     public function index()
     {
@@ -29,13 +30,9 @@ class PersonInController extends Controller
             ->orderBy('name_jabatan')
             ->get();
 
-        $users = User::select(['id', 'nama_lengkap', 'jabatan_id'])
-            ->where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
+        $users = $this->allowedUsersQuery()
             ->orderBy('nama_lengkap')
-            ->get();
+            ->get(['id', 'nama_lengkap', 'jabatan_id', 'kerjasama_id']);
 
         return view('leader_view.data_rekap.person_in.index', [
             'jabatans' => $jabatans,
@@ -55,10 +52,7 @@ class PersonInController extends Controller
             ]);
         }
 
-        $users = User::where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
+        $users = $this->allowedUsersQuery()
             ->where('nama_lengkap', 'like', '%' . $query . '%')
             ->orderBy('nama_lengkap')
             ->limit(15)
@@ -126,7 +120,10 @@ class PersonInController extends Controller
             $validated = $request->validate($this->rules($request));
             unset($validated['has_account']);
 
-            $validated['client_id'] = auth()->user()->kerjasama->client_id;
+            $personUser = $this->allowedUsersQuery()->with('kerjasama:id,client_id')
+                ->where('nama_lengkap', $validated['fullname'])
+                ->first();
+            $validated['client_id'] = $personUser?->kerjasama?->client_id ?? auth()->user()->kerjasama->client_id;
             $validated['status'] = 'pending';
 
             // Set created_by_user_id
@@ -175,7 +172,10 @@ class PersonInController extends Controller
             $validated = $request->validate($this->rules($request));
             unset($validated['has_account']);
 
-            $validated['client_id'] = auth()->user()->kerjasama->client_id;
+            $personUser = $this->allowedUsersQuery()->with('kerjasama:id,client_id')
+                ->where('nama_lengkap', $validated['fullname'])
+                ->first();
+            $validated['client_id'] = $personUser?->kerjasama?->client_id ?? auth()->user()->kerjasama->client_id;
 
             // Set created_by_user_id
             $validated['created_by_user_id'] = auth()->id();
@@ -305,18 +305,24 @@ class PersonInController extends Controller
     {
         return PersonIn::with(['jabatan:id,name_jabatan', 'createdBy:id,name,nama_lengkap'])
             ->select(['id', 'fullname', 'client_id', 'created_by_user_id', 'jabatan_id', 'date_in', 'method_salary', 'method_salary_manual', 'status', 'created_at'])
-            ->where('client_id', auth()->user()->kerjasama->client_id)
+            ->whereIn('client_id', $this->leaderClientIds())
             ->whereHas('jabatan', function ($q) {
                 $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
             });
     }
 
+    private function allowedUsersQuery()
+    {
+        return User::query()
+            ->with('kerjasama.client:id,name,panggilan')
+            ->where(function ($q) {
+                $this->scopeLeaderUser($q);
+            });
+    }
+
     private function rules(Request $request): array
     {
-        $allowedFullnames = User::where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
+        $allowedFullnames = $this->allowedUsersQuery()
             ->pluck('nama_lengkap')
             ->all();
 

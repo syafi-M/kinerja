@@ -95,6 +95,7 @@
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}" data-name="{{ $user->nama_lengkap }}">
                                     {{ $user->nama_lengkap }}
+                                    ({{ $user->kerjasama?->client?->panggilan ?: $user->kerjasama?->client?->name ?? 'Mitra kosong' }})
                                 </option>
                             @endforeach
                         </select>

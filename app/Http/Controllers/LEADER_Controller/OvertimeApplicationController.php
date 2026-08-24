@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Concerns\LocksRekapByDueDate;
+use App\Http\Controllers\Concerns\ScopesLeaderMitra;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OvertimeStoreRequest;
 use App\Models\Overtime;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 
 class OvertimeApplicationController extends Controller
 {
-    use LocksRekapByDueDate;
+    use LocksRekapByDueDate, ScopesLeaderMitra;
 
     public function create()
     {
@@ -23,13 +24,7 @@ class OvertimeApplicationController extends Controller
             return $response;
         }
 
-        $users = User::select(['id', 'name', 'nama_lengkap'])
-            ->where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
-            ->orderBy('nama_lengkap')
-            ->get();
+        $users = $this->visibleUsers()->orderBy('nama_lengkap')->get();
 
         return view('leader_view.data_rekap.lembur.create', [
             'users' => $users,
@@ -44,6 +39,7 @@ class OvertimeApplicationController extends Controller
 
         try {
             $data = $request->validated();
+            $this->abortIfUserNotVisible($data['user_id']);
             if ($request->hasFile('foto_bukti')) {
                 $data['foto_bukti'] = $request->file('foto_bukti')->store('overtimes/foto-bukti', 'public');
             }
@@ -69,10 +65,7 @@ class OvertimeApplicationController extends Controller
         $overtimes = Overtime::with(['user:id,name,nama_lengkap'])
             ->select(['id', 'user_id', 'date_overtime', 'desc', 'type_overtime', 'type_overtime_manual', 'foto_bukti', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
-                $q->where('kerjasama_id', auth()->user()->kerjasama_id)
-                    ->whereHas('jabatan', function ($jabatanQuery) {
-                        $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-                    });
+                $this->scopeVisibleUsers($q);
             })
             ->when($request->status, function ($q) use ($request) {
                 $q->where('status', $request->status);
@@ -108,13 +101,7 @@ class OvertimeApplicationController extends Controller
             return $response;
         }
 
-        $users = User::select(['id', 'name', 'nama_lengkap'])
-            ->where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
-            ->orderBy('nama_lengkap')
-            ->get();
+        $users = $this->visibleUsers()->orderBy('nama_lengkap')->get();
         $overtime = Overtime::findOrFail($id);
         return view('leader_view.data_rekap.lembur.edit', [
             'overtime' => $overtime,
@@ -130,6 +117,7 @@ class OvertimeApplicationController extends Controller
 
         $overtime = Overtime::findOrFail($id);
         $data = $request->validated();
+        $this->abortIfUserNotVisible($data['user_id']);
         if ($request->hasFile('foto_bukti')) {
             if (!empty($overtime->foto_bukti)) {
                 Storage::disk('public')->delete($overtime->foto_bukti);
@@ -220,7 +208,7 @@ class OvertimeApplicationController extends Controller
                 : null);
 
         $overtimes = Overtime::whereHas('user', function ($q) {
-            $q->where('kerjasama_id', auth()->user()->kerjasama_id);
+            $this->scopeVisibleUsers($q);
         })
             ->whereBetween('date_overtime', [$startDate, $endDate])
             ->where(function ($q) {
@@ -260,13 +248,32 @@ class OvertimeApplicationController extends Controller
         ]);
     }
 
+    private function visibleUsers()
+    {
+        return User::select(['id', 'name', 'nama_lengkap', 'kerjasama_id'])
+            ->with('kerjasama.client:id,name,panggilan')
+            ->where(function ($q) {
+                $this->scopeVisibleUsers($q);
+            });
+    }
+
+    private function scopeVisibleUsers($q): void
+    {
+        $this->scopeLeaderUser($q);
+    }
+
+    private function abortIfUserNotVisible($userId): void
+    {
+        abort_unless($this->visibleUsers()->whereKey($userId)->exists(), 403);
+    }
+
     private function hasBulkSubmittableOvertime(): bool
     {
         $startDate = Carbon::now()->startOfMonth();
         $endDate = Carbon::now()->endOfMonth();
 
         return Overtime::whereHas('user', function ($q) {
-            $q->where('kerjasama_id', auth()->user()->kerjasama_id);
+            $this->scopeVisibleUsers($q);
         })
             ->whereBetween('date_overtime', [$startDate, $endDate])
             ->where(function ($q) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Concerns\LocksRekapByDueDate;
+use App\Http\Controllers\Concerns\ScopesLeaderMitra;
 use App\Http\Controllers\Concerns\UsesToastRedirects;
 use App\Http\Controllers\Controller;
 use App\Models\PerformanceCuts;
@@ -15,7 +16,7 @@ use Illuminate\Validation\Rule;
 
 class CuttingController extends Controller
 {
-    use LocksRekapByDueDate, UsesToastRedirects;
+    use LocksRekapByDueDate, ScopesLeaderMitra, UsesToastRedirects;
 
     public function index()
     {
@@ -25,7 +26,7 @@ class CuttingController extends Controller
 
         $users = $this->allowedUsersQuery()
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap']);
+            ->get(['id', 'nama_lengkap', 'kerjasama_id']);
 
         return view('leader_view.data_rekap.cutting.index', [
             'users' => $users,
@@ -48,7 +49,7 @@ class CuttingController extends Controller
             ->where('nama_lengkap', 'like', '%' . $query . '%')
             ->orderBy('nama_lengkap')
             ->limit(15)
-            ->get(['id', 'nama_lengkap']);
+            ->get(['id', 'nama_lengkap', 'kerjasama_id']);
 
         return response()->json([
             'message' => 'User list',
@@ -73,7 +74,7 @@ class CuttingController extends Controller
 
         $users = $this->allowedUsersQuery()
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap']);
+            ->get(['id', 'nama_lengkap', 'kerjasama_id']);
 
         return view('leader_view.data_rekap.cutting.history', [
             'cuttings' => $cuttings,
@@ -276,18 +277,16 @@ class CuttingController extends Controller
         return PerformanceCuts::with(['user:id,name,nama_lengkap', 'createdBy:id,name,nama_lengkap'])
             ->select(['id', 'user_id', 'created_by_user_id', 'date_cut', 'type_cut', 'manual_type_cut', 'desc', 'status', 'created_at'])
             ->whereHas('user', function ($q) {
-                $q->where('kerjasama_id', auth()->user()->kerjasama_id)
-                    ->whereHas('jabatan', function ($jabatanQuery) {
-                        $jabatanQuery->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-                    });
+                $this->scopeLeaderUser($q);
             });
     }
 
     private function allowedUsersQuery()
     {
-        return User::where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
+        return User::query()
+            ->with('kerjasama.client:id,name,panggilan')
+            ->where(function ($q) {
+                $this->scopeLeaderUser($q);
             });
     }
 
@@ -296,9 +295,7 @@ class CuttingController extends Controller
         return [
             'user_id' => [
                 'required',
-                Rule::exists('users', 'id')->where(function ($q) {
-                    $q->where('kerjasama_id', auth()->user()->kerjasama_id);
-                }),
+                Rule::exists('users', 'id'),
                 function ($attribute, $value, $fail) {
                     $exists = $this->allowedUsersQuery()->where('id', $value)->exists();
                     if (!$exists) {

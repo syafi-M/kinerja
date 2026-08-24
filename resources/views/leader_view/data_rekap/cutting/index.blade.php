@@ -42,7 +42,8 @@
                         :class="showUserError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : ''" required>
                         <option value="">Pilih nama pegawai</option>
                         <template x-for="user in allUsers" :key="user.id">
-                            <option :value="user.id" :data-name="user.nama_lengkap" x-text="user.nama_lengkap"></option>
+                            <option :value="user.id" :data-name="user.nama_lengkap"
+                                x-text="`${user.nama_lengkap} (${user.kerjasama?.client?.panggilan || user.kerjasama?.client?.name || 'Mitra kosong'})`"></option>
                         </template>
                     </select>
                     <p class="mt-2 text-xs text-slate-500">Daftar user dibatasi sesuai area kerja/kerjasama Anda.</p>

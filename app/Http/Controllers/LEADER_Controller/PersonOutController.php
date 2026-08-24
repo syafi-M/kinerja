@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LEADER_Controller;
 
 use App\Http\Controllers\Concerns\LocksRekapByDueDate;
+use App\Http\Controllers\Concerns\ScopesLeaderMitra;
 use App\Http\Controllers\Controller;
 use App\Models\PersonOut;
 use App\Models\User;
@@ -17,7 +18,7 @@ use Illuminate\Validation\Rule;
 
 class PersonOutController extends Controller
 {
-    use LocksRekapByDueDate;
+    use LocksRekapByDueDate, ScopesLeaderMitra;
 
     public function create()
     {
@@ -25,14 +26,7 @@ class PersonOutController extends Controller
             return $response;
         }
 
-        $users = User::select(['id', 'name', 'nama_lengkap'])
-            ->where('id', '!=', auth()->user()->id)
-            ->where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
-            ->orderBy('nama_lengkap')
-            ->get();
+        $users = $this->visibleUsers()->orderBy('nama_lengkap')->get();
         return view('leader_view.data_rekap.person_out.create', [
             'users' => $users
         ]);
@@ -48,7 +42,8 @@ class PersonOutController extends Controller
                     $q->withTrashed()->select(['id', 'name', 'nama_lengkap']);
                 }
             ])->whereHas('user', function ($q) {
-                $q->withTrashed()->where('kerjasama_id', auth()->user()->kerjasama_id);
+                $q->withTrashed();
+                $this->scopeLeaderUser($q);
             })
             ->when($request->status, function ($q) use ($request) {
                 $q->where('status', $request->status);
@@ -72,7 +67,8 @@ class PersonOutController extends Controller
             'personOut' => $personOut,
             'isSubmissionLocked' => $isSubmissionLocked,
             'canBulkSubmit' => !$isSubmissionLocked && PersonOut::whereHas('user', function ($q) {
-                $q->withTrashed()->where('kerjasama_id', auth()->user()->kerjasama_id);
+                $q->withTrashed();
+                $this->scopeLeaderUser($q);
             })->where(function ($q) {
                 $q->whereNull('status')
                     ->orWhereRaw('LOWER(status) = ?', ['pending']);
@@ -113,6 +109,8 @@ class PersonOutController extends Controller
                 'img.image' => 'File bukti harus berupa gambar.',
                 'img.max' => 'Ukuran gambar maksimal 2MB.',
             ]);
+
+            abort_unless($this->visibleUsers()->whereKey($validated['user_id'])->exists(), 403);
 
                 if ($request->hasFile('img')) {
                     try {
@@ -163,15 +161,11 @@ class PersonOutController extends Controller
             return $response;
         }
 
-        $personOut = PersonOut::findOrFail($id);
-        $users = User::select(['id', 'name', 'nama_lengkap'])
-            ->where('id', '!=', auth()->user()->id)
-            ->where('kerjasama_id', auth()->user()->kerjasama_id)
-            ->whereHas('jabatan', function ($q) {
-                $q->where('type_jabatan', auth()->user()->jabatan->type_jabatan);
-            })
-            ->orderBy('nama_lengkap')
-            ->get();
+        $personOut = PersonOut::whereHas('user', function ($q) {
+            $q->withTrashed();
+            $this->scopeLeaderUser($q);
+        })->findOrFail($id);
+        $users = $this->visibleUsers()->orderBy('nama_lengkap')->get();
         return view('leader_view.data_rekap.person_out.edit', [
             'users' => $users,
             'personOut' => $personOut
@@ -196,7 +190,10 @@ class PersonOutController extends Controller
 
             DB::transaction(function () use ($validated, $request, $id) {
 
-                $personOut = PersonOut::findOrFail($id);
+                $personOut = PersonOut::whereHas('user', function ($q) {
+                    $q->withTrashed();
+                    $this->scopeLeaderUser($q);
+                })->findOrFail($id);
                 $oldImageName = $personOut->img;
 
                 // prevent user_id mutation if you decided it must be immutable
@@ -253,6 +250,11 @@ class PersonOutController extends Controller
             return $response;
         }
 
+        abort_unless(PersonOut::whereKey($personOut->id)->whereHas('user', function ($q) {
+            $q->withTrashed();
+            $this->scopeLeaderUser($q);
+        })->exists(), 403);
+
         $personOut->delete();
 
         return redirect()->back()->with('toast', [
@@ -267,7 +269,10 @@ class PersonOutController extends Controller
             return $response;
         }
 
-        $personOut = PersonOut::findOrFail($id);
+        $personOut = PersonOut::whereHas('user', function ($q) {
+            $q->withTrashed();
+            $this->scopeLeaderUser($q);
+        })->findOrFail($id);
         $personOut->update(["status" => "Di Ajukan"]);
         $targetCode = auth()->user()->jabatan->code_jabatan == 'CO-CS'
             ? 'SPV'
@@ -300,8 +305,8 @@ class PersonOutController extends Controller
         }
 
         $personOuts = PersonOut::whereHas('user', function ($q) {
-            $q->withTrashed()
-                ->where('kerjasama_id', auth()->user()->kerjasama_id);
+            $q->withTrashed();
+            $this->scopeLeaderUser($q);
         })
             ->where(function ($q) {
                 $q->whereNull('status')
@@ -343,13 +348,26 @@ class PersonOutController extends Controller
     }
 
 
+    private function visibleUsers()
+    {
+        return User::select(['id', 'name', 'nama_lengkap', 'kerjasama_id'])
+            ->with('kerjasama.client:id,name,panggilan')
+            ->where('id', '!=', auth()->id())
+            ->where(function ($q) {
+                $this->scopeLeaderUser($q);
+            });
+    }
+
     public function fetchApi($id)
     {
         $personOut = PersonOut::with([
             'user' => function ($q) {
                 $q->withTrashed();
             }
-        ])->findOrFail($id);
+        ])->whereHas('user', function ($q) {
+            $q->withTrashed();
+            $this->scopeLeaderUser($q);
+        })->findOrFail($id);
         return response()->json([
             'message' => 'Get data by id',
             'data' => $personOut,

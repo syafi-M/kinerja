@@ -38,6 +38,7 @@
                                     <option value="{{ $user->id }}"
                                         {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ capitalizeWords($user->nama_lengkap) ?? 'N/A' }}
+                                        ({{ $user->kerjasama?->client?->panggilan ?: $user->kerjasama?->client?->name ?? 'Mitra kosong' }})
                                     </option>
                                 @empty
                                     <option value="" disabled>Tidak ada data pegawai</option>
