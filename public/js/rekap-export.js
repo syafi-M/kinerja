@@ -329,15 +329,74 @@
 
     formatCuttings(d, showEmpty = false) {
         if (!Array.isArray(d)) d = [];
-        const rows = d.map((r, i) => ({
-            no: i + 1,
-            nama: (r.user?.nama_lengkap || "-").toUpperCase(),
-            mitra_kerja: (r.user?.kerjasama?.client?.name || "-").toUpperCase(),
-            tanggal_cutting: this.fmt(r.date_cut),
-            jenis_cutting: (r.type_cut || "-").toUpperCase(),
-            nominal: (r.manual_type_cut || "-").toUpperCase(),
-            keterangan: (r.desc || "-").toUpperCase(),
-        }));
+        const grouped = {};
+        d.forEach((item) => {
+
+            const key = item.user?.id || "unknown";
+            if (!grouped[key])
+                grouped[key] = {
+                    nama: (item.user?.nama_lengkap || "-").toUpperCase(),
+                    mitra: (item.user?.kerjasama?.client?.name || "-").toUpperCase(),
+                    tanggal: [],
+                    kerjasama_id: item.user?.kerjasama_id,
+                    hari: item.count,
+                    keterangan: [],
+                };
+
+            const dates = Array.isArray(item.tgl)
+                ? item.tgl
+                : item.tgl
+                    ? [item.tgl]
+                    : [];
+
+            const descArr = Array.isArray(item.desc)
+                ? item.desc
+                : item.desc ? [item.desc] : [];
+
+            grouped[key].tanggal.push(...dates);
+            grouped[key].keterangan.push(
+                ...descArr
+                    .map((desc) => {
+                        if (typeof desc === "object" && desc !== null) {
+                            return Object.values(desc)
+                                .filter(Boolean)
+                                .join(" - ");
+                        }
+
+                        return String(desc).trim();
+                    })
+                    .filter(Boolean)
+            );
+        });
+        // Sort berdasarkan kerjasama_id, jabatan_id, nama_lengkap (match controller order)
+        const sortedKeys = Object.keys(grouped).sort((a, b) => {
+            const userA = grouped[a];
+            const userB = grouped[b];
+
+            // Sort by kerjasama_id
+            if (userA.kerjasama_id !== userB.kerjasama_id) {
+                return userA.kerjasama_id - userB.kerjasama_id;
+            }
+
+            // Sort by nama (fallback)
+            return userA.nama.localeCompare(userB.nama);
+        });
+
+        const rows = sortedKeys.map((key, i) => {
+            const tanggal = this.fmtOvertimeDates(grouped[key].tanggal);
+            return {
+                no: i + 1,
+                nama_karyawan: grouped[key].nama,
+                mitra_kerja: grouped[key].mitra,
+                tanggal_cutting: tanggal || "-",
+                hari: grouped[key].hari > 0
+                    ? `${grouped[key].hari} hari`
+                    : "-",
+                keterangan: grouped[key].keterangan.length
+                    ? grouped[key].keterangan.join(", ")
+                    : "-"
+            };
+        });
         if (!rows.length && showEmpty)
             return [
                 {
@@ -345,8 +404,7 @@
                     nama: "TIDAK ADA DATA",
                     mitra_kerja: "-",
                     tanggal_cutting: "-",
-                    jenis_cutting: "-",
-                    nominal: "-",
+                    hari: "-",
                     keterangan: "-",
                 },
             ];
@@ -454,8 +512,7 @@
             "Nama Karyawan",
             "Mitra Kerja",
             "Tanggal Cutting",
-            "Jenis Cutting",
-            "Nominal",
+            "hari",
             "Keterangan",
         ];
     }
