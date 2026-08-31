@@ -21,7 +21,7 @@
       <img
         src="{{ asset('logo/desain_slip.png') }}"
         class="rounded-md"
-        style="width: 100%; height: 100%; border-radius: 8px;"
+        style="width: 100%; height: 100%; border-radius: 8px; margin-bottom: -116%;"
       />
 
       <div style="z-index: 10; position: absolute; inset: 0;" class="absolute inset-0 container-data">
