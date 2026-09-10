@@ -570,6 +570,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::delete('/absensi-izin/{id}/deleted', [IzinController::class, 'deleteAdmin'])->name('admin.izin.destroy');
 
     Route::post('/pekerjaanCp-import', [PekerjaanCpController::class, 'import'])->name('admin.pekerjaan-cp.import');
+    Route::get('/pekerjaan/template', [PekerjaanCpController::class, 'exportTemplate'])->name('admin.pekerjaan.template');
     Route::resource('/pekerjaanCp', PekerjaanCpController::class)->names('admin.pekerjaan-cp');
     Route::resource('/admin-rating', RatingController::class)->names('admin.rating');
     Route::resource('/news', NewsController::class)->names('admin.news');
