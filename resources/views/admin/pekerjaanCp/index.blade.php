@@ -18,7 +18,7 @@
 									<i class="text-base ri-file-excel-2-line"></i>
 									<span id="importLabel" class="overflow-hidden">Import Pekerjaan</span>
 								</label>
-	    				    <input id="iCP" name="file" type="file" class="hidden" accept=".csv"/>
+	    				    <input id="iCP" name="file" type="file" class="hidden" accept=".xlsx"/>
 	    				    <button class="inline-flex items-center hidden h-10 px-4 text-sm font-semibold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700" type="submit" id="btnImport">Import</button>
 	    				</form>
                         <div class="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-sm border border-green-200 bg-green-50 px-4 text-sm font-semibold text-green-700 transition hover:bg-green-100">
