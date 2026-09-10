@@ -518,7 +518,7 @@
 
                     <p class="mb-4 text-sm leading-relaxed text-slate-700 sm:text-base">
                         Selamat! Pengajuan anda telah di setujui silahkan
-                        lihat detailnya atau tanda tangani kontrak anda.
+                        lihat detailnya.
                     </p>
 
                     <div class="flex flex-col gap-2 sm:flex-row sm:justify-center md:justify-start">
@@ -528,10 +528,10 @@
                             Lihat Detail
                         </a>
 
-                        <a href="{{ route('form-kontrak-index', ['token' => \Illuminate\Support\Facades\Crypt::encryptString($kontrak?->id)]) }}"
+                        {{-- <a href="{{ route('form-kontrak-index', ['token' => \Illuminate\Support\Facades\Crypt::encryptString($kontrak?->id)]) }}"
                             class="rounded-2xl bg-green-600 px-4 py-2.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-green-700">
                             Tanda Tangan Kontrak
-                        </a>
+                        </a> --}}
                     </div>
                 </div>
 
