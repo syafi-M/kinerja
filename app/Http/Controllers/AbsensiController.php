@@ -929,43 +929,43 @@ class AbsensiController extends Controller
     public function updateAbsenSholat(Request $request, $id)
     {
         // try {
-            $waktuSholat = $request->input('waktu_sholat');
-            $absensi = Absensi::findOrFail($id);
-            if($waktuSholat == 'Subuh') {
-                $absensi->subuh = 1;
-                $absensi->subuh_lat = $request->lat_user;
-                $absensi->subuh_long = $request->long_user;
-                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
-                $absensi->fotoSubuh = $fileName;
-            } elseif($waktuSholat == 'Zuhur') {
-                $absensi->dzuhur = 1;
-                $absensi->dzuhur_lat = $request->lat_user;
-                $absensi->dzuhur_long = $request->long_user;
-                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
-                $absensi->fotoDzuhur = $fileName;
-            } elseif($waktuSholat == 'Ashar') {
-                $absensi->asar = 1;
-                $absensi->asar_lat = $request->lat_user;
-                $absensi->asar_long = $request->long_user;
-                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
-                $absensi->fotoAsar = $fileName;
-            } elseif($waktuSholat == 'Maghrib') {
-                $absensi->maghrib = 1;
-                $absensi->maghrib_lat = $request->lat_user;
-                $absensi->maghrib_long = $request->long_user;
-                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
-                $absensi->fotoMaghrib = $fileName;
-            } elseif($waktuSholat == 'Isya') {
-                $absensi->isya = 1;
-                $absensi->isya_lat = $request->lat_user;
-                $absensi->isya_long = $request->long_user;
-                $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
-                $absensi->fotoIsya = $fileName;
-            }
-            $absensi->save();
-            toastr()->success('Berhasil Absen Shalat Jam : ' . Carbon::now()->format('H:i:s'), [], 'success');
+        $waktuSholat = $request->input('waktu_sholat');
+        $absensi = Absensi::findOrFail($id);
+        if ($waktuSholat == 'Subuh') {
+            $absensi->subuh = 1;
+            $absensi->subuh_lat = $request->lat_user;
+            $absensi->subuh_long = $request->long_user;
+            $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+            $absensi->fotoSubuh = $fileName;
+        } elseif ($waktuSholat == 'Zuhur') {
+            $absensi->dzuhur = 1;
+            $absensi->dzuhur_lat = $request->lat_user;
+            $absensi->dzuhur_long = $request->long_user;
+            $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+            $absensi->fotoDzuhur = $fileName;
+        } elseif ($waktuSholat == 'Ashar') {
+            $absensi->asar = 1;
+            $absensi->asar_lat = $request->lat_user;
+            $absensi->asar_long = $request->long_user;
+            $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+            $absensi->fotoAsar = $fileName;
+        } elseif ($waktuSholat == 'Maghrib') {
+            $absensi->maghrib = 1;
+            $absensi->maghrib_lat = $request->lat_user;
+            $absensi->maghrib_long = $request->long_user;
+            $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+            $absensi->fotoMaghrib = $fileName;
+        } elseif ($waktuSholat == 'Isya') {
+            $absensi->isya = 1;
+            $absensi->isya_lat = $request->lat_user;
+            $absensi->isya_long = $request->long_user;
+            $fileName = UploadImageNew($request, 'camera_photo', 'sholat');
+            $absensi->fotoIsya = $fileName;
+        }
+        $absensi->save();
+        toastr()->success('Berhasil Absen Shalat Jam : ' . Carbon::now()->format('H:i:s'), [], 'success');
 
-            return redirect()->back();
+        return redirect()->back();
         // } catch (\Throwable $th) {
         //     toastr()->error('Error Data Tidak Ditemukan', [], 'error');
 

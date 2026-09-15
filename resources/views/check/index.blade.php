@@ -1,152 +1,82 @@
 <x-app-layout>
-    <x-main-div>
-        <div class="py-10">
-            <div>
-                <p class="text-center text-lg sm:text-2xl font-bold pb-5 uppercase">Data Rencana Kerja (
-                    {{ empty($type) ? 'SEMUA' : $type }} )</p>
-            </div>
-            <div class="flex justify-center items-center gap-2 mt-5 rounded-md">
-                <div class="flex flex-col gap-2 mt-5 bg-slate-200 p-4 drop-shadow-md rounded-md w-fit">
-                    <p class="text-center font-semibold text-sm"> ~>Filter<~ </p>
-                            <div class="flex gap-2 justify-center sm:justify-start overflow-hidden">
-                                <form action="" method="get" class="btn btn-info btn-sm overflow-hidden">
-                                    <input type="hidden" name="type" value="rencana" id="">
-                                    <button type="submit" class="overflow-hidden">Rencana</button>
-                                </form>
-
-                                <form action="" method="get" class="btn btn-info btn-sm overflow-hidden">
-                                    <input type="hidden" name="type" value="dikerjakan" id="">
-                                    <button type="submit" class="overflow-hidden">Dikerjakan</button>
-                                </form>
-                            </div>
+        <div class="mx-auto w-full max-w-5xl px-4 py-10 sm:px-8 lg:px-12">
+            <div class="mt-10 mb-9 flex items-center justify-center gap-6">
+                <div class="w-full flex justify-between items-center gap-2">
+                    <a href="{{ route('checkpoint-user.index', ['month' => $previousMonth]) }}" aria-label="Bulan sebelumnya" class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-sky-300 hover:text-sky-600 active:scale-[.96]"><i class="ri-arrow-left-s-line text-xl"></i></a>
+                    <div class="flex flex-col items-center">
+                        <h1 class="text-3xl font-semibold overflow-hidden tracking-tight text-slate-900 sm:text-4xl">{{ $start->translatedFormat('F Y') }}</h1>
+                        <p class="mt-2 text-sm text-slate-500 hidden sm:block">Pilih tanggal untuk melihat atau mengisi pekerjaan.</p>
+                    </div>
+                    <a href="{{ route('checkpoint-user.index', ['month' => $nextMonth]) }}" aria-label="Bulan berikutnya" class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-sky-300 hover:text-sky-600 active:scale-[.96]"><i class="ri-arrow-right-s-line text-xl"></i></a>
                 </div>
             </div>
-            <div class="flex flex-col items-center m-5 md:m-10 sm:justify-center justify-start ">
-                <div class="overflow-x-auto w-full md:overflow-hidden mx-2 sm:mx-0 sm:w-full">
-                    <table
-                        class="table table-zebra table-auto w-full table-xs bg-slate-50  sm:table-md text-sm sm:text-md">
-                        <thead class="text-center">
-                            <tr>
-                                <th class="bg-slate-300 rounded-tl-2xl">#</th>
-                                <th class="bg-slate-300  px-10 {{ $type == 'rencana' ? 'hidden' : '' }}">Bukti</th>
-                                <th class="bg-slate-300 px-10">Pekerjaan</th>
-                                <th
-                                    class="bg-slate-300 px-5 {{ $type == 'rencana' ? 'hidden' : 'hidden sm:table-cell' }}">
-                                    Deskripsi</th>
-                                <th class="bg-slate-300 hidden sm:table-cell">Check Point</th>
-                                <th class="bg-slate-300 px-10 min-w-[100pt]">Tanggal</th>
-                                <th class="bg-slate-300 rounded-tr-2xl px-10 {{ $type == 'rencana' ? 'hidden' : '' }}">
-                                    Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-center">
-                            @php $no = 1; @endphp
 
-                            @forelse ($cek2 as $c)
-                                @if ($type == 'dikerjakan')
-                                    <tr>
-                                        <td class="text-center font-semibold" colspan="8">
-                                            ~ {{ $c->created_at->isoFormat('dddd, D-MMMM-Y') }} -
-                                            {{ $c->updated_at->isoFormat('dddd, D-MMMM-Y') }} ~
-                                        </td>
-                                    </tr>
-                                @endif
-
-                                @foreach ($c->pekerjaan_cp_id as $j => $cp)
-                                    <tr>
-                                        <td>{{ $no++ }}</td>
-
-                                        {{-- Bukti / Image --}}
-                                        @if ((empty($cp) || $cp == 'no-image.jpg') && $type != 'rencana')
-                                            <td><x-no-img class="scale-50" /></td>
-                                        @elseif ($cp == 'rencana')
-                                            <td class="{{ $type == 'rencana' ? 'hidden' : '' }}"></td>
-                                        @else
-                                            <td class="flex gap-1 {{ $type == 'rencana' ? 'hidden' : 'table-cell' }}">
-                                                @if (isset($c->img[$j]))
-                                                    <img src="{{ asset('storage/images/' . $c->img[$j]) }}"
-                                                        alt="" width="70px">
-                                                @endif
-                                            </td>
-                                        @endif
-
-                                        {{-- Pekerjaan --}}
-                                        <td class="capitalize text-start">
-                                            @php
-                                                $pc = $c->related_pcp->firstWhere('id', $cp);
-                                            @endphp
-                                            @if ($pc)
-                                                <div class="flex gap-1">
-                                                    <p>~ {{ $pc->name }}</p>
-                                                </div>
-                                            @else
-                                                <div class="flex gap-1">
-                                                    <p>~ {{ $cp }}</p>
-                                                </div>
-                                            @endif
-                                        </td>
-
-                                        {{-- Deskripsi --}}
-                                        <td
-                                            class="capitalize text-start {{ $type == 'rencana' ? 'hidden' : 'hidden sm:table-cell' }}">
-                                            <p>~ {{ $c->deskripsi[$j] ?? '' }}</p>
-                                        </td>
-
-                                        {{-- Check Point Type --}}
-                                        <td class="capitalize text-start hidden sm:table-cell">
-                                            @if ($pc)
-                                                <p>~ {{ $pc->type_check }}</p>
-                                            @endif
-                                        </td>
-
-                                        {{-- Tanggal --}}
-                                        <td class="text-center text-sm font-semibold">
-                                            <p>{{ $c->created_at->format('Y-m-d') }}</p>
-                                        </td>
-
-                                        {{-- Status --}}
-                                        <td class="{{ $type == 'rencana' ? 'hidden' : '' }}">
-                                            @if (isset($c->approve_status[$j]))
-                                                @php $status = $c->approve_status[$j]; @endphp
-
-                                                @if ($status == 'accept')
-                                                    <div class="flex flex-col justify-center items-center">
-                                                        <span
-                                                            class="badge bg-emerald-700 px-2 text-xs text-white">{{ $status }}</span>
-                                                        <p>Note: {{ $c->note[$j] ?? '' }}</p>
-                                                    </div>
-                                                @elseif ($status == 'proccess')
-                                                    <div class="flex flex-col justify-center items-center">
-                                                        <span
-                                                            class="badge bg-amber-500 px-2 text-xs text-white">{{ $status }}</span>
-                                                    </div>
-                                                @else
-                                                    <div class="flex flex-col justify-center items-center">
-                                                        <span
-                                                            class="badge bg-red-500 px-2 text-xs text-white">{{ $status }}</span>
-                                                        <p>Note: {{ $c->note[$j] ?? '' }}</p>
-                                                    </div>
-                                                @endif
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">CP Saat Ini Kosong</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04),0_12px_32px_-16px_rgba(15,23,42,.12)] sm:p-7">
+                <div class="grid grid-cols-7 gap-1.5 pb-3 text-center text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">
+                    @foreach (['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'] as $day)<div>{{ $day }}</div>@endforeach
                 </div>
+                <div class="grid grid-cols-7 gap-1.5 overflow-hidden">
+                    @php
+                        $daysBefore = $start->dayOfWeekIso - 1;
+                        $daysInMonth = $start->daysInMonth;
+                        $daysAfter = (7 - (($daysBefore + $daysInMonth) % 7)) % 7;
+                        $nextStart = $start->copy()->addMonth()->startOfMonth();
+                    @endphp
+                    @for ($i = $daysBefore; $i > 0; $i--)
+                        @php($date = $start->copy()->subDays($i))
+                        <span class="flex min-h-[74px] min-w-0 cursor-not-allowed flex-col justify-between overflow-hidden rounded-xl border border-slate-100 bg-slate-50/60 p-2.5 text-slate-300" aria-disabled="true"><span class="text-sm leading-none overflow-hidden">{{ $date->day }}</span></span>
+                    @endfor
+                    @foreach ($calendar as $index => $item)
+                        @php($date = $item['date'])
+                        @php($state = $date->isWeekend() ? 'border-transparent bg-rose-500 text-white' : ($item['hasData'] ? 'border-transparent bg-emerald-500 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-sky-300'))
+                        <a href="{{ $item['hasData'] && $item['recordId'] ? route('checkpoint-user.edit', ['checkpoint_user' => $item['recordId'], 'tanggal' => $date->format('Y-m-d')]) : route('checkpoint-user.create', ['tanggal' => $date->format('Y-m-d')]) }}"
+                           style="animation-delay: {{ min($index * 12, 320) }}ms"
+                           class="reveal-cell group relative flex min-h-[74px] min-w-0 flex-col justify-between overflow-hidden rounded-xl border p-2.5 font-medium transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,.22)] active:scale-[.98] {{ $state }} {{ $date->isToday() ? 'ring-2 ring-sky-400 ring-offset-2' : '' }}"
+                           title="{{ $date->translatedFormat('l, d F Y') }}">
+                            <span class="text-sm leading-none overflow-hidden">{{ $date->day }}</span>
+                            @if ($item['hasData'])
+                                <i class="ri-check-line text-[13px] opacity-90 transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:translate-x-0.5"></i>
+                            @elseif ($date->isWeekend())
+                                <span class="hidden sm:block text-[10px] font-semibold uppercase tracking-wide opacity-85">Libur</span>
+                            @endif
+                        </a>
+                    @endforeach
+                    @for ($i = 1; $i <= $daysAfter; $i++)
+                        @php($date = $nextStart->copy()->addDays($i - 1))
+                        <span class="flex min-h-[74px] min-w-0 cursor-not-allowed flex-col justify-between overflow-hidden rounded-xl border border-slate-100 bg-slate-50/60 p-2.5 text-slate-300" aria-disabled="true"><span class="text-sm leading-none overflow-hidden">{{ $date->day }}</span></span>
+                    @endfor
+                </div>
+            </section>
 
+            <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-xs text-slate-500">
+                <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] bg-emerald-500"></span>Ada pekerjaan</span>
+                <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] border border-slate-200 bg-white"></span>Belum diisi</span>
+                <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] bg-rose-500"></span>Sabtu &amp; Minggu</span>
             </div>
-
-            <div class="flex justify-center gap-2 mx-10 sm:justify-end">
-                <a href="{{ route('dashboard.index') }}" class="btn btn-error mx-2 sm:mx-10">Kembali</a>
-            </div>
-
         </div>
-    </x-main-div>
 
+        <script>
+            (function () {
+                const cells = document.querySelectorAll('.reveal-cell');
+                const show = (el) => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; };
+
+                if (!('IntersectionObserver' in window)) { cells.forEach(show); return; }
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        show(entry.target);
+                        observer.unobserve(entry.target);
+                    });
+                }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+                cells.forEach((cell) => {
+                    const delay = (cell.style.animationDelay || '0ms');
+                    cell.style.opacity = '0';
+                    cell.style.transform = 'translateY(18px)';
+                    cell.style.transition = `opacity .6s cubic-bezier(.22,1,.36,1) ${delay}, transform .6s cubic-bezier(.22,1,.36,1) ${delay}`;
+                    observer.observe(cell);
+                });
+            })();
+        </script>
 </x-app-layout>

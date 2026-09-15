@@ -11,6 +11,7 @@ class CheckPoint extends Model
 
     protected $casts = [
         'pekerjaan_cp_id' => 'array',
+        'input_manual' => 'array',
         'img' => 'array',
         'approve_status' => 'array',
         'note' => 'array',
@@ -24,6 +25,7 @@ class CheckPoint extends Model
         'user_id',
         'divisi_id',
         'pekerjaan_cp_id',
+        'input_manual',
         'type_check',
         'img',
         'deskripsi',
