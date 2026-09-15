@@ -11,62 +11,58 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Support\Facades\Http as httped;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Intervention\Image\ImageManagerStatic as Images;
 
 class CheckPointController extends Controller
 {
     public function index(Request $request)
     {
-        $type = $request->get('type');
+        $now = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month) : Carbon::now();
+        $endMonth = $now->endOfMonth()->format('d');
+        $today = $now->format('Y-m-d');
+        $todayName = $now->translatedFormat('l');
+        $start = $now->copy()->startOfMonth();
+        $end   = $now->copy()->endOfMonth();
 
-        $tanggalAwal = now()->subMonths(2)->startOfMonth();
-        $tanggalAkhir = now();
-
-        // Base query with casts so pekerjaan_cp_id becomes array automatically
-        $checkPointQuery = CheckPoint::query()
-            ->where('user_id', Auth::id())
-            ->whereBetween('created_at', [$tanggalAwal, $tanggalAkhir])
-            ->latest();
-
-        if ($type) {
-            $checkPointQuery->where('type_check', $type);
+        $weekendDates = [];
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            if ($date->isWeekend()) {
+                $weekendDates[] = $date->format('d');
+            }
         }
 
-        // Fetch checkpoints
-        $cek2 = $checkPointQuery->get();
-
-        // Collect ALL pekerjaan_cp_id values from all checkpoints
-        $allIds = $cek2->flatMap(function ($c) {
-            $ids = is_array($c->pekerjaan_cp_id) ? $c->pekerjaan_cp_id : json_decode($c->pekerjaan_cp_id, true);
-            return $ids ?? [];
-        })->unique()->filter()->values();
-
-        // Fetch all pekerjaan_cps in one query
-        $pcpList = PekerjaanCp::whereIn('id', $allIds)
-            ->where('kerjasama_id', Auth::user()->kerjasama_id)
-            ->get()
-            ->keyBy('id'); // for quick lookup
-
-        // Attach pekerjaan data to each checkpoint
-        $cek2->each(function ($c) use ($pcpList) {
-            $ids = is_array($c->pekerjaan_cp_id) ? $c->pekerjaan_cp_id : json_decode($c->pekerjaan_cp_id, true);
-            $c->related_pcp = collect($ids)->map(function ($id) use ($pcpList) {
-                return $pcpList->get($id);
-            })->filter()->values();
-        });
-
-        return view('check.index', [
-            'cek2' => $cek2,
-            'type' => $type
-        ]);
+        $recordsByDate = Cache::remember(
+            "checkpoint-calendar:" . Auth::id(),
+            now()->addSeconds(30),
+            fn () => CheckPoint::where('user_id', Auth::id())
+                ->select(['id', 'tanggal', 'created_at'])
+                ->get()
+                ->flatMap(function (CheckPoint $checkpoint): array {
+                    $dates = collect(is_array($checkpoint->tanggal) ? $checkpoint->tanggal : [$checkpoint->tanggal])->filter();
+                    if ($dates->isEmpty()) {
+                        $dates = collect([$checkpoint->created_at]);
+                    }
+                    return $dates->mapWithKeys(fn ($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
+                })
+        );
+        $calendar = collect();
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->format('Y-m-d')), 'recordId' => $recordsByDate->get($date->format('Y-m-d'))]);
+        }
+        $previousMonth = $start->copy()->subMonth()->format('Y-m');
+        $nextMonth = $start->copy()->addMonth()->format('Y-m');
+        return view('check.index', compact('calendar', 'previousMonth', 'nextMonth', 'start', 'today', 'weekendDates', 'endMonth'));
     }
 
 
 
-    public function create()
+    public function create(Request $request)
     {
+        $selectedDate = $request->input('tanggal', Carbon::today()->format('Y-m-d'));
         $id = null;
         $user = Auth::user()->id;
         $c = CheckPoint::where('user_id', $user)->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
@@ -76,55 +72,49 @@ class CheckPointController extends Controller
         $che = CheckPoint::query()->where('user_id', Auth::user()->id)->where('type_check', 'harian')->whereDate('created_at', Carbon::now()->format('Y-m-d'));
         $cheli = $che->selectRaw('pekerjaan_cp_id')->get();
         // dd($cheli);
-        return view('check.create', compact('pcp', 'c', 'cheli', 'pch', 'id'));
-
+        return view('check.create', compact('pcp', 'c', 'cheli', 'pch', 'id', 'selectedDate'));
     }
 
     public function store(Request $request)
     {
         $cek = new CheckPoint();
 
+        $jobs = array_values($request->input('pekerjaan_id', []));
+        $manual = array_values($request->input('input_manual', []));
         $data = [
             'user_id' => $request->user_id,
             'divisi_id' => $request->divisi_id,
-            'pekerjaan_cp_id' => $request->pekerjaan_id,
-            'img' => $request->img,
-            'deskripsi' => $request->deskripsi,
+            'pekerjaan_cp_id' => collect($jobs)->map(fn ($job) => $job === 'manual' || $job === '' || $job === null ? null : $job)->all(),
+            'input_manual' => collect($jobs)->map(fn ($job, $i) => $job === 'manual' || $job === '' || $job === null ? ($manual[$i] ?? null) : null)->all(),
+            'deskripsi' => array_values($request->input('deskripsi', [])),
             'latitude' => $request->latitude,
             'longtitude' => $request->longtitude,
-            // 'approve_status' => $request->approve_status,
-            'type_check' => 'rencana',
-            'approve_status' => $request->approve_status,
-            'tanggal' => $request->tanggal,
+            'type_check' => 'dikerjakan',
+            'approve_status' => array_values($request->input('approve_status', [])),
+            'tanggal' => array_values($request->input('tanggal', [])),
         ];
         // dd($request->all(), $data);
 
         $imagePaths = [];
-
-        if ($request->hasFile('img')) {
-            foreach ($request->file('img') as $image) {
-
-                $file = $image;
-                if ($file != null && $file->isValid()) {
-
-                    $extensions = $file->getClientOriginalExtension();
-                    $randomNumber = md5(uniqid(rand(), true));
-                    $rename = 'data' . $randomNumber . '.' . $extensions;
-
-                    $path = public_path('storage/images/' . $rename);
-                    $file->storeAs('images', $rename, 'public');
-
-                    $imagePaths[] = $rename;
+        foreach ((array) $request->file('img') as $jobImages) {
+            $paths = [];
+            foreach ((array) $jobImages as $file) {
+                if ($file?->isValid()) {
+                    $name = 'data' . md5(uniqid('', true)) . '.' . $file->getClientOriginalExtension();
+                    $file->storeAs('images', $name, 'public');
+                    $paths[] = $name;
                 }
-                $data['img'] = implode(',', $imagePaths);
             }
-
+            $imagePaths[] = $paths;
         }
+        $data['img'] = $imagePaths;
+
 
         DB::beginTransaction();
 
         try {
             $cek->create($data);
+            Cache::forget('checkpoint-calendar:' . Auth::id());
             DB::commit();
             toastr()->success('Data Berhasil Ditambahkan', [], 'success');
             return to_route('checkpoint-user.index');
@@ -134,78 +124,78 @@ class CheckPointController extends Controller
             toastr()->error('Error in storing data', [], 'error');
             return redirect()->back();
         }
-
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
-        // $user = Auth::user()->id;
-        $c = CheckPoint::where('id', $id)->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
-        // $pch = Checkpoint::where('user_id', Auth::user()->id)->where('type_check', 'harian')->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
-        $awalMinggu = Carbon::now()->startOfWeek()->subWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
-        $cex = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-            ->where('id', $id)
-            ->latest()
-            ->first();
+        $cex = CheckPoint::findOrFail($id);
         $pcp = PekerjaanCp::where('user_id', $cex->user_id)->get();
 
-        $che = CheckPoint::query()->where('user_id', Auth::user()->id)->where('type_check', 'harian')->whereDate('created_at', Carbon::now()->format('Y-m-d'));
-        $cheli = $che->selectRaw('pekerjaan_cp_id')->get();
-        // dd($cheli);
-        return view('check.create', compact('pcp', 'c', 'cex', 'cheli', 'id'));
-
+        return view('check.edit', ['pcp' => $pcp, 'cex' => $cex, 'id' => $id, 'selectedDate' => $request->input('tanggal', optional($cex->created_at)->format('Y-m-d'))]);
     }
 
     public function update(Request $request, $id)
     {
-        $awalMinggu = Carbon::now()->startOfWeek()->subWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
-        $cex2 = CheckPoint::whereBetween('created_at', [$awalMinggu, $akhirMinggu])
-            ->where('id', $id)
-            ->latest()
-            ->first();
+        $cex2 = CheckPoint::findOrFail($id);
 
-        // $cex2->user_id = $request->user_id;
-        // $cex2->divisi_id = $request->divisi_id;
-        // $cex2->latitude = $request->latitude;
-        // $cex2->longtitude = $request->longtitude;
-        // $cex2->approve_status = $request->approve_status;
-        // $cex2->type_check = 'rencana';
+        $jobs = $request->input('pekerjaan_id', []);
+        $manual = $request->input('input_manual', []);
+        $deskripsi = $request->input('deskripsi', []);
+        $tanggal = $request->input('tanggal', []);
+        $approve = $request->input('approve_status', []);
+        $existing = $request->input('existing_img', []);
+        $files = $request->file('img', []);
 
-        // Get the existing pekerjaan_cp_id array from the CheckPoint model or initialize it as an empty array if it doesn't exist
-        $pekerjaanCpId = $cex2->pekerjaan_cp_id ?? [];
+        $indexes = array_keys($jobs);
+        sort($indexes);
 
-        // Get the new pekerjaan_id values from the request and filter out those that already exist in pekerjaan_cp_id
-        $newPekerjaanIds = collect($request->pekerjaan_id ?? [])
-            ->reject(function ($value) use ($pekerjaanCpId) {
-                return in_array($value, $pekerjaanCpId);
-            })
-            ->toArray();
+        $pekerjaanCpId = [];
+        $inputManual = [];
+        $deskripsiOut = [];
+        $tanggalOut = [];
+        $approveOut = [];
+        $images = [];
 
-        // Filter out the values in pekerjaan_cp_id that are not present in $request->pekerjaan_id
-        $pekerjaanCpId = array_filter($pekerjaanCpId, function ($value) use ($request) {
-            return in_array($value, $request->pekerjaan_id ?? []);
-        });
+        foreach ($indexes as $i) {
+            $job = $jobs[$i] ?? null;
+            $isManual = $job === 'manual' || $job === '' || $job === null;
 
+            $pekerjaanCpId[] = $isManual ? null : $job;
+            $inputManual[] = $isManual ? ($manual[$i] ?? null) : null;
+            $deskripsiOut[] = $deskripsi[$i] ?? null;
+            $tanggalOut[] = $tanggal[$i] ?? null;
+            $approveOut[] = $approve[$i] ?? 'proccess';
 
-        // Merge the filtered new pekerjaan_id values with the existing pekerjaan_cp_id array
-        $pekerjaanCpId = array_merge($pekerjaanCpId, $newPekerjaanIds);
+            $paths = [];
+            foreach ((array) ($files[$i] ?? []) as $file) {
+                if ($file?->isValid()) {
+                    $name = 'data' . md5(uniqid('', true)) . '.' . $file->getClientOriginalExtension();
+                    $file->storeAs('images', $name, 'public');
+                    $paths[] = $name;
+                }
+            }
+            if (!count($paths)) {
+                $paths = array_values(array_filter(explode(',', (string) ($existing[$i][0] ?? '')), fn ($p) => $p !== ''));
+            }
+            $images[] = $paths;
+        }
 
-        // Update the pekerjaan_cp_id attribute of the CheckPoint model
         $cex2->pekerjaan_cp_id = $pekerjaanCpId;
-
-        // dd($request->all(),$cex2);
+        $cex2->input_manual = $inputManual;
+        $cex2->deskripsi = $deskripsiOut;
+        $cex2->tanggal = $tanggalOut;
+        $cex2->approve_status = $approveOut;
+        $cex2->img = $images;
+        $cex2->latitude = $request->input('latitude', $cex2->latitude);
+        $cex2->longtitude = $request->input('longtitude', $cex2->longtitude);
+        $cex2->type_check = $cex2->type_check ?: 'dikerjakan';
 
         try {
-
             $cex2->save();
+            Cache::forget('checkpoint-calendar:' . $cex2->user_id);
             toastr()->success('Data berhasil diedit', [], 'success');
-            return redirect()->back();
-            // return to_route('checkpoint-user.index', 'type=dikerjakan');
-
+            return to_route('checkpoint-user.index');
         } catch (\Illuminate\Database\QueryException $e) {
-            dd($e);
             toastr()->error('Data Tidak Ada', [], 'error');
             return redirect()->back();
         }
@@ -317,10 +307,10 @@ class CheckPointController extends Controller
             } else {
                 $cex2->save();
             }
+            Cache::forget('checkpoint-calendar:' . $userId);
 
             toastr()->success('Data Berhasil Diupload', [], 'success');
             return to_route('checkpoint-user.index', 'type=dikerjakan');
-
         } catch (\Illuminate\Database\QueryException $e) {
             toastr()->error('Data Tidak Berhasil Dikirim', [], 'error');
             return redirect()->back();
@@ -412,7 +402,6 @@ class CheckPointController extends Controller
             toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
-
     }
     public function destroy($id)
     {
@@ -433,7 +422,6 @@ class CheckPointController extends Controller
             toastr()->error('Data Tidak Ditemukan', [], 'error');
             return redirect()->back();
         }
-
     }
 
     public function exportWith(Request $request)
@@ -478,7 +466,6 @@ class CheckPointController extends Controller
             return response($output, 200)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
-
         } else {
             toastr()->error('Mohon Masukkan Filter Export', [], 'error');
             return redirect()->back();
@@ -490,5 +477,4 @@ class CheckPointController extends Controller
         $cex = CheckPoint::findOrFail($id);
         return view('admin.check.maps', compact('cex'));
     }
-
 }

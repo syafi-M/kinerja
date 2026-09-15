@@ -28,6 +28,7 @@
 
 
     <style>
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         *,
         body,
         html {
@@ -39,7 +40,11 @@
 
 <body class="font-sans antialiased bg-slate-400">
     <div class="min-h-screen">
-        @include('layouts.navbar')
+        @if (request()->routeIs('checkpoint-user.*'))
+            @include('check.partials.sidebar')
+        @else
+            @include('layouts.navbar')
+        @endif
 
         <!-- Page Heading -->
         @if (isset($header))
@@ -51,10 +56,10 @@
         @endif
 
         <!-- Page Content -->
-        <main>
-
-            {{ $slot }}
-
+        <main class="{{ request()->routeIs('checkpoint-user.*') ? 'lg:pl-[17.5rem] pt-14 lg:pt-0 bg-[#f4f6f8] min-h-screen' : '' }}">
+            <div class="{{ request()->routeIs('checkpoint-user.*') ? 'motion-safe:animate-[fadeSlide_.5s_cubic-bezier(.22,1,.36,1)]' : '' }}">
+                {{ $slot }}
+            </div>
         </main>
 
     </div>

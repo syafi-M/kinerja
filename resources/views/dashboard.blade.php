@@ -200,10 +200,14 @@
                                     </button>
                                 </div>
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="isiIndex">
-                                    <a href="/checkpoint-user" class="w-full btn btn-info">Data
+                                    <a href="/checkpoint-user" class="w-full btn btn-info">+
                                         Rencana Kerja</a>
                                 </div>
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="tambahCP">
+                                    <a href="/checkpoint-user" class="w-full btn btn-info">Riwayat
+                                        Rencana Kerja</a>
+                                </div>
+                                {{-- <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="tambahCP">
                                     <!--<a href="{{ route('checkpoint-user.create') }}" class="w-full btn btn-info" {{ \Carbon\Carbon::now()->isWeekend() ? '' : 'disabled' }}>Tambah Planning (sabtu - minggu )</a>-->
                                     <a href="{{ $cex ? route('checkpoint-user.edit', $cex->id) : route('checkpoint-user.create') }}"
                                         class="w-full btn btn-info">{{ $cex ? 'Ubah Rencana Kerja' : 'Tambah Rencana Kerja' }}
@@ -215,7 +219,7 @@
                                         style="{{ !$cex ? 'background: #7dd3fc; border: none; color: #1e293b;' : '' }}"
                                         class="w-full btn btn-info ">{{ $cex ? 'Kirim Bukti' : 'Buat Rencana Kerja Terlebih Dahulu' }}
                                         (senin - jum'at)</a>
-                                </div>
+                                </div> --}}
                             @else
                                 <div class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s"
                                     disabled>
