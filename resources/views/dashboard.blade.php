@@ -201,11 +201,11 @@
                                 </div>
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="isiIndex">
                                     <a href="/checkpoint-user" class="w-full btn btn-info">+
-                                        Rencana Kerja</a>
+                                        Bukti Kerja</a>
                                 </div>
                                 <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="tambahCP">
-                                    <a href="/checkpoint-user" class="w-full btn btn-info">Riwayat
-                                        Rencana Kerja</a>
+                                    <a href="{{ route('checkpoint-user.history')}}" class="w-full btn btn-info">Riwayat
+                                        Bukti Kerja</a>
                                 </div>
                                 {{-- <div class="hidden w-full px-2 space-y-4 overflow-hidden sm:px-16" id="tambahCP">
                                     <!--<a href="{{ route('checkpoint-user.create') }}" class="w-full btn btn-info" {{ \Carbon\Carbon::now()->isWeekend() ? '' : 'disabled' }}>Tambah Planning (sabtu - minggu )</a>-->
@@ -486,6 +486,10 @@
                 </div>
 
                 @include('dashboard.partials.news-modal')
+
+                @include('dashboard.partials.checkpoint-reminder-modal')
+                @include('dashboard.partials.checkpoint-rejected-modal')
+                @include('dashboard.partials.checkpoint-pending-modal')
 
                 <div class="flex justify-center">
                     <div class="fixed bottom-0 z-[999]">

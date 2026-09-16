@@ -181,8 +181,9 @@ class AdminController extends Controller
                 ->get();
         });
 
-        return view('admin.check.index', compact('cex2', 'pcp', 'type', 'kerjasama', 'filter'));
+        return view('admin.old-check.index', compact('cex2', 'pcp', 'type', 'kerjasama', 'filter'));
     }
+
     public function lihatCheck(Request $request, $id)
     {
         $type = $request->type;

@@ -19,8 +19,12 @@
 <aside :class="sidebarOpen ? 'w-60' : 'w-24'"
     @mouseenter="if (!isDashboardActive) sidebarOpen = true"
     @mouseleave="if (!isDashboardActive) sidebarOpen = false"
-    class="fixed inset-y-0 left-0 z-50 overflow-hidden transition-all duration-300 bg-white border-r shadow-xl border-gray-200/50 backdrop-blur-xl bg-white/80">
+    :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    class="fixed inset-y-0 left-0 z-50 w-60 overflow-hidden transition-all duration-300 bg-white border-r shadow-xl border-gray-200/50 backdrop-blur-xl bg-white/80 lg:w-auto"
     <div class="flex flex-col h-full">
+        <button type="button" @click="mobileSidebarOpen = false" class="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-lg text-gray-500 hover:bg-gray-100 lg:hidden" aria-label="Tutup menu">
+            <i class="text-xl ri-close-line"></i>
+        </button>
         <!-- Sidebar Header -->
         <div class="flex items-center h-16 px-4 border-b border-gray-100">
             <div class="shrink-0">

@@ -8,8 +8,11 @@
 <!-- Sticky Header -->
 <header class="sticky top-0 z-40 border-b shadow-sm backdrop-blur-xl bg-white/70 border-gray-200/50">
     <div class="{{ $fullWidth ? 'px-4 sm:px-6 lg:px-8' : 'px-4 mx-auto max-w-7xl sm:px-6 lg:px-8' }}">
-        <div class="flex items-center justify-between h-16 mx-10">
+        <div class="flex items-center justify-between h-16 gap-3 sm:mx-4 lg:mx-10">
             <div class="flex items-center gap-4">
+                <button type="button" @click="mobileSidebarOpen = true" class="grid h-10 w-10 place-items-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:border-blue-300 hover:text-blue-600 active:scale-95 lg:hidden" aria-label="Buka menu">
+                    <i class="text-xl ri-menu-3-line"></i>
+                </button>
 
                 <div>
                     <h1 class="text-lg font-bold text-gray-900">{{ $headerTitle ?? 'Dashboard Admin' }}

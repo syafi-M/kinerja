@@ -59,8 +59,12 @@
     <div class="flex min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-100" x-data="{
         isDashboardActive: {{ $isDashboardActive ? 'true' : 'false' }},
         sidebarOpen: {{ $isDashboardActive ? 'true' : 'false' }},
+        mobileSidebarOpen: false,
         openMenu: {!! $activeMenu ? '\'' . $activeMenu . '\'' : 'null' !!}
-    }">
+    }" @keydown.escape.window="mobileSidebarOpen = false">
+
+        <div x-cloak x-show="mobileSidebarOpen" x-transition.opacity.duration.300ms @click="mobileSidebarOpen = false"
+            class="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"></div>
 
         <x-admin-layout.sidebar :is-dashboard-active="$isDashboardActive" :active-menu="$activeMenu" :is-user-menu-active="$isUserMenuActive"
             :is-divisi-menu-active="$isDivisiMenuActive" :is-klien-menu-active="$isKlienMenuActive" :is-shift-menu-active="$isShiftMenuActive"
