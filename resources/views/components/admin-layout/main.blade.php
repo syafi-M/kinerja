@@ -6,7 +6,7 @@
 ])
 
 <!-- MAIN CONTENT AREA -->
-<div :class="sidebarOpen ? 'ml-56' : 'ml-16'" class="flex flex-col flex-1 transition-all duration-300">
+<div :class="sidebarOpen ? 'ml-56' : 'ml-16'" class="flex flex-col flex-1 transition-all duration-300 max-lg:!ml-0">
 
     <x-admin-layout.topbar :full-width="$fullWidth" :header-title="$headerTitle" :online="$online" :ip="$ip" />
 
