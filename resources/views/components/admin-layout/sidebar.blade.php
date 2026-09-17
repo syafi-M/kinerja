@@ -178,10 +178,10 @@
             class="truncate text-sm font-bold tracking-tight text-[var(--md-sys-color-on-surface)]">
             KINERJA APP
         </span>
-        <button type="button" @click="mobileSidebarOpen = false"
+        {{-- <button type="button" @click="mobileSidebarOpen = false"
             class="m3-icon-btn m3-icon-btn--sm ml-auto lg:hidden" aria-label="Tutup menu navigasi">
             <span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
+        </button> --}}
     </div>
 
     {{-- Navigation --}}
