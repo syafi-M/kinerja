@@ -98,7 +98,12 @@
             --md-sys-color-inverse-surface: #303030;
             --md-sys-color-inverse-on-surface: #f2f2f2;
             --md-sys-color-inverse-primary: color-mix(in srgb, var(--md-seed) 32%, #ffffff);
-            --md-sys-color-scrim: rgb(31 31 31 / .42);
+            /* Scrim OPAQUE sesuai spec M3. md-dialog mengalikan token ini dengan
+               opacity 32% miliknya, jadi kalau tokennya sudah ber-alpha hasilnya
+               dikali dua kali (0.42 × 0.32 ≈ 13%) dan halaman di belakang dialog
+               nyaris tidak teredupkan. Alpha 32% ditambahkan di tempat pemakaian
+               via color-mix, bukan di token. */
+            --md-sys-color-scrim: #1f1f1f;
             --md-sys-color-shadow: #000000;
 
             /* ---- Gradient M3: tone-on-tone, hue tetap, hanya lightness bergeser ---- */
@@ -1315,8 +1320,9 @@
             /* --- Dialog daisyUI --- */
             .legacy-admin .modal-backdrop,
             .legacy-admin .modal::backdrop {
-                background: var(--md-sys-color-scrim);
-                backdrop-filter: blur(2px);
+                /* Token opaque → alpha 32% ditambahkan di sini. */
+                background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+                backdrop-filter: blur(8px);
             }
 
             .legacy-admin .modal-box {
@@ -1386,54 +1392,195 @@
                 background-color: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
             }
 
-            /* Material Web: jangan tampilkan komponen sebelum CDN menaikkannya. */
-            md-dialog:not(:defined) {
-                display: none !important;
+            /* ---- Dialog M3: <dialog> native ----
+           Dialog native dipakai, bukan md-dialog (Material Web), karena hanya
+           TOP LAYER yang bisa menjamin modal berada di atas seluruh chrome.
+           md-dialog tidak bisa: host-nya `display: contents`, sehingga
+           position/z-index di host tidak menghasilkan box sama sekali, sedangkan
+           scrim internalnya hidup di shadow DOM dengan `z-index: 1`. Akibatnya
+           sidebar (z-10) dan topbar (z-40) selalu menang dan backdrop-nya tidak
+           pernah menutupi keduanya — persis gejala di screenshot.
+
+           Bonus yang didapat dari top layer: `::backdrop` bisa diblur, dan ia
+           menutupi seluruh viewport apa pun z-index halaman di belakangnya. */
+            .m3-dialog {
+                width: min(560px, calc(100vw - 32px));
+                /* UA membatasi max-width/max-height; kita tentukan sendiri. */
+                max-width: none;
+                max-height: calc(100dvh - 32px);
+                /* Pemusatan: UA memakai `margin: auto`, tapi utility parent seperti
+               `space-y-*` menaruh margin-top 16px di sini dan merusaknya — dialog
+               menempel 16px dari atas. `!important` diperlukan karena `space-y-*`
+               menang spesifisitas. */
+                margin: auto !important;
+                padding: 0;
+                border: 0;
+                border-radius: var(--md-shape-dialog);
+                background: var(--md-sys-color-surface-container-high);
+                color: var(--md-sys-color-on-surface);
+                box-shadow: var(--md-elevation-3);
+                overflow: hidden;
             }
 
-            /* Dialog selalu relatif terhadap viewport, bukan container/sidebar. */
-            md-dialog {
-                --md-dialog-container-max-width: min(560px, calc(100vw - 32px));
-                --md-dialog-container-max-height: calc(100dvh - 32px);
-                --md-dialog-container-shape: 28px;
-                position: fixed;
-                inset: 0;
+            /* Scrim dialog di top layer: menutupi sidebar, topbar, dan apa pun,
+           sekaligus memblur halaman di belakangnya. Alpha 32% ditulis di sini
+           karena token scrim sengaja opaque (spec M3). */
+            .m3-dialog::backdrop {
+                background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+                backdrop-filter: blur(8px);
+            }
+
+            /* Bagian isi dialog. Dipakai lewat kelas, bukan `slot=` milik
+           md-dialog, supaya dialog native tetap bisa ditata penuh. */
+            .m3-dialog__headline {
+                padding: 24px 24px 16px;
+                font-size: 24px;
+                line-height: 32px;
+                font-weight: 500;
+            }
+
+            .m3-dialog__content {
+                max-height: calc(100dvh - 180px);
+                overflow-y: auto;
+                padding: 0 24px 24px;
+            }
+
+            .m3-dialog__actions {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 24px 24px;
+            }
+
+            /* Motion M3 untuk dialog native: masuk 200 ms emphasized-decelerate,
+           keluar 150 ms emphasized-accelerate. `allow-discrete` membuat `display`
+           dan `overlay` ikut bertransisi, sehingga dialog yang sedang menutup
+           tetap terlihat sampai animasinya selesai, bukan langsung menghilang. */
+            .m3-dialog {
+                opacity: 1;
+                transform: none;
+                transition:
+                    opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
+                    transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
+                    display var(--md-sys-motion-duration-short3) allow-discrete,
+                    overlay var(--md-sys-motion-duration-short3) allow-discrete;
+            }
+
+            .m3-dialog:not([open]) {
+                opacity: 0;
+                transform: scale(.96) translateY(12px);
+            }
+
+            @starting-style {
+                .m3-dialog[open] {
+                    opacity: 0;
+                    transform: scale(.96) translateY(12px);
+                }
+            }
+
+            .m3-dialog::backdrop {
+                transition:
+                    opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
+                    display var(--md-sys-motion-duration-short3) allow-discrete,
+                    overlay var(--md-sys-motion-duration-short3) allow-discrete;
+            }
+
+            @starting-style {
+                .m3-dialog[open]::backdrop {
+                    opacity: 0;
+                }
+            }
+
+            /* ---- Akar overlay modal ----
+           Semua modal admin memakai pola `fixed inset-0`, dan hampir semua halaman
+           menaruh utility jarak (`space-y-*`) di container induknya. Tailwind
+           menambahkan `margin-top` ke SEMUA anak, termasuk overlay ber-`inset: 0`,
+           sehingga seluruh overlay bergeser 16px ke bawah. Dampaknya dua sekaligus:
+             1. panel jatuh 8px dari titik tengah (terukur: t=350 padahal 342 pada
+                viewport 756);
+             2. scrim di dalamnya (`absolute inset-0`) ikut menyusut, jadi ada pita
+                16px di tepi yang tidak tertutup — backdrop terlihat "tidak full se
+                layar".
+           Margin pada elemen ber-inset tidak pernah diinginkan, jadi dikunci.
+
+           Selektor memakai token kelas (`[class~=…]`), bukan daftar id: overlay
+           legacy sebagian besar tidak punya id sama sekali (mis. panel hapus di
+           client/devisi/kerjasama/shift). Sudah diaudit: tidak ada elemen
+           `fixed inset-0` di seluruh views yang mengandalkan margin — termasuk trik
+           `inset: 0` + `margin: auto`, yang di sini tidak dipakai. */
+            .m3-overlay,
+            .legacy-admin :is([class~="fixed"][class~="inset-0"]) {
+                margin: 0 !important;
+            }
+
+            /* ---- Panel di dalam overlay modal ----
+           `margin: auto` melakukan dua hal sekaligus: menengahkan panel di dalam
+           flex overlay, dan menjaga bagian atas panel tetap bisa di-scroll kalau
+           panelnya lebih tinggi dari layar (flex `items-center` biasa memotongnya).
+           Ditulis sebagai aturan layer, bukan utility Tailwind, supaya perbaikan
+           ini tidak bergantung pada hasil `npm run build` — utility `m-auto`
+           ternyata belum ada di public/build saat bug ini diperbaiki. */
+            .m3-overlay > .m3-dialog-panel {
                 margin: auto;
-                z-index: 100;
             }
 
-            md-dialog::backdrop {
-                position: fixed;
-                inset: 0;
-                width: 100vw;
-                height: 100vh;
+            /* ---- Kunci scroll selama modal terbuka ----
+           Selama modal terbuka, halaman di belakangnya WAJIB tidak bisa
+           di-scroll. Kalau bisa, konten ikut bergerak sementara scrim dan dialog
+           diam di tempat — modalnya terasa lepas dari halaman, dan di layar
+           sentuh latar belakang bisa tergeser tanpa sengaja.
 
-                background: rgb(0 0 0 / 48%);
-                backdrop-filter: blur(2px);
+           Penanda `data-modal-open` dihitung di satu tempat oleh skrip di bawah,
+           karena modal di aplikasi ini dibuka lewat tiga cara berbeda:
+           `showModal()` pada dialog native, Alpine `x-show`, dan melepas class
+           `hidden`. Menambal setiap pembuka berarti belasan tempat yang bisa lupa.
+           Aturan `:has(dialog[open])` tetap ada sebagai jaring pengaman tanpa JS.
+
+           `padding-right` menutup ruang bekas scrollbar, supaya isi halaman tidak
+           meloncat ke kanan saat modal dibuka. Lebarnya diukur skrip tepat sebelum
+           penguncian, karena scrollbar hilang begitu `overflow: hidden` aktif.
+
+           Jaring pengaman `:has(dialog[open])` sengaja hanya berlaku SEBELUM skrip
+           siap. Kalau ia aktif bersamaan, aturan itu menyembunyikan scrollbar lebih
+           dulu, dan pengukuran lebar scrollbar di skrip akan selalu membaca 0 —
+           kompensasinya jadi hilang. */
+            html:not([data-m3-lock-ready]):has(dialog[open]),
+            html[data-modal-open] {
+                overflow: hidden;
+                padding-right: var(--m3-scrollbar, 0px);
             }
 
             /* ===================== 9. Transisi masuk halaman & dialog =====================
-           Fade-through M3: konten masuk sambil naik 8px, bertahap 40ms, tetapi
-           langkah-nya dibatasi sampai anak keempat — halaman yang punya 12 blok
-           tidak boleh membuat pembaca menunggu lebih dari ~450ms. Semua properti
-           yang dianimasikan transform/opacity, jadi tidak menggeser layout (CLS 0). */
+           Fade-through M3: konten masuk bertahap 40ms, tetapi langkah-nya dibatasi
+           sampai anak keempat — halaman yang punya 12 blok tidak boleh membuat
+           pembaca menunggu lebih dari ~450ms.
+
+           Hanya `opacity` yang dianimasikan, tanpa `transform`. Dua alasan:
+             1. transform apa pun pada ancestor menjadikan dirinya containing block
+                untuk keturunan `position: fixed`, sehingga scrim modal terkurung di
+                kotak ancestor itu, bukan menutupi viewport;
+             2. properti ini tetap tidak menggeser layout (CLS 0).
+           Sisa yang tak terhindarkan: selama animasi berjalan, opacity < 1 membuat
+           ancestor jadi stacking context, jadi chrome (sidebar z-50) sempat berada
+           di atas overlay. Jendelanya ~300ms sejak halaman dimuat dan modal dibuka
+           oleh klik, bukan otomatis. */
 
             @keyframes m3-fade-through {
                 from {
                     opacity: 0;
-                    transform: translateY(8px);
                 }
 
-                /* `none`, bukan translateY(0): transform non-none apa pun membuat
-               elemen jadi containing block untuk keturunan position:fixed. */
                 to {
                     opacity: 1;
-                    transform: none;
                 }
             }
 
             .legacy-admin>* {
-                animation: m3-fade-through var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+                /* fill-mode `backwards`: delay stagger tetap menghasilkan opacity 0
+               sebelum giliran animasinya, lalu tidak ada sisa animasi setelah
+               selesai. */
+                animation: m3-fade-through var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) backwards;
             }
 
             .legacy-admin>*:nth-child(2) {
@@ -1453,10 +1600,13 @@
             }
 
             /* Scrim bertoken — dipakai dialog M3, backdrop daisyUI, dan panel apa pun
-           yang perlu meredupkan halaman di belakangnya. */
+           yang perlu meredupkan halaman di belakangnya. Token opaque + 32% via
+           color-mix: satu sumber kebenaran, alpha konsisten antar modal. */
             .m3-scrim {
-                background: var(--md-sys-color-scrim);
-                backdrop-filter: blur(2px);
+                background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+                /* Blur disamakan dengan ::backdrop dialog M3 supaya semua modal
+               terasa satu keluarga gerakan dan satu kedalaman. */
+                backdrop-filter: blur(8px);
             }
 
             /* Dialog M3: masuk 200 ms emphasized-decelerate, keluar 150 ms
@@ -1542,5 +1692,67 @@
     </style>
 
     @stack('styles')
+
+    <script>
+        // ---- Kunci scroll halaman saat ada modal terbuka ----
+        // Modal di aplikasi ini dibuka lewat tiga cara berbeda: `showModal()` pada
+        // <dialog> native, Alpine `x-show`, dan melepas class `hidden`. Karena itu
+        // keadaan "ada modal terbuka?" dihitung dari DOM, bukan ditambal di setiap
+        // pembuka.
+        (function () {
+            // Hanya elemen yang memang lapisan overlay modal. Scrim di dalam modal
+            // tidak perlu didaftarkan: visibilitasnya mengikuti induknya.
+            // `[class~="modal"]` menangkap modal daisyUI yang mengandalkan CSS-nya
+            // sendiri, bukan utility `fixed inset-0`.
+            const OVERLAY = 'dialog[open], .m3-overlay, [role="dialog"], [role="alertdialog"],' +
+                ' [class~="fixed"][class~="inset-0"], [class~="modal"]';
+
+            const terlihat = (el) => {
+                const gaya = getComputedStyle(el);
+                if (gaya.display === 'none' || gaya.visibility === 'hidden') return false;
+                // getClientRects kosong berarti elemen tidak punya kotak sama sekali
+                // (mis. induknya display:none) — bukan modal yang terbuka.
+                return el.getClientRects().length > 0;
+            };
+
+            let terakhir = null;
+            const perbarui = () => {
+                const terbuka = Array.from(document.querySelectorAll(OVERLAY)).some(terlihat);
+                if (terbuka === terakhir) return;
+                terakhir = terbuka;
+
+                const akar = document.documentElement;
+                if (terbuka) {
+                    // Ukur lebar scrollbar SEBELUM dikunci: setelah `overflow: hidden`
+                    // berlaku, scrollbar sudah hilang dan ukurannya jadi 0.
+                    akar.style.setProperty('--m3-scrollbar', (window.innerWidth - akar.clientWidth) + 'px');
+                }
+                akar.toggleAttribute('data-modal-open', terbuka);
+            };
+
+            new MutationObserver(perbarui).observe(document.documentElement, {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                attributeFilter: ['class', 'style', 'open', 'aria-hidden'],
+            });
+            window.addEventListener('resize', perbarui);
+
+            // Menandai bahwa jalur skrip sudah aktif. Jaring pengaman CSS
+            // `html:not([data-m3-lock-ready]):has(dialog[open])` hanya berlaku
+            // sebelum tanda ini ada, supaya pengukuran lebar scrollbar tidak
+            // didahului oleh aturan CSS itu sendiri.
+            const mulai = () => {
+                document.documentElement.setAttribute('data-m3-lock-ready', '');
+                perbarui();
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', mulai);
+            } else {
+                mulai();
+            }
+        })();
+    </script>
 
 </head>
