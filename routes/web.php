@@ -592,6 +592,7 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::post('/admin-user-massUpdate', [UserController::class, 'massUpdate'])->name('admin.user.mass-update');
     Route::get('/admin-user-check-relations/{id}', [AdminController::class, 'checkUserRelations'])->name('admin.user.check-relations');
     Route::delete('/admin-user-hard-delete/{id}', [AdminController::class, 'hardDeleteUser'])->name('admin.user.hard-delete');
+    Route::post('/admin-users-bulk-hard-delete', [AdminController::class, 'bulkHardDeleteUsers'])->name('admin.user.bulk-hard-delete');
     Route::post('/admin-absen-hapus-foto', [AdminController::class, 'hapusFotoAbsen'])->name('absen.hapusFotoAbsen');
 
     Route::get('/admin-check-koordinat/{id}', [AbsensiController::class, "showLocation"])->name('admin.absen.map');

@@ -270,6 +270,7 @@
 
         // --- bulk delete modal ---
         bulkDeleting: false,
+                    bulkDeleteRoute: '{{ route('admin.user.bulk-hard-delete') }}',
 
         diffForHumans(dateStr) {
             if (!dateStr) return 'Belum pernah absen';
@@ -554,20 +555,14 @@
             </div>
             <div slot="actions">
                 <md-text-button @click="$refs.bulkDialog.close()">Batal</md-text-button>
-                {{-- Submit satu per satu via hidden form --}}
                 <md-filled-button class="m3-btn-danger-filled" :disabled="bulkDeleting" @click="
                         bulkDeleting = true;
-                        (async () => {
-                            for (const id of selected) {
-                                const form = document.createElement('form');
-                                form.method = 'POST';
-                                form.action = deleteRoute.replace('__ID__', id);
-                                form.innerHTML = '<input name=_token value=\'{{ csrf_token() }}\'><input name=_method value=DELETE>';
-                                document.body.appendChild(form);
-                                form.submit();
-                                await new Promise(r => setTimeout(r, 300));
-                            }
-                        })();
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = bulkDeleteRoute;
+                        form.innerHTML = '<input name=_token value=\'{{ csrf_token() }}\'>' + selected.map(id => '<input name=ids[] value=\'' + id + '\'>').join('');
+                        document.body.appendChild(form);
+                        form.submit();
                     ">
                     <md-icon slot="icon">delete</md-icon>
                     <span x-text="bulkDeleting ? 'Menghapus...' : 'Hapus Semua'"></span>
