@@ -580,7 +580,9 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('/pekerjaan/template', [PekerjaanCpController::class, 'exportTemplate'])->name('admin.pekerjaan.template');
     Route::resource('/pekerjaanCp', PekerjaanCpController::class)->names('admin.pekerjaan-cp');
     Route::resource('/admin-rating', RatingController::class)->names('admin.rating');
-    Route::resource('/news', NewsController::class)->names('admin.news');
+    // Tanpa `show`: controller tidak punya method show dan tidak ada halamannya,
+    // jadi route GET /news/{id} hanya menghasilkan error 500.
+    Route::resource('/news', NewsController::class)->names('admin.news')->except(['show']);
     Route::resource('/subarea', SubareaController::class)->names('admin.subarea');
     Route::resource('/admin-checklist', ChecklistController::class)->names('admin.checklist');
     Route::post('/admin-checklist-ajx', [ChecklistController::class, 'signatureChecklistAJX'])->name('admin.checklist.ajx');
