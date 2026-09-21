@@ -190,8 +190,8 @@
                         @endif
 
                         {{-- End Handle --}}
+                        @if ($kerjasamaId == 1)
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
-                            @if ($kerjasamaId == 1)
                                 <div id="btnCP"
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
                                     <i class="ri-list-check-3"></i>
@@ -220,16 +220,8 @@
                                         class="w-full btn btn-info ">{{ $cex ? 'Kirim Bukti' : 'Buat Rencana Kerja Terlebih Dahulu' }}
                                         (senin - jum'at)</a>
                                 </div> --}}
-                            @else
-                                <div class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s"
-                                    disabled>
-                                    <i class="ri-list-check-3"></i>
-                                    <button class="text-sm font-bold uppercase" disabled>
-                                        Kinerja harian
-                                    </button>
-                                </div>
+                            </div>
                             @endif
-                        </div>
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                             <div id="btnRating"
                                 class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
