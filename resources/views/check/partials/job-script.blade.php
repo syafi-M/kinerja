@@ -119,7 +119,8 @@
             row.find('.photo-camera, .photo-gallery').on('change', function () {
                 updatePhotos(this.files);
             });
-            row.find('.dropzone').on('click', function () {
+            row.find('.dropzone').on('click', function (event) {
+                event.preventDefault();
                 const camera = row.find('.photo-camera')[0];
                 const gallery = row.find('.photo-gallery')[0];
                 const modal = $('#photo-source-modal');
