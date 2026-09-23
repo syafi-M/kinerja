@@ -111,7 +111,7 @@
                 row.find('.photo-placeholder').toggleClass('hidden', input.files.length > 0);
                 [...input.files].forEach(file => {
                     if (!file.type.startsWith('image/')) return;
-                    preview.append(`<img src="${URL.createObjectURL(file)}" alt="Preview ${file.name}" class="h-20 w-full rounded-lg object-cover ring-1 ring-slate-200">`);
+                    preview.append(`<img src="${URL.createObjectURL(file)}" alt="Preview ${file.name}" class="rounded-lg ring-1 ring-slate-200">`);
                 });
                 row.find('.photo-names').text([...input.files].map(file => file.name).join(', '));
             };

@@ -27,11 +27,11 @@
                     @php($rowImages = is_array($rowImages) ? $rowImages : explode(',', (string) $rowImages))
                     @php($rowImages = array_filter($rowImages))
                     @if (count($rowImages))
-                        <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                        <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             @foreach ($rowImages as $image)
                                 <a href="{{ asset('storage/images/' . $image) }}" target="_blank" rel="noopener"><img
                                         src="{{ asset('storage/images/' . $image) }}" alt="Foto pekerjaan"
-                                        class="h-20 w-full rounded-lg object-cover ring-1 ring-slate-200"></a>
+                                        class="rounded-lg ring-1 ring-slate-200"></a>
                             @endforeach
                         </div>
                     @endif
@@ -43,15 +43,51 @@
                             {{ data_get((array) $checkpoint->tanggal, $i, optional($checkpoint->created_at)->format('Y-m-d')) }}
                         </p>
                         @php($status = data_get((array) $checkpoint->approve_status, $i))
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 w-full">
                             <span
                                 class="rounded-lg px-2.5 py-1 text-sm font-semibold {{ $status === 'accept' ? 'bg-emerald-50 text-emerald-700' : ($status === 'denied' ? 'bg-rose-50 text-rose-700' : '') }}">@if($status === 'accept') Diterima @elseif($status === 'denied') Ditolak  @endif</span>
                             <form method="POST" action="{{ route('direksi.cp.history.approve', $checkpoint->id) }}"
-                                class="flex gap-1.5 {{ $status != null && $status != 'proccess' && $status != 'denied' ? 'hidden' : '' }}  ">@csrf @method('PATCH')<input type="hidden" name="index"
-                                    value="{{ $i }}"><input type="hidden" name="note" value=""><button name="status" value="accept"
-                                    class="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-600">Terima</button><button
-                                    type="button" onclick="openRejectModal({{ $i }}, this)"
-                                    class="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-600 {{ $status == 'denied' ? 'hidden' : ''}}">Tolak</button>
+                                class="flex w-full gap-1.5 {{ $status != null && $status != 'proccess' && $status != 'denied' ? 'hidden' : '' }}  ">@csrf @method('PATCH')<input type="hidden" name="index"
+                                    value="{{ $i }}"><input type="hidden" name="note" value="">
+                                    <div class="w-full flex justify-end items-center gap-2">
+                                        <button
+                                            name="status"
+                                            value="accept"
+                                            class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-md active:scale-95"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-4 w-4"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                stroke-width="2.5"
+                                            >
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6" />
+                                            </svg>
+
+                                            Terima
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onclick="openRejectModal({{ $i }}, this)"
+                                            class="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 hover:shadow-md active:scale-95 {{ $status == 'denied' ? 'hidden' : '' }}"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-4 w-4"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                            </svg>
+
+                                            Tolak
+                                        </button>
+                                    </div>
                             </form>
                         </div>
                     </div>
