@@ -19,11 +19,11 @@
                     @php($rowImages = is_array($rowImages) ? $rowImages : explode(',', (string) $rowImages))
                     @php($rowImages = array_filter($rowImages))
                     @if (count($rowImages))
-                        <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                        <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             @foreach ($rowImages as $image)
                                 <a href="{{ asset('storage/images/' . $image) }}" target="_blank" rel="noopener">
                                     <img src="{{ asset('storage/images/' . $image) }}" alt="Foto pekerjaan"
-                                        class="h-20 w-full rounded-lg object-cover ring-1 ring-slate-200">
+                                        class="rounded-lg ring-1 ring-slate-200">
                                 </a>
                             @endforeach
                         </div>

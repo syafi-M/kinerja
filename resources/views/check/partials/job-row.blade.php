@@ -80,7 +80,7 @@
             <div
                 class="dropzone flex min-h-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center transition duration-200 hover:border-sky-400 hover:bg-sky-50"
             >
-                <div class="photo-preview grid w-full grid-cols-3 gap-2 sm:grid-cols-5"></div>
+                <div class="photo-preview grid w-full grid-cols-1 gap-2 sm:grid-cols-2"></div>
 
                 <div class="photo-placeholder flex flex-col items-center">
                     <i class="ri-image-add-line text-3xl text-slate-400"></i>
