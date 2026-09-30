@@ -130,6 +130,7 @@
             row.find('.remove-job').on('click', function () {
                 if (jobs.find('.job-row').length > 1) { row.remove(); renumber(); }
             });
+            if (row.find('.manual-name').val()) row.find('.job-select').val('manual');
             syncRowLegacy(row);
             syncRow(row);
         }

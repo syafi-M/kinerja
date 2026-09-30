@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\CheckPoint;
 use App\Models\User;
 use App\Models\PekerjaanCp;
+use App\Models\WorkOrder;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Http as httped;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
@@ -28,14 +31,14 @@ class CheckPointController extends Controller
         $recordsByDate = $records->flatMap(function (CheckPoint $checkpoint): array {
             $dates = collect((array) $checkpoint->tanggal)->filter();
             if ($dates->isEmpty()) $dates = collect([$checkpoint->created_at]);
-            return $dates->mapWithKeys(fn ($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
+            return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
         });
         $rejectedByDate = $records->flatMap(function (CheckPoint $checkpoint): array {
             $statuses = is_array($checkpoint->approve_status) ? $checkpoint->approve_status : json_decode($checkpoint->approve_status ?: '[]', true);
             if (!is_array($statuses) || !collect($statuses)->contains('denied')) return [];
             $dates = collect((array) $checkpoint->tanggal)->filter();
             if ($dates->isEmpty()) $dates = collect([$checkpoint->created_at]);
-            return $dates->mapWithKeys(fn ($date) => [Carbon::parse($date)->toDateString() => true])->all();
+            return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => true])->all();
         });
         $calendar = collect();
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
@@ -75,7 +78,7 @@ class CheckPointController extends Controller
         $recordsByDate = Cache::remember(
             "checkpoint-calendar:" . Auth::id(),
             now()->addSeconds(30),
-            fn () => CheckPoint::where('user_id', Auth::id())
+            fn() => CheckPoint::where('user_id', Auth::id())
                 ->select(['id', 'tanggal', 'created_at'])
                 ->get()
                 ->flatMap(function (CheckPoint $checkpoint): array {
@@ -83,13 +86,13 @@ class CheckPointController extends Controller
                     if ($dates->isEmpty()) {
                         $dates = collect([$checkpoint->created_at]);
                     }
-                    return $dates->mapWithKeys(fn ($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
+                    return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
                 })
         );
         $rejectedDates = Cache::remember(
             "checkpoint-calendar-rejected:" . Auth::id(),
             now()->addSeconds(30),
-            fn () => CheckPoint::where('user_id', Auth::id())
+            fn() => CheckPoint::where('user_id', Auth::id())
                 ->select(['id', 'tanggal', 'created_at', 'approve_status'])
                 ->get()
                 ->flatMap(function (CheckPoint $checkpoint): array {
@@ -97,7 +100,7 @@ class CheckPointController extends Controller
                     if (!is_array($statuses) || !collect($statuses)->contains('denied')) return [];
                     $dates = collect(is_array($checkpoint->tanggal) ? $checkpoint->tanggal : [$checkpoint->tanggal])->filter();
                     if ($dates->isEmpty()) $dates = collect([$checkpoint->created_at]);
-                    return $dates->mapWithKeys(fn ($date) => [Carbon::parse($date)->toDateString() => true])->all();
+                    return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => true])->all();
                 })
         );
         $calendar = collect();
@@ -113,7 +116,16 @@ class CheckPointController extends Controller
 
     public function create(Request $request)
     {
-        $selectedDate = $request->input('tanggal', Carbon::today()->format('Y-m-d'));
+        $workOrder = null;
+
+        if ($request->filled('work_order')) {
+            $workOrder = WorkOrder::findOrFail(
+                $request->integer('work_order')
+            );
+        }
+        $selectedDate = $workOrder?->tanggal
+            ? Carbon::parse($workOrder->tanggal)->format('Y-m-d')
+            : $request->input('tanggal', Carbon::today()->format('Y-m-d'));
         $id = null;
         $user = Auth::user()->id;
         $c = CheckPoint::where('user_id', $user)->whereDate('created_at', Carbon::now()->format('Y-m-d'))->get();
@@ -123,7 +135,7 @@ class CheckPointController extends Controller
         $che = CheckPoint::query()->where('user_id', Auth::user()->id)->where('type_check', 'harian')->whereDate('created_at', Carbon::now()->format('Y-m-d'));
         $cheli = $che->selectRaw('pekerjaan_cp_id')->get();
         // dd($cheli);
-        return view('check.create', compact('pcp', 'c', 'cheli', 'pch', 'id', 'selectedDate'));
+        return view('check.create', compact('pcp', 'c', 'cheli', 'pch', 'id', 'selectedDate', 'workOrder'));
     }
 
     public function store(Request $request)
@@ -135,8 +147,8 @@ class CheckPointController extends Controller
         $data = [
             'user_id' => $request->user_id,
             'divisi_id' => $request->divisi_id,
-            'pekerjaan_cp_id' => collect($jobs)->map(fn ($job) => $job === 'manual' || $job === '' || $job === null ? null : $job)->all(),
-            'input_manual' => collect($jobs)->map(fn ($job, $i) => $job === 'manual' || $job === '' || $job === null ? ($manual[$i] ?? null) : null)->all(),
+            'pekerjaan_cp_id' => collect($jobs)->map(fn($job) => $job === 'manual' || $job === '' || $job === null ? null : $job)->all(),
+            'input_manual' => collect($jobs)->map(fn($job, $i) => $job === 'manual' || $job === '' || $job === null ? ($manual[$i] ?? null) : null)->all(),
             'deskripsi' => array_values($request->input('deskripsi', [])),
             'latitude' => $request->latitude,
             'longtitude' => $request->longtitude,
@@ -160,6 +172,16 @@ class CheckPointController extends Controller
         }
         $data['img'] = $imagePaths;
 
+        // Check WorkOder
+        if ($request->work_order_id) {
+            try {
+                WorkOrder::findOrFail($request->work_order_id)->update(['has_complete' => 1]);
+            } catch (ModelNotFoundException $e) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Perintah kerja tidak ditemukan.');
+            }
+        }
 
         DB::beginTransaction();
 
@@ -167,7 +189,7 @@ class CheckPointController extends Controller
             $cek->create($data);
             Cache::forget('checkpoint-calendar:' . Auth::id());
             DB::commit();
-            toastr()->success('Data Berhasil Ditambahkan', [], 'success');
+            toastr()->success('Data Berhasil Disimpan', [], 'success');
             return to_route('checkpoint-user.index');
         } catch (\Exception $e) {
             DB::rollback();
@@ -235,7 +257,7 @@ class CheckPointController extends Controller
                 }
             }
             if (!count($paths)) {
-                $paths = array_values(array_filter(explode(',', (string) ($existing[$i][0] ?? '')), fn ($p) => $p !== ''));
+                $paths = array_values(array_filter(explode(',', (string) ($existing[$i][0] ?? '')), fn($p) => $p !== ''));
             }
             $images[] = $paths;
         }
@@ -244,7 +266,7 @@ class CheckPointController extends Controller
         $cex2->input_manual = $inputManual;
         $cex2->deskripsi = $deskripsiOut;
         $cex2->tanggal = $tanggalOut;
-        $cex2->note = array_map(fn ($status, $i) => $status === 'proccess' ? null : ($originalNotes[$originalIndexes[$i] ?? $i] ?? null), $approveOut, array_keys($approveOut));
+        $cex2->note = array_map(fn($status, $i) => $status === 'proccess' ? null : ($originalNotes[$originalIndexes[$i] ?? $i] ?? null), $approveOut, array_keys($approveOut));
         $cex2->img = $images;
         $cex2->latitude = $request->input('latitude', $cex2->latitude);
         $cex2->longtitude = $request->input('longtitude', $cex2->longtitude);

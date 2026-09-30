@@ -9,33 +9,31 @@
         ],
         [
             'route' => 'direksi.cp.index',
-            'active' => 'direksi.cp.index',
+            'active' => 'direksi.cp.*',
             'icon' => 'ri-user-line',
             'label' => 'Karyawan',
         ],
         [
-            'route' => 'direksi.cp.history',
-            'active' => 'direksi.cp.history*',
-            'icon' => 'ri-history-line',
-            'label' => 'Riwayat',
+            'route' => 'direksi.work-order.index',
+            'active' => 'direksi.work-order.*',
+            'icon' => 'ri-file-list-3-line',
+            'label' => 'Work Order',
         ],
     ];
 @endphp
 
 <aside
     class="fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col border-r border-slate-200/80 bg-white/85 px-6 py-7 text-slate-600 backdrop-blur-xl lg:flex">
-    <a href="{{ route('direksi.cp.index') }}" class="group mb-12 flex items-center gap-3">
+    <a href="{{ route('direksi.cp.index') }}" class="group mb-12 flex items-center gap-3 overflow-hidden">
         <span
             class="grid h-10 w-10 place-items-center rounded-xl bg-sky-500 text-xl text-white shadow-[0_8px_20px_rgba(14,165,233,.18)] transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-105"><i
                 class="ri-calendar-check-line"></i></span>
         <span>
             <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-slate-400">Direksi</span>
             <strong
-                class="text-[15px] tracking-tight text-slate-900">{{ request()->routeIs('checkpoint-user.index')
+                class="text-[15px] tracking-tight text-slate-900 overflow-hidden">{{ request()->routeIs('direksi.cp.calendar')
                     ? 'Kalender'
-                    : (request()->routeIs('direksi.cp.history*')
-                        ? 'Riwayat'
-                        : 'Karyawan') }}</strong>
+                    : 'Karyawan' }}</strong>
         </span>
     </a>
 
@@ -69,12 +67,10 @@
         aria-expanded="false"
         class="group grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-sky-300 hover:text-sky-600 active:scale-[.96]"><i
             class="ri-menu-3-line text-xl transition-transform duration-300 group-hover:scale-110"></i></button>
-    <div class="flex items-center gap-2 text-sm font-semibold">
+    <div class="flex items-center gap-2 text-sm font-semibold overflow-hidden">
             {{ request()->routeIs('direksi.cp.index')
             ? 'Karyawan'
-            : (request()->routeIs('direksi.cp.history*')
-                ? 'Riwayat'
-                : 'Kalendar') }}
+            : 'Kalender'}}
     </div>
     <div></div>
 </div>

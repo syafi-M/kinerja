@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scroll lock test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://esm.run/@material/web@2.5.0/all.js"></script>
+    <style>
+
+    </style>
+</head>
+
+<body class="font-sans antialiased">
+    <div data-drawer-open class="admin-drawer fixed inset-y-0 left-0 z-10 w-[80px] bg-[var(--md-sys-color-surface-container-low)] p-2">
+        <span class="text-[10px] font-bold">SIDEBAR</span>
+    </div>
+
+    <div class="admin-shell m3-wash min-h-screen bg-[var(--md-sys-color-surface-container-low)]">
+        <div class="admin-content ml-[80px] flex flex-1 flex-col">
+            <div class="sticky top-0 z-40 h-9 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] px-2">
+                <span class="text-[10px] font-bold">TOPBAR z-40</span>
+            </div>
+
+            <main class="p-2">
+                <div class="legacy-admin">
+                    <div class="md-dashboard space-y-4">
+                        <div class="flex flex-wrap gap-1">
+                            <button type="button" class="m3-btn m3-btn--filled text-[10px]" onclick="document.getElementById('dlg').showModal()">1 native</button>
+                            <button type="button" class="m3-btn m3-btn--tonal text-[10px]" onclick="bukaOverlay()">2 m3-overlay</button>
+                            <button type="button" class="m3-btn m3-btn--outlined text-[10px]" onclick="bukaLegacy()">3 hidden</button>
+                        </div>
+
+                        <!-- Tinggi buatan supaya halaman benar-benar bisa di-scroll -->
+                        <div class="h-[2000px] rounded-xl bg-[var(--md-sys-color-surface-container)] p-3">
+                            <span class="text-xs m3-text-variant">Filler tinggi 2000px</span>
+                        </div>
+
+                        <dialog id="dlg" class="m3-dialog">
+                            <div class="m3-dialog__headline">Modal native</div>
+                            <div class="m3-dialog__content"><p class="text-sm">Dialog di top layer.</p></div>
+                            <div class="m3-dialog__actions">
+                                <md-text-button type="button" onclick="document.getElementById('dlg').close()">Tutup</md-text-button>
+                            </div>
+                        </dialog>
+
+                        <!-- 2. Toggle via style inline (pola Alpine x-show) -->
+                        <div id="ovl" class="m3-overlay fixed inset-0 z-50 flex px-4 py-6" style="display: none;">
+                            <div class="m3-scrim fixed inset-0"></div>
+                            <div class="m3-dialog-panel m-auto w-full max-w-md rounded-[28px] bg-[var(--md-sys-color-surface-container-high)] p-5 shadow-[var(--md-elevation-3)]">
+                                <p class="text-sm">Modal m3-overlay</p>
+                            </div>
+                        </div>
+
+                        <!-- 3. Toggle via class `hidden` (pola overlay legacy) -->
+                        <div id="leg" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/35 p-4">
+                            <div class="w-full max-w-sm rounded-2xl bg-white p-5">
+                                <p class="text-sm">Modal legacy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        const settle = (ms) => new Promise(r => setTimeout(r, ms));
+        const bukaOverlay = () => { document.getElementById('ovl').style.display = 'flex'; };
+        const tutupOverlay = () => { document.getElementById('ovl').style.display = 'none'; };
+        const bukaLegacy = () => { document.getElementById('leg').classList.remove('hidden'); document.getElementById('leg').style.display = 'flex'; };
+        const tutupLegacy = () => { document.getElementById('leg').classList.add('hidden'); document.getElementById('leg').style.display = ''; };
+
+        function keadaan() {
+            const html = document.documentElement;
+            const gaya = getComputedStyle(html);
+            return {
+                attr: html.hasAttribute('data-modal-open'),
+                overflowY: gaya.overflowY,
+                paddingRight: gaya.paddingRight,
+                scrollbarVar: gaya.getPropertyValue('--m3-scrollbar').trim(),
+                bisaScroll: html.scrollHeight > html.clientHeight,
+                scrollY: Math.round(window.scrollY),
+            };
+        }
+
+        // Halaman harus benar-benar scrollable supaya uji "tidak bisa scroll" bermakna.
+        async function cobaScroll() {
+            window.scrollTo(0, 400);
+            await settle(60);
+            return Math.round(window.scrollY);
+        }
+
+        window.__lockTest = async () => {
+            const out = {};
+            // pastikan bersih + terukur
+            if (document.getElementById('dlg').open) document.getElementById('dlg').close();
+            tutupOverlay(); tutupLegacy();
+            await settle(500);
+            out.sebelumModal = keadaan();
+            out.scrollNormal = await cobaScroll();
+            window.scrollTo(0, 0);
+            await settle(100);
+
+            // 1. native
+            document.getElementById('dlg').showModal();
+            await settle(600);
+            out.nativeTerbuka = keadaan();
+            out.scrollSaatNative = await cobaScroll();
+            document.getElementById('dlg').close();
+            await settle(600);
+            out.setelahNativeTutup = keadaan();
+
+            // 2. m3-overlay (Alpine style)
+            bukaOverlay();
+            await settle(400);
+            out.overlayTerbuka = keadaan();
+            out.scrollSaatOverlay = await cobaScroll();
+            tutupOverlay();
+            await settle(500);
+            out.setelahOverlayTutup = keadaan();
+
+            // 3. legacy (class hidden)
+            bukaLegacy();
+            await settle(400);
+            out.legacyTerbuka = keadaan();
+            out.scrollSaatLegacy = await cobaScroll();
+            tutupLegacy();
+            await settle(500);
+            out.setelahLegacyTutup = keadaan();
+
+            window.scrollTo(0, 0);
+            return out;
+        };
+    </script>
+
+</body>
+
+</html>

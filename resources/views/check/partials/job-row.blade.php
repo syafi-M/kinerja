@@ -70,7 +70,7 @@
         </select>
 
     </div>
-    <input class="manual-name input input-bordered border-slate-200 mt-2 hidden w-full" type="text" name="input_manual[]" placeholder="Ketik nama pekerjaan">
+    <input class="manual-name input input-bordered border-slate-200 mt-2 {{ $workOrder?->deskripsi ? '' : 'hidden' }} w-full" type="text" name="input_manual[]" placeholder="Ketik nama pekerjaan" value="{{ old('input_manual.' . ($index ?? 0), $workOrder?->deskripsi) }}">
     <input class="job-value" type="hidden" name="pekerjaan_id[]">
     <label class="label mt-4 py-0">
     <span class="label-text font-semibold">Foto pekerjaan</span>
@@ -117,5 +117,5 @@
     <label class="label mt-4 py-0"><span class="label-text font-semibold">Deskripsi pekerjaan</span></label>
     <textarea class="textarea textarea-bordered mt-2 w-full" name="deskripsi[]" rows="3" placeholder="Jelaskan pekerjaan yang dilakukan"></textarea>
     <input type="hidden" name="approve_status[]" value="proccess">
-    <input type="hidden" name="tanggal[]" value="{{ $selectedDate }}">
+    <input class="tanggal-input" type="hidden" name="tanggal[]" value="{{ $workOrder?->tanggal ? \Carbon\Carbon::parse($workOrder->tanggal)->format('Y-m-d') : $selectedDate }}">
 </div>
