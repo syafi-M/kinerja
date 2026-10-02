@@ -23,14 +23,17 @@
                         <input type="hidden" name="divisi_id" value="{{ Auth::user()->divisi->id }}">
                         <input type="hidden" id="latitude" name="latitude" value="">
                         <input type="hidden" id="longtitude" name="longtitude" value="">
+                        @if($workOrder)
+                        <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                        @endif
 
                         <div class="mb-6 rounded-xl bg-slate-50 p-4">
                             <label class="label py-0"><span class="label-text font-semibold">Tanggal pekerjaan</span></label>
-                            <input class="input input-bordered mt-2 w-full bg-white font-semibold" type="date" value="{{ $selectedDate }}" readonly>
+                            <input class="input input-bordered mt-2 w-full bg-white font-semibold" type="date" name="tanggal[]" value="{{ $selectedDate }}" readonly>
                         </div>
 
                         <div id="jobs" class="space-y-4">
-                            @include('check.partials.job-row', ['index' => 0, 'job' => null, 'pcp' => $pcp, 'selectedDate' => $selectedDate])
+                            @include('check.partials.job-row', ['index' => 0, 'job' => null, 'pcp' => $pcp, 'selectedDate' => $selectedDate, 'workOrder' => $workOrder])
                         </div>
 
                         <button id="add-job" type="button" class="btn mt-4 w-full border-2 border-dashed border-sky-300 bg-sky-50 text-sky-700 transition duration-200 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-sky-100">+ Tambah pekerjaan</button>
@@ -41,7 +44,7 @@
         </div>
 
         <template id="job-template">
-            @include('check.partials.job-row', ['index' => null, 'job' => null, 'pcp' => $pcp, 'selectedDate' => $selectedDate])
+            @include('check.partials.job-row', ['index' => null, 'job' => null, 'pcp' => $pcp, 'selectedDate' => $selectedDate, 'workOrder' => $workOrder])
         </template>
 
         @include('check.partials.job-script', ['isEdit' => false])

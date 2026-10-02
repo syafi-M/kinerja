@@ -42,7 +42,7 @@
     <div class="min-h-screen">
         @if (request()->routeIs('checkpoint-user.*'))
             @include('check.partials.sidebar')
-        @elseif (request()->routeIs('direksi.cp.*'))
+        @elseif (request()->routeIs('direksi.cp.*') || request()->routeIs('direksi.work-order.*'))
             @include('direksi.checkpoint.partials.direksi-sidebar')
         @else
             @include('layouts.navbar')
@@ -58,8 +58,8 @@
         @endif
 
         <!-- Page Content -->
-        <main class="{{ (request()->routeIs('checkpoint-user.*') || request()->routeIs('direksi.cp.*')) ? 'lg:pl-[17.5rem] pt-14 lg:pt-0 bg-[#f4f6f8] min-h-screen' : '' }}">
-            <div class="{{ (request()->routeIs('checkpoint-user.*') || request()->routeIs('direksi.cp.*')) ? 'motion-safe:animate-[fadeSlide_.5s_cubic-bezier(.22,1,.36,1)]' : '' }}">
+        <main class="{{ (request()->routeIs('checkpoint-user.*') || request()->routeIs('direksi.cp.*') || request()->routeIs('direksi.work-order.*')) ? 'lg:pl-[17.5rem] pt-14 lg:pt-0 bg-[#f4f6f8] min-h-screen' : '' }}">
+            <div class="{{ (request()->routeIs('checkpoint-user.*') || request()->routeIs('direksi.cp.*') || request()->routeIs('direksi.work-order.*')) ? 'motion-safe:animate-[fadeSlide_.5s_cubic-bezier(.22,1,.36,1)]' : '' }}">
                 {{ $slot }}
             </div>
         </main>

@@ -120,8 +120,9 @@
 
             @php
                 $date = $item['date'];
-
-                if ($item['hasData']) {
+                if ($item['approved']) {
+                    $state = 'border-transparent bg-sky-500 text-white hover:bg-sky-600';
+                } elseif ($item['hasData']) {
                     $state = 'border-transparent bg-emerald-500 text-white hover:bg-emerald-600';
                 } elseif ($date->isWeekend()) {
                     $state = 'border-rose-100 bg-rose-50 text-rose-400';
@@ -148,8 +149,11 @@
                         {{ $date->day }}
                     </span>
 
-                    <i class="text-[10px] ri-check-line opacity-90 sm:text-xs md:text-[13px]"></i>
-
+                    @if($item['approved'])
+                        <i class="text-[10px] ri-check-line opacity-90 sm:text-xs md:text-[13px]"></i>
+                    @else
+                        <i class="ri-information-2-line text-[10px] opacity-90 sm:text-xs md:text-[13px]"></i>
+                    @endif
                 </a>
 
 
@@ -206,20 +210,20 @@
 
 
     {{-- Legend --}}
-    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-gray-500 sm:mt-5 sm:gap-x-5 sm:text-xs">
+    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-gray-500 sm:mt-5 sm:gap-x-5 sm:text-xs w-full">
 
             <span class="flex items-center gap-1.5 sm:gap-2">
-                <span class="h-2.5 w-2.5 shrink-0 rounded-[3px] bg-emerald-500 sm:h-3 sm:w-3"></span>
-                Ada checkpoint
+                <span class="m-1 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-sky-500 sm:h-3 sm:w-3"></span>
+                Data Sudah Di Verifikasi Semua
             </span>
 
             <span class="flex items-center gap-1.5 sm:gap-2">
-                <span class="h-2.5 w-2.5 shrink-0 rounded-[3px] border border-gray-200 bg-white sm:h-3 sm:w-3"></span>
-                Belum diisi
+                <span class="m-1 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-emerald-500 sm:h-3 sm:w-3"></span>
+                Ada Checkpoint / Ada Yang Belum Di Verifikasi
             </span>
 
             <span class="flex items-center gap-1.5 sm:gap-2">
-                <span class="h-2.5 w-2.5 shrink-0 rounded-[3px] bg-rose-50 ring-1 ring-rose-100 sm:h-3 sm:w-3"></span>
+                <span class="m-1 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-rose-50 ring-1 ring-rose-100 sm:h-3 sm:w-3"></span>
                 Sabtu &amp; Minggu
             </span>
 

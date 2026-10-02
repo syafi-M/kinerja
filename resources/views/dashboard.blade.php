@@ -87,7 +87,10 @@
                 @endauth
                 <div class="mx-5 rounded-md sm:mx-10 bg-slate-500 ">
                     <div class="py-5">
-                        <div class="flex items-end justify-end mr-3">
+                        <div class="flex items-end justify-between mr-3">
+                            @if (auth()->user()->kerjasama_id == 1)
+                                <x-notification-dropdown />
+                            @endif
                             <span style="max-width: 250px; background-color: #0C642F"
                                 class="flex justify-start gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
                                 <span id="jam"></span>
@@ -356,6 +359,7 @@
                                     'laporan' => 'direksi_laporan',
                                     'rating' => 'direksi-rating.index',
                                     'kinerja' => 'direksi.cp.index',
+                                    'perintah kerja' => 'direksi.work-order.index',
                                     'kontrak' => 'direksi-cekKontrak',
                                 ],
                             ];
@@ -369,6 +373,7 @@
                                 'laporan bulanan' => 'ri-image-add-line',
                                 'rating' => 'ri-sparkling-line',
                                 'kinerja' => 'ri-sparkling-line',
+                                'perintah kerja' => 'ri-file-list-3-line',
                                 'kontrak' => 'ri-pass-pending-line',
                             ];
                         @endphp
@@ -482,11 +487,6 @@
                 @include('dashboard.partials.checkpoint-rejected-modal')
                 @include('dashboard.partials.checkpoint-pending-modal')
 
-                <div class="flex justify-center">
-                    <div class="fixed bottom-0 z-[999]">
-                        <x-menu-mobile :cekAbsen="$cekAbsen" />
-                    </div>
-                </div>
             </main>
         </div>
         @if (count($warn) >= 3)
