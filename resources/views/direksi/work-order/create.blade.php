@@ -73,37 +73,64 @@
                 </div>
             </section>
         @endif
+        @php
+            $selectedDate = \Carbon\Carbon::parse($tanggal);
+            $isPast = $selectedDate->isBefore(today());
+        @endphp
+        @if($isPast)
+            <section class="rounded-2xl border border-slate-200 bg-slate-50/70 p-8 sm:p-10">
+                <div class="flex flex-col items-center text-center">
+                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200">
+                        <i class="ri-lock-2-line text-2xl"></i>
+                    </div>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <div class="mb-5 flex items-start gap-3">
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-white shadow-sm">
-                    <i class="ri-add-line text-xl"></i>
+                    <h2 class="mt-4 text-base font-bold text-slate-800">
+                        Form Dikunci
+                    </h2>
+
+                    <p class="mt-1.5 max-w-sm text-sm text-slate-500">
+                        Form perintah kerja tidak tersedia karena tanggal yang dipilih
+                        sudah berlalu.
+                    </p>
+
+                    <span class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">
+                        <i class="ri-calendar-line"></i>
+                        {{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}
+                    </span>
                 </div>
-                <div>
-                    <h2 class="font-bold text-slate-900">Perintah baru</h2>
-                    <p class="mt-1 text-sm text-slate-500">Tulis instruksi yang jelas dan mudah dijalankan.</p>
+            </section>
+        @else
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <div class="mb-5 flex items-start gap-3">
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-white shadow-sm">
+                        <i class="ri-add-line text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-900">Perintah baru</h2>
+                        <p class="mt-1 text-sm text-slate-500">Tulis instruksi yang jelas dan mudah dijalankan.</p>
+                    </div>
                 </div>
-            </div>
-            <form method="POST" action="{{ route('direksi.work-order.store') }}" class="space-y-5">
-                @csrf
-                <input type="hidden" name="user_id" value="{{ $user->id }}">
-                <input type="hidden" name="tanggal" value="{{ $tanggal }}">
-                <div>
-                    <label for="deskripsi" class="mb-2 block text-sm font-bold text-slate-700">Deskripsi
-                        pekerjaan</label>
-                    <textarea id="deskripsi" name="deskripsi" rows="7" required maxlength="5000"
-                        class="w-full rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
-                        placeholder="Contoh: Periksa kondisi panel listrik lantai 2 dan laporkan hasilnya.">{{ old('deskripsi') }}</textarea>
-                    @error('deskripsi')
-                        <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <button type="submit"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-sky-600 active:scale-[.99]">
-                    <i class="ri-send-plane-line"></i> Simpan Perintah Kerja
-                </button>
-            </form>
-        </section>
+                <form method="POST" action="{{ route('direksi.work-order.store') }}" class="space-y-5">
+                    @csrf
+                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                    <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <div>
+                        <label for="deskripsi" class="mb-2 block text-sm font-bold text-slate-700">Deskripsi
+                            pekerjaan</label>
+                        <textarea id="deskripsi" name="deskripsi" rows="7" required maxlength="5000"
+                            class="w-full rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
+                            placeholder="Contoh: Periksa kondisi panel listrik lantai 2 dan laporkan hasilnya.">{{ old('deskripsi') }}</textarea>
+                        @error('deskripsi')
+                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <button type="submit"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 py-3 font-bold text-white shadow-sm transition hover:bg-sky-600 active:scale-[.99]">
+                        <i class="ri-send-plane-line"></i> Simpan Perintah Kerja
+                    </button>
+                </form>
+            </section>
+        @endif
     </div>
 </x-app-layout>

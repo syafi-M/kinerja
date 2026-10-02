@@ -89,6 +89,20 @@ class CheckPointController extends Controller
                     return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
                 })
         );
+        $acceptedDates = Cache::remember(
+            "checkpoint-calendar-accepted:" . Auth::id(),
+            now()->addSeconds(30),
+            fn() => CheckPoint::where('user_id', Auth::id())
+                ->select(['id', 'tanggal', 'created_at', 'approve_status'])
+                ->get()
+                ->flatMap(function (CheckPoint $checkpoint): array {
+                    $statuses = is_array($checkpoint->approve_status) ? $checkpoint->approve_status : json_decode($checkpoint->approve_status ?: '[]', true);
+                    $dates = collect(is_array($checkpoint->tanggal) ? $checkpoint->tanggal : [$checkpoint->tanggal])->filter()->values();
+                    if ($dates->isEmpty()) $dates = collect([$checkpoint->created_at]);
+                    if (!is_array($statuses) || !collect($statuses)->contains('accept')) return [];
+                    return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => true])->all();
+                })
+        );
         $rejectedDates = Cache::remember(
             "checkpoint-calendar-rejected:" . Auth::id(),
             now()->addSeconds(30),
@@ -105,7 +119,7 @@ class CheckPointController extends Controller
         );
         $calendar = collect();
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->format('Y-m-d')), 'recordId' => $recordsByDate->get($date->format('Y-m-d')), 'rejected' => $rejectedDates->has($date->format('Y-m-d'))]);
+            $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->format('Y-m-d')), 'recordId' => $recordsByDate->get($date->format('Y-m-d')), 'accepted' => $acceptedDates->has($date->format('Y-m-d')), 'rejected' => $rejectedDates->has($date->format('Y-m-d'))]);
         }
         $previousMonth = $start->copy()->subMonth()->format('Y-m');
         $nextMonth = $start->copy()->addMonth()->format('Y-m');
@@ -144,10 +158,17 @@ class CheckPointController extends Controller
 
         $jobs = array_values($request->input('pekerjaan_id', []));
         $manual = array_values($request->input('input_manual', []));
+        $workOrder = null;
+        if ($request->work_order_id)
+            $workOrder = $request->work_order_id;
+        else
+            $workOrder = null;
+
         $data = [
             'user_id' => $request->user_id,
             'divisi_id' => $request->divisi_id,
             'pekerjaan_cp_id' => collect($jobs)->map(fn($job) => $job === 'manual' || $job === '' || $job === null ? null : $job)->all(),
+            'work_order_id' => $workOrder,
             'input_manual' => collect($jobs)->map(fn($job, $i) => $job === 'manual' || $job === '' || $job === null ? ($manual[$i] ?? null) : null)->all(),
             'deskripsi' => array_values($request->input('deskripsi', [])),
             'latitude' => $request->latitude,
@@ -201,7 +222,7 @@ class CheckPointController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $cex = CheckPoint::findOrFail($id);
+        $cex = CheckPoint::with('workOrder')->findOrFail($id);
         $pcp = PekerjaanCp::where('user_id', $cex->user_id)->get();
 
         return view('check.edit', ['pcp' => $pcp, 'cex' => $cex, 'id' => $id, 'selectedDate' => $request->input('tanggal', optional($cex->created_at)->format('Y-m-d'))]);
@@ -256,10 +277,11 @@ class CheckPointController extends Controller
                     $paths[] = $name;
                 }
             }
-            if (!count($paths)) {
-                $paths = array_values(array_filter(explode(',', (string) ($existing[$i][0] ?? '')), fn($p) => $p !== ''));
-            }
-            $images[] = $paths;
+            $oldPaths = array_values(array_filter(array_merge(...array_map(
+                fn ($value) => explode(',', (string) $value),
+                (array) ($existing[$i] ?? [])
+            )), fn ($p) => $p !== ''));
+            $images[] = array_values(array_unique([...$oldPaths, ...$paths]));
         }
 
         $cex2->pekerjaan_cp_id = $pekerjaanCpId;

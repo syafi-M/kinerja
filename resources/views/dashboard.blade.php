@@ -88,7 +88,9 @@
                 <div class="mx-5 rounded-md sm:mx-10 bg-slate-500 ">
                     <div class="py-5">
                         <div class="flex items-end justify-between mr-3">
-                            <x-notification-dropdown />
+                            @if (auth()->user()->kerjasama_id == 1)
+                                <x-notification-dropdown />
+                            @endif
                             <span style="max-width: 250px; background-color: #0C642F"
                                 class="flex justify-start gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
                                 <span id="jam"></span>

@@ -66,7 +66,7 @@
                 </option>
             @endforeach
 
-            <option value="manual">Pilih Untuk Ketik manual</option>
+            <option value="manual" {{ $workOrder?->deskripsi ? 'selected' : '' }}>Pilih Untuk Ketik manual</option>
         </select>
 
     </div>

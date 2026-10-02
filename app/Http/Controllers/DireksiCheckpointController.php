@@ -7,6 +7,7 @@ use App\Models\Kerjasama;
 use App\Models\PekerjaanCp;
 use App\Models\User;
 use App\Models\WorkOrder;
+use App\Notifications\WorkOrderNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -59,8 +60,7 @@ class DireksiCheckpointController extends Controller
             }
             $statuses = collect((array) $checkpoint->approve_status);
 
-            $approved = $statuses->isNotEmpty()
-                && $statuses->every(fn($status) => $status != 'proccess');
+            $approved = $statuses->isNotEmpty() && $statuses->every(fn($status) => $status != 'proccess');
             return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => [$checkpoint->id, $approved]])->all();
         });
         $calendar = collect();
@@ -116,10 +116,7 @@ class DireksiCheckpointController extends Controller
         if ($request->worker) {
             $workOrder = WorkOrder::where('id', $id)->first();
             $selectedDate = $workOrder->tanggal->format('Y-m-d');
-            $checkpoint = CheckPoint::with('user:id,nama_lengkap')
-                ->where('user_id', $workOrder->user_id)
-                ->whereJsonContains('tanggal', $selectedDate)
-                ->first();
+            $checkpoint = CheckPoint::with('user:id,nama_lengkap')->where('user_id', $workOrder->user_id)->whereJsonContains('tanggal', $selectedDate)->first();
         } else {
             $checkpoint = CheckPoint::with('user:id,nama_lengkap')->findOrFail($id);
         }
@@ -145,6 +142,18 @@ class DireksiCheckpointController extends Controller
         $notes[$data['index']] = $data['note'] ?? null;
         $checkpoint->note = $notes;
         $checkpoint->save();
+
+        $user = User::where('id', $checkpoint->user_id)->first();
+        $workOrder = $checkpoint->work_order_id ?? null;
+        if ($workOrder != null) {
+            $user->notify(
+                new WorkOrderNotification(
+                    workOrderId: $workOrder,
+                    title: 'Status Pekerjaan Di Update',
+                    message: 'Pekerjaan sudah di update oleh Direksi.'
+                )
+            );
+        } //else masih pending notify
         return back()->with('success', 'Status approval berhasil diperbarui.');
     }
 

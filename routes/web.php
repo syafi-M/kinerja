@@ -146,6 +146,11 @@ Route::get('/notifications/{id}', function ($id) {
 
 use Illuminate\Http\Request;
 
+Route::delete('/notifications/{notification}', function (Request $request, string $notification) {
+    $request->user()->notifications()->whereKey($notification)->firstOrFail()->delete();
+    return back();
+})->middleware('auth')->name('notifications.delete');
+
 Route::post('/notifications/read-all', function (Request $request) {
     $request->user()
         ->unreadNotifications

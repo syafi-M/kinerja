@@ -25,6 +25,7 @@ class CheckPoint extends Model
         'user_id',
         'divisi_id',
         'pekerjaan_cp_id',
+        'work_order_id',
         'input_manual',
         'type_check',
         'img',
@@ -49,5 +50,10 @@ class CheckPoint extends Model
     public function pekerjaanCp()
     {
         return $this->belongsTo(PekerjaanCp::class);
+    }
+
+    public function workOrder()
+    {
+        return $this->belongsTo(WorkOrder::class, 'work_order_id');
     }
 }

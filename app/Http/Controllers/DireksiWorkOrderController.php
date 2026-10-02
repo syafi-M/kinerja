@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\WorkOrder;
 use App\Notifications\WorkOrderNotification;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -50,7 +51,7 @@ class DireksiWorkOrderController extends Controller
 
     public function create(User $user, Request $request)
     {
-        abort_if(!$request->filled('tanggal') || $request->date('tanggal')->isBefore(today()), 404);
+        abort_if(!$request->filled('tanggal'), 404);
         $orders = WorkOrder::where('user_id', $user->id)->where('tanggal', $request->tanggal)->get();
         return view('direksi.work-order.create', ['user' => $user, 'tanggal' => $request->tanggal, 'orders' => $orders]);
     }

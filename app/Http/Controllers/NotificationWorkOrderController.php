@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Checklist;
+use App\Models\CheckPoint;
 use App\Models\WorkOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,9 +30,16 @@ class NotificationWorkOrderController extends Controller
         $workOrder->update(["has_read" => 1]);
 
         // $data = $notification->data;
-
-        return redirect()->route('checkpoint-user.create', [
-            'work_order' => $workOrder->id,
-        ]);
+        if ($workOrder->has_complete != 1) {
+            return redirect()->route('checkpoint-user.create', [
+                'work_order' => $workOrder->id,
+            ]);
+        } else {
+            $id = CheckPoint::where('work_order_id', $workOrder->id)->first();
+            return redirect()->route('checkpoint-user.edit', [
+                'checkpoint_user' => $id,
+                'tanggal' => $workOrder->tanggal
+            ]);
+        }
     }
 }

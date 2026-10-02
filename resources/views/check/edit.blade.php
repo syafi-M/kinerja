@@ -57,6 +57,7 @@
                                     : ($images[$i] ?? null
                                         ? [$images[$i]]
                                         : []);
+                                $workOrder = $cex->workOrder;
                             @endphp
                             @include(
                                 'check.partials.job-row-edit',
@@ -68,23 +69,29 @@
                                     'pcp',
                                     'selectedDate',
                                     'descriptions',
-                                    'approveStatuses'))
+                                    'approveStatuses',
+                                    'workOrder'))
                         @endfor
                     </div>
                     <button id="add-job" type="button"
                         class="btn mt-4 w-full border-2 border-dashed border-sky-300 bg-sky-50 text-sky-700 transition duration-200 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-sky-100">+
-                        Tambah pekerjaan</button><button id="submit-job" type="submit"
+                        Tambah detail pekerjaan</button><button id="submit-job" type="submit"
                         class="btn mt-5 w-full border-0 bg-sky-500 font-bold text-white shadow-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">Simpan
                         perubahan</button>
                 </form>
             </div>
         </div>
     </div>
-    <template id="job-template">@include('check.partials.job-row', [
-        'index' => null,
-        'job' => null,
+    <template id="job-template">@include('check.partials.job-row-edit', [
+        'i' => 1,
+        'jobId' => null,
+        'manual' => null,
+        'rowImages' => [],
         'pcp' => $pcp,
         'selectedDate' => $selectedDate,
+        'descriptions' => [],
+        'approveStatuses' => [],
+        'workOrder' => $cex->workOrder,
     ])</template>
     @include('check.partials.job-script', ['isEdit' => true])
 </x-app-layout>

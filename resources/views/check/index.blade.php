@@ -64,7 +64,6 @@
 
             {{-- Current month --}}
             @foreach ($calendar as $index => $item)
-
                 @php
                     $date = $item['date'];
 
@@ -72,6 +71,8 @@
                         $state = 'border-transparent bg-rose-500 text-white';
                     } elseif ($item['rejected']) {
                         $state = 'border-transparent bg-amber-500 text-white';
+                    } elseif ($item['accepted']) {
+                        $state = 'border-transparent bg-sky-500 text-white';
                     } elseif ($item['hasData']) {
                         $state = 'border-transparent bg-emerald-500 text-white';
                     } else {
@@ -113,8 +114,10 @@
 
                         <i class="ri-close-line text-[11px] opacity-90 sm:text-xs md:text-[13px]"></i>
 
-                    @elseif ($item['hasData'])
+                    @elseif ($item['accepted'])
+                        <i class="ri-checkbox-circle-fill text-[11px] opacity-90 sm:text-xs md:text-[13px]" aria-label="Diterima"></i>
 
+                    @elseif ($item['hasData'])
                         <i
                             class="ri-check-line text-[11px] opacity-90 transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] group-hover:translate-x-0.5 sm:text-xs md:text-[13px]">
                         </i>
@@ -157,7 +160,8 @@
 
         <div
             class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-xs text-slate-500">
-            <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] bg-emerald-500"></span>Ada
+            <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] bg-sky-500"></span>Diterima</span>
+            <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] bg-emerald-500"></span>Ada bukti
                 pekerjaan</span>
             <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-[4px] bg-amber-500"></span>Ditolak</span>
             <span class="flex items-center gap-2"><span

@@ -24,4 +24,9 @@ class WorkOrder extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function checkPoints()
+    {
+        return $this->hasMany(CheckPoint::class, 'work_order_id');
+    }
 }
