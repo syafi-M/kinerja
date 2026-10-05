@@ -52,17 +52,19 @@ class DireksiCheckpointController extends Controller
             ->findOrFail($user);
         $records = CheckPoint::where('user_id', $employee->id)
             ->where('type_check', $type)
-            ->get(['id', 'user_id', 'tanggal', 'type_check', 'created_at', 'approve_status']);
-        $recordsByDate = $records->flatMap(function (CheckPoint $checkpoint): array {
-            $dates = collect((array) $checkpoint->tanggal)->filter();
-            if ($dates->isEmpty()) {
-                $dates = collect([$checkpoint->created_at]);
+            ->with('items:id,check_point_id,tanggal,approve_status')
+            ->get(['id', 'user_id', 'type_check', 'created_at']);
+        $recordsByDate = collect();
+        foreach ($records as $checkpoint) {
+            if ($checkpoint->items->isEmpty()) {
+                $recordsByDate->put(Carbon::parse($checkpoint->created_at)->toDateString(), [$checkpoint->id, false]);
+                continue;
             }
-            $statuses = collect((array) $checkpoint->approve_status);
-
-            $approved = $statuses->isNotEmpty() && $statuses->every(fn($status) => $status != 'proccess');
-            return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => [$checkpoint->id, $approved]])->all();
-        });
+            foreach ($checkpoint->items->groupBy(fn ($item) => Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString()) as $date => $dayItems) {
+                $approved = $dayItems->every(fn ($item) => $item->approve_status !== 'proccess');
+                $recordsByDate->put($date, [$checkpoint->id, $approved]);
+            }
+        }
         $calendar = collect();
         for ($date = $start->copy(); $date->lte($start->copy()->endOfMonth()); $date->addDay()) {
             $record = $recordsByDate->get($date->toDateString());
@@ -88,13 +90,18 @@ class DireksiCheckpointController extends Controller
         if ($filter) {
             $query->whereHas('user', fn($q) => $q->where('kerjasama_id', $filter));
         }
-        $recordsByDate = $query->get(['id', 'tanggal', 'created_at'])->flatMap(function (CheckPoint $checkpoint): array {
-            $dates = collect((array) $checkpoint->tanggal)->filter();
-            if ($dates->isEmpty()) {
-                $dates = collect([$checkpoint->created_at]);
-            }
-            return $dates->mapWithKeys(fn($date) => [Carbon::parse($date)->toDateString() => $checkpoint->id])->all();
-        });
+        $recordsByDate = collect();
+        $query->with('items:id,check_point_id,tanggal')
+            ->get(['id', 'created_at'])
+            ->each(function (CheckPoint $checkpoint) use ($recordsByDate): void {
+                if ($checkpoint->items->isEmpty()) {
+                    $recordsByDate->put($checkpoint->created_at->toDateString(), $checkpoint->id);
+                    return;
+                }
+                foreach ($checkpoint->items as $item) {
+                    $recordsByDate->put(Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString(), $checkpoint->id);
+                }
+            });
         $calendar = collect();
         for ($date = $start->copy(); $date->lte($start->copy()->endOfMonth()); $date->addDay()) {
             $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->toDateString()), 'recordId' => $recordsByDate->get($date->toDateString())]);
@@ -116,9 +123,12 @@ class DireksiCheckpointController extends Controller
         if ($request->worker) {
             $workOrder = WorkOrder::where('id', $id)->first();
             $selectedDate = $workOrder->tanggal->format('Y-m-d');
-            $checkpoint = CheckPoint::with('user:id,nama_lengkap')->where('user_id', $workOrder->user_id)->whereJsonContains('tanggal', $selectedDate)->first();
+            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp'])
+                ->where('user_id', $workOrder->user_id)
+                ->whereHas('items', fn ($q) => $q->whereDate('tanggal', $selectedDate))
+                ->first();
         } else {
-            $checkpoint = CheckPoint::with('user:id,nama_lengkap')->findOrFail($id);
+            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp'])->findOrFail($id);
         }
 
         return view('direksi.checkpoint.history-detail', compact('checkpoint'));
@@ -132,16 +142,11 @@ class DireksiCheckpointController extends Controller
             'note' => ['nullable', 'string', 'max:1000', Rule::requiredIf(fn() => $request->status === 'denied')],
         ]);
         $checkpoint = CheckPoint::findOrFail($id);
-        $statuses = is_array($checkpoint->approve_status) ? $checkpoint->approve_status : json_decode($checkpoint->approve_status ?: '[]', true);
-        $statuses = is_array($statuses) ? $statuses : [];
-        abort_unless(array_key_exists($data['index'], (array) $checkpoint->pekerjaan_cp_id), 422);
-        $statuses[$data['index']] = $data['status'];
-        $checkpoint->approve_status = $statuses;
-        $notes = is_array($checkpoint->note) ? $checkpoint->note : json_decode($checkpoint->note ?: '[]', true);
-        $notes = is_array($notes) ? $notes : [];
-        $notes[$data['index']] = $data['note'] ?? null;
-        $checkpoint->note = $notes;
-        $checkpoint->save();
+        $item = $checkpoint->items()->orderBy('urutan')->skip($data['index'])->first();
+        abort_unless($item, 422);
+        $item->approve_status = $data['status'];
+        $item->note = $data['note'] ?? null;
+        $item->save();
 
         $user = User::where('id', $checkpoint->user_id)->first();
         $workOrder = $checkpoint->work_order_id ?? null;

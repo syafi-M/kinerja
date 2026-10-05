@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('check_points', function (Blueprint $table) {
-            $table->dropColumn(WorkOrder::class);
+            $table->dropColumn('work_order_id');
         });
     }
 };
