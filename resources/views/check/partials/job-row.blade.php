@@ -1,4 +1,5 @@
 <div class="job-row relative rounded-xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-sky-300 hover:shadow-[0_10px_24px_-16px_rgba(15,23,42,.2)]" style="animation: fadeSlide .28s cubic-bezier(.22,1,.36,1)">
+    @php $maxPhotos = \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM; @endphp
     <div class="mb-3 flex items-center justify-between">
         <h2 class="font-bold text-slate-800">Pekerjaan <span class="job-number">{{ ($index ?? 0) + 1 }}</span></h2>
         <button type="button" class="remove-job btn btn-xs btn-ghost text-error">
@@ -74,6 +75,7 @@
     <input class="job-value" type="hidden" name="pekerjaan_id[]">
     <label class="label mt-4 py-0">
     <span class="label-text font-semibold">Foto pekerjaan</span>
+    <span class="label-text-alt text-slate-400">Maks. {{ $maxPhotos }} foto</span>
         </label>
 
         <div class="mt-2">
@@ -90,7 +92,7 @@
                     </span>
 
                     <span class="text-xs text-slate-400">
-                        Ambil foto atau pilih dari galeri
+                        Ambil foto atau pilih dari galeri (maks. {{ $maxPhotos }})
                     </span>
                 </div>
             </div>
@@ -114,8 +116,9 @@
             >
         </div>
     <div class="photo-names mt-2 text-xs text-slate-500"></div>
+    <p class="photo-limit mt-1 hidden text-xs font-semibold text-rose-600"></p>
     <label class="label mt-4 py-0"><span class="label-text font-semibold">Deskripsi pekerjaan</span></label>
-    <textarea class="textarea textarea-bordered mt-2 w-full" name="deskripsi[]" rows="3" placeholder="Jelaskan pekerjaan yang dilakukan"></textarea>
-    <input type="hidden" name="approve_status[]" value="proccess">
+    <textarea class="deskripsi-input textarea textarea-bordered mt-2 w-full" name="deskripsi[]" rows="3" placeholder="Jelaskan pekerjaan yang dilakukan"></textarea>
+    <input class="approve-input" type="hidden" name="approve_status[]" value="proccess">
     <input class="tanggal-input" type="hidden" name="tanggal[]" value="{{ $workOrder?->tanggal ? \Carbon\Carbon::parse($workOrder->tanggal)->format('Y-m-d') : $selectedDate }}">
 </div>

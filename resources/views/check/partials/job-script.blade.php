@@ -33,6 +33,7 @@
             row.find('.tanggal-input').attr('name', `tanggal[${stableIndex}]`);
             row.find('.approve-input').attr('name', `approve_status[${stableIndex}]`);
             row.find('.job-value').attr('name', `pekerjaan_id[${stableIndex}]`);
+            row.find('.item-id').attr('name', `item_id[${stableIndex}]`);
             row.find('.manual-name').attr('name', `input_manual[${stableIndex}]`);
         }
         function renumber() {
@@ -112,13 +113,26 @@
                     $(input).removeData('editing-photo');
                     activeRow.removeData('editing-photo');
                 }
+
+                const limit = Number($('#form-cp').data('max-photos')) || 7;
+                const previousCount = input.files.length;
+                const merged = [...input.files, ...files];
+                const trimmed = merged.slice(0, limit);
+
+                const warning = activeRow.find('.photo-limit');
+                if (merged.length > limit) {
+                    warning.text(`Maksimal ${limit} foto per pekerjaan. ${merged.length - limit} foto terakhir tidak dipakai.`).removeClass('hidden');
+                } else {
+                    warning.addClass('hidden').text('');
+                }
+
                 const transfer = new DataTransfer();
-                [...input.files, ...files].forEach(file => transfer.items.add(file));
+                trimmed.forEach(file => transfer.items.add(file));
                 input.files = transfer.files;
 
                 const preview = activeRow.find('.photo-preview');
                 activeRow.find('.photo-placeholder').addClass('hidden');
-                [...files].forEach(file => {
+                trimmed.slice(previousCount).forEach(file => {
                     if (!file.type.startsWith('image/')) return;
                     const item = $('<div class="photo-item group relative"></div>');
                     item.append($('<img class="h-full w-full rounded-lg object-cover ring-1 ring-slate-200">').attr({ src: URL.createObjectURL(file), alt: `Preview ${file.name}` }));
@@ -126,7 +140,7 @@
                     item.append('<button type="button" class="photo-edit absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-md" aria-label="Edit foto"><i class="ri-pencil-line"></i></button>');
                     preview.append(item);
                 });
-                activeRow.find('.photo-names').text([...input.files].map(file => file.name).join(', '));
+                activeRow.find('.photo-names').text(trimmed.map(file => file.name).join(', '));
             };
 
             row.find('.photo-camera, .photo-gallery').on('change', function (event) {

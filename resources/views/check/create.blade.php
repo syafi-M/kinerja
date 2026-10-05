@@ -17,7 +17,7 @@
                             Kembali</a>
                     </div>
 
-                    <form id="form-cp" method="POST" enctype="multipart/form-data" action="{{ route('checkpoint-user.store') }}">
+                    <form id="form-cp" method="POST" enctype="multipart/form-data" data-max-photos="{{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }}" action="{{ route('checkpoint-user.store') }}">
                         @csrf
                         <input type="hidden" name="user_id" value="{{ Auth::id() }}">
                         <input type="hidden" name="divisi_id" value="{{ Auth::user()->divisi->id }}">

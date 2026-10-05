@@ -1,4 +1,7 @@
 <x-app-layout>
+    @php
+        $firstDate = $checkpoint->items->first()?->tanggal ?? $checkpoint->created_at;
+    @endphp
     <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8">
         <div class="mb-6 flex items-center justify-between">
             <div>
@@ -6,27 +9,28 @@
                 <h1 class="mt-1 text-2xl font-bold text-slate-900 capitalize">Riwayat pekerjaan</h1>
                 <p class="mt-1 text-sm capitalize text-slate-500">
                     {{ strtolower($checkpoint->user->nama_lengkap ?? '-') }} &middot;
-                    {{ Carbon\Carbon::parse($checkpoint->tanggal[0])->locale('id')->translatedFormat('d F Y') }}</p>
+                    {{ Carbon\Carbon::parse($firstDate)->locale('id')->translatedFormat('d F Y') }}</p>
             </div>
             <a href="{{ route('direksi.cp.calendar', [
                 'user' => $checkpoint->user_id,
-                'month' => \Carbon\Carbon::parse($checkpoint->tanggal[0])->format('Y-m'),
+                'month' => \Carbon\Carbon::parse($firstDate)->format('Y-m'),
             ]) }}"
                 class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-sky-300 hover:text-sky-600"
                 aria-label="Kembali"><i class="ri-arrow-left-line text-xl"></i></a>
         </div>
         <div class="space-y-4">
-            @foreach (array_values((array) $checkpoint->deskripsi) as $i => $description)
-                @php($jobId = array_values((array) $checkpoint->pekerjaan_cp_id)[$i] ?? null)
-                @php($manual = array_values((array) $checkpoint->input_manual)[$i] ?? null)
+            @foreach ($checkpoint->items as $item)
+                @php
+                    $jobId = $item->pekerjaan_cp_id;
+                    $manual = $item->input_manual;
+                    $status = $item->approve_status;
+                    $rowImages = $item->images->pluck('path')->all();
+                @endphp
                 <article
                     class="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04),0_12px_32px_-16px_rgba(15,23,42,.12)]">
                     <h2 class="font-bold capitalize text-slate-800">
-                      Pekerjaan
+                      {{ $item->pekerjaanCp?->name ?? ($item->input_manual ?: 'Pekerjaan') }}
                     </h2>
-                    @php($rowImages = data_get((array) $checkpoint->img, $i, []))
-                    @php($rowImages = is_array($rowImages) ? $rowImages : explode(',', (string) $rowImages))
-                    @php($rowImages = array_filter($rowImages))
                     @if (count($rowImages))
                         <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             @foreach ($rowImages as $image)
@@ -37,16 +41,15 @@
                         </div>
                     @endif
                     <p class="mt-3 whitespace-pre-line text-sm text-slate-600">
-                        {{ $description ?: 'Tidak ada deskripsi.' }}</p>
+                        {{ $item->deskripsi ?: 'Tidak ada deskripsi.' }}</p>
 
-                    @php($status = data_get((array) $checkpoint->approve_status, $i))
-                    @if (data_get((array) $checkpoint->note, $i))
+                    @if ($item->note)
                         <p class="mt-2 rounded-lg  px-3 py-2 text-xs {{ $status == 'denied' ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700' }}"><strong>Alasan:</strong>
-                            {{ data_get((array) $checkpoint->note, $i) }}</p>
+                            {{ $item->note }}</p>
                     @endif
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
                         <p class="text-xs text-slate-400">
-                            {{ data_get((array) $checkpoint->tanggal, $i, optional($checkpoint->created_at)->format('Y-m-d')) }}
+                            {{ $item->tanggal?->format('Y-m-d') ?? optional($checkpoint->created_at)->format('Y-m-d') }}
                         </p>
                         <div class="flex items-center gap-2 w-full">
                             <span
@@ -60,7 +63,7 @@
                             @if($status != 'accept')
                             <div class="w-full flex justify-end items-center gap-2">
                                 <button type="button"
-                                    onclick="openCheckpointActionModal({{ $i }}, 'accept')"
+                                    onclick="openCheckpointActionModal({{ $loop->index }}, 'accept')"
                                     class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-md active:scale-95">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -71,7 +74,7 @@
                                 </button>
 
                                 <button type="button"
-                                    onclick="openCheckpointActionModal({{ $i }}, 'denied')"
+                                    onclick="openCheckpointActionModal({{ $loop->index }}, 'denied')"
                                     class="{{ $status == 'denied' ? 'hidden' : '' }} inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 shadow-sm transition-all duration-200 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 hover:shadow-md active:scale-95 {{ $status == 'denied' ? 'hidden' : '' }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

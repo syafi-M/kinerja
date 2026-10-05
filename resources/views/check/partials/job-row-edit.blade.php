@@ -1,10 +1,11 @@
 @php
     $workOrderDescription = $workOrder?->deskripsi;
-    $workOrderManual = $i >= 1 && filled($workOrderDescription);
-    $manualValue = filled($manual) ? $manual : ($workOrderManual ? $workOrderDescription : null);
-    $isManual = $workOrderManual || filled($manualValue);
+    $jobId = $item?->pekerjaan_cp_id;
+    $manual = $item?->input_manual;
+    $manualValue = filled($manual) ? $manual : null;
+    $isManual = filled($jobId) ? false : ($manualValue !== null);
     $selectedId = $isManual ? 'manual' : (string) ($jobId ?? '');
-    $status = $approveStatuses[$i] ?? null;
+    $status = $item?->approve_status;
     $isDenied = $status === 'denied';
     $isAccepted = $status === 'accept';
     $rowClass = $isDenied
@@ -13,13 +14,14 @@
             ? 'border-emerald-300 bg-emerald-50/50 hover:border-emerald-400'
             : 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-[0_10px_24px_-16px_rgba(15,23,42,.2)]');
     $locked = $isAccepted ? 'disabled' : '';
-    $note = data_get((array) $cex->note, $i);
+    $note = $item?->note;
+    $rowImages = $item ? $item->images->pluck('path')->all() : [];
 @endphp
 <div class="job-row relative rounded-xl border p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] {{ $rowClass }}"
     style="animation: fadeSlide .28s cubic-bezier(.22,1,.36,1)" data-status="{{ $status ?? '' }}">
     <div class="mb-3 flex items-center justify-between gap-2">
         <h2 class="flex items-center gap-2 font-bold text-slate-800">Bukti Pekerjaan <span
-                class="job-number">{{ $i + 1 }}</span>
+                class="job-number">{{ ($i ?? 0) + 1 }}</span>
             @if ($isAccepted)
                 <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700"><i class="ri-check-double-line mr-2"></i>Disetujui</span>
             @elseif ($isDenied)
@@ -116,10 +118,11 @@
     <input class="manual-name input input-bordered mt-2 w-full {{ $isManual ? '' : 'hidden' }}" type="text"
         name="input_manual[]" {{ $locked }} value="{{ $isManual ? $manualValue : '' }}" data-work-order-description="{{ $workOrderDescription }}" placeholder="Ketik nama pekerjaan"
         >
-    <input class="original-index" type="hidden" name="original_index[]" value="{{ $i }}">
+    <input class="original-index" type="hidden" name="original_index[]" value="{{ $i ?? 0 }}">
+    <input class="item-id" type="hidden" name="item_id[{{ $i ?? 0 }}]" value="{{ $item?->id }}">
     <input class="job-value" type="hidden" name="pekerjaan_id[]" value="{{ $selectedId }}">
 
-    <label class="label mt-4 py-0"><span class="label-text font-semibold">Foto pekerjaan</span></label>
+    <label class="label mt-4 py-0"><span class="label-text font-semibold">Foto pekerjaan</span><span class="label-text-alt text-slate-400">Maks. {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }} foto</span></label>
     <div
         class="{{ $isAccepted ? 'cursor-not-allowed opacity-70' : 'dropzone transition duration-200 hover:border-sky-400 hover:bg-sky-50 cursor-pointer' }} mt-2 flex min-h-28 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center {{ $isAccepted ? 'pointer-events-none' : '' }}">
         <div class="photo-preview grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
@@ -134,7 +137,7 @@
                         <button type="button" class="photo-edit absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition hover:bg-amber-600" aria-label="Edit foto">
                             <i class="ri-pencil-line"></i>
                         </button>
-                        <input type="hidden" class="existing-image" name="existing_img[{{ $i }}][]" value="{{ $image }}">
+                        <input type="hidden" class="existing-image" name="existing_img[{{ $i ?? 0 }}][]" value="{{ $image }}">
                     </div>
                 @endif
             @endforeach
@@ -143,19 +146,21 @@
             class="photo-placeholder flex flex-col items-center {{ $isAccepted || count(array_filter($rowImages)) ? 'hidden' : '' }}">
             <i class="ri-upload-cloud-2-line text-3xl text-slate-400"></i><span
                 class="text-sm font-semibold text-slate-600">Klik atau tarik foto ke sini</span><span
-                class="text-xs text-slate-400">JPG, PNG — bisa lebih dari satu</span>
+                class="text-xs text-slate-400">JPG, PNG — maks. {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }} foto</span>
         </div>
-        <input class="existing-images" type="hidden" name="existing_img[{{ $i }}][]" value="">
-        <input class="photo-input photo-camera hidden" type="file" name="img[{{ $i }}][]"
+        <input class="existing-images" type="hidden" name="existing_img[{{ $i ?? 0 }}][]" value="">
+        <input class="photo-input photo-camera hidden" type="file" name="img[{{ $i ?? 0 }}][]"
             accept="image/*" capture="environment" multiple {{ $locked }}>
     </div>
     <input class="photo-gallery hidden" type="file" accept="image/*" multiple {{ $locked }}>
     <div class="photo-names mt-2 text-xs text-slate-500"></div>
+    <p class="photo-limit mt-1 hidden text-xs font-semibold text-rose-600"></p>
 
     <label class="label mt-4 py-0"><span class="label-text font-semibold">Deskripsi pekerjaan</span></label>
-    <textarea class="deskripsi-input textarea textarea-bordered mt-2 w-full" name="deskripsi[{{ $i }}]"
-        rows="3" placeholder="Jelaskan pekerjaan yang dilakukan" {{ $locked }}>{{ $descriptions[$i] ?? '' }}</textarea>
-    <input class="approve-input" type="hidden" name="approve_status[{{ $i }}]"
+    <textarea class="deskripsi-input textarea textarea-bordered mt-2 w-full" name="deskripsi[{{ $i ?? 0 }}]"
+        rows="3" placeholder="Jelaskan pekerjaan yang dilakukan" {{ $locked }}>{{ $item?->deskripsi ?? '' }}</textarea>
+    <input class="approve-input" type="hidden" name="approve_status[{{ $i ?? 0 }}]"
         value="{{ $isAccepted ? 'accept' : ($isDenied ? 'proccess' : $status ?? 'proccess') }}">
-    <input class="tanggal-input" type="hidden" name="tanggal[{{ $i }}]" value="{{ $selectedDate }}">
+    <input class="tanggal-input" type="hidden" name="tanggal[{{ $i ?? 0 }}]"
+        value="{{ $item?->tanggal?->format('Y-m-d') ?? $selectedDate }}">
 </div>
