@@ -8,6 +8,7 @@ use App\Models\PekerjaanCp;
 use App\Models\User;
 use App\Models\WorkOrder;
 use App\Notifications\WorkOrderNotification;
+use App\Services\CheckPointCalendarService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,6 +16,10 @@ use Illuminate\Validation\Rule;
 
 class DireksiCheckpointController extends Controller
 {
+    public function __construct(
+        private readonly CheckPointCalendarService $calendarService,
+    ) {
+    }
     public function index(Request $request)
     {
         $now = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month) : Carbon::now();
@@ -46,36 +51,21 @@ class DireksiCheckpointController extends Controller
         $selectedMonth = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month) : Carbon::now();
 
         $start = $selectedMonth->copy()->startOfMonth();
+        $end = $selectedMonth->copy()->endOfMonth();
         $employee = User::query()
             ->select(['id', 'nama_lengkap', 'devisi_id', 'jabatan_id', 'kerjasama_id'])
             ->with(['divisi:id,name', 'jabatan:id,name_jabatan', 'kerjasama:id,client_id'])
             ->findOrFail($user);
-        $records = CheckPoint::where('user_id', $employee->id)
-            ->where('type_check', $type)
-            ->with('items:id,check_point_id,tanggal,approve_status')
-            ->get(['id', 'user_id', 'type_check', 'created_at']);
-        $recordsByDate = collect();
-        foreach ($records as $checkpoint) {
-            if ($checkpoint->items->isEmpty()) {
-                $recordsByDate->put(Carbon::parse($checkpoint->created_at)->toDateString(), [$checkpoint->id, false]);
-                continue;
-            }
-            foreach ($checkpoint->items->groupBy(fn ($item) => Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString()) as $date => $dayItems) {
-                $approved = $dayItems->every(fn ($item) => $item->approve_status !== 'proccess');
-                $recordsByDate->put($date, [$checkpoint->id, $approved]);
-            }
-        }
-        $calendar = collect();
-        for ($date = $start->copy(); $date->lte($start->copy()->endOfMonth()); $date->addDay()) {
-            $record = $recordsByDate->get($date->toDateString());
-            $calendar->push(['date' => $date->copy(), 'hasData' => $record !== null, 'recordId' => $record[0] ?? null, 'approved' => $record[1] ?? false]);
-        }
+
+        // Same calendar shape as the employee pages, filtered by type.
+        $calendar = $this->calendarService->forMonth($employee->id, $start, $end, $type);
+
         return view(
             'direksi.checkpoint.calendar',
             compact('employee', 'calendar', 'start', 'type') + [
                 'previousMonth' => $start->copy()->subMonth()->format('Y-m'),
                 'nextMonth' => $start->copy()->addMonth()->format('Y-m'),
-                'totalRecords' => $records->count(),
+                'totalRecords' => $calendar->sum('total'),
             ],
         );
     }
@@ -91,20 +81,41 @@ class DireksiCheckpointController extends Controller
             $query->whereHas('user', fn($q) => $q->where('kerjasama_id', $filter));
         }
         $recordsByDate = collect();
-        $query->with('items:id,check_point_id,tanggal')
+        $countsByDate = collect();
+        $query->with('items:id,check_point_id,tanggal,approve_status')
             ->get(['id', 'created_at'])
-            ->each(function (CheckPoint $checkpoint) use ($recordsByDate): void {
+            ->each(function (CheckPoint $checkpoint) use ($recordsByDate, $countsByDate): void {
                 if ($checkpoint->items->isEmpty()) {
                     $recordsByDate->put($checkpoint->created_at->toDateString(), $checkpoint->id);
                     return;
                 }
-                foreach ($checkpoint->items as $item) {
-                    $recordsByDate->put(Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString(), $checkpoint->id);
+
+                $byDate = $checkpoint->items->groupBy(
+                    fn ($item) => Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString(),
+                );
+
+                foreach ($byDate as $date => $dayItems) {
+                    $recordsByDate->put($date, $checkpoint->id);
+
+                    // A day can span several batches; merge the status counts.
+                    $dayCounts = CheckPointCalendarService::statusCounts($dayItems);
+                    $existing = $countsByDate->get($date, ['accept' => 0, 'denied' => 0, 'process' => 0]);
+                    $countsByDate->put($date, [
+                        'accept' => $existing['accept'] + $dayCounts['accept'],
+                        'denied' => $existing['denied'] + $dayCounts['denied'],
+                        'process' => $existing['process'] + $dayCounts['process'],
+                    ]);
                 }
             });
         $calendar = collect();
         for ($date = $start->copy(); $date->lte($start->copy()->endOfMonth()); $date->addDay()) {
-            $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->toDateString()), 'recordId' => $recordsByDate->get($date->toDateString())]);
+            $key = $date->toDateString();
+            $calendar->push([
+                'date' => $date->copy(),
+                'hasData' => $recordsByDate->has($key),
+                'recordId' => $recordsByDate->get($key),
+                'counts' => $countsByDate->get($key, ['accept' => 0, 'denied' => 0, 'process' => 0]),
+            ]);
         }
         return view('direksi.checkpoint.history', [
             'calendar' => $calendar,
