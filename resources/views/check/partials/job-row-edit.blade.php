@@ -3,7 +3,7 @@
     $jobId = $item?->pekerjaan_cp_id;
     $manual = $item?->input_manual;
     $manualValue = filled($manual) ? $manual : null;
-    $isManual = filled($jobId) ? false : ($manualValue !== null);
+    $isManual = filled($jobId) ? false : $manualValue !== null;
     $selectedId = $isManual ? 'manual' : (string) ($jobId ?? '');
     $status = $item?->approve_status;
     $isDenied = $status === 'denied';
@@ -23,7 +23,8 @@
         <h2 class="flex items-center gap-2 font-bold text-slate-800">Bukti Pekerjaan <span
                 class="job-number">{{ ($i ?? 0) + 1 }}</span>
             @if ($isAccepted)
-                <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700"><i class="ri-check-double-line mr-2"></i>Disetujui</span>
+                <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700"><i
+                        class="ri-check-double-line mr-2"></i>Disetujui</span>
             @elseif ($isDenied)
                 <span
                     class="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-700">Ditolak</span>
@@ -46,7 +47,8 @@
         <p class="mb-3 rounded-lg bg-emerald-100/70 px-3 py-2 text-xs text-emerald-700"><strong>Alasan:</strong>
             {{ $note }}</p>
     @elseif ($isAccepted)
-        <p class="mb-3 rounded-lg bg-emerald-100/70 px-3 py-2 text-xs text-emerald-700">Pekerjaan ini telah disetujui.</p>
+        <p class="mb-3 rounded-lg bg-emerald-100/70 px-3 py-2 text-xs text-emerald-700">Pekerjaan ini telah disetujui.
+        </p>
     @endif
     <label class="label py-0">
         <span class="label-text font-semibold">Nama pekerjaan</span>
@@ -115,14 +117,22 @@
         </select>
 
     </div>
-    <input class="manual-name input input-bordered mt-2 w-full {{ $isManual ? '' : 'hidden' }}" type="text"
-        name="input_manual[]" {{ $locked }} value="{{ $isManual ? $manualValue : '' }}" data-work-order-description="{{ $workOrderDescription }}" placeholder="Ketik nama pekerjaan"
-        >
+    <textarea
+        class="manual-name textarea textarea-bordered mt-2 w-full resize-y
+            {{ $isManual ? '' : 'hidden' }}"
+        name="input_manual[]"
+        {{ $locked }}
+        data-work-order-description="{{ $workOrderDescription }}"
+        placeholder="Ketik deskripsi pekerjaan..."
+        rows="3"
+    >{{ $isManual ? $manualValue : '' }}</textarea>
     <input class="original-index" type="hidden" name="original_index[]" value="{{ $i ?? 0 }}">
     <input class="item-id" type="hidden" name="item_id[{{ $i ?? 0 }}]" value="{{ $item?->id }}">
     <input class="job-value" type="hidden" name="pekerjaan_id[]" value="{{ $selectedId }}">
 
-    <label class="label mt-4 py-0"><span class="label-text font-semibold">Foto pekerjaan</span><span class="label-text-alt text-slate-400">Maks. {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }} foto</span></label>
+    <label class="label mt-4 py-0"><span class="label-text font-semibold">Foto pekerjaan</span><span
+            class="label-text-alt text-slate-400">Maks. {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }}
+            foto</span></label>
     <div
         class="{{ $isAccepted ? 'cursor-not-allowed opacity-70' : 'dropzone transition duration-200 hover:border-sky-400 hover:bg-sky-50 cursor-pointer' }} mt-2 flex min-h-28 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center {{ $isAccepted ? 'pointer-events-none' : '' }}">
         <div class="photo-preview grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
@@ -131,13 +141,18 @@
                     <div class="photo-item group relative" data-existing-image="{{ $image }}">
                         <img src="{{ asset('storage/images/' . $image) }}" alt="Foto pekerjaan"
                             class="h-full w-full rounded-lg object-cover ring-1 ring-slate-200">
-                        <button type="button" class="photo-delete absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition hover:bg-red-600" aria-label="Hapus foto">
+                        <button type="button"
+                            class="photo-delete absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition hover:bg-red-600"
+                            aria-label="Hapus foto">
                             <i class="ri-close-line"></i>
                         </button>
-                        <button type="button" class="photo-edit absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition hover:bg-amber-600" aria-label="Edit foto">
+                        <button type="button"
+                            class="photo-edit absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition hover:bg-amber-600"
+                            aria-label="Edit foto">
                             <i class="ri-pencil-line"></i>
                         </button>
-                        <input type="hidden" class="existing-image" name="existing_img[{{ $i ?? 0 }}][]" value="{{ $image }}">
+                        <input type="hidden" class="existing-image" name="existing_img[{{ $i ?? 0 }}][]"
+                            value="{{ $image }}">
                     </div>
                 @endif
             @endforeach
@@ -146,7 +161,8 @@
             class="photo-placeholder flex flex-col items-center {{ $isAccepted || count(array_filter($rowImages)) ? 'hidden' : '' }}">
             <i class="ri-upload-cloud-2-line text-3xl text-slate-400"></i><span
                 class="text-sm font-semibold text-slate-600">Klik atau tarik foto ke sini</span><span
-                class="text-xs text-slate-400">JPG, PNG — maks. {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }} foto</span>
+                class="text-xs text-slate-400">JPG, PNG — maks.
+                {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }} foto</span>
         </div>
         <input class="existing-images" type="hidden" name="existing_img[{{ $i ?? 0 }}][]" value="">
         <input class="photo-input photo-camera hidden" type="file" name="img[{{ $i ?? 0 }}][]"

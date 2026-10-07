@@ -28,6 +28,15 @@
                         @endif
 
                         <div class="mb-6 rounded-xl bg-slate-50 p-4">
+                            @if($workOrder)
+                                <div class="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                    <i class="ri-user-star-line mt-0.5 text-lg text-amber-600"></i>
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-[.16em] text-amber-700">Diperintah oleh</p>
+                                        <p class="mt-0.5 text-sm font-semibold text-amber-900">{{ $workOrder->creator_name }}</p>
+                                    </div>
+                                </div>
+                            @endif
                             <label class="label py-0"><span class="label-text font-semibold">Tanggal pekerjaan</span></label>
                             <input class="input input-bordered mt-2 w-full bg-white font-semibold" type="date" name="tanggal[]" value="{{ $selectedDate }}" readonly>
                         </div>

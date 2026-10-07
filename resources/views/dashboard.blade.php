@@ -197,7 +197,7 @@
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnCP"
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
-                                    <i class="ri-list-check-3"></i>
+                                    <i class="text-xl ri-fingerprint-line"></i>
                                     <button class="text-sm font-bold uppercase">
                                         Kinerja harian
                                     </button>
@@ -224,7 +224,16 @@
                                         (senin - jum'at)</a>
                                 </div> --}}
                             </div>
-                            @endif
+                        @endif
+                        @if (auth()->user()->jabatan->code_jabatan === 'MCS')
+                            <a href="{{ route('mcs.work-order.index') }}" class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
+                                <div id="btnPerintah"
+                                    class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
+                                    <i class="text-xl ri-megaphone-line"></i>
+                                    <span  class="text-sm font-bold uppercase">Perintah Kerja</span>
+                                </div>
+                            </a>        
+                        @endif
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                             <div id="btnRating"
                                 class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
@@ -372,8 +381,8 @@
                                 'laporan' => 'ri-image-add-line',
                                 'laporan bulanan' => 'ri-image-add-line',
                                 'rating' => 'ri-sparkling-line',
-                                'kinerja' => 'ri-sparkling-line',
-                                'perintah kerja' => 'ri-file-list-3-line',
+                                'kinerja' => 'ri-fingerprint-line',
+                                'perintah kerja' => 'ri-megaphone-line',
                                 'kontrak' => 'ri-pass-pending-line',
                             ];
                         @endphp

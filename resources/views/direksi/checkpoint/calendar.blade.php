@@ -120,7 +120,9 @@
 
             @php
                 $date = $item['date'];
-                if ($item['approved']) {
+                // "Approved" here means the day has work and nothing left pending.
+                $approved = $item['hasData'] && $item['counts']['process'] === 0;
+                if ($approved) {
                     $state = 'border-transparent bg-sky-500 text-white hover:bg-sky-600';
                 } elseif ($item['hasData']) {
                     $state = 'border-transparent bg-emerald-500 text-white hover:bg-emerald-600';
@@ -141,7 +143,7 @@
 
                     title="{{ $date->translatedFormat('l, d F Y') }}"
 
-                    class="reveal-cell group relative flex min-h-[48px] min-w-0 flex-col justify-between overflow-visible rounded-lg border p-1.5 font-medium transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,.22)] sm:min-h-[64px] sm:rounded-xl sm:p-2 md:min-h-[74px] md:p-2.5
+                    class="reveal-cell group relative flex min-h-[48px] min-w-0 flex-col justify-between overflow-hidden rounded-lg border p-1.5 font-medium transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,.22)] sm:min-h-[64px] sm:rounded-xl sm:p-2 md:min-h-[74px] md:p-2.5
                     {{ $state }}
                     {{ $date->isToday() ? 'ring-2 ring-sky-400 ring-offset-1 sm:ring-offset-2' : '' }}">
 
@@ -149,11 +151,7 @@
                         {{ $date->day }}
                     </span>
 
-                    @if($item['approved'])
-                        <i class="text-[10px] ri-check-line opacity-90 sm:text-xs md:text-[13px]"></i>
-                    @else
-                        <i class="ri-information-2-line text-[10px] opacity-90 sm:text-xs md:text-[13px]"></i>
-                    @endif
+                    <x-checkpoint-status-row :counts="$item['counts']" :has-data="$item['hasData']" size="md" />
                 </a>
 
 
@@ -225,6 +223,23 @@
             <span class="flex items-center gap-1.5 sm:gap-2">
                 <span class="m-1 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-rose-50 ring-1 ring-rose-100 sm:h-3 sm:w-3"></span>
                 Sabtu &amp; Minggu
+            </span>
+
+            <span class="mx-1 hidden h-4 w-px bg-gray-200 sm:block"></span>
+
+            <span class="flex items-center gap-1.5 sm:gap-2">
+                <i class="ri-checkbox-circle-fill text-[13px] text-sky-600"></i>
+                Disetujui
+            </span>
+
+            <span class="flex items-center gap-1.5 sm:gap-2">
+                <i class="ri-close-circle-fill text-[13px] text-rose-600"></i>
+                Ditolak
+            </span>
+
+            <span class="flex items-center gap-1.5 sm:gap-2">
+                <i class="ri-time-line text-[13px] text-amber-600"></i>
+                Menunggu verifikasi
             </span>
 
         </div>

@@ -19,13 +19,13 @@
                         </h1>
 
                         <p class="text-xs text-gray-500">
-                            Work Order
+                            {{ $user->jabatan->name_jabatan }}
                         </p>
                     </div>
 
                 </div>
 
-                <a href="{{ route('direksi.work-order.index') }}"
+                <a href="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.index') }}"
                     class="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     <i class="ri-arrow-left-line mr-1.5"></i>
                     Kembali
@@ -51,7 +51,7 @@
             <div class="mb-4 flex items-center justify-between">
 
                 {{-- Previous Month --}}
-                <a href="{{ route('direksi.work-order.calendar', [
+                <a href="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.calendar', [
                     'user' => $user->id,
                     'month' => $previousMonth,
                 ]) }}"
@@ -67,7 +67,7 @@
 
 
                 {{-- Next Month --}}
-                <a href="{{ route('direksi.work-order.calendar', [
+                <a href="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.calendar', [
                     'user' => $user->id,
                     'month' => $nextMonth,
                 ]) }}"
@@ -156,7 +156,7 @@
                         {{-- Past Date --}}
                     @elseif ($isPast)
                             @if ($order)
-                            <a href="{{ route('direksi.work-order.create', ['user' => $user->id, 'tanggal' => $date->format('Y-m-d')]) }}"
+                            <a href="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.create', ['user' => $user->id, 'tanggal' => $date->format('Y-m-d')]) }}"
                                 class="relative flex min-h-[48px] min-w-0 flex-col justify-between overflow-hidden rounded-lg border border-emerald-200 bg-emerald-500 p-1.5 text-white transition hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:min-h-[64px] sm:rounded-xl sm:p-2 md:min-h-[74px] md:p-2.5">
                                 <span
                                     class="flex min-h-[48px] min-w-0 justify-between overflow-hidden p-1.5 font-medium sm:min-h-[64px] sm:p-2 md:min-h-[74px] md:p-2.5">
@@ -199,7 +199,7 @@
 
             {{-- Available Date --}}
         @else
-            <a href="{{ route('direksi.work-order.create', [
+            <a href="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.create', [
                 'user' => $user->id,
                 'tanggal' => $date->format('Y-m-d'),
             ]) }}"

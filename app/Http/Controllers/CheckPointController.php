@@ -7,6 +7,7 @@ use App\Models\CheckPointItem;
 use App\Models\User;
 use App\Models\PekerjaanCp;
 use App\Models\WorkOrder;
+use App\Services\CheckPointCalendarService;
 use App\Services\CheckPointSyncService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,44 +20,23 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Http as httped;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Intervention\Image\ImageManagerStatic as Images;
 
 class CheckPointController extends Controller
 {
     public function __construct(
         private readonly CheckPointSyncService $syncService,
-    ) {
-    }
+        private readonly CheckPointCalendarService $calendarService,
+    ) {}
 
     public function history(Request $request)
     {
         $now = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month) : Carbon::now();
         $start = $now->copy()->startOfMonth();
         $end = $now->copy()->endOfMonth();
-        $recordsByDate = collect();
-        $rejectedByDate = collect();
 
-        CheckPoint::with('items:id,check_point_id,tanggal,approve_status')
-            ->where('user_id', Auth::id())
-            ->get()
-            ->each(function (CheckPoint $checkpoint) use ($recordsByDate, $rejectedByDate): void {
-                if ($checkpoint->items->isEmpty()) {
-                    $recordsByDate->put($checkpoint->created_at->toDateString(), $checkpoint->id);
-                    return;
-                }
-                foreach ($checkpoint->items as $item) {
-                    $key = Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString();
-                    $recordsByDate->put($key, $checkpoint->id);
-                    if ($item->approve_status === 'denied') {
-                        $rejectedByDate->put($key, true);
-                    }
-                }
-            });
-        $calendar = collect();
-        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->toDateString()), 'recordId' => $recordsByDate->get($date->toDateString()), 'rejected' => $rejectedByDate->has($date->toDateString())]);
-        }
+        $calendar = $this->calendarService->forMonth(Auth::id(), $start, $end);
+
         return view('check.history', [
             'calendar' => $calendar,
             'previousMonth' => $start->copy()->subMonth()->format('Y-m'),
@@ -79,9 +59,8 @@ class CheckPointController extends Controller
     public function index(Request $request)
     {
         $now = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month) : Carbon::now();
-        $endMonth = $now->endOfMonth()->format('d');
+        $endMonth = $now->copy()->endOfMonth()->format('d');
         $today = $now->format('Y-m-d');
-        $todayName = $now->translatedFormat('l');
         $start = $now->copy()->startOfMonth();
         $end   = $now->copy()->endOfMonth();
 
@@ -92,42 +71,11 @@ class CheckPointController extends Controller
             }
         }
 
-        $calendarData = Cache::remember(
-            "checkpoint-calendar:" . Auth::id(),
-            now()->addSeconds(30),
-            function () {
-                $records = collect();
-                $accepted = collect();
-                $rejected = collect();
+        $calendar = $this->calendarService->forMonth(Auth::id(), $start, $end);
 
-                CheckPoint::with('items:id,check_point_id,tanggal,approve_status')
-                    ->where('user_id', Auth::id())
-                    ->get()
-                    ->each(function (CheckPoint $checkpoint) use ($records, $accepted, $rejected): void {
-                        if ($checkpoint->items->isEmpty()) {
-                            $records->put($checkpoint->created_at->toDateString(), $checkpoint->id);
-                            return;
-                        }
-                        foreach ($checkpoint->items as $item) {
-                            $key = Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString();
-                            $records->put($key, $checkpoint->id);
-                            if ($item->approve_status === 'accept') $accepted->put($key, true);
-                            if ($item->approve_status === 'denied') $rejected->put($key, true);
-                        }
-                    });
-
-                return ['records' => $records, 'accepted' => $accepted, 'rejected' => $rejected];
-            }
-        );
-        $recordsByDate = $calendarData['records'];
-        $acceptedDates = $calendarData['accepted'];
-        $rejectedDates = $calendarData['rejected'];
-        $calendar = collect();
-        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $calendar->push(['date' => $date->copy(), 'hasData' => $recordsByDate->has($date->format('Y-m-d')), 'recordId' => $recordsByDate->get($date->format('Y-m-d')), 'accepted' => $acceptedDates->has($date->format('Y-m-d')), 'rejected' => $rejectedDates->has($date->format('Y-m-d'))]);
-        }
         $previousMonth = $start->copy()->subMonth()->format('Y-m');
         $nextMonth = $start->copy()->addMonth()->format('Y-m');
+
         return view('check.index', compact('calendar', 'previousMonth', 'nextMonth', 'start', 'today', 'weekendDates', 'endMonth'));
     }
 
@@ -136,7 +84,7 @@ class CheckPointController extends Controller
     public function create(Request $request)
     {
         $workOrder = $request->filled('work_order')
-            ? WorkOrder::findOrFail($request->integer('work_order'))
+            ? WorkOrder::with('creator')->findOrFail($request->integer('work_order'))
             : null;
 
         $selectedDate = $workOrder?->tanggal
@@ -173,7 +121,7 @@ class CheckPointController extends Controller
                 WorkOrder::findOrFail($workOrderId)->update(['has_complete' => 1]);
             }
 
-            Cache::forget('checkpoint-calendar:' . Auth::id());
+            $this->calendarService->forget(Auth::id());
             DB::commit();
             toastr()->success('Data Berhasil Disimpan');
             return to_route('checkpoint-user.index');
@@ -210,8 +158,7 @@ class CheckPointController extends Controller
             $cex2->type_check = $cex2->type_check ?: 'dikerjakan';
             $cex2->save();
 
-            Cache::forget('checkpoint-calendar:' . $cex2->user_id);
-            Cache::forget('checkpoint-calendar-rejected:' . $cex2->user_id);
+            $this->calendarService->forget($cex2->user_id);
             DB::commit();
             toastr()->success('Data berhasil diedit');
             return to_route('checkpoint-user.index');
@@ -277,7 +224,7 @@ class CheckPointController extends Controller
 
             $this->syncService->appendFromRequest($cex2, $request);
 
-            Cache::forget('checkpoint-calendar:' . $userId);
+            $this->calendarService->forget($userId);
             DB::commit();
 
             toastr()->success('Data Berhasil Diupload');
@@ -385,7 +332,7 @@ class CheckPointController extends Controller
             }
             $cek->delete();
 
-            Cache::forget('checkpoint-calendar:' . $userId);
+            $this->calendarService->forget($userId);
 
             toastr()->warning('Data Telah Dihapus');
             return redirect()->back();

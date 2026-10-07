@@ -5,16 +5,21 @@
     <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8">
         <div class="mb-6 flex items-center justify-between">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[.18em] text-sky-600">Direksi Bukti Pekerjaan</p>
+                <p class="text-xs font-bold uppercase tracking-[.18em] text-sky-600">{{ $isMcs ? 'Manager CS Bukti Pekerjaan' : 'Direksi Bukti Pekerjaan' }}</p>
                 <h1 class="mt-1 text-2xl font-bold text-slate-900 capitalize">Riwayat pekerjaan</h1>
                 <p class="mt-1 text-sm capitalize text-slate-500">
                     {{ strtolower($checkpoint->user->nama_lengkap ?? '-') }} &middot;
                     {{ Carbon\Carbon::parse($firstDate)->locale('id')->translatedFormat('d F Y') }}</p>
             </div>
-            <a href="{{ route('direksi.cp.calendar', [
-                'user' => $checkpoint->user_id,
-                'month' => \Carbon\Carbon::parse($firstDate)->format('Y-m'),
-            ]) }}"
+            <a href="{{ $isMcs
+                ? route('mcs.work-order.calendar', [
+                    'user' => $checkpoint->user_id,
+                    'month' => \Carbon\Carbon::parse($firstDate)->format('Y-m'),
+                ])
+                : route('direksi.cp.calendar', [
+                    'user' => $checkpoint->user_id,
+                    'month' => \Carbon\Carbon::parse($firstDate)->format('Y-m'),
+                ]) }}"
                 class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-sky-300 hover:text-sky-600"
                 aria-label="Kembali"><i class="ri-arrow-left-line text-xl"></i></a>
         </div>
@@ -60,7 +65,7 @@
                                     Ditolak
                                 @endif
                             </span>
-                            @if($status != 'accept')
+                            @if($status != 'accept' && ! $isMcs)
                             <div class="w-full flex justify-end items-center gap-2">
                                 <button type="button"
                                     onclick="openCheckpointActionModal({{ $loop->index }}, 'accept')"
@@ -92,6 +97,7 @@
         </div>
     </div>
 
+    @unless ($isMcs)
     <div id="checkpointActionModal"
         class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
 
@@ -278,4 +284,5 @@
             }
         });
     </script>
+    @endunless
 </x-app-layout>
