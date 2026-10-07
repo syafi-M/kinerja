@@ -131,8 +131,15 @@ class DireksiCheckpointController extends Controller
 
     public function historyDetail(Request $request, $id)
     {
+        $isMcs = in_array(
+            auth()->user()?->jabatan?->code_jabatan
+                ?? auth()->user()?->divisi?->jabatan?->code_jabatan,
+            ['MCS'],
+            true
+        );
+
         if ($request->worker) {
-            $workOrder = WorkOrder::where('id', $id)->first();
+            $workOrder = WorkOrder::findOrFail($id);
             $selectedDate = $workOrder->tanggal->format('Y-m-d');
             $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp'])
                 ->where('user_id', $workOrder->user_id)
@@ -142,7 +149,9 @@ class DireksiCheckpointController extends Controller
             $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp'])->findOrFail($id);
         }
 
-        return view('direksi.checkpoint.history-detail', compact('checkpoint'));
+        abort_if(! $checkpoint, 404, 'Bukti pekerjaan belum tersedia untuk perintah kerja ini.');
+
+        return view('direksi.checkpoint.history-detail', compact('checkpoint', 'isMcs'));
     }
 
     public function updateApproval(Request $request, $id)

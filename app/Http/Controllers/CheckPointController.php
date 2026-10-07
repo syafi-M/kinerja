@@ -27,8 +27,7 @@ class CheckPointController extends Controller
     public function __construct(
         private readonly CheckPointSyncService $syncService,
         private readonly CheckPointCalendarService $calendarService,
-    ) {
-    }
+    ) {}
 
     public function history(Request $request)
     {
@@ -85,7 +84,7 @@ class CheckPointController extends Controller
     public function create(Request $request)
     {
         $workOrder = $request->filled('work_order')
-            ? WorkOrder::findOrFail($request->integer('work_order'))
+            ? WorkOrder::with('creator')->findOrFail($request->integer('work_order'))
             : null;
 
         $selectedDate = $workOrder?->tanggal

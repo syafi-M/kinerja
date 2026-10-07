@@ -306,6 +306,14 @@ Route::middleware(['auth', 'apdt'])->group(function () {
         Route::patch('/api/v1/rekap/finished-training/{id}/status', [RekapFinishedTrainingController::class, 'updateStatus'])->name('api-finished-training-status');
     });
 
+    Route::middleware(['only:MCS'])->group(function () {
+        Route::get('/mcs-work-order', [DireksiWorkOrderController::class, 'index'])->name('mcs.work-order.index');
+        Route::get('/mcs-work-order/{user}/calendar', [DireksiWorkOrderController::class, 'calendar'])->name('mcs.work-order.calendar');
+        Route::get('/mcs-work-order/{user}/create', [DireksiWorkOrderController::class, 'create'])->name('mcs.work-order.create');
+        Route::post('/mcs-work-order', [DireksiWorkOrderController::class, 'store'])->name('mcs.work-order.store');
+        Route::get('/mcs-checkpoint-history/{id}', [DireksiCheckpointController::class, 'historyDetail'])->name('mcs.cp.history.show');
+    });
+
     Route::get('/Management/spv-absensi', [MainController::class, 'indexAbsen'])->name('manajemen_absensi');
     Route::get('/Management/spv-laporan', [MainController::class, 'indexLaporan'])->name('manajemen_laporan');
     Route::get('/Management/spv-lembur', [MainController::class, 'indexLembur'])->name('manajemen_lembur');

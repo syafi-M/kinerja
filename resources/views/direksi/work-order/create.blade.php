@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">
         <div class="mb-6 flex items-center justify-between gap-4">
-            <a href="{{ route('direksi.work-order.calendar', $user->id) }}"
+            <a href="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.calendar', $user->id) }}"
                 class="inline-flex items-center gap-2 text-sm font-semibold text-sky-600 transition hover:text-sky-700">
                 <i class="ri-arrow-left-line"></i> Kembali ke kalender
             </a>
@@ -53,12 +53,13 @@
                                         <p class="whitespace-pre-line text-sm text-slate-600">
                                             {{ $order->deskripsi }}</p>
                                         <p class="mt-3 text-xs text-slate-400">Dibuat
-                                            {{ $order->created_at?->format('H:i') . ' WIB' ?? '-' }}</p>
+                                            {{ $order->created_at?->format('H:i') . ' WIB' ?? '-' }} &middot; Dibuat oleh
+                                            {{ $order->creator_name }}</p>
                                     </div>
                                 </div>
                                 <div>
                                     @if ($order->has_complete)
-                                    <form action="{{ route('direksi.cp.history.show', $order->id) }}">
+                                    <form action="{{ route(($isMcs ? 'mcs' : 'direksi') . '.cp.history.show', $order->id) }}">
                                         <input type="hidden" name="worker" value="true">
                                         <button
                                             type="submit"
@@ -111,7 +112,7 @@
                         <p class="mt-1 text-sm text-slate-500">Tulis instruksi yang jelas dan mudah dijalankan.</p>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('direksi.work-order.store') }}" class="space-y-5">
+                <form method="POST" action="{{ route(($isMcs ? 'mcs' : 'direksi') . '.work-order.store') }}" class="space-y-5">
                     @csrf
                     <input type="hidden" name="user_id" value="{{ $user->id }}">
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
