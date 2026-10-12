@@ -74,8 +74,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $overtimesQuery->whereBetween('date_overtime', [$startDate, $endDate]);
             } else {
-                $overtimesQuery->whereYear('date_overtime', $date->year)
-                    ->whereMonth('date_overtime', $date->month);
+                $overtimesQuery->whereBetween('date_overtime', monthBounds($date));
             }
             $overtimes = $overtimesQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
@@ -91,8 +90,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $personInsQuery->whereBetween('date_in', [$startDate, $endDate]);
             } else {
-                $personInsQuery->whereYear('date_in', $date->year)
-                    ->whereMonth('date_in', $date->month);
+                $personInsQuery->whereBetween('date_in', monthBounds($date));
             }
             $personIns = $personInsQuery->orderBy('date_in')->get();
 
@@ -113,7 +111,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $personOutsQuery->whereBetween('out_date', [$startDate, $endDate]);
             } else {
-                $personOutsQuery->whereYear('out_date', $date->year);
+                $personOutsQuery->whereBetween('out_date', monthBounds($date));
             }
             $personOuts = $personOutsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
@@ -132,8 +130,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $cuttingsQuery->whereBetween('date_cut', [$startDate, $endDate]);
             } else {
-                $cuttingsQuery->whereYear('date_cut', $date->year)
-                    ->whereMonth('date_cut', $date->month);
+                $cuttingsQuery->whereBetween('date_cut', monthBounds($date));
             }
             $cuttings = $cuttingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
@@ -152,8 +149,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $finishedTrainingsQuery->whereBetween('date_finish_train', [$startDate, $endDate]);
             } else {
-                $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
-                    ->whereMonth('date_finish_train', $date->month);
+                $finishedTrainingsQuery->whereBetween('date_finish_train', monthBounds($date));
             }
             $finishedTrainings = $finishedTrainingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
@@ -179,8 +175,7 @@ class AllRekapExportController extends RekapController
                     ->orderBy('keterangan_lanjutans.created_at')
                     ->get();
             } else {
-                $keterangan = $keteranganQuery->whereYear('keterangan_lanjutans.created_at', $date->year)
-                    ->whereMonth('keterangan_lanjutans.created_at', $date->month)
+                $keterangan = $keteranganQuery->whereBetween('keterangan_lanjutans.created_at', monthBounds($date))
                     ->orderBy('users.kerjasama_id')
                     ->orderBy('users.jabatan_id')
                     ->orderBy('keterangan_lanjutans.created_at')
@@ -276,8 +271,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $overtimesQuery->whereBetween('date_overtime', [$startDate, $endDate]);
             } else {
-                $overtimesQuery->whereYear('date_overtime', $date->year)
-                    ->whereMonth('date_overtime', $date->month);
+                $overtimesQuery->whereBetween('date_overtime', monthBounds($date));
             }
             $overtimes = $overtimesQuery
                 ->orderBy('users.kerjasama_id')
@@ -292,8 +286,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $personInsQuery->whereBetween('date_in', [$startDate, $endDate]);
             } else {
-                $personInsQuery->whereYear('date_in', $date->year)
-                    ->whereMonth('date_in', $date->month);
+                $personInsQuery->whereBetween('date_in', monthBounds($date));
             }
             $personIns = $personInsQuery
                 ->orderBy('client_id')
@@ -321,7 +314,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $personOutsQuery->whereBetween('out_date', [$startDate, $endDate]);
             } else {
-                $personOutsQuery->whereYear('out_date', $date->year);
+                $personOutsQuery->whereBetween('out_date', monthBounds($date));
             }
 
             $personOutsQuery->select('person_outs.*');
@@ -350,8 +343,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $cuttingsQuery->whereBetween('date_cut', [$startDate, $endDate]);
             } else {
-                $cuttingsQuery->whereYear('date_cut', $date->year)
-                    ->whereMonth('date_cut', $date->month);
+                $cuttingsQuery->whereBetween('date_cut', monthBounds($date));
             }
             $cuttings = $cuttingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
@@ -376,8 +368,7 @@ class AllRekapExportController extends RekapController
             if ($startDate && $endDate) {
                 $finishedTrainingsQuery->whereBetween('date_finish_train', [$startDate, $endDate]);
             } else {
-                $finishedTrainingsQuery->whereYear('date_finish_train', $date->year)
-                    ->whereMonth('date_finish_train', $date->month);
+                $finishedTrainingsQuery->whereBetween('date_finish_train', monthBounds($date));
             }
             $finishedTrainings = $finishedTrainingsQuery->orderBy('users.kerjasama_id')
                 ->orderBy('users.jabatan_id')
@@ -404,8 +395,7 @@ class AllRekapExportController extends RekapController
                     ->oldest('keterangan_lanjutans.created_at')
                     ->get();
             } else {
-                $keterangan = $keteranganQuery->whereYear('keterangan_lanjutans.created_at', $date->year)
-                    ->whereMonth('keterangan_lanjutans.created_at', $date->month)
+                $keterangan = $keteranganQuery->whereBetween('keterangan_lanjutans.created_at', monthBounds($date))
                     ->orderBy('users.kerjasama_id')
                     ->orderBy('users.jabatan_id')
                     ->oldest('keterangan_lanjutans.created_at')

@@ -14,7 +14,6 @@
             ? 'border-emerald-300 bg-emerald-50/50 hover:border-emerald-400'
             : 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-[0_10px_24px_-16px_rgba(15,23,42,.2)]');
     $locked = $isAccepted ? 'disabled' : '';
-    $note = $item?->note;
     $rowImages = $item ? $item->images->pluck('path')->all() : [];
 @endphp
 <div class="job-row relative rounded-xl border p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] {{ $rowClass }}"
@@ -34,18 +33,10 @@
             <button type="button" class="remove-job btn btn-xs btn-ghost text-error">Hapus</button>
         @endunless
     </div>
-    @if ($isDenied && filled($note))
-        <p class="mb-3 rounded-lg bg-rose-100/70 px-3 py-2 text-xs text-rose-700"><strong>Alasan:</strong>
-            {{ $note }}<br><span class="mt-1 inline-flex items-center gap-1 ">Setelah disimpan, pekerjaan ini
-                diajukan ulang untuk ditinjau
-                Direksi.</span></p>
-    @elseif ($isDenied)
+    @if ($isDenied)
         <p class="mb-3 rounded-lg bg-rose-100/70 px-3 py-2 text-xs text-rose-700"><span
                 class="inline-flex items-center gap-1 font-semibold"><i class="ri-refresh-line"></i>Setelah disimpan,
                 pekerjaan ini diajukan ulang untuk ditinjau Direksi.</span></p>
-    @elseif($isAccepted && filled($note))
-        <p class="mb-3 rounded-lg bg-emerald-100/70 px-3 py-2 text-xs text-emerald-700"><strong>Alasan:</strong>
-            {{ $note }}</p>
     @elseif ($isAccepted)
         <p class="mb-3 rounded-lg bg-emerald-100/70 px-3 py-2 text-xs text-emerald-700">Pekerjaan ini telah disetujui.
         </p>
@@ -175,6 +166,12 @@
     <label class="label mt-4 py-0"><span class="label-text font-semibold">Deskripsi pekerjaan</span></label>
     <textarea class="deskripsi-input textarea textarea-bordered mt-2 w-full" name="deskripsi[{{ $i ?? 0 }}]"
         rows="3" placeholder="Jelaskan pekerjaan yang dilakukan" {{ $locked }}>{{ $item?->deskripsi ?? '' }}</textarea>
+    {{-- Conversation lives only on saved rows: a brand-new row has no item id
+         to post against yet. --}}
+    @if ($item)
+        @include('check.partials.item-thread', ['item' => $item, 'viewerRole' => 'employee'])
+    @endif
+
     <input class="approve-input" type="hidden" name="approve_status[{{ $i ?? 0 }}]"
         value="{{ $isAccepted ? 'accept' : ($isDenied ? 'proccess' : $status ?? 'proccess') }}">
     <input class="tanggal-input" type="hidden" name="tanggal[{{ $i ?? 0 }}]"
