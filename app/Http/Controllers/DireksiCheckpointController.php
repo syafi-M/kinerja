@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\CheckPoint;
+use App\Models\CheckPointItem;
+use App\Models\CheckPointMessage;
 use App\Models\Kerjasama;
 use App\Models\PekerjaanCp;
 use App\Models\User;
 use App\Models\WorkOrder;
+use App\Notifications\CheckPointReplyNotification;
 use App\Notifications\WorkOrderNotification;
 use App\Services\CheckPointCalendarService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
@@ -42,7 +46,58 @@ class DireksiCheckpointController extends Controller
         $previousMonth = $start->copy()->subMonth()->format('Y-m');
         $nextMonth = $start->copy()->addMonth()->format('Y-m');
 
-        return view('direksi.checkpoint.index', compact('users', 'kerjasama', 'filter', 'search', 'previousMonth', 'nextMonth', 'start', 'end'));
+        // How much evidence each employee on this page is still waiting on us
+        // to review in the month on screen, so the list doubles as a to-do
+        // list for that month.
+        $pendingCounts = $this->pendingReviewCounts($users->getCollection()->pluck('id'), $start, $end);
+
+        return view('direksi.checkpoint.index', compact('users', 'kerjasama', 'filter', 'search', 'previousMonth', 'nextMonth', 'start', 'end', 'pendingCounts'));
+    }
+
+    /**
+     * Unreviewed job rows per employee, keyed by user id — one grouped query
+     * for the whole page instead of one per card.
+     *
+     * "Unreviewed" means `approve_status` still holds its stored default, the
+     * legacy misspelling `proccess` (see CheckPointCalendarService): a rejected
+     * row comes back to `proccess` when the employee answers it, and an
+     * accepted row never does, so this is exactly the reviewer's queue.
+     * Rejected rows waiting on the employee, and plan (`rencana`) rows, are
+     * left out — the same rule the dashboard's pending list uses.
+     *
+     * The count covers the browsed month only, never the whole backlog, so the
+     * number lines up with the days the calendar and history screens show for
+     * that month. A row is dated by its own `tanggal`, falling back to its
+     * batch's `created_at` when that is empty — the same fallback the history
+     * calendar uses.
+     *
+     * @param  Collection<int, int>  $userIds
+     * @return Collection<int, int>
+     */
+    private function pendingReviewCounts(Collection $userIds, Carbon $start, Carbon $end): Collection
+    {
+        if ($userIds->isEmpty()) {
+            return collect();
+        }
+
+        return CheckPointItem::query()
+            ->join('check_points', 'check_points.id', '=', 'check_point_items.check_point_id')
+            ->whereIn('check_points.user_id', $userIds)
+            ->where('check_points.type_check', 'dikerjakan')
+            ->where('check_point_items.approve_status', 'proccess')
+            ->where(function ($query) use ($start, $end): void {
+                $query
+                    ->whereBetween('check_point_items.tanggal', [$start->toDateString(), $end->toDateString()])
+                    ->orWhere(function ($undated) use ($start, $end): void {
+                        $undated
+                            ->whereNull('check_point_items.tanggal')
+                            ->whereBetween('check_points.created_at', [$start, $end]);
+                    });
+            })
+            ->groupBy('check_points.user_id')
+            ->selectRaw('check_points.user_id as user_id, count(*) as total')
+            ->pluck('total', 'user_id')
+            ->map(fn ($total) => (int) $total);
     }
 
     public function calendar(Request $request, $user)
@@ -141,12 +196,12 @@ class DireksiCheckpointController extends Controller
         if ($request->worker) {
             $workOrder = WorkOrder::findOrFail($id);
             $selectedDate = $workOrder->tanggal->format('Y-m-d');
-            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp'])
+            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user'])
                 ->where('user_id', $workOrder->user_id)
                 ->whereHas('items', fn ($q) => $q->whereDate('tanggal', $selectedDate))
                 ->first();
         } else {
-            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp'])->findOrFail($id);
+            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user'])->findOrFail($id);
         }
 
         abort_if(! $checkpoint, 404, 'Bukti pekerjaan belum tersedia untuk perintah kerja ini.');
@@ -169,6 +224,24 @@ class DireksiCheckpointController extends Controller
         $item->save();
 
         $user = User::where('id', $checkpoint->user_id)->first();
+
+        // The verdict note also opens (or continues) the conversation thread,
+        // so the employee can answer it in context instead of a dead-end note.
+        if (filled($item->note)) {
+            $item->messages()->create([
+                'user_id' => auth()->id(),
+                'sender_role' => CheckPointMessage::ROLE_MANAGEMENT,
+                'body' => $item->note,
+            ]);
+
+            $user?->notify(new CheckPointReplyNotification(
+                title: 'Catatan baru pada bukti pekerjaan',
+                message: 'Direksi menanggapi bukti pekerjaan Anda.',
+                checkPointId: (int) $checkpoint->id,
+                itemId: (int) $item->id,
+            ));
+        }
+
         $workOrder = $checkpoint->work_order_id ?? null;
         if ($workOrder != null) {
             $user->notify(

@@ -48,10 +48,10 @@
                     <p class="mt-3 whitespace-pre-line text-sm text-slate-600">
                         {{ $item->deskripsi ?: 'Tidak ada deskripsi.' }}</p>
 
-                    @if ($item->note)
-                        <p class="mt-2 rounded-lg  px-3 py-2 text-xs {{ $status == 'denied' ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700' }}"><strong>Alasan:</strong>
-                            {{ $item->note }}</p>
-                    @endif
+                    {{-- The verdict note is rendered by the thread partial's
+                         "Catatan Evaluasi" banner now. --}}
+                    @include('check.partials.item-thread', ['item' => $item, 'viewerRole' => 'management'])
+
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
                         <p class="text-xs text-slate-400">
                             {{ $item->tanggal?->format('Y-m-d') ?? optional($checkpoint->created_at)->format('Y-m-d') }}

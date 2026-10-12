@@ -9,6 +9,9 @@ use App\Models\PekerjaanCp;
 use App\Models\WorkOrder;
 use App\Services\CheckPointCalendarService;
 use App\Services\CheckPointSyncService;
+use App\Services\CheckPointService;
+use App\Http\Requests\StoreCheckPointRequest;
+use App\Http\Requests\UpdateCheckPointRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +30,7 @@ class CheckPointController extends Controller
     public function __construct(
         private readonly CheckPointSyncService $syncService,
         private readonly CheckPointCalendarService $calendarService,
+        private readonly CheckPointService $checkPointService,
     ) {}
 
     public function history(Request $request)
@@ -47,7 +51,7 @@ class CheckPointController extends Controller
 
     public function historyShow($id)
     {
-        $checkpoint = CheckPoint::with('items.images')
+        $checkpoint = CheckPoint::with('items.images', 'items.messages.images', 'items.messages.user')
             ->where('user_id', Auth::id())
             ->findOrFail($id);
         $jobs = PekerjaanCp::whereIn('id', $checkpoint->items->pluck('pekerjaan_cp_id')->filter())
@@ -96,37 +100,19 @@ class CheckPointController extends Controller
         return view('check.create', compact('pcp', 'selectedDate', 'workOrder'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCheckPointRequest $request)
     {
         if ($error = $this->syncService->imageLimitError($request)) {
             toastr()->error($error);
             return redirect()->back()->withInput();
         }
 
-        $workOrderId = $request->work_order_id ?: null;
-
-        DB::beginTransaction();
-
         try {
-            $checkpoint = CheckPoint::create([
-                'user_id' => $request->user_id,
-                'divisi_id' => $request->divisi_id,
-                'work_order_id' => $workOrderId,
-                'type_check' => 'dikerjakan',
-            ]);
-
-            $this->syncService->syncFromRequest($checkpoint, $request);
-
-            if ($workOrderId) {
-                WorkOrder::findOrFail($workOrderId)->update(['has_complete' => 1]);
-            }
-
+            $this->checkPointService->store($request->validated(), $request);
             $this->calendarService->forget(Auth::id());
-            DB::commit();
             toastr()->success('Data Berhasil Disimpan');
             return to_route('checkpoint-user.index');
         } catch (\Throwable $e) {
-            DB::rollback();
             report($e);
             toastr()->error('Data gagal disimpan');
             return redirect()->back();
@@ -135,13 +121,13 @@ class CheckPointController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $cex = CheckPoint::with(['workOrder', 'items.images'])->findOrFail($id);
+        $cex = CheckPoint::with(['workOrder', 'items.images', 'items.messages.images', 'items.messages.user'])->findOrFail($id);
         $pcp = PekerjaanCp::where('user_id', $cex->user_id)->get();
 
         return view('check.edit', ['pcp' => $pcp, 'cex' => $cex, 'id' => $id, 'selectedDate' => $request->input('tanggal', optional($cex->created_at)->format('Y-m-d'))]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCheckPointRequest $request, $id)
     {
         if ($error = $this->syncService->imageLimitError($request)) {
             toastr()->error($error);
@@ -150,20 +136,12 @@ class CheckPointController extends Controller
 
         $cex2 = CheckPoint::findOrFail($id);
 
-        DB::beginTransaction();
-
         try {
-            $this->syncService->syncFromRequest($cex2, $request);
-
-            $cex2->type_check = $cex2->type_check ?: 'dikerjakan';
-            $cex2->save();
-
+            $this->checkPointService->update($cex2, $request);
             $this->calendarService->forget($cex2->user_id);
-            DB::commit();
             toastr()->success('Data berhasil diedit');
             return to_route('checkpoint-user.index');
         } catch (\Throwable $e) {
-            DB::rollback();
             report($e);
             toastr()->error('Data gagal diedit');
             return redirect()->back();
@@ -349,14 +327,18 @@ class CheckPointController extends Controller
         $user_id = $request->user_id;
 
         $user = User::firstWhere('id', $user_id);
-        $nowMonth = Carbon::createFromFormat('Y-m', $currentMonth)->translatedFormat('F Y');
+        $monthDate = Carbon::createFromFormat('Y-m', $currentMonth);
+        $nowMonth = $monthDate->copy()->translatedFormat('F Y');
 
         // dd($request->all());
 
         if ($request->has(['this_month', 'user_id'])) {
 
             $cp = CheckPoint::with('items.images')
-                ->whereMonth('created_at', Carbon::createFromFormat('Y-m', $currentMonth))
+                ->whereBetween('created_at', [
+                    $monthDate->copy()->startOfMonth()->startOfDay(),
+                    $monthDate->copy()->endOfMonth()->endOfDay(),
+                ])
                 ->where('user_id', $user_id)
                 ->get();
             // dd($cp, $currentMonth);

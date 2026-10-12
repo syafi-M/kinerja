@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AbsensiRequest;
+use App\Http\Requests\StoreAbsensiRequest;
 use App\Models\Absensi;
 use App\Models\Client;
 use App\Models\Divisi;
@@ -23,11 +24,14 @@ use Illuminate\Support\Facades\Log;
 // use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Services\AbsensiService;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
 class AbsensiController extends Controller
 {
+    public function __construct(private readonly AbsensiService $absensiService) {}
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -198,9 +202,9 @@ class AbsensiController extends Controller
         return response()->json(['shift' => $shift, 'dev' => $dev]);
     }
 
-    public function store(Request $request)
+    public function store(StoreAbsensiRequest $request)
     {
-        $rules = [
+        /*
             'user_id' => 'required',
             'kerjasama_id' => 'required',
             'shift_id' => 'required',
@@ -239,20 +243,12 @@ class AbsensiController extends Controller
             // dd($request->all());
         }
 
-        // Melakukan validasi
-        $validator = Validator::make($request->all(), $rules, $customMessages);
-
-        // dd($request->all());
-        if ($validator->fails()) {
-            toastr()->error('Formulir tidak lengkap. Mohon isi semua kolom.');
-
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        */
         $user = Auth::user()->id;
         $absensi = Absensi::latest()
             ->where('user_id', $user)
             ->whereNotNull('absensi_type_pulang')
-            ->whereDate('created_at', Carbon::now()->format('Y-m-d'))
+            ->whereBetween('created_at', [Carbon::now()->startOfDay(), Carbon::now()->endOfDay()])
             ->get();
         if (Auth::user()->kerjasama_id != 1 || !in_array(Auth::user()->devisi_id, [2, 3, 7, 8, 12, 14, 18])) {
             // Check if image was uploaded
@@ -320,7 +316,11 @@ class AbsensiController extends Controller
 
         if ($canBypassRadius || $isUmg || $radius <= $radiusMitra) {
             try {
-                DB::beginTransaction();
+                if ($absensi && count($absensi) > 2) {
+                    toastr()->error('Tidak Dapat Absensi Lebih 2x');
+                    return redirect()->back();
+                }
+
                 if ($absensi) {
                     if (count($absensi) <= 2) {
                         $absensi = new Absensi();
@@ -345,8 +345,7 @@ class AbsensiController extends Controller
                             'tukar_id' => $tukar_id,
                         ];
 
-                        $absensi->create($absensiData);
-                        DB::commit();
+                        $this->absensiService->create($absensiData);
                         toastr()->success('Berhasil Absen Hari Ini');
 
                         $users = Auth::user();
@@ -380,8 +379,7 @@ class AbsensiController extends Controller
                         'tukar_id' => $tukar_id,
                     ];
 
-                    $absensi->create($absensiData);
-                    DB::commit();
+                    $this->absensiService->create($absensiData);
                     toastr()->success('Berhasil Absen Hari Ini');
 
                     $users = Auth::user();
@@ -1029,9 +1027,11 @@ class AbsensiController extends Controller
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->orderBy('tanggal_absen', 'desc')
                 ->paginate(50);
-            $point = (clone $baseQuery)->whereNotNull('point_id')->whereMonth('created_at', $month)->whereYear('created_at', $year)->get();
-            $absenTiga = (clone $baseQuery)->whereMonth('created_at', $month)->whereYear('created_at', $year)->whereNotNull('absensi_type_masuk')->whereNotNull('absensi_type_pulang')->get();
-            $telat = (clone $baseQuery)->whereMonth('created_at', $month)->whereYear('created_at', $year)->where('keterangan', 'telat')->paginate(50);
+            $monthStart = Carbon::create($year, $month, 1)->startOfMonth();
+            $monthEnd = Carbon::create($year, $month, 1)->endOfMonth();
+            $point = (clone $baseQuery)->whereNotNull('point_id')->whereBetween('created_at', [$monthStart, $monthEnd])->get();
+            $absenTiga = (clone $baseQuery)->whereBetween('created_at', [$monthStart, $monthEnd])->whereNotNull('absensi_type_masuk')->whereNotNull('absensi_type_pulang')->get();
+            $telat = (clone $baseQuery)->whereBetween('created_at', [$monthStart, $monthEnd])->where('keterangan', 'telat')->paginate(50);
 
             // Effective days for filtered month
             $date = Carbon::createFromDate($year, $month, 1);

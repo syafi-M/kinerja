@@ -64,14 +64,14 @@ class MainController extends Controller
             $query->when(
                 $filter,
                 fn($q) => $q->whereDate('tanggal_absen', $filter),
-                fn($q) => $q->whereMonth('tanggal_absen', Carbon::now()->month)
+                fn($q) => $q->whereBetween('tanggal_absen', monthBounds(Carbon::now()))
             );
         } else {
             // For all other users:
             // - The filter is treated as a month selector.
             // - Default to the current month if no filter is provided.
-            $targetMonth = $filter ? Carbon::parse($filter)->month : Carbon::now()->month;
-            $query->whereMonth('tanggal_absen', $targetMonth);
+            $targetMonth = $filter ? Carbon::parse($filter) : Carbon::now();
+            $query->whereBetween('tanggal_absen', monthBounds($targetMonth));
         }
 
         // --- 5. Apply Role-Based and User-Specific Filters ---
