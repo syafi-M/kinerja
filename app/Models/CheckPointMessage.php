@@ -19,11 +19,25 @@ class CheckPointMessage extends Model
     /** Maximum reply attachments accepted per message. */
     public const MAX_IMAGES = 5;
 
+    /** Longest voice note accepted, in seconds (2 minutes). */
+    public const MAX_AUDIO_SECONDS = 120;
+
+    /** Folder inside the `public` disk that holds recorded voice notes. */
+    public const VOICE_DIRECTORY = 'voices';
+
     protected $fillable = [
         'check_point_item_id',
         'user_id',
         'sender_role',
         'body',
+        'retracted_at',
+        'audio_path',
+        'audio_duration',
+    ];
+
+    protected $casts = [
+        'retracted_at' => 'datetime',
+        'audio_duration' => 'integer',
     ];
 
     public function item(): BelongsTo
@@ -49,5 +63,15 @@ class CheckPointMessage extends Model
     public function isFromManagement(): bool
     {
         return $this->sender_role === self::ROLE_MANAGEMENT;
+    }
+
+    /**
+     * Whether the sender pulled this message back. A retracted message keeps
+     * its row — so the thread still shows where it sat — but has no body, no
+     * attachments and no voice note left.
+     */
+    public function isRetracted(): bool
+    {
+        return $this->retracted_at !== null;
     }
 }

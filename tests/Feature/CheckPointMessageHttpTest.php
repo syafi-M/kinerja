@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\CheckPointReplyNotification;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -124,6 +125,35 @@ class CheckPointMessageHttpTest extends TestCase
             $payload,
             ['Accept' => 'application/json'],
         );
+    }
+
+    /** Pull a message back over HTTP, exactly as the thread button does. */
+    private function retract(CheckPointMessage $message)
+    {
+        return $this->delete(
+            route('checkpoint-item.messages.destroy', $message->id),
+            [],
+            ['Accept' => 'application/json'],
+        );
+    }
+
+    /**
+     * A recording as a browser uploads it: a bare blob named for its
+     * container. Nothing in the fake looks like real audio, so this also
+     * proves the stored extension comes from the validated type.
+     */
+    private function voice(int $kilobytes = 200, string $name = 'voice-note.webm', string $mime = 'audio/webm'): UploadedFile
+    {
+        return UploadedFile::fake()->create($name, $kilobytes, $mime);
+    }
+
+    private function messageFor(CheckPointItem $item, User $sender, string $role, array $attributes = []): CheckPointMessage
+    {
+        return $item->messages()->create(array_merge([
+            'user_id' => $sender->id,
+            'sender_role' => $role,
+            'body' => 'Pesan uji.',
+        ], $attributes));
     }
 
     public function test_employee_reply_on_a_denied_item_flips_it_back_to_proccess(): void
@@ -363,7 +393,11 @@ class CheckPointMessageHttpTest extends TestCase
             ->assertSee('Baik, tombol Log Out sudah ditambahkan.')
             ->assertSee('PERLU DIPERBAIKI')
             ->assertSee(route('checkpoint-item.messages.store', $item->id), false)
-            ->assertSee('data-viewer-role="employee"', false);
+            ->assertSee('data-viewer-role="employee"', false)
+            // The chat-screen dressing: the dotted backdrop behind the bubbles
+            // and the down arrow that returns you to the newest message.
+            ->assertSee('radial-gradient', false)
+            ->assertSee('data-thread-jump', false);
     }
 
     public function test_the_employee_history_detail_renders_the_thread(): void
@@ -529,5 +563,317 @@ class CheckPointMessageHttpTest extends TestCase
 
         $this->assertSame('Balasan baru dari karyawan', $notification->data['title']);
         $this->assertSame($item->id, $notification->data['item_id']);
+    }
+
+    // ----------------------------------------------------------------------
+    // Tarik pesan. A retraction keeps the row — the thread must not lose its
+    // shape — but wipes everything the message carried.
+    // ----------------------------------------------------------------------
+
+    public function test_a_sender_can_retract_their_own_message_and_it_stays_as_a_tombstone(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+        $message = $this->messageFor($item, $owner, CheckPointMessage::ROLE_EMPLOYEE, [
+            'body' => 'Maaf salah ketik, ini balasan keliru.',
+        ]);
+
+        $this->actingAs($owner)
+            ->retract($message)
+            ->assertOk()
+            ->assertJsonPath('body', null)
+            ->assertJsonPath('audio_path', null);
+
+        $message->refresh();
+
+        $this->assertNotNull($message->retracted_at, 'the row must survive as a tombstone');
+        $this->assertNull($message->body, 'the text must be gone');
+        $this->assertDatabaseHas('check_point_messages', [
+            'id' => $message->id,
+            'body' => null,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('checkpoint-user.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('Pesan ini ditarik')
+            ->assertDontSee('Maaf salah ketik, ini balasan keliru.');
+    }
+
+    public function test_retracting_a_message_wipes_its_photos_and_their_files(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        Notification::fake();
+
+        $this->actingAs($owner)
+            ->reply($item, ['body' => 'Lampiran salah kirim.', 'images' => $this->photos(2)])
+            ->assertCreated();
+
+        $message = CheckPointMessage::query()->where('check_point_item_id', $item->id)->firstOrFail();
+        $paths = $message->images()->pluck('path')->all();
+
+        $this->assertCount(2, $paths);
+
+        foreach ($paths as $path) {
+            $this->assertTrue(Storage::disk('public')->exists('images/' . $path));
+        }
+
+        $this->actingAs($owner)->retract($message)->assertOk();
+
+        $this->assertDatabaseCount('check_point_message_images', 0);
+
+        foreach ($paths as $path) {
+            $this->assertFalse(
+                Storage::disk('public')->exists('images/' . $path),
+                'the attachment file must be deleted along with the message',
+            );
+        }
+    }
+
+    public function test_retracting_a_message_wipes_its_voice_note_and_its_file(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        Notification::fake();
+
+        $this->actingAs($owner)
+            ->reply($item, ['audio' => $this->voice(), 'audio_duration' => 12])
+            ->assertCreated();
+
+        $message = CheckPointMessage::query()->where('check_point_item_id', $item->id)->firstOrFail();
+        $path = $message->audio_path;
+
+        $this->assertTrue(Storage::disk('public')->exists('voices/' . $path));
+
+        $this->actingAs($owner)->retract($message)->assertOk();
+
+        $message->refresh();
+
+        $this->assertNotNull($message->retracted_at);
+        $this->assertNull($message->audio_path);
+        $this->assertNull($message->audio_duration);
+        $this->assertFalse(Storage::disk('public')->exists('voices/' . $path));
+    }
+
+    public function test_only_the_author_can_retract_a_message(): void
+    {
+        $owner = $this->employee();
+        $other = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+        $message = $this->messageFor($item, $owner, CheckPointMessage::ROLE_EMPLOYEE, [
+            'body' => 'Tidak boleh ditarik sembarangan.',
+        ]);
+
+        // Neither a colleague nor the reviewer who reads the thread may
+        // delete somebody else's words.
+        $this->actingAs($other)->retract($message)->assertForbidden();
+        $this->actingAs($direksi)->retract($message)->assertForbidden();
+
+        $message->refresh();
+
+        $this->assertNull($message->retracted_at);
+        $this->assertSame('Tidak boleh ditarik sembarangan.', $message->body);
+    }
+
+    public function test_a_reviewer_can_retract_their_own_message(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+        $note = $this->messageFor($item, $direksi, CheckPointMessage::ROLE_MANAGEMENT, [
+            'body' => 'Catatan salah, mohon diabaikan.',
+        ]);
+
+        $this->actingAs($direksi)->retract($note)->assertOk();
+
+        $note->refresh();
+
+        $this->assertNotNull($note->retracted_at);
+        $this->assertNull($note->body);
+
+        // The employee sees the tombstone too, not the withdrawn words.
+        $this->actingAs($owner)
+            ->get(route('checkpoint-user.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('Pesan ini ditarik')
+            ->assertDontSee('Catatan salah, mohon diabaikan.');
+    }
+
+    public function test_retracting_a_resubmission_reply_leaves_the_item_in_proccess(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        Notification::fake();
+
+        $this->actingAs($owner)
+            ->reply($item, ['body' => 'Sudah diperbaiki.'])
+            ->assertCreated()
+            ->assertJsonPath('approve_status', 'proccess');
+
+        $message = CheckPointMessage::query()->where('check_point_item_id', $item->id)->firstOrFail();
+
+        $this->actingAs($owner)->retract($message)->assertOk();
+
+        $this->assertSame(
+            'proccess',
+            $item->fresh()->approve_status,
+            'retracting must not pull the row back out of the reviewer queue',
+        );
+    }
+
+    public function test_a_retracted_marker_hides_the_text_even_when_the_row_still_holds_it(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+        $message = $this->messageFor($item, $owner, CheckPointMessage::ROLE_EMPLOYEE, [
+            'body' => 'Isi yang tidak boleh tampil lagi.',
+            'retracted_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('checkpoint-user.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('Pesan ini ditarik')
+            ->assertDontSee('Isi yang tidak boleh tampil lagi.')
+            // Nothing left to retract, so the link is not offered twice.
+            ->assertDontSee('data-thread-retract="' . $message->id . '"', false);
+    }
+
+    // ----------------------------------------------------------------------
+    // Voice notes.
+    // ----------------------------------------------------------------------
+
+    public function test_a_voice_note_alone_is_a_valid_reply(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        Notification::fake();
+
+        $this->actingAs($owner)
+            ->reply($item, ['audio' => $this->voice(), 'audio_duration' => 42])
+            ->assertCreated()
+            ->assertJsonPath('audio_duration', 42);
+
+        $message = CheckPointMessage::query()->where('check_point_item_id', $item->id)->firstOrFail();
+
+        $this->assertNull($message->body, 'a recording needs no text');
+        $this->assertSame(42, $message->audio_duration);
+        $this->assertStringEndsWith('.webm', (string) $message->audio_path);
+        $this->assertTrue(Storage::disk('public')->exists('voices/' . $message->audio_path));
+        $this->assertDatabaseCount('check_point_message_images', 0);
+
+        Storage::disk('public')->delete('voices/' . $message->audio_path);
+    }
+
+    public function test_a_voice_note_upload_must_be_a_recording(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        $this->actingAs($owner)
+            ->reply($item, [
+                'audio' => UploadedFile::fake()->create('catatan.txt', 10, 'text/plain'),
+                'audio_duration' => 5,
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseCount('check_point_messages', 0);
+        $this->assertSame('denied', $item->fresh()->approve_status);
+    }
+
+    public function test_a_voice_note_longer_than_two_minutes_is_rejected(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        $this->actingAs($owner)
+            ->reply($item, [
+                'audio' => $this->voice(),
+                'audio_duration' => CheckPointMessage::MAX_AUDIO_SECONDS + 1,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('audio_duration');
+
+        $this->assertDatabaseCount('check_point_messages', 0);
+    }
+
+    public function test_a_voice_note_without_a_duration_is_rejected(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        // The server cannot read a length out of a MediaRecorder blob, so a
+        // recording without a reported duration is refused rather than stored
+        // with a guess.
+        $this->actingAs($owner)
+            ->reply($item, ['audio' => $this->voice()])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('audio_duration');
+
+        $this->assertDatabaseCount('check_point_messages', 0);
+    }
+
+    public function test_a_voice_note_over_the_size_cap_is_rejected(): void
+    {
+        $owner = $this->employee();
+        $item = $this->itemFor($owner, ['approve_status' => 'denied', 'note' => 'Perbaiki.']);
+
+        $this->actingAs($owner)
+            ->reply($item, [
+                'audio' => $this->voice(6 * 1024 + 1),
+                'audio_duration' => 30,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('audio');
+
+        $this->assertDatabaseCount('check_point_messages', 0);
+    }
+
+    public function test_the_thread_plays_a_voice_note_and_offers_the_retract_link_only_on_your_own_message(): void
+    {
+        $owner = $this->employee();
+        $reviewer = $this->manager('DIREKSI');
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+        $theirNote = $this->messageFor($item, $reviewer, CheckPointMessage::ROLE_MANAGEMENT, [
+            'body' => 'Mohon lampirkan bukti.',
+        ]);
+        $mine = $this->messageFor($item, $owner, CheckPointMessage::ROLE_EMPLOYEE, [
+            'body' => 'Ini penjelasannya.',
+            'audio_path' => 'voice-thread-test.webm',
+            'audio_duration' => 65,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('checkpoint-user.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('data-thread-retract="' . $mine->id . '"', false)
+            ->assertDontSee('data-thread-retract="' . $theirNote->id . '"', false)
+            ->assertSee(asset('storage/voices/voice-thread-test.webm'), false)
+            ->assertSee('1:05');
+    }
+
+    public function test_a_reviewer_sees_the_retract_link_on_their_own_note(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+        $reply = $this->messageFor($item, $owner, CheckPointMessage::ROLE_EMPLOYEE, [
+            'body' => 'Mohon ditinjau kembali.',
+        ]);
+        $note = $this->messageFor($item, $direksi, CheckPointMessage::ROLE_MANAGEMENT, [
+            'body' => 'Catatan untuk karyawan.',
+        ]);
+
+        $this->actingAs($direksi)
+            ->get(route('direksi.cp.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('data-thread-retract="' . $note->id . '"', false)
+            ->assertDontSee('data-thread-retract="' . $reply->id . '"', false);
     }
 }
