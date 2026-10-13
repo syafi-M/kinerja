@@ -461,10 +461,14 @@
                         <i class="ri-check-line" title="Terkirim"></i>
                     </p>
                 </div>
-                <div class="mt-1 flex {{ $mine ? 'justify-end' : 'justify-start' }}">
+                {{-- This template lives outside the @forelse loop, so `$mine`
+                     and `$bubble` do not exist here — the cloned bubble is
+                     always the viewer's own message, and the script below
+                     stamps the real message id onto the retract button. --}}
+                <div class="mt-1 flex justify-end">
                     <button
                         type="button"
-                        data-thread-retract="{{ $bubble['id'] }}"
+                        data-thread-retract=""
                         title="Tarik pesan ini"
                         aria-label="Tarik pesan ini"
                         class="inline-flex min-h-9 items-center justify-center gap-1.5
