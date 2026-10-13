@@ -156,8 +156,9 @@
                 {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }} foto</span>
         </div>
         <input class="existing-images" type="hidden" name="existing_img[{{ $i ?? 0 }}][]" value="">
+        {{-- `multiple` stays off this input: mobile browsers ignore `capture` when it is set, so the picker opens instead of the camera. --}}
         <input class="photo-input photo-camera hidden" type="file" name="img[{{ $i ?? 0 }}][]"
-            accept="image/*" capture="environment" multiple {{ $locked }}>
+            accept="image/*" capture="environment" {{ $locked }}>
     </div>
     <input class="photo-gallery hidden" type="file" accept="image/*" multiple {{ $locked }}>
     <div class="photo-names mt-2 text-xs text-slate-500"></div>

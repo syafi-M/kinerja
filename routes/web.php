@@ -195,6 +195,7 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('checkpoint-user-history', [CheckPointController::class, 'history'])->name('checkpoint-user.history');
     Route::get('checkpoint-user-history/{id}', [CheckPointController::class, 'historyShow'])->name('checkpoint-user.history.show');
     Route::post('checkpoint-item/{item}/messages', [CheckPointMessageController::class, 'store'])->name('checkpoint-item.messages.store');
+    Route::delete('checkpoint-item/message/{message}', [CheckPointMessageController::class, 'destroy'])->name('checkpoint-item.messages.destroy');
     Route::get('editBukti-checkpoint-user', [CheckPointController::class, 'editBukti'])->name('editBukti-checkpoint-user');
     Route::post('uploadBukti-checkpoint-user', [CheckPointController::class, 'uploadBukti'])->name('uploadBukti-checkpoint-user');
 
