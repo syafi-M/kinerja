@@ -466,7 +466,8 @@ Route::middleware(['auth', 'leader', 'apdt'])->group(function () {
     Route::get('/LEADER/leader-user', [LeaderController::class, 'indexUser'])->name('lead_user');
 
     Route::resource('/LEADER/leader-jadwal', JadwalUserController::class);
-    Route::post('/LEADER/jadwal-store-new', [JadwalUserController::class, 'storeJadwal'])->name("storeJadwalLeader");
+    Route::get('/LEADER/leader-jadwal-export-bulanan', [JadwalUserController::class, 'exportBulanan'])->name('leader-jadwal.export');
+    Route::post('/LEADER/jadwal-store-new', [JadwalUserController::class, 'storeMonthly'])->name("storeJadwalLeader");
     Route::get('/LEADER/leader-jadwal-new', [JadwalUserController::class, 'processDate'])->name('store.processDate');
     Route::get('/LEADER/leader-jadwal-export', [JadwalUserController::class, 'exportJadwal'])->name('lead_jadwal_export');
 

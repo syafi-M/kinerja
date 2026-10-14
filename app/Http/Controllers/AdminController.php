@@ -153,7 +153,11 @@ class AdminController extends Controller
 
         $cex2 = CheckPoint::query()
             ->select(['id', 'user_id', 'type_check', 'work_order_id', 'created_at'])
-            ->with(['user:id,nama_lengkap', 'items.images'])
+            ->with([
+                'user:id,nama_lengkap',
+                'items:id,check_point_id,pekerjaan_cp_id,approve_status,note,urutan',
+                'items.images:id,check_point_item_id,path,urutan',
+            ])
             ->whereBetween('created_at', [$inMonthStart, $inMonthEnd])
             ->where('type_check', $type)
             ->when($filter, fn ($query) => $query->whereHas('user', fn ($q) => $q->where('kerjasama_id', $filter)))
@@ -179,7 +183,10 @@ class AdminController extends Controller
 
         $cex2 = CheckPoint::query()
             ->select(['id', 'user_id', 'type_check', 'work_order_id', 'created_at'])
-            ->with(['items.images'])
+            ->with([
+                'items:id,check_point_id,pekerjaan_cp_id,approve_status,note,urutan',
+                'items.images:id,check_point_item_id,path,urutan',
+            ])
             ->where('user_id', $id)
             ->whereBetween('created_at', [$inMonthStart, $inMonthEnd])
             ->where('type_check', $type)
@@ -268,7 +275,7 @@ class AdminController extends Controller
     public function destroyCheck($id)
     {
         try {
-            $cek = CheckPoint::with('items.images')->findOrFail($id);
+            $cek = CheckPoint::with('items.images:id,check_point_item_id,path,urutan')->findOrFail($id);
 
             foreach ($cek->items as $item) {
                 foreach ($item->images as $image) {
