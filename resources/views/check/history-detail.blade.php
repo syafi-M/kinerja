@@ -32,13 +32,7 @@
                     @endif
                     <p class="mt-3 whitespace-pre-line text-sm text-slate-600">
                         {{ $item->deskripsi ?: 'Tidak ada deskripsi.' }}</p>
-                     @if ($isAccepted)
-                        <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700"><i
-                                class="ri-check-double-line mr-2"></i>Disetujui</span>
-                    @elseif ($isDenied)
-                        <span
-                            class="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-700">Ditolak</span>
-                    @endif
+                    <x-checkpoint-status-badge :status="$status" :label="$isAccepted ? 'Disetujui' : null" />
                     <p class="mt-4 text-xs text-slate-400">
                         {{ $item->tanggal?->format('Y-m-d') ?? optional($checkpoint->created_at)->format('Y-m-d') }}
                     </p>

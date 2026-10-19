@@ -21,13 +21,7 @@
     <div class="mb-3 flex items-center justify-between gap-2">
         <h2 class="flex items-center gap-2 font-bold text-slate-800">Bukti Pekerjaan <span
                 class="job-number">{{ ($i ?? 0) + 1 }}</span>
-            @if ($isAccepted)
-                <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700"><i
-                        class="ri-check-double-line mr-2"></i>Disetujui</span>
-            @elseif ($isDenied)
-                <span
-                    class="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-700">Ditolak</span>
-            @endif
+            <x-checkpoint-status-badge :status="$status" :label="$isAccepted ? 'Disetujui' : null" />
         </h2>
         @unless ($isAccepted)
             <button type="button" class="remove-job btn btn-xs btn-ghost text-error">Hapus</button>

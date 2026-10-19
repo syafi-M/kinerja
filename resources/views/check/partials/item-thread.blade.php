@@ -21,6 +21,9 @@
     $messages->loadMissing('acknowledgement');
     $status = $item->approve_status;
     $note = $item->note;
+    // A verdict note may open with a quick reaction ("👍 Baik"). Pull it out so
+    // the banner draws the same solid icon the approval chip does.
+    $noteReaction = \App\Models\CheckPointItem::reactionFromText($note);
     $maxImages = \App\Models\CheckPointMessage::MAX_IMAGES;
     $imageBase = asset('storage/images');
     $voiceBase = asset('storage/' . \App\Models\CheckPointMessage::VOICE_DIRECTORY);
@@ -67,6 +70,11 @@
             'at' => $message->created_at,
             // A retracted message keeps its slot but none of its content.
             'body' => $message->isRetracted() ? null : $message->body,
+            // A reaction written by the verdict modal is shown as the chip icon
+            // rather than the emoji character the rest of the note stores.
+            'reaction' => $message->isRetracted()
+                ? null
+                : \App\Models\CheckPointItem::reactionFromText($message->body),
             'images' => $message->isRetracted() ? [] : $message->images->pluck('path')->all(),
             'audio' => $message->isRetracted() ? null : $message->audio_path,
             'audio_duration' => $message->isRetracted() ? null : $message->audio_duration,
@@ -102,6 +110,7 @@
             'name' => 'Manajemen',
             'at' => $item->updated_at,
             'body' => $note,
+            'reaction' => $noteReaction,
             'images' => [],
             'audio' => null,
             'audio_duration' => null,
@@ -200,48 +209,63 @@
     data-csrf="{{ csrf_token() }}">
 
     @if (filled($note))
-        <div class="flex items-start gap-2 border-b px-3 py-2 text-xs {{ $bannerClass }}">
-            <i class="ri-error-warning-line mt-0.5 text-base"></i>
-            <p class="leading-relaxed"><strong>Catatan Evaluasi:</strong> {{ $note }}</p>
+        <div class="flex items-start gap-2 border-b px-2.5 py-2 text-xs sm:px-3 {{ $bannerClass }}">
+            <i class="ri-error-warning-line mt-0.5 shrink-0 text-base"></i>
+            <p class="min-w-0 flex-1 break-words leading-relaxed"><strong>Catatan Evaluasi:</strong>
+                @if ($noteReaction)
+                    <span class="inline-flex items-center gap-1 align-middle"><i
+                            class="{{ $noteReaction['icon'] }} {{ $noteReaction['tone'] }} text-base leading-none"
+                            aria-hidden="true"></i><strong class="font-semibold">{{ $noteReaction['label'] }}</strong></span>
+                    @if (filled($noteReaction['rest']))
+                        <span class="mt-0.5 block">{{ $noteReaction['rest'] }}</span>
+                    @endif
+                @else
+                    {{ $note }}
+                @endif
+            </p>
         </div>
     @endif
 
-    {{-- Header: who the viewer is talking to, and whether the ball is in their court. --}}
-    <div class="flex items-center gap-3 bg-sky-700 px-3 py-2.5 text-white">
+    {{-- Header: who the viewer is talking to, and whether the ball is in their court.
+         On phones the badges wrap to their own row under the name instead of
+         squeezing it, because four chips never fit beside an avatar at 320px. --}}
+    <div
+        class="flex flex-wrap items-center gap-x-3 gap-y-2 bg-sky-700 px-2.5 py-2.5 text-white sm:flex-nowrap sm:px-3">
         <span
             class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 text-sm font-bold">{{ $counterpartInitial }}</span>
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1 basis-0">
             <p class="truncate text-sm font-bold leading-tight">{{ $counterpartName }}</p>
             <p class="truncate text-[11px] leading-tight {{ $awaitingViewer ? 'text-amber-300' : 'text-white/70' }}">
                 {{ $statusLine }}
             </p>
         </div>
-        <div class="flex shrink-0 items-center gap-1.5">
+        <div class="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:shrink-0 sm:flex-nowrap">
             {{-- How many replies still owe the employee a checklist. It is the
                  one badge that reflects their own to-do list, so it leads. --}}
             <span data-thread-pending-confirm
-                class="{{ $composerLocked ? '' : 'hidden' }} rounded-md bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-950">Konfirmasi
+                class="{{ $composerLocked ? '' : 'hidden' }} whitespace-nowrap rounded-md bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-950">Konfirmasi
                 {{ $pendingCount }}</span>
             <span data-thread-pending
-                class="{{ $awaitingManagement ? '' : 'hidden' }} rounded-md bg-amber-300 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">Belum
+                class="{{ $awaitingManagement ? '' : 'hidden' }} whitespace-nowrap rounded-md bg-amber-300 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">Belum
                 ditangani</span>
             <span data-thread-chip
-                class="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase {{ $chip['class'] }}">{{ $chip['label'] }}</span>
-            <span class="rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/80"
+                class="whitespace-nowrap rounded-md px-2 py-0.5 text-[10px] font-bold uppercase {{ $chip['class'] }}">{{ $chip['label'] }}</span>
+            <span class="whitespace-nowrap rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-white/80"
                 data-thread-count>{{ $messages->count() }} Pesan</span>
         </div>
     </div>
 
     {{-- A quiet strip naming the panel, the way a chat sidebar labels its
          conversation list. --}}
-    <p class="border-b border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+    <p
+        class="border-b border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:px-3">
         Riwayat Percakapan</p>
 
     {{-- The message area scrolls on its own, painted with the faint dotted
          backdrop a chat app uses, and the jump button floats over its corner
          whenever the reader has scrolled away from the newest message. --}}
     <div class="relative">
-        <div class="max-h-[60vh] min-h-[12rem] overflow-y-auto bg-slate-100 px-3 py-3 sm:max-h-[30rem] sm:px-4"
+        <div class="max-h-[55vh] min-h-[12rem] overflow-y-auto overflow-x-hidden bg-slate-100 px-2 py-3 sm:max-h-[30rem] sm:px-4"
             style="background-image: radial-gradient(circle at 1px 1px, rgba(100,116,139,.18) 1px, transparent 0); background-size: 18px 18px;"
             data-thread-list>
         @forelse ($bubbles as $index => $bubble)
@@ -297,7 +321,7 @@
                     @endif
                 @endunless
 
-                <div class="max-w-[85%] sm:max-w-[75%]">
+                <div class="min-w-0 max-w-[calc(100%-2.5rem)] sm:max-w-[75%]">
                     <div data-bubble-body
                         class="relative rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm {{ $mine ? 'rounded-br-sm' : 'rounded-bl-sm' }} {{ $bubbleClass }}">
                         {{-- The tail that turns a flat rectangle into a chat bubble. --}}
@@ -323,21 +347,34 @@
                                     Konfirmasi pesan atasan</p>
 
                                 @foreach ($bubble['confirmation']['details'] as $answer)
-                                    <p class="mt-0.5 500 flex items-center gap-1.5">
-                                        <i class="{{ $answer['icon'] }}" aria-hidden="true"></i>
+                                    <p class="mt-0.5 flex items-start gap-1.5">
+                                        <i class="{{ $answer['icon'] }} mt-0.5" aria-hidden="true"></i>
                                         <span>{{ $answer['label'] }}</span>
                                     </p>
                                 @endforeach
 
                                 @if (filled($bubble['confirmation']['note']))
-                                    <p class="mt-0.5 flex items-center gap-1.5">
-                                        <i class="{{ \App\Models\CheckPointMessage::CONFIRM_NOTE_ICON }} mb-0.5"
+                                    <p class="mt-0.5 flex items-start gap-1.5">
+                                        <i class="{{ \App\Models\CheckPointMessage::CONFIRM_NOTE_ICON }} mt-0.5"
                                             aria-hidden="true"></i>
                                         <span>Catatan: {{ $bubble['confirmation']['note'] }}</span>
                                     </p>
                                 @endif
                             @elseif (filled($bubble['body']))
-                                <p class="whitespace-pre-line">{{ $bubble['body'] }}</p>
+                                @if (filled($bubble['reaction'] ?? null))
+                                    {{-- The verdict modal's reaction, drawn as the same
+                                         solid icon the chip uses. --}}
+                                    <p class="flex items-center gap-1.5 font-semibold">
+                                        <i class="{{ $bubble['reaction']['icon'] }} {{ $bubble['reaction']['tone'] }} text-base leading-none"
+                                            aria-hidden="true"></i>
+                                        <span>{{ $bubble['reaction']['label'] }}</span>
+                                    </p>
+                                    @if (filled($bubble['reaction']['rest']))
+                                        <p class="whitespace-pre-line">{{ $bubble['reaction']['rest'] }}</p>
+                                    @endif
+                                @else
+                                    <p class="whitespace-pre-line">{{ $bubble['body'] }}</p>
+                                @endif
                             @endif
 
                             @if (filled($bubble['audio']))
@@ -386,7 +423,7 @@
                             data-state="{{ $readState }}"
                             class="mt-1 flex items-center gap-1 text-[10px] font-semibold leading-none {{ $mine ? 'justify-end' : '' }} {{ $readStateClass }}">
                             <i class="{{ $readState === 'unread' ? 'ri-time-line' : 'ri-check-double-line' }}"></i>
-                            <span data-read-label class="overflow-hidden">
+                            <span data-read-label>
                                 @if ($readState === 'unread')
                                     Belum dibaca
                                 @elseif ($readState === 'read')
@@ -455,13 +492,13 @@
                 {{-- The checklist itself: one card per unanswered management reply,
                      because each reply is confirmed on its own. ml-10 lines the
                      card up with the bubble instead of the avatar. --}}
-                <div class="mt-2 ml-10 max-w-[92%] rounded-2xl border border-amber-300 bg-amber-50 p-3 shadow-sm"
+                <div class="ml-10 mt-2 max-w-[calc(100%-2.5rem)] rounded-2xl border border-amber-300 bg-amber-50 p-2.5 shadow-sm sm:max-w-[92%] sm:p-3"
                     data-thread-confirm-card data-message="{{ $bubble['id'] }}"
                     data-confirm-endpoint="{{ route('checkpoint-item.messages.confirm', ['item' => $item->id, 'message' => $bubble['id']]) }}">
                     <p class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700">
                         <i class="ri-question-answer-line"></i> Konfirmasi pesan atasan
                     </p>
-                    <p class="mt-1 text-xs leading-relaxed text-amber-800/80">Pilih jawaban Anda - boleh lebih dari
+                    <p class="mt-1 text-xs leading-relaxed text-amber-800/80">Pilih jawaban Anda — boleh lebih dari
                         satu.</p>
 
                     <div class="mt-2 space-y-1.5">
@@ -541,7 +578,7 @@
             </button>
         </div>
 
-        <div class="flex items-end gap-2">
+        <div class="flex min-w-0 items-end gap-1.5 sm:gap-2">
             {{-- The typed reply. While the mic is live this pill is swapped for the
                  recording strip, the way a chat app does it. --}}
             <div data-thread-pill
@@ -553,7 +590,7 @@
                 </button>
 
                 <textarea data-thread-body rows="1" @if ($composerLocked) disabled @endif
-                    class="max-h-24 min-h-[2.25rem] flex-1 resize-none border-0 bg-transparent py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0"
+                    class="max-h-24 min-h-[2.25rem] min-w-0 flex-1 resize-none border-0 bg-transparent py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0"
                     placeholder="Ketik pesan"></textarea>
 
                 <button type="button" data-thread-attach aria-label="Lampirkan foto" @if ($composerLocked) disabled @endif
@@ -634,7 +671,7 @@
     @endphp
     <template data-thread-template>
         <div class="mt-3 flex justify-end" data-bubble>
-            <div class="max-w-[85%] sm:max-w-[75%]">
+            <div class="min-w-0 max-w-[calc(100%-2.5rem)] sm:max-w-[75%]">
                 <div data-bubble-body
                     class="relative rounded-2xl rounded-br-sm bg-sky-600 px-3 py-2 text-sm leading-relaxed text-white shadow-sm">
                     <span aria-hidden="true"

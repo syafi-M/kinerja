@@ -57,14 +57,7 @@
                             {{ $item->tanggal?->format('Y-m-d') ?? optional($checkpoint->created_at)->format('Y-m-d') }}
                         </p>
                         <div class="flex items-center gap-2 w-full">
-                            <span
-                                class="rounded-lg px-2.5 py-1 text-sm font-semibold {{ $status === 'accept' ? 'bg-emerald-50 text-emerald-700' : ($status === 'denied' ? 'bg-rose-50 text-rose-700' : '') }}">
-                                @if ($status === 'accept')
-                                    Diterima
-                                @elseif($status === 'denied')
-                                    Ditolak
-                                @endif
-                            </span>
+                            <x-checkpoint-status-badge :status="$status" size="md" />
                             @if($status != 'accept' && ! $isMcs)
                             <div class="w-full flex justify-end items-center gap-2">
                                 <button type="button"
@@ -102,7 +95,7 @@
         class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
 
         <form method="POST" action="{{ route('direksi.cp.history.approve', $checkpoint->id) }}"
-            class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
 
             @csrf
             @method('PATCH')
@@ -126,6 +119,32 @@
                         Pastikan checkpoint sudah sesuai sebelum menyetujui.
                     </p>
                 </div>
+            </div>
+
+            {{-- Quick reactions: one tap approves without writing anything.
+                 The key travels as `emoji` and is re-checked server-side, so a
+                 tampered value can never reach the stored note. --}}
+            <div id="actionEmojiBlock" class="mt-5">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Setujui dengan emoji</p>
+                <p class="mt-1 text-xs leading-relaxed text-slate-400">Cocok untuk pekerjaan yang sudah benar dan
+                    tidak membutuhkan penjelasan panjang.</p>
+
+                <input type="hidden" name="emoji" id="actionEmoji">
+
+                <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    @foreach (\App\Models\CheckPointItem::APPROVAL_REACTIONS as $key => $reaction)
+                        <button type="button" data-emoji-choice="{{ $key }}" aria-pressed="false"
+                            class="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-3 text-xs font-semibold text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50">
+                            <i class="{{ $reaction['icon'] }} {{ $reaction['tone'] }} text-3xl leading-none"
+                                aria-hidden="true"></i>
+                            <span>{{ $reaction['label'] }}</span>
+                        </button>
+                    @endforeach
+                </div>
+
+                @error('emoji')
+                    <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                @enderror
             </div>
 
             {{-- Note --}}
@@ -172,17 +191,51 @@
 
         const actionSubmit = document.getElementById('actionSubmit');
 
+        const actionEmojiBlock = document.getElementById('actionEmojiBlock');
+        const actionEmoji = document.getElementById('actionEmoji');
+        const emojiChoices = Array.from(document.querySelectorAll('[data-emoji-choice]'));
+
+        const emojiChoiceIdle = ['border-slate-200', 'bg-white', 'text-slate-600'];
+        const emojiChoiceActive = ['border-emerald-400', 'bg-emerald-50', 'text-emerald-700'];
+
+
+        function selectEmoji(key) {
+
+            actionEmoji.value = key || '';
+
+            emojiChoices.forEach((button) => {
+
+                const active = button.dataset.emojiChoice === actionEmoji.value;
+
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+                button.classList.remove(...(active ? emojiChoiceIdle : emojiChoiceActive));
+                button.classList.add(...(active ? emojiChoiceActive : emojiChoiceIdle));
+            });
+        }
+
+
+        emojiChoices.forEach((button) => {
+            button.addEventListener('click', () => {
+                // Tapping the chosen chip again clears it, so an accidental
+                // reaction never has to be reset by closing the modal.
+                selectEmoji(actionEmoji.value === button.dataset.emojiChoice ? '' : button.dataset.emojiChoice);
+            });
+        });
+
 
         function openCheckpointActionModal(index, status) {
 
             actionIndex.value = index;
             actionStatus.value = status;
             actionNote.value = '';
+            selectEmoji('');
 
             // =========================
             // APPROVE
             // =========================
             if (status === 'accept') {
+
+                actionEmojiBlock.classList.remove('hidden');
 
                 actionIcon.className =
                     'grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-lg text-emerald-600';
@@ -200,10 +253,10 @@
                 actionNote.classList.add('focus:border-emerald-300', 'focus:ring-emerald-100');
 
                 actionNoteLabel.textContent =
-                    'Catatan (opsional)';
+                    'Komentar (opsional)';
 
                 actionNote.placeholder =
-                    'Tambahkan catatan jika diperlukan...';
+                    'Tambahkan apresiasi atau arahan tambahan...';
 
                 actionNote.required = false;
 
@@ -220,6 +273,8 @@
             // =========================
             else if (status === 'denied') {
 
+                actionEmojiBlock.classList.add('hidden');
+
                 actionIcon.className =
                     'grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-50 text-lg text-rose-600';
 
@@ -227,24 +282,24 @@
                     '<i class="ri-close-circle-line"></i>';
 
                 actionTitle.textContent =
-                    'Tolak checkpoint';
+                    'Minta revisi atau klarifikasi';
 
                 actionDescription.textContent =
-                    'Alasan wajib diisi sebelum menolak checkpoint.';
+                    'Jelaskan bagian yang perlu dilengkapi agar karyawan tahu apa yang harus diperbaiki.';
 
                 actionNote.classList.remove('focus:border-emerald-300', 'focus:ring-emerald-100');
                 actionNote.classList.add('focus:border-rose-300', 'focus:ring-rose-100');
 
                 actionNoteLabel.textContent =
-                    'Alasan penolakan';
+                    'Catatan revisi';
 
                 actionNote.placeholder =
-                    'Tulis alasan penolakan...';
+                    'Mohon dilengkapi keterangannya terlebih dahulu...';
 
                 actionNote.required = true;
 
                 actionSubmit.textContent =
-                    'Tolak';
+                    'Minta revisi';
 
                 actionSubmit.className =
                     'rounded-xl bg-rose-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-600';
@@ -253,9 +308,11 @@
             checkpointActionModal.classList.remove('hidden');
             checkpointActionModal.classList.add('flex');
 
-            // Focus hanya ketika denied
+            // Focus hanya ketika denied; approve starts with the emoji row.
             setTimeout(() => {
-                actionNote.focus();
+                if (status === 'denied') {
+                    actionNote.focus();
+                }
             }, 100);
         }
 
@@ -266,6 +323,7 @@
 
             actionNote.value = '';
             actionStatus.value = '';
+            selectEmoji('');
         }
 
 
