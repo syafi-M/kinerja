@@ -196,12 +196,12 @@ class DireksiCheckpointController extends Controller
         if ($request->worker) {
             $workOrder = WorkOrder::findOrFail($id);
             $selectedDate = $workOrder->tanggal->format('Y-m-d');
-            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user'])
+            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])
                 ->where('user_id', $workOrder->user_id)
                 ->whereHas('items', fn ($q) => $q->whereDate('tanggal', $selectedDate))
                 ->first();
         } else {
-            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user'])->findOrFail($id);
+            $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])->findOrFail($id);
         }
 
         abort_if(! $checkpoint, 404, 'Bukti pekerjaan belum tersedia untuk perintah kerja ini.');
@@ -231,6 +231,9 @@ class DireksiCheckpointController extends Controller
             $item->messages()->create([
                 'user_id' => auth()->id(),
                 'sender_role' => CheckPointMessage::ROLE_MANAGEMENT,
+                // The verdict note is a management reply like any other, so the
+                // employee owes it the same read + confirmation.
+                'requires_confirmation' => true,
                 'body' => $item->note,
             ]);
 

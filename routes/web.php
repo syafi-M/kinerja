@@ -195,6 +195,10 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::get('checkpoint-user-history', [CheckPointController::class, 'history'])->name('checkpoint-user.history');
     Route::get('checkpoint-user-history/{id}', [CheckPointController::class, 'historyShow'])->name('checkpoint-user.history.show');
     Route::post('checkpoint-item/{item}/messages', [CheckPointMessageController::class, 'store'])->name('checkpoint-item.messages.store');
+    // Opening the thread is what counts as reading it, so the read stamp comes
+    // from the page itself; the confirmation checklist is answered per message.
+    Route::post('checkpoint-item/{item}/messages/read', [CheckPointMessageController::class, 'read'])->name('checkpoint-item.messages.read');
+    Route::post('checkpoint-item/{item}/message/{message}/confirm', [CheckPointMessageController::class, 'confirm'])->name('checkpoint-item.messages.confirm');
     Route::delete('checkpoint-item/message/{message}', [CheckPointMessageController::class, 'destroy'])->name('checkpoint-item.messages.destroy');
     Route::get('editBukti-checkpoint-user', [CheckPointController::class, 'editBukti'])->name('editBukti-checkpoint-user');
     Route::post('uploadBukti-checkpoint-user', [CheckPointController::class, 'uploadBukti'])->name('uploadBukti-checkpoint-user');
