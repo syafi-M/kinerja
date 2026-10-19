@@ -220,18 +220,29 @@ class AllRekapExportController extends RekapController
                 $authClientKabupaten = auth()->user()->kerjasama?->client?->kabupaten;
                 $allowedKabupaten = $this->nearbyKabupatenTerms($authClientKabupaten);
                 $allowedJabatanIds = $this->allowedSeeData();
+                $ownClientId = (int) (auth()->user()->kerjasama?->client_id ?? 0);
 
                 $clientsQuery
-                    ->where('client_id', '!=', 1)
                     ->when($allowedKabupaten, fn($query) => $query->whereHas('client', fn($client) => $client->where(function ($q) use ($allowedKabupaten) {
                         foreach ($allowedKabupaten as $kabupaten) {
                             $q->orWhere('kabupaten', 'like', "%{$kabupaten}%");
                         }
                     })))
-                    ->when(!empty($allowedJabatanIds), fn($query) => $query->whereIn('id', User::query()
-                        ->select('kerjasama_id')
-                        ->whereIn('jabatan_id', $allowedJabatanIds)
-                        ->whereNotNull('kerjasama_id')));
+                    ->when(!empty($allowedJabatanIds), function ($query) use ($allowedJabatanIds, $ownClientId) {
+                        $query->where(function ($visibility) use ($allowedJabatanIds, $ownClientId) {
+                            $visibility->whereIn('id', User::query()
+                                ->select('kerjasama_id')
+                                ->whereIn('jabatan_id', $allowedJabatanIds)
+                                ->whereNotNull('kerjasama_id'));
+
+                            // The supervisor's own mitra is exported even when
+                            // no one there holds a jabatan in allowedSeeData();
+                            // the data queries below still apply that filter.
+                            if ($ownClientId > 0) {
+                                $visibility->orWhere('client_id', $ownClientId);
+                            }
+                        });
+                    });
             }
 
             $clients = $clientsQuery
