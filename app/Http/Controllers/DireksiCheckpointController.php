@@ -214,13 +214,31 @@ class DireksiCheckpointController extends Controller
         $data = $request->validate([
             'index' => ['required', 'integer', 'min:0'],
             'status' => ['required', Rule::in(['accept', 'denied'])],
+            // A quick reaction picked in the modal. Only the allow-listed keys
+            // are accepted, so the stored note can never carry arbitrary text
+            // from the request — the emoji + label are resolved server-side.
+            'emoji' => ['nullable', 'string', Rule::in(array_keys(CheckPointItem::APPROVAL_REACTIONS))],
             'note' => ['nullable', 'string', 'max:1000', Rule::requiredIf(fn() => $request->status === 'denied')],
         ]);
         $checkpoint = CheckPoint::findOrFail($id);
         $item = $checkpoint->items()->orderBy('urutan')->skip($data['index'])->first();
         abort_unless($item, 422);
+
+        $comment = trim((string) ($data['note'] ?? ''));
+        $reaction = $data['status'] === 'accept'
+            ? (CheckPointItem::APPROVAL_REACTIONS[$data['emoji'] ?? null] ?? null)
+            : null;
+
+        // Reaction and comment share one note: the card's "Catatan Evaluasi"
+        // banner shows the reaction, and the thread below carries the same text
+        // as a normal management reply.
+        $reactionText = $reaction ? $reaction['emoji'] . ' ' . $reaction['label'] : null;
+        $note = collect([$reactionText, $comment])
+            ->filter(fn ($part) => filled($part))
+            ->implode(' — ');
+
         $item->approve_status = $data['status'];
-        $item->note = $data['note'] ?? null;
+        $item->note = $note !== '' ? $note : null;
         $item->save();
 
         $user = User::where('id', $checkpoint->user_id)->first();
@@ -231,9 +249,10 @@ class DireksiCheckpointController extends Controller
             $item->messages()->create([
                 'user_id' => auth()->id(),
                 'sender_role' => CheckPointMessage::ROLE_MANAGEMENT,
-                // The verdict note is a management reply like any other, so the
-                // employee owes it the same read + confirmation.
-                'requires_confirmation' => true,
+                // Only words ask for a checklist. A reaction alone ("👍 Baik")
+                // has nothing to confirm, so it must not lock the employee's
+                // composer behind a confirmation they cannot act on.
+                'requires_confirmation' => $comment !== '',
                 'body' => $item->note,
             ]);
 

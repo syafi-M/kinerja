@@ -415,7 +415,33 @@ class CheckPointMessageHttpTest extends TestCase
             ->assertOk()
             ->assertSee('Bukti sudah sesuai.')
             ->assertSee('Tulis Balasan / Klarifikasi')
-            ->assertSee('DITINJAU');
+            ->assertSee('DITINJAU')
+            // The verdict badge carries the same artwork as the chip, not a
+            // platform emoji: an accepted item reads green with the check icon.
+            ->assertSee('Disetujui')
+            ->assertSee('ri-checkbox-circle-fill', false);
+    }
+
+    public function test_the_checkpoint_detail_badges_use_the_same_solid_icons_as_the_modal(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'accept']);
+
+        $this->actingAs($direksi)
+            ->get(route('direksi.cp.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('Diterima')
+            ->assertSee('ri-checkbox-circle-fill', false)
+            ->assertDontSee('ri-close-circle-fill', false);
+
+        $item->update(['approve_status' => 'denied']);
+
+        $this->actingAs($direksi)
+            ->get(route('direksi.cp.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('Ditolak')
+            ->assertSee('ri-close-circle-fill', false);
     }
 
     public function test_the_management_detail_renders_the_thread_as_management(): void
@@ -875,5 +901,153 @@ class CheckPointMessageHttpTest extends TestCase
             ->assertOk()
             ->assertSee('data-thread-retract="' . $note->id . '"', false)
             ->assertDontSee('data-thread-retract="' . $reply->id . '"', false);
+    }
+
+    public function test_an_emoji_approval_opens_the_thread_without_asking_for_a_checklist(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+
+        Notification::fake();
+
+        $this->actingAs($direksi)
+            ->patch(route('direksi.cp.history.approve', $item->check_point_id), [
+                'index' => 0,
+                'status' => 'accept',
+                'emoji' => 'baik',
+            ])
+            ->assertRedirect();
+
+        $item->refresh();
+
+        $this->assertSame('accept', $item->approve_status);
+        $this->assertSame('👍 Baik', $item->note);
+
+        $this->assertDatabaseHas('check_point_messages', [
+            'check_point_item_id' => $item->id,
+            'user_id' => $direksi->id,
+            'sender_role' => CheckPointMessage::ROLE_MANAGEMENT,
+            'body' => '👍 Baik',
+            'requires_confirmation' => false,
+        ]);
+
+        Notification::assertSentTo($owner, CheckPointReplyNotification::class);
+
+        // The thread and the "Catatan Evaluasi" banner draw the chip icon in
+        // place of the emoji character the note stores.
+        $this->actingAs($direksi)
+            ->get(route('direksi.cp.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('ri-thumb-up-fill', false)
+            ->assertDontSee('👍 Baik');
+    }
+
+    public function test_an_emoji_and_a_comment_are_combined_and_still_ask_for_confirmation(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+
+        Notification::fake();
+
+        $this->actingAs($direksi)
+            ->patch(route('direksi.cp.history.approve', $item->check_point_id), [
+                'index' => 0,
+                'status' => 'accept',
+                'emoji' => 'bagus',
+                'note' => 'Terima kasih, lanjutkan.',
+            ])
+            ->assertRedirect();
+
+        $item->refresh();
+
+        $this->assertSame('😊 Bagus — Terima kasih, lanjutkan.', $item->note);
+
+        $this->assertDatabaseHas('check_point_messages', [
+            'check_point_item_id' => $item->id,
+            'body' => '😊 Bagus — Terima kasih, lanjutkan.',
+            'requires_confirmation' => true,
+        ]);
+    }
+
+    public function test_an_approval_comment_without_an_emoji_is_stored_verbatim(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+
+        Notification::fake();
+
+        $this->actingAs($direksi)
+            ->patch(route('direksi.cp.history.approve', $item->check_point_id), [
+                'index' => 0,
+                'status' => 'accept',
+                'note' => 'Bagus, silakan dilanjutkan.',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('Bagus, silakan dilanjutkan.', $item->fresh()->note);
+        $this->assertDatabaseHas('check_point_messages', [
+            'check_point_item_id' => $item->id,
+            'body' => 'Bagus, silakan dilanjutkan.',
+            'requires_confirmation' => true,
+        ]);
+    }
+
+    public function test_an_unknown_emoji_key_is_rejected_and_leaves_the_verdict_alone(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+
+        $this->actingAs($direksi)
+            ->patch(route('direksi.cp.history.approve', $item->check_point_id), [
+                'index' => 0,
+                'status' => 'accept',
+                'emoji' => 'emoji-palsu',
+            ])
+            ->assertSessionHasErrors('emoji');
+
+        $this->assertSame('proccess', $item->fresh()->approve_status);
+        $this->assertDatabaseCount('check_point_messages', 0);
+    }
+
+    public function test_a_revision_request_still_needs_a_note(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+
+        $this->actingAs($direksi)
+            ->patch(route('direksi.cp.history.approve', $item->check_point_id), [
+                'index' => 0,
+                'status' => 'denied',
+                'emoji' => 'baik',
+            ])
+            ->assertSessionHasErrors('note');
+
+        $this->assertSame('proccess', $item->fresh()->approve_status);
+    }
+
+    public function test_the_approval_modal_offers_the_quick_reactions(): void
+    {
+        $owner = $this->employee();
+        $direksi = $this->direksiUser();
+        $item = $this->itemFor($owner, ['approve_status' => 'proccess']);
+
+        $this->actingAs($direksi)
+            ->get(route('direksi.cp.history.show', $item->check_point_id))
+            ->assertOk()
+            ->assertSee('Setujui dengan emoji')
+            ->assertSee('data-emoji-choice="baik"', false)
+            ->assertSee('data-emoji-choice="disetujui"', false)
+            // The chips draw plain solid icons from the app's own icon font,
+            // not 3D emoji pictures.
+            ->assertSee('ri-star-fill', false)
+            ->assertSee('ri-checkbox-circle-fill', false)
+            ->assertDontSee('images/emoji/fluent-3d/', false)
+            ->assertSee('Excellent')
+            ->assertSee('Minta Revisi');
     }
 }
