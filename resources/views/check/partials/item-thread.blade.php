@@ -461,7 +461,7 @@
                     <p class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-700">
                         <i class="ri-question-answer-line"></i> Konfirmasi pesan atasan
                     </p>
-                    <p class="mt-1 text-xs leading-relaxed text-amber-800/80">Pilih jawaban Anda — boleh lebih dari
+                    <p class="mt-1 text-xs leading-relaxed text-amber-800/80">Pilih jawaban Anda - boleh lebih dari
                         satu.</p>
 
                     <div class="mt-2 space-y-1.5">

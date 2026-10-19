@@ -383,8 +383,17 @@ class CuttingController extends Controller
     private function allowedTargetJabatanIds(): array
     {
         $authJabatanId = (int) (auth()->user()->jabatan_id ?? 0);
-        if ($authJabatanId === 35) return [8, 11, 16, 17, 18];
-        if ($authJabatanId === 20) return [9, 10, 34, 36];
-        return [];
+
+        $allowed = match ($authJabatanId) {
+            35 => [8, 11, 16, 17, 18],
+            20 => [9, 10, 34, 36],
+            default => [],
+        };
+
+        // The supervisor's own account must stay selectable inside their own
+        // mitra, even when their jabatan is not one they manage.
+        return $authJabatanId > 0
+            ? array_values(array_unique([...$allowed, $authJabatanId]))
+            : $allowed;
     }
 }
