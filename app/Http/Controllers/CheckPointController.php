@@ -51,7 +51,7 @@ class CheckPointController extends Controller
 
     public function historyShow($id)
     {
-        $checkpoint = CheckPoint::with('items.images', 'items.messages.images', 'items.messages.user')
+        $checkpoint = CheckPoint::with('items.images', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement')
             ->where('user_id', Auth::id())
             ->findOrFail($id);
         $jobs = PekerjaanCp::whereIn('id', $checkpoint->items->pluck('pekerjaan_cp_id')->filter())
@@ -121,7 +121,7 @@ class CheckPointController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $cex = CheckPoint::with(['workOrder', 'items.images', 'items.messages.images', 'items.messages.user'])->findOrFail($id);
+        $cex = CheckPoint::with(['workOrder', 'items.images', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])->findOrFail($id);
         $pcp = PekerjaanCp::where('user_id', $cex->user_id)->get();
 
         return view('check.edit', ['pcp' => $pcp, 'cex' => $cex, 'id' => $id, 'selectedDate' => $request->input('tanggal', optional($cex->created_at)->format('Y-m-d'))]);
