@@ -31,8 +31,8 @@
                     $status = $item->approve_status;
                     $rowImages = $item->images->pluck('path')->all();
                 @endphp
-                <article
-                    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04),0_12px_32px_-16px_rgba(15,23,42,.12)]">
+                <article id="item-{{ $item->id }}"
+                    class="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,.04),0_12px_32px_-16px_rgba(15,23,42,.12)]">
                     <h2 class="font-bold capitalize text-slate-800">
                       {{ $item->pekerjaanCp?->name ?? ($item->input_manual ?: 'Pekerjaan') }}
                     </h2>
@@ -343,4 +343,28 @@
         });
     </script>
     @endunless
+
+    <script>
+        // Arriving from the note history (#item-<id>): the browser resolves the
+        // fragment while parsing, before Tailwind applies `scroll-mt-24`, so the
+        // row lands under the fixed phone bar. Re-align once styles and images
+        // have settled.
+        (function () {
+            if (!location.hash) return;
+
+            var target = document.getElementById(location.hash.slice(1));
+            if (!target) return;
+
+            var align = function () {
+                var top = target.getBoundingClientRect().top + window.scrollY - 88;
+                window.scrollTo(0, Math.max(0, top));
+            };
+
+            if (document.readyState === 'complete') {
+                align();
+            } else {
+                window.addEventListener('load', align, { once: true });
+            }
+        })();
+    </script>
 </x-app-layout>

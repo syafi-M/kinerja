@@ -55,6 +55,57 @@ class CheckPointMessage extends Model
     /** Longest free text the "Lainnya" answer may carry. */
     public const MAX_CONFIRM_NOTE = 1000;
 
+    /**
+     * The buckets the direksi note history filters by. Nothing new is stored
+     * per note: the verdict on the job row it answers already says which one
+     * applies, so the mapping lives here once instead of in the controller,
+     * the Blade view and the tests.
+     */
+    public const NOTE_CATEGORIES = [
+        'apresiasi' => [
+            'label' => 'Apresiasi',
+            'icon' => 'ri-thumb-up-fill',
+            'badge' => 'bg-emerald-50 text-emerald-600 ring-emerald-200',
+            'accent' => 'bg-emerald-400',
+        ],
+        'perbaikan' => [
+            'label' => 'Perbaikan',
+            'icon' => 'ri-tools-fill',
+            'badge' => 'bg-amber-50 text-amber-600 ring-amber-200',
+            'accent' => 'bg-amber-400',
+        ],
+        'teguran' => [
+            'label' => 'Teguran',
+            'icon' => 'ri-alert-fill',
+            'badge' => 'bg-rose-50 text-rose-600 ring-rose-200',
+            'accent' => 'bg-rose-400',
+        ],
+    ];
+
+    /**
+     * What the employee has done with a note that asked for the checklist.
+     * `tanpa` is a reaction-only note: it has nothing to answer, so it is not
+     * "waiting" on anyone. The view, the filter and the tests read these keys
+     * from one place.
+     */
+    public const CONFIRMATION_STATES = [
+        'sudah' => [
+            'label' => 'Dikonfirmasi',
+            'icon' => 'ri-checkbox-circle-fill',
+            'badge' => 'bg-emerald-50 text-emerald-600 ring-emerald-200',
+        ],
+        'belum' => [
+            'label' => 'Menunggu konfirmasi',
+            'icon' => 'ri-time-line',
+            'badge' => 'bg-amber-50 text-amber-600 ring-amber-200',
+        ],
+        'tanpa' => [
+            'label' => 'Tanpa konfirmasi',
+            'icon' => 'ri-chat-1-line',
+            'badge' => 'bg-slate-50 text-slate-500 ring-slate-200',
+        ],
+    ];
+
     protected $fillable = [
         'check_point_item_id',
         'user_id',
@@ -116,6 +167,35 @@ class CheckPointMessage extends Model
     public function isFromManagement(): bool
     {
         return $this->sender_role === self::ROLE_MANAGEMENT;
+    }
+
+    /**
+     * Which bucket this note belongs to. An accepted job row is praise, a
+     * denied one is a warning, and a row still waiting for a verdict (or
+     * carrying a revision request) is a request to fix it. Rows whose item is
+     * gone fall back to "perbaikan" so a note never renders without a badge.
+     */
+    public function noteCategory(): string
+    {
+        return match ($this->item?->approve_status) {
+            'accept' => 'apresiasi',
+            'denied' => 'teguran',
+            default => 'perbaikan',
+        };
+    }
+
+    /**
+     * Where this note stands on the employee's checklist. A retracted note is
+     * never waiting on anyone, and a note that never asked for confirmation has
+     * nothing to wait for either.
+     */
+    public function confirmationState(): string
+    {
+        if ($this->acknowledgement?->isConfirmed()) {
+            return 'sudah';
+        }
+
+        return $this->requires_confirmation && ! $this->isRetracted() ? 'belum' : 'tanpa';
     }
 
     /**

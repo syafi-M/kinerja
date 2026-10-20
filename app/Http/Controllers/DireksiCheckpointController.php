@@ -277,6 +277,124 @@ class DireksiCheckpointController extends Controller
         return back()->with('success', 'Status approval berhasil diperbarui.');
     }
 
+    /** Periods the note history offers, in days. Anything else falls back to 14. */
+    private const NOTE_PERIODS = [7, 14, 30, 90];
+
+    /**
+     * Every management note the signed-in direksi wrote on a subordinate's
+     * report inside the chosen window. The thread is the source of truth:
+     * `updateApproval()` mirrors the verdict note there and every later reply
+     * lands there too, so reading it once covers both.
+     */
+    public function notes(Request $request)
+    {
+        $days = (int) $request->input('periode', 14);
+        if (! in_array($days, self::NOTE_PERIODS, true)) {
+            $days = 14;
+        }
+
+        $start = Carbon::today()->subDays($days - 1);
+        $end = Carbon::now();
+
+        $search = trim((string) $request->input('search', ''));
+        $category = (string) $request->input('jenis', 'semua');
+        if (! array_key_exists($category, CheckPointMessage::NOTE_CATEGORIES)) {
+            $category = 'semua';
+        }
+
+        $confirmation = (string) $request->input('konfirmasi', 'semua');
+        if (! in_array($confirmation, ['sudah', 'belum'], true)) {
+            $confirmation = 'semua';
+        }
+
+        $base = CheckPointMessage::query()
+            ->where('sender_role', CheckPointMessage::ROLE_MANAGEMENT)
+            ->where('user_id', auth()->id())
+            ->whereNull('retracted_at')
+            ->whereBetween('created_at', [$start, $end])
+            ->whereHas('item.checkPoint');
+
+        // The summary counts the window, not the filtered list — otherwise the
+        // number moves whenever someone types in the search box.
+        $totalNotes = (clone $base)->count();
+
+        // Only notes that asked for the checklist can be confirmed or still be
+        // waiting; a reaction-only note has nothing to answer. An acknowledgement
+        // row can exist from the employee merely opening the thread, so the
+        // `confirmed_at` stamp — not the row — is what counts.
+        $confirmedNotes = (clone $base)
+            ->whereHas('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'))
+            ->count();
+
+        $pendingNotes = (clone $base)
+            ->where('requires_confirmation', true)
+            ->whereDoesntHave('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'))
+            ->count();
+
+        // Neither of the two above: reaction-only notes, i.e. the ones with no
+        // checklist to answer. Surfaced so the numbers add up to the total.
+        $noConfirmationNotes = $totalNotes - $confirmedNotes - $pendingNotes;
+
+        $notes = $base
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($inner) use ($search): void {
+                    $inner->where('body', 'like', '%' . $search . '%')
+                        ->orWhereHas(
+                            'item.checkPoint.user',
+                            fn ($user) => $user->where('nama_lengkap', 'like', '%' . $search . '%'),
+                        );
+                });
+            })
+            ->when($category !== 'semua', function ($query) use ($category): void {
+                $query->whereHas('item', function ($item) use ($category): void {
+                    if ($category === 'apresiasi') {
+                        $item->where('approve_status', 'accept');
+                    } elseif ($category === 'teguran') {
+                        $item->where('approve_status', 'denied');
+                    } else {
+                        // `proccess` is the stored default; legacy rows can also
+                        // carry no status at all, and both are revision requests.
+                        $item->where(function ($pending): void {
+                            $pending->whereNull('approve_status')
+                                ->orWhereNotIn('approve_status', ['accept', 'denied']);
+                        });
+                    }
+                });
+            })
+            ->when($confirmation !== 'semua', function ($query) use ($confirmation): void {
+                if ($confirmation === 'sudah') {
+                    $query->whereHas('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'));
+                } else {
+                    $query->where('requires_confirmation', true)
+                        ->whereDoesntHave('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'));
+                }
+            })
+            ->with([
+                'item:id,check_point_id,approve_status',
+                'item.checkPoint:id,user_id',
+                'item.checkPoint.user:id,nama_lengkap,image',
+                'acknowledgement',
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('direksi.checkpoint.notes', [
+            'notes' => $notes,
+            'totalNotes' => $totalNotes,
+            'confirmedNotes' => $confirmedNotes,
+            'pendingNotes' => $pendingNotes,
+            'noConfirmationNotes' => $noConfirmationNotes,
+            'start' => $start,
+            'end' => $end,
+            'days' => $days,
+            'search' => $search,
+            'category' => $category,
+            'confirmation' => $confirmation,
+        ]);
+    }
+
     private function kerjasama()
     {
         return Cache::remember('admin.checkpoint.kerjasama-options', 300, fn() => Kerjasama::select('id', 'client_id')->with('client:id,name')->get());
