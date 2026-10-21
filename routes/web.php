@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Rekap\FinishedTrainingController as AdminRekapFin
 use App\Http\Controllers\Admin\Rekap\OvertimesController as AdminRekapOvertimesController;
 use App\Http\Controllers\Admin\Rekap\PersonInController as AdminRekapPersonInController;
 use App\Http\Controllers\Admin\Rekap\PersonOutController as AdminRekapPersonOutController;
+use App\Http\Controllers\Admin\CheckpointSettingsController;
 use App\Http\Controllers\Admin\RekapSettingsController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AreaController;
@@ -607,6 +608,9 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('/admin-checkpoint-koordinat/{id}', [CheckPointController::class, "show"])->name('admin.cp.map');
 
     Route::get('/admin-checkpoint', [AdminController::class, 'checkPoint'])->name('admin.cp.index');
+    Route::get('/admin-checkpoint-settings', [CheckpointSettingsController::class, 'index'])->name('admin.cp.settings');
+    Route::post('/admin-checkpoint-settings', [CheckpointSettingsController::class, 'update'])->name('admin.cp.settings.update');
+    Route::delete('/admin-checkpoint-settings', [CheckpointSettingsController::class, 'reset'])->name('admin.cp.settings.reset');
     Route::patch('/admin-check-approve/{id}', [AdminController::class, 'approveCheck'])->name('admin.cp.approve');
     Route::patch('/admin-check-denied/{id}', [AdminController::class, 'deniedCheck'])->name('admin.cp.denied');
     Route::get('/admin-lihat-check/{id}', [AdminController::class, 'lihatCheck'])->name('admin.cp.show');

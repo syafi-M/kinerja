@@ -113,6 +113,7 @@
             'items' => [
                 ['label' => 'Data Checkpoint', 'icon' => 'task_alt', 'url' => route('admin.cp.index'), 'patterns' => ['admin.cp.index']],
                 ['label' => 'Data Pekerjaan CP', 'icon' => 'checklist', 'url' => route('admin.pekerjaan-cp.index'), 'patterns' => ['admin.pekerjaan-cp.index']],
+                ['label' => 'Pengaturan', 'icon' => 'settings', 'url' => route('admin.cp.settings'), 'patterns' => ['admin.cp.settings']],
             ],
         ],
         [

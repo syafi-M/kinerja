@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\PekerjaanCp;
 use App\Models\WorkOrder;
 use App\Services\CheckPointCalendarService;
+use App\Services\CheckPointReportWindow;
 use App\Services\CheckPointSyncService;
 use App\Services\CheckPointService;
 use App\Http\Requests\StoreCheckPointRequest;
@@ -31,6 +32,7 @@ class CheckPointController extends Controller
         private readonly CheckPointSyncService $syncService,
         private readonly CheckPointCalendarService $calendarService,
         private readonly CheckPointService $checkPointService,
+        private readonly CheckPointReportWindow $reportWindow,
     ) {}
 
     public function history(Request $request)
@@ -87,6 +89,10 @@ class CheckPointController extends Controller
 
     public function create(Request $request)
     {
+        if ($denied = $this->reportWindow->reject()) {
+            return $denied;
+        }
+
         $workOrder = $request->filled('work_order')
             ? WorkOrder::with('creator')->findOrFail($request->integer('work_order'))
             : null;
@@ -102,6 +108,10 @@ class CheckPointController extends Controller
 
     public function store(StoreCheckPointRequest $request)
     {
+        if ($denied = $this->reportWindow->reject()) {
+            return $denied;
+        }
+
         if ($error = $this->syncService->imageLimitError($request)) {
             toastr()->error($error);
             return redirect()->back()->withInput();
@@ -121,6 +131,10 @@ class CheckPointController extends Controller
 
     public function edit(Request $request, $id)
     {
+        if ($denied = $this->reportWindow->reject()) {
+            return $denied;
+        }
+
         $cex = CheckPoint::with(['workOrder', 'items.images', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])->findOrFail($id);
         $pcp = PekerjaanCp::where('user_id', $cex->user_id)->get();
 
@@ -129,6 +143,10 @@ class CheckPointController extends Controller
 
     public function update(UpdateCheckPointRequest $request, $id)
     {
+        if ($denied = $this->reportWindow->reject()) {
+            return $denied;
+        }
+
         if ($error = $this->syncService->imageLimitError($request)) {
             toastr()->error($error);
             return redirect()->back()->withInput();
@@ -150,13 +168,17 @@ class CheckPointController extends Controller
 
     public function editBukti(Request $request)
     {
+        if ($denied = $this->reportWindow->reject()) {
+            return $denied;
+        }
 
         $cId = $request->cpId;
 
         $pcp = PekerjaanCp::all();
         // $cex = CheckPoint::latest()->first();
-        $awalMinggu = Carbon::now()->startOfWeek()->subWeek();
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2); // Mengurangi 2 hari untuk mendapatkan hari Jumat sebagai akhir minggu
+        $awalMinggu = $this->reportWindow->weekStart()->subWeek();
+        // Batas pekan mengikuti pengaturan admin (default Sabtu).
+        $akhirMinggu = $this->reportWindow->deadlineForWeek();
         if ($cId) {
             $cex = CheckPoint::findOrFail($cId);
         } else {
@@ -173,17 +195,20 @@ class CheckPointController extends Controller
 
     public function uploadBukti(Request $request)
     {
+        if ($denied = $this->reportWindow->reject()) {
+            return $denied;
+        }
+
         if ($error = $this->syncService->imageLimitError($request)) {
             toastr()->error($error);
             return redirect()->back()->withInput();
         }
 
-        $awalMinggu = Carbon::now()->startOfWeek()->subWeek()->addDays(5);
-        $akhirMinggu = Carbon::now()->endOfWeek()->subDays(2);
+        $akhirMinggu = $this->reportWindow->deadlineForWeek();
         $cId = $request->cpId;
 
         $userId = Auth::user()->id;
-        $cex2 = CheckPoint::whereBetween('created_at', [Carbon::now()->startOfWeek(), $akhirMinggu])
+        $cex2 = CheckPoint::whereBetween('created_at', [$this->reportWindow->weekStart(), $akhirMinggu])
             ->where('user_id', $userId)
             ->where('type_check', 'dikerjakan')
             ->latest()
