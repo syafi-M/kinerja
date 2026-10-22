@@ -8,12 +8,16 @@
     $status = $item?->approve_status;
     $isDenied = $status === 'denied';
     $isAccepted = $status === 'accept';
+    $windowLocked = $windowLocked ?? false;
+    // Saat pekan laporan ditutup hanya baris yang punya catatan evaluasi yang
+    // tetap bisa diperbaiki; baris lain (dan semua yang sudah disetujui) dibaca saja.
+    $readOnly = $isAccepted || ($windowLocked && blank($item?->note));
     $rowClass = $isDenied
         ? 'border-rose-300 bg-rose-50/50 hover:border-rose-400'
         : ($isAccepted
             ? 'border-emerald-300 bg-emerald-50/50 hover:border-emerald-400'
             : 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-[0_10px_24px_-16px_rgba(15,23,42,.2)]');
-    $locked = $isAccepted ? 'disabled' : '';
+    $locked = $readOnly ? 'disabled' : '';
     $rowImages = $item ? $item->images->pluck('path')->all() : [];
 @endphp
 <div class="job-row relative rounded-xl border p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] {{ $rowClass }}"
@@ -23,7 +27,7 @@
                 class="job-number">{{ ($i ?? 0) + 1 }}</span>
             <x-checkpoint-status-badge :status="$status" :label="$isAccepted ? 'Disetujui' : null" />
         </h2>
-        @unless ($isAccepted)
+        @unless ($readOnly)
             <button type="button" class="remove-job btn btn-xs btn-ghost text-error">Hapus</button>
         @endunless
     </div>
@@ -35,14 +39,23 @@
         <p class="mb-3 rounded-lg bg-emerald-100/70 px-3 py-2 text-xs text-emerald-700">Pekerjaan ini telah disetujui.
         </p>
     @endif
+    @if ($windowLocked && ! $isAccepted)
+        @if ($readOnly)
+            <p class="mb-3 flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-500"><i
+                    class="ri-lock-line"></i>Pekan laporan ditutup, pekerjaan ini hanya bisa dibaca.</p>
+        @else
+            <p class="mb-3 flex items-center gap-1 rounded-lg bg-sky-50 px-3 py-2 text-xs text-sky-700"><i
+                    class="ri-edit-line"></i>Bisa diperbaiki karena ada catatan evaluasi Direksi.</p>
+        @endif
+    @endif
     <label class="label py-0">
         <span class="label-text font-semibold">Nama pekerjaan</span>
     </label>
 
-    <div class="job-dropdown relative mt-2 {{ $isAccepted ?? 'disabled' }}">
+    <div class="job-dropdown relative mt-2 {{ $readOnly ? 'pointer-events-none' : '' }}">
 
         <button type="button" {{ $locked }}
-            class="job-trigger flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm text-slate-700 outline-none {{ $isAccepted ? 'cursor-not-allowed' : 'transition duration-300 hover:border-sky-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-100' }}">
+            class="job-trigger flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 text-left text-sm text-slate-700 outline-none {{ $readOnly ? 'cursor-not-allowed' : 'transition duration-300 hover:border-sky-300 focus:border-sky-400 focus:ring-2 focus:ring-sky-100' }}">
             <span class="job-label truncate {{ $selectedId === '' ? 'text-slate-400' : 'text-slate-700' }}">
                 {{ $isManual ? $manualValue : optional($pcp->firstWhere('id', $selectedId))->name ?? 'Pilih dari daftar pekerjaan' }}
             </span>
@@ -119,23 +132,25 @@
             class="label-text-alt text-slate-400">Maks. {{ \App\Services\CheckPointSyncService::MAX_IMAGES_PER_ITEM }}
             foto</span></label>
     <div
-        class="{{ $isAccepted ? 'cursor-not-allowed opacity-70' : 'dropzone transition duration-200 hover:border-sky-400 hover:bg-sky-50 cursor-pointer' }} mt-2 flex min-h-28 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center {{ $isAccepted ? 'pointer-events-none' : '' }}">
+        class="{{ $readOnly ? 'cursor-not-allowed opacity-70' : 'dropzone transition duration-200 hover:border-sky-400 hover:bg-sky-50 cursor-pointer' }} mt-2 flex min-h-28 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center {{ $readOnly ? 'pointer-events-none' : '' }}">
         <div class="photo-preview grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
             @foreach ($rowImages as $image)
                 @if ($image)
                     <div class="photo-item group relative" data-existing-image="{{ $image }}">
                         <img src="{{ asset('storage/images/' . $image) }}" alt="Foto pekerjaan"
                             class="h-full w-full rounded-lg object-cover ring-1 ring-slate-200">
-                        <button type="button"
-                            class="photo-delete absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition hover:bg-red-600"
-                            aria-label="Hapus foto">
-                            <i class="ri-close-line"></i>
-                        </button>
-                        <button type="button"
-                            class="photo-edit absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition hover:bg-amber-600"
-                            aria-label="Edit foto">
-                            <i class="ri-pencil-line"></i>
-                        </button>
+                        @unless ($readOnly)
+                            <button type="button"
+                                class="photo-delete absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition hover:bg-red-600"
+                                aria-label="Hapus foto">
+                                <i class="ri-close-line"></i>
+                            </button>
+                            <button type="button"
+                                class="photo-edit absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition hover:bg-amber-600"
+                                aria-label="Edit foto">
+                                <i class="ri-pencil-line"></i>
+                            </button>
+                        @endunless
                         <input type="hidden" class="existing-image" name="existing_img[{{ $i ?? 0 }}][]"
                             value="{{ $image }}">
                     </div>
@@ -143,7 +158,7 @@
             @endforeach
         </div>
         <div
-            class="photo-placeholder flex flex-col items-center {{ $isAccepted || count(array_filter($rowImages)) ? 'hidden' : '' }}">
+            class="photo-placeholder flex flex-col items-center {{ $readOnly || count(array_filter($rowImages)) ? 'hidden' : '' }}">
             <i class="ri-upload-cloud-2-line text-3xl text-slate-400"></i><span
                 class="text-sm font-semibold text-slate-600">Klik atau tarik foto ke sini</span><span
                 class="text-xs text-slate-400">JPG, PNG — maks.

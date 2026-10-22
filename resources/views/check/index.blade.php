@@ -86,7 +86,9 @@
                 <div class="mt-3 flex flex-wrap gap-2">
                     @foreach ($pendingDays as $item)
                         @php
-                            $pendingUrl = $reportLocked
+                            // Pekan ditutup: hanya tanggal yang punya catatan evaluasi
+                            // yang masih bisa dibuka untuk diperbaiki.
+                            $pendingUrl = $reportLocked && ! $item['hasNote']
                                 ? route('checkpoint-user.history.show', ['id' => $item['recordId']])
                                 : route('checkpoint-user.edit', [
                                     'checkpoint_user' => $item['recordId'],
@@ -179,7 +181,9 @@
                     // hari kosong tidak bisa diklik sama sekali.
                     $hasRecord = $item['hasData'] && $item['recordId'];
                     if ($hasRecord) {
-                        $cellHref = $reportLocked
+                        // Hari dengan catatan evaluasi tetap bisa diedit walau pekan
+                        // sudah ditutup; hari lain hanya bisa dibaca.
+                        $cellHref = $reportLocked && ! $item['hasNote']
                             ? route('checkpoint-user.history.show', ['id' => $item['recordId']])
                             : route('checkpoint-user.edit', [
                                 'checkpoint_user' => $item['recordId'],

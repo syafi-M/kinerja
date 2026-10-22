@@ -18,29 +18,24 @@ class CheckPointItem extends Model
      * being repeated in Blade and the controller.
      */
     public const APPROVAL_REACTIONS = [
+
+        'cukup' => [
+            'emoji' => 'ℹ️',
+            'label' => 'Cukup',
+            'icon' => 'ri-information-2-fill',
+            'tone' => 'text-slate-500',
+        ],
         'baik' => [
             'emoji' => '👍',
             'label' => 'Baik',
             'icon' => 'ri-thumb-up-fill',
             'tone' => 'text-sky-500',
         ],
-        'bagus' => [
-            'emoji' => '😊',
-            'label' => 'Bagus',
-            'icon' => 'ri-emotion-happy-fill',
-            'tone' => 'text-amber-500',
-        ],
         'excellent' => [
             'emoji' => '⭐',
             'label' => 'Excellent',
             'icon' => 'ri-star-fill',
             'tone' => 'text-amber-500',
-        ],
-        'disetujui' => [
-            'emoji' => '✅',
-            'label' => 'Disetujui',
-            'icon' => 'ri-checkbox-circle-fill',
-            'tone' => 'text-emerald-500',
         ],
     ];
 
@@ -129,5 +124,14 @@ class CheckPointItem extends Model
     public function isDenied(): bool
     {
         return $this->approve_status === 'denied';
+    }
+
+    /**
+     * Direksi/Manager CS wrote an evaluation note on this row. It may still be
+     * corrected after the weekly reporting window has closed.
+     */
+    public function hasEvaluationNote(): bool
+    {
+        return filled($this->note);
     }
 }
