@@ -31,10 +31,18 @@ class CheckPointService
         });
     }
 
-    public function update(CheckPoint $checkpoint, Request $request): CheckPoint
+    /**
+     * @param  bool  $evaluationRowsOnly  Weekly window is closed: only rows with
+     *                                    a Direksi evaluation note may change.
+     */
+    public function update(CheckPoint $checkpoint, Request $request, bool $evaluationRowsOnly = false): CheckPoint
     {
-        return DB::transaction(function () use ($checkpoint, $request): CheckPoint {
-            $this->syncService->syncFromRequest($checkpoint, $request);
+        return DB::transaction(function () use ($checkpoint, $request, $evaluationRowsOnly): CheckPoint {
+            if ($evaluationRowsOnly) {
+                $this->syncService->syncEvaluatedRows($checkpoint, $request);
+            } else {
+                $this->syncService->syncFromRequest($checkpoint, $request);
+            }
             $checkpoint->type_check ??= 'dikerjakan';
             $checkpoint->save();
             return $checkpoint;

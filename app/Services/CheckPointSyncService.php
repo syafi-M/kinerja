@@ -84,6 +84,41 @@ class CheckPointSyncService
     }
 
     /**
+     * Update only the rows that carry a Direksi evaluation note.
+     *
+     * While the weekly window is closed an employee may still fix the work that
+     * was commented on, and nothing else: rows without a note keep their values,
+     * no row is added and no row is removed.
+     */
+    public function syncEvaluatedRows(CheckPoint $checkPoint, Request $request): void
+    {
+        $submitted = $this->normalise($request);
+
+        $existing = $checkPoint->items()->with('images')->get()->keyBy('id');
+
+        foreach ($submitted as $row) {
+            $item = $row['id'] !== null ? $existing->get($row['id']) : null;
+
+            if (! $item || ! $item->hasEvaluationNote()) {
+                continue;
+            }
+
+            $item->fill([
+                'pekerjaan_cp_id' => $row['pekerjaan_cp_id'],
+                'input_manual' => $row['input_manual'],
+                'deskripsi' => $row['deskripsi'],
+                'tanggal' => $row['tanggal'],
+                'latitude' => $row['latitude'],
+                'longtitude' => $row['longtitude'],
+                'approve_status' => $row['approve_status'],
+            ]);
+            $item->save();
+
+            $this->syncImages($item, $row['keep_images'], $row['new_images']);
+        }
+    }
+
+    /**
      * Merge new rows into an existing batch without touching the rows already
      * stored (used by the "upload bukti" flow for the current week).
      */

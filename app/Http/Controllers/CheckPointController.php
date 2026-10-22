@@ -131,20 +131,37 @@ class CheckPointController extends Controller
 
     public function edit(Request $request, $id)
     {
-        if ($denied = $this->reportWindow->reject()) {
-            return $denied;
+        $cex = CheckPoint::with(['workOrder', 'items.images', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])->findOrFail($id);
+
+        // Pekan laporan tertutup: halaman ini tetap dibuka hanya bila ada
+        // catatan evaluasi Direksi yang boleh ditindaklanjuti karyawan.
+        $windowLocked = $this->reportWindow->blocks();
+
+        if ($windowLocked && ! $cex->hasEvaluationNotes()) {
+            return $this->reportWindow->reject();
         }
 
-        $cex = CheckPoint::with(['workOrder', 'items.images', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])->findOrFail($id);
         $pcp = PekerjaanCp::where('user_id', $cex->user_id)->get();
 
-        return view('check.edit', ['pcp' => $pcp, 'cex' => $cex, 'id' => $id, 'selectedDate' => $request->input('tanggal', optional($cex->created_at)->format('Y-m-d'))]);
+        return view('check.edit', [
+            'pcp' => $pcp,
+            'cex' => $cex,
+            'id' => $id,
+            'windowLocked' => $windowLocked,
+            'selectedDate' => $request->input('tanggal', optional($cex->created_at)->format('Y-m-d')),
+        ]);
     }
 
     public function update(UpdateCheckPointRequest $request, $id)
     {
-        if ($denied = $this->reportWindow->reject()) {
-            return $denied;
+        $cex2 = CheckPoint::with('items')->findOrFail($id);
+
+        // Saat pekan ditutup hanya baris bercatatan evaluasi yang boleh diubah,
+        // dan sync service menolak menambah/menghapus baris lain.
+        $evaluationRowsOnly = $this->reportWindow->blocks();
+
+        if ($evaluationRowsOnly && ! $cex2->hasEvaluationNotes()) {
+            return $this->reportWindow->reject();
         }
 
         if ($error = $this->syncService->imageLimitError($request)) {
@@ -152,10 +169,8 @@ class CheckPointController extends Controller
             return redirect()->back()->withInput();
         }
 
-        $cex2 = CheckPoint::findOrFail($id);
-
         try {
-            $this->checkPointService->update($cex2, $request);
+            $this->checkPointService->update($cex2, $request, $evaluationRowsOnly);
             $this->calendarService->forget($cex2->user_id);
             toastr()->success('Data berhasil diedit');
             return to_route('checkpoint-user.index');

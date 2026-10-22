@@ -216,6 +216,136 @@ class CheckPointReportWindowTest extends TestCase
             ]), false);
     }
 
+    /**
+     * A checkpoint with one evaluated row (Direksi note) and one plain row.
+     *
+     * @return array{0: CheckPoint, 1: \App\Models\CheckPointItem, 2: \App\Models\CheckPointItem}
+     */
+    private function makeCheckpointWithNotes(): array
+    {
+        $checkPoint = CheckPoint::create([
+            'user_id' => $this->staff->id,
+            'divisi_id' => $this->divisi->id,
+            'type_check' => 'dikerjakan',
+        ]);
+
+        $noteItem = $checkPoint->items()->create([
+            'pekerjaan_cp_id' => null,
+            'input_manual' => 'Pekerjaan dengan catatan',
+            'deskripsi' => 'Deskripsi lama',
+            'tanggal' => '2026-10-20',
+            'approve_status' => 'denied',
+            'note' => '👍 Baik — perbaiki fotonya',
+            'urutan' => 0,
+        ]);
+
+        $plainItem = $checkPoint->items()->create([
+            'pekerjaan_cp_id' => null,
+            'input_manual' => 'Pekerjaan tanpa catatan',
+            'deskripsi' => 'Tidak boleh berubah',
+            'tanggal' => '2026-10-20',
+            'approve_status' => 'proccess',
+            'note' => null,
+            'urutan' => 1,
+        ]);
+
+        return [$checkPoint, $noteItem, $plainItem];
+    }
+
+    public function test_locked_week_still_opens_edit_for_rows_with_evaluation_notes(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-25 10:00:00')); // Minggu
+
+        [$checkPoint] = $this->makeCheckpointWithNotes();
+
+        $this->actingAs($this->staff)
+            ->get(route('checkpoint-user.edit', ['checkpoint_user' => $checkPoint->id]))
+            ->assertOk()
+            ->assertSee('Pekan laporan sudah ditutup')
+            ->assertSee('Hanya pekerjaan yang punya catatan')
+            ->assertDontSee(route('checkpoint-user.create'), false);
+    }
+
+    public function test_locked_week_still_rejects_edit_without_evaluation_notes(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-25 10:00:00')); // Minggu
+
+        $checkPoint = CheckPoint::create([
+            'user_id' => $this->staff->id,
+            'divisi_id' => $this->divisi->id,
+            'type_check' => 'dikerjakan',
+        ]);
+
+        $this->actingAs($this->staff)
+            ->get(route('checkpoint-user.edit', ['checkpoint_user' => $checkPoint->id]))
+            ->assertRedirect(route('checkpoint-user.index'))
+            ->assertSessionHas('checkpoint_locked');
+    }
+
+    public function test_locked_update_only_changes_rows_with_evaluation_notes(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-25 10:00:00')); // Minggu
+
+        [$checkPoint, $noteItem, $plainItem] = $this->makeCheckpointWithNotes();
+
+        $this->actingAs($this->staff)
+            ->put(route('checkpoint-user.update', $checkPoint->id), [
+                'user_id' => $this->staff->id,
+                'divisi_id' => $this->divisi->id,
+                'original_index' => [0 => 0, 1 => 1],
+                'item_id' => [0 => $noteItem->id, 1 => $plainItem->id],
+                'pekerjaan_id' => [0 => 'manual', 1 => 'manual'],
+                'input_manual' => [0 => 'Pekerjaan dengan catatan', 1 => 'Pekerjaan tanpa catatan'],
+                'deskripsi' => [0 => 'Deskripsi sudah diperbaiki', 1 => 'Percobaan mengubah baris terkunci'],
+                'tanggal' => [0 => '2026-10-20', 1 => '2026-10-20'],
+                'approve_status' => [0 => 'proccess', 1 => 'proccess'],
+            ])
+            ->assertRedirect(route('checkpoint-user.index'));
+
+        $this->assertSame('Deskripsi sudah diperbaiki', $noteItem->fresh()->deskripsi);
+        $this->assertSame('👍 Baik — perbaiki fotonya', $noteItem->fresh()->note, 'Catatan evaluasi tidak boleh hilang.');
+        $this->assertSame('Tidak boleh berubah', $plainItem->fresh()->deskripsi, 'Baris tanpa catatan harus tetap utuh.');
+        $this->assertSame(2, $checkPoint->items()->count(), 'Tidak boleh ada baris yang ditambah atau dihapus.');
+    }
+
+    public function test_locked_update_without_evaluation_notes_is_rejected(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-25 10:00:00')); // Minggu
+
+        $checkPoint = CheckPoint::create([
+            'user_id' => $this->staff->id,
+            'divisi_id' => $this->divisi->id,
+            'type_check' => 'dikerjakan',
+        ]);
+
+        $this->actingAs($this->staff)
+            ->put(route('checkpoint-user.update', $checkPoint->id), [
+                'user_id' => $this->staff->id,
+                'divisi_id' => $this->divisi->id,
+                'deskripsi' => [0 => 'Pekerjaan baru'],
+            ])
+            ->assertRedirect(route('checkpoint-user.index'))
+            ->assertSessionHas('checkpoint_locked');
+
+        $this->assertSame(0, $checkPoint->items()->count());
+    }
+
+    public function test_locked_calendar_links_days_with_evaluation_notes_to_edit(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-25 10:00:00')); // Minggu
+
+        [$checkPoint] = $this->makeCheckpointWithNotes();
+
+        $this->actingAs($this->staff)
+            ->get(route('checkpoint-user.index'))
+            ->assertOk()
+            ->assertSee(route('checkpoint-user.edit', [
+                'checkpoint_user' => $checkPoint->id,
+                'tanggal' => '2026-10-20',
+            ]), false)
+            ->assertSee('Ada catatan evaluasi');
+    }
+
     public function test_admin_calendar_stays_interactive_when_locked(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-10-25 10:00:00')); // Minggu
