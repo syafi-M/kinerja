@@ -22,6 +22,136 @@
         </section>
 
         @php
+            // The three numbers the recap always reports, in display order. The
+            // labels live here instead of the service so the service stays a
+            // plain data source.
+            $recapCards = [
+                'attendance' => [
+                    'label' => 'Absensi Kehadiran',
+                    'unit' => 'hari kerja',
+                    'icon' => 'ri-fingerprint-line',
+                    'chip' => 'bg-sky-50 text-sky-600',
+                    'bar' => 'bg-sky-500',
+                ],
+                'checkpoint' => [
+                    'label' => 'Kinerja Harian',
+                    'unit' => 'hari kerja',
+                    'icon' => 'ri-task-line',
+                    'chip' => 'bg-emerald-50 text-emerald-600',
+                    'bar' => 'bg-emerald-500',
+                ],
+                'work_order' => [
+                    'label' => 'Perintah Kerja',
+                    'unit' => 'perintah kerja',
+                    'icon' => 'ri-file-list-3-line',
+                    'chip' => 'bg-purple-50 text-purple-600',
+                    'bar' => 'bg-purple-500',
+                ],
+            ];
+        @endphp
+
+        <section class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5" data-performance-recap
+            @if (! $recap['visible']) data-recap-locked @endif>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 text-sm font-bold text-gray-900">
+                    <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                        <i class="ri-bar-chart-2-line"></i>
+                    </span>
+                    Rekap Persentase
+                </h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-gray-500">{{ $start->translatedFormat('F Y') }}</span>
+                    @if ($recap['visible'])
+                        <span
+                            class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Terbuka</span>
+                    @else
+                        <span
+                            class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">Terkunci</span>
+                    @endif
+                </div>
+            </div>
+
+            @if ($recap['visible'])
+
+                <div class="mt-3 grid gap-2.5 sm:grid-cols-3">
+                    @foreach ($recapCards as $key => $card)
+                        @php
+                            $metric = $recap['metrics'][$key];
+                            $percent = $metric['percent'];
+                        @endphp
+
+                        <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-3" data-recap-metric="{{ $key }}"
+                            @if (! is_null($percent)) data-recap-percent="{{ $percent }}" @endif>
+
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="grid h-8 w-8 shrink-0 place-items-center rounded-lg {{ $card['chip'] }} text-base">
+                                    <i class="{{ $card['icon'] }}"></i>
+                                </span>
+                                <p class="min-w-0 text-xs font-semibold leading-tight text-gray-600">
+                                    {{ $card['label'] }}</p>
+                            </div>
+
+                            <p class="mt-3 text-2xl font-bold tabular-nums text-gray-900">
+                                {{ is_null($percent) ? '—' : $percent . '%' }}
+                            </p>
+
+                            <p class="mt-0.5 text-[11px] text-gray-500">
+                                @if (is_null($percent))
+                                    Belum ada perintah kerja
+                                @else
+                                    {{ $metric['achieved'] }} dari {{ $metric['total'] }} {{ $card['unit'] }}
+                                @endif
+                            </p>
+
+                            <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200">
+                                <div class="h-full rounded-full {{ $card['bar'] }}"
+                                    style="width: {{ $percent ?? 0 }}%"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                @php
+                    $excludedHolidays = collect($recap['excludedHolidays'] ?? [])
+                        ->map(
+                            fn ($name, $date) => \Carbon\Carbon::parse($date)->translatedFormat('d M Y') .
+                                (filled($name) ? ' (' . $name . ')' : ''),
+                        )
+                        ->implode(', ');
+                    $holidayTooltip =
+                        $excludedHolidays === ''
+                            ? 'Tidak ada hari libur nasional pada periode ini.'
+                            : 'Hari libur nasional yang dikecualikan: ' . $excludedHolidays;
+                @endphp
+
+                <p class="mt-2.5 flex items-center gap-1.5 text-[10px] leading-relaxed text-gray-400"
+                    title="{{ $holidayTooltip }}">
+                    <i class="ri-information-line text-[13px]"></i>
+                    <span
+                        class="cursor-help underline decoration-gray-300 decoration-dotted underline-offset-2">
+                        Hari libur nasional dan akhir pekan tidak dihitung sebagai hari kerja.
+                    </span>
+                </p>
+
+            @else
+
+                <div
+                    class="mt-3 flex items-center gap-2.5 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                    <i class="ri-lock-2-line text-base"></i>
+                    <p>
+                        Rekap hanya bisa dilihat setiap akhir pekan (Sabtu &amp; Minggu) dan 3 hari terakhir bulan.
+                        Dibuka lagi <span
+                            class="font-semibold">{{ $recap['nextVisibleAt']->translatedFormat('l, d F Y') }}</span>.
+                    </p>
+                </div>
+
+            @endif
+
+        </section>
+
+        @php
             // Days that still hold evidence direksi has not reviewed. The
             // calendar rows already carry their per-day status counts, so this
             // costs no extra query — it just makes those days findable without
@@ -185,12 +315,20 @@
 
             @php
                 $date = $item['date'];
+                $isHoliday = $holidays->has($date->toDateString());
+                $holidayName = $holidays->get($date->toDateString());
+                $cellTitle = $date->translatedFormat('l, d F Y');
+                if ($isHoliday && filled($holidayName)) {
+                    $cellTitle .= ' — ' . $holidayName;
+                }
                 // "Approved" here means the day has work and nothing left pending.
                 $approved = $item['hasData'] && $item['counts']['process'] === 0;
                 if ($approved) {
                     $state = 'border-transparent bg-sky-500 text-white hover:bg-sky-600';
                 } elseif ($item['hasData']) {
                     $state = 'border-transparent bg-emerald-500 text-white hover:bg-emerald-600';
+                } elseif ($isHoliday) {
+                    $state = 'border-rose-200 bg-rose-100 text-rose-600';
                 } elseif ($date->isWeekend()) {
                     $state = 'border-rose-100 bg-rose-50 text-rose-400';
                 } else {
@@ -206,14 +344,26 @@
 
                     style="animation-delay: {{ min($index * 12, 320) }}ms"
 
-                    title="{{ $date->translatedFormat('l, d F Y') }}"
+                    title="{{ $cellTitle }}"
+
+                    @if ($isHoliday) data-calendar-holiday="{{ $date->toDateString() }}" @endif
 
                     class="reveal-cell group relative flex min-h-[48px] min-w-0 flex-col justify-between overflow-hidden rounded-lg border p-1.5 font-medium transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,.22)] sm:min-h-[64px] sm:rounded-xl sm:p-2 md:min-h-[74px] md:p-2.5
                     {{ $state }}
                     {{ $date->isToday() ? 'ring-2 ring-sky-400 ring-offset-1 sm:ring-offset-2' : '' }}">
 
-                    <span class="text-[10px] leading-none sm:text-xs md:text-sm overflow-hidden">
-                        {{ $date->day }}
+                    <span class="flex items-center justify-between gap-1 overflow-hidden">
+                        <span class="truncate text-[10px] leading-none sm:text-xs md:text-sm">
+                            {{ $date->day }}
+                        </span>
+
+                        @if ($isHoliday)
+                            <span
+                                class="grid h-3 w-3 shrink-0 place-items-center rounded-full bg-white/95 shadow-sm sm:h-3.5 sm:w-3.5"
+                                title="{{ filled($holidayName) ? 'Libur nasional: ' . $holidayName : 'Libur nasional' }}">
+                                <i class="ri-flag-2-fill text-[7px] text-rose-500 sm:text-[8px]"></i>
+                            </span>
+                        @endif
                     </span>
 
                     <x-checkpoint-status-row :counts="$item['counts']" :has-data="$item['hasData']" size="md" />
@@ -223,18 +373,36 @@
             @else
 
                 <span
-                    title="{{ $date->translatedFormat('l, d F Y') }}"
+                    title="{{ $cellTitle }}"
+
+                    @if ($isHoliday) data-calendar-holiday="{{ $date->toDateString() }}" @endif
 
                     class="flex min-h-[48px] min-w-0 flex-col justify-between overflow-hidden rounded-lg border p-1.5 font-medium sm:min-h-[64px] sm:rounded-xl sm:p-2 md:min-h-[74px] md:p-2.5
                     {{ $state }}
                     {{ $date->isToday() ? 'ring-2 ring-sky-400 ring-offset-1 sm:ring-offset-2' : '' }}">
 
-                    <span class="overflow-hidden text-[10px] leading-none sm:text-xs md:text-sm">
-                        {{ $date->day }}
+                    <span class="flex items-center justify-between gap-1 overflow-hidden">
+                        <span class="truncate text-[10px] leading-none sm:text-xs md:text-sm">
+                            {{ $date->day }}
+                        </span>
+
+                        @if ($isHoliday)
+                            <span
+                                class="grid h-3 w-3 shrink-0 place-items-center rounded-full bg-white/95 shadow-sm sm:h-3.5 sm:w-3.5"
+                                title="{{ filled($holidayName) ? 'Libur nasional: ' . $holidayName : 'Libur nasional' }}">
+                                <i class="ri-flag-2-fill text-[7px] text-rose-500 sm:text-[8px]"></i>
+                            </span>
+                        @endif
                     </span>
 
+                    @if ($isHoliday)
 
-                    @if ($date->isWeekend())
+                        <span
+                            class="truncate text-[7px] font-semibold uppercase leading-tight text-rose-500 sm:text-[9px] md:text-[10px]">
+                            Libur Nasional
+                        </span>
+
+                    @elseif ($date->isWeekend())
 
                         <span
                             class="hidden truncate text-[8px] font-semibold uppercase opacity-85 sm:block sm:text-[9px] md:text-[10px]">
@@ -288,6 +456,11 @@
             <span class="flex items-center gap-1.5 sm:gap-2">
                 <span class="m-1 h-2.5 w-2.5 shrink-0 rounded-[3px] bg-rose-50 ring-1 ring-rose-100 sm:h-3 sm:w-3"></span>
                 Sabtu &amp; Minggu
+            </span>
+
+            <span class="flex items-center gap-1.5 sm:gap-2">
+                <i class="ri-flag-2-fill text-[11px] text-rose-500 sm:text-[12px]"></i>
+                Libur nasional
             </span>
 
             <span class="mx-1 hidden h-4 w-px bg-gray-200 sm:block"></span>

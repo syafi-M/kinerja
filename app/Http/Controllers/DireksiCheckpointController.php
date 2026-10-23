@@ -12,6 +12,8 @@ use App\Models\WorkOrder;
 use App\Notifications\CheckPointReplyNotification;
 use App\Notifications\WorkOrderNotification;
 use App\Services\CheckPointCalendarService;
+use App\Services\NationalHolidayService;
+use App\Services\PerformanceRecapService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -22,6 +24,8 @@ class DireksiCheckpointController extends Controller
 {
     public function __construct(
         private readonly CheckPointCalendarService $calendarService,
+        private readonly PerformanceRecapService $recapService,
+        private readonly NationalHolidayService $holidayService,
     ) {
     }
     public function index(Request $request)
@@ -115,9 +119,19 @@ class DireksiCheckpointController extends Controller
         // Same calendar shape as the employee pages, filtered by type.
         $calendar = $this->calendarService->forMonth($employee->id, $start, $end, $type);
 
+        // Attendance, checkpoint and work-order percentages for the browsed
+        // month. Locked outside weekends and the last three days of a month.
+        $recap = $this->recapService->forMonth($employee, $start->copy(), $end->copy());
+
+        // National holidays inside the browsed month, marked on the grid so a
+        // reviewer can tell a short week from a missing report. Keyed by date,
+        // so each cell can also show the holiday's name.
+        $holidays = collect($this->holidayService->namesForYear($start->year))
+            ->filter(fn ($name, $date) => str_starts_with($date, $start->format('Y-m')));
+
         return view(
             'direksi.checkpoint.calendar',
-            compact('employee', 'calendar', 'start', 'type') + [
+            compact('employee', 'calendar', 'start', 'type', 'recap', 'holidays') + [
                 'previousMonth' => $start->copy()->subMonth()->format('Y-m'),
                 'nextMonth' => $start->copy()->addMonth()->format('Y-m'),
                 'totalRecords' => $calendar->sum('total'),
