@@ -249,6 +249,7 @@ Route::middleware(['auth', 'direksi'])->group(function () {
     Route::get('/direksi-work-order/{user}/create', [DireksiWorkOrderController::class, 'create'])->name('direksi.work-order.create');
     Route::post('/direksi-work-order', [DireksiWorkOrderController::class, 'store'])->name('direksi.work-order.store');
     Route::get('/direksi-checkpoint/{user}/calendar', [DireksiCheckpointController::class, 'calendar'])->name('direksi.cp.calendar');
+    Route::post('/direksi-checkpoint/{user}/final-score', [DireksiCheckpointController::class, 'saveFinalScore'])->name('direksi.cp.final-score.store');
     Route::get('/direksi-checkpoint-history', [DireksiCheckpointController::class, 'history'])->name('direksi.cp.history');
     Route::get('/direksi-checkpoint-history/{id}', [DireksiCheckpointController::class, 'historyDetail'])->name('direksi.cp.history.show');
     Route::patch('/direksi-checkpoint-history/{id}/approve', [DireksiCheckpointController::class, 'updateApproval'])->name('direksi.cp.history.approve');
@@ -611,6 +612,8 @@ Route::middleware(['auth', 'admin', 'apdt'])->group(function () {
     Route::get('/admin-checkpoint-settings', [CheckpointSettingsController::class, 'index'])->name('admin.cp.settings');
     Route::post('/admin-checkpoint-settings', [CheckpointSettingsController::class, 'update'])->name('admin.cp.settings.update');
     Route::delete('/admin-checkpoint-settings', [CheckpointSettingsController::class, 'reset'])->name('admin.cp.settings.reset');
+    Route::post('/admin-checkpoint-settings/recap', [CheckpointSettingsController::class, 'updateRecap'])->name('admin.cp.settings.recap.update');
+    Route::delete('/admin-checkpoint-settings/recap', [CheckpointSettingsController::class, 'resetRecap'])->name('admin.cp.settings.recap.reset');
     Route::patch('/admin-check-approve/{id}', [AdminController::class, 'approveCheck'])->name('admin.cp.approve');
     Route::patch('/admin-check-denied/{id}', [AdminController::class, 'deniedCheck'])->name('admin.cp.denied');
     Route::get('/admin-lihat-check/{id}', [AdminController::class, 'lihatCheck'])->name('admin.cp.show');

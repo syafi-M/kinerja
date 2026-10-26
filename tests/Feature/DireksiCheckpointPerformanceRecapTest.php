@@ -264,7 +264,7 @@ class DireksiCheckpointPerformanceRecapTest extends TestCase
             ->assertOk()
             ->assertSee('data-recap-locked', false)
             ->assertDontSee('data-recap-percent=', false)
-            ->assertSee('Rekap hanya bisa dilihat setiap akhir pekan (Sabtu &amp; Minggu) dan 3 hari terakhir bulan.', false)
+            ->assertSee('Rekap hanya bisa dilihat pada hari Sabtu &amp; Minggu dan 3 hari terakhir bulan.', false)
             ->assertSee('Dibuka lagi');
     }
 

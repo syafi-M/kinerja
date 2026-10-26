@@ -6,6 +6,7 @@ use App\Models\CheckPoint;
 use App\Models\CheckPointItem;
 use App\Models\CheckPointMessage;
 use App\Models\Kerjasama;
+use App\Models\PerformanceFinalScore;
 use App\Models\PekerjaanCp;
 use App\Models\User;
 use App\Models\WorkOrder;
@@ -128,15 +129,50 @@ class DireksiCheckpointController extends Controller
         // so each cell can also show the holiday's name.
         $holidays = collect($this->holidayService->namesForYear($start->year))
             ->filter(fn ($name, $date) => str_starts_with($date, $start->format('Y-m')));
+        $finalScore = PerformanceFinalScore::query()
+            ->with('creator')
+            ->where('user_id', $employee->id)
+            ->where('month', $start->month)
+            ->where('year', $start->year)
+            ->first();
 
         return view(
             'direksi.checkpoint.calendar',
-            compact('employee', 'calendar', 'start', 'type', 'recap', 'holidays') + [
+            compact('employee', 'calendar', 'start', 'type', 'recap', 'holidays', 'finalScore') + [
                 'previousMonth' => $start->copy()->subMonth()->format('Y-m'),
                 'nextMonth' => $start->copy()->addMonth()->format('Y-m'),
                 'totalRecords' => $calendar->sum('total'),
             ],
         );
+    }
+
+    public function saveFinalScore(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'integer', 'between:1,12'],
+            'year' => ['required', 'integer', 'between:2000,2100'],
+            'score' => ['required', 'numeric', 'between:0,100'],
+        ]);
+
+        PerformanceFinalScore::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'month' => (int) $validated['month'],
+                'year' => (int) $validated['year'],
+            ],
+            [
+                'score' => $validated['score'],
+                'created_by' => auth()->id(),
+            ],
+        );
+
+        toastr()->success('Nilai akhir berhasil disimpan.');
+
+        return redirect()->route('direksi.cp.calendar', [
+            'user' => $user->id,
+            'month' => sprintf('%04d-%02d', $validated['year'], $validated['month']),
+            'type' => $request->input('type', 'dikerjakan'),
+        ]);
     }
 
     public function history(Request $request)

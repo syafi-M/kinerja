@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Absensi;
+use App\Models\PerformanceRecapSetting;
 use App\Models\User;
 use App\Models\WorkOrder;
 use Carbon\Carbon;
@@ -12,11 +13,10 @@ use Carbon\Carbon;
  * daily checkpoint evidence, and work orders, each as a percentage of what was
  * expected in the browsed month.
  *
- * The recap for the month that is still running is only readable at the end of
- * a week or the end of a month, so a reviewer cannot grade an employee on a
- * period that has not finished. "Akhir pekan" is Saturday/Sunday; "akhir
- * bulan" is the last three days of the month. Months that are already over stay
- * open at any time: their numbers are final.
+ * The recap for the month that is still running is only readable on configured
+ * weekly days or the end of a month, so a reviewer cannot grade an employee on
+ * a period that has not finished. Months that are already over stay open at any
+ * time: their numbers are final.
  *
  * Working days are Monday–Friday up to today for the current month, and the
  * whole month once it is over. National holidays keep out of that denominator
@@ -27,17 +27,37 @@ class PerformanceRecapService
     /** How many closing days of a month count as "akhir bulan". */
     private const MONTH_END_DAYS = 3;
 
+    /** @var array<int, int>|null */
+    private ?array $configuredVisibleDays = null;
+
     public function __construct(
         private readonly CheckPointCalendarService $calendarService,
         private readonly NationalHolidayService $holidayService,
     ) {
     }
 
+    /**
+     * @return array<int, int>
+     */
+    public function visibleDays(): array
+    {
+        return $this->configuredVisibleDays ??= PerformanceRecapSetting::query()->latest()->first()?->visibleDays()
+            ?? PerformanceRecapSetting::DEFAULT_VISIBLE_DAYS;
+    }
+
+    public function visibleDaysLabel(): string
+    {
+        return collect($this->visibleDays())
+            ->sort()
+            ->map(fn (int $day): string => PerformanceRecapSetting::DAY_NAMES[$day])
+            ->implode(' & ');
+    }
+
     public function isVisible(?Carbon $at = null): bool
     {
         $at = ($at ?? now())->copy();
 
-        return $at->isWeekend()
+        return in_array($at->dayOfWeekIso, $this->visibleDays(), true)
             || $at->day > $at->daysInMonth - self::MONTH_END_DAYS;
     }
 
@@ -56,7 +76,7 @@ class PerformanceRecapService
     {
         $candidate = ($at ?? now())->copy()->startOfDay();
 
-        // A year is more than enough; the rule opens at least every weekend.
+        // A year is more than enough; the rule opens at least once per configured week.
         for ($i = 0; $i < 366; $i++) {
             if ($this->isVisible($candidate)) {
                 return $candidate;
@@ -72,6 +92,7 @@ class PerformanceRecapService
      * @return array{
      *     visible: bool,
      *     nextVisibleAt: Carbon,
+     *     visibleDaysLabel: string,
      *     workingDays: int,
      *     excludedHolidays: array<string, string>,
      *     metrics: array<string, array{percent: int|null, achieved: int, total: int}>
@@ -92,6 +113,7 @@ class PerformanceRecapService
         return [
             'visible' => $this->isVisible($at) || $this->isPastMonth($end, $at),
             'nextVisibleAt' => $this->nextVisibleAt($at),
+            'visibleDaysLabel' => $this->visibleDaysLabel(),
             'workingDays' => $workingDays,
             'excludedHolidays' => $excludedHolidays,
             'metrics' => [
