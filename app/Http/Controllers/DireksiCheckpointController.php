@@ -23,12 +23,7 @@ use Illuminate\Validation\Rule;
 
 class DireksiCheckpointController extends Controller
 {
-    public function __construct(
-        private readonly CheckPointCalendarService $calendarService,
-        private readonly PerformanceRecapService $recapService,
-        private readonly NationalHolidayService $holidayService,
-    ) {
-    }
+    public function __construct(private readonly CheckPointCalendarService $calendarService, private readonly PerformanceRecapService $recapService, private readonly NationalHolidayService $holidayService) {}
     public function index(Request $request)
     {
         $now = $request->filled('month') ? Carbon::createFromFormat('Y-m', $request->month) : Carbon::now();
@@ -40,11 +35,16 @@ class DireksiCheckpointController extends Controller
 
         $users = User::query()
             ->select(['id', 'nama_lengkap', 'devisi_id', 'jabatan_id', 'kerjasama_id'])
+
             ->with(['divisi:id,name', 'jabatan:id,name_jabatan', 'kerjasama:id,client_id'])
-            ->where('kerjasama_id', 1)
-            ->whereNot('name', 'admin')
+            ->where(function ($query) {
+                $query->where('kerjasama_id', 1)->orWhereHas('divisi', function ($q) {
+                    $q->where('name', 'SPV-W');
+                });
+            })
+            ->where('name', '!=', 'admin')
             ->when($filter, fn($query) => $query->where('kerjasama_id', $filter))
-            ->when($search, fn($query) => $query->where('nama_lengkap', 'like', '%' . $search . '%'))
+            ->when($search, fn($query) => $query->where('nama_lengkap', 'like', "%{$search}%"))
             ->orderBy('id')
             ->paginate(25)
             ->withQueryString();
@@ -55,8 +55,9 @@ class DireksiCheckpointController extends Controller
         // to review in the month on screen, so the list doubles as a to-do
         // list for that month.
         $pendingCounts = $this->pendingReviewCounts($users->getCollection()->pluck('id'), $start, $end);
+        $recapAvailable = $this->recapService->isVisible($now);
 
-        return view('direksi.checkpoint.index', compact('users', 'kerjasama', 'filter', 'search', 'previousMonth', 'nextMonth', 'start', 'end', 'pendingCounts'));
+        return view('direksi.checkpoint.index', compact('users', 'kerjasama', 'filter', 'search', 'previousMonth', 'nextMonth', 'start', 'end', 'pendingCounts', 'recapAvailable'));
     }
 
     /**
@@ -91,18 +92,14 @@ class DireksiCheckpointController extends Controller
             ->where('check_points.type_check', 'dikerjakan')
             ->where('check_point_items.approve_status', 'proccess')
             ->where(function ($query) use ($start, $end): void {
-                $query
-                    ->whereBetween('check_point_items.tanggal', [$start->toDateString(), $end->toDateString()])
-                    ->orWhere(function ($undated) use ($start, $end): void {
-                        $undated
-                            ->whereNull('check_point_items.tanggal')
-                            ->whereBetween('check_points.created_at', [$start, $end]);
-                    });
+                $query->whereBetween('check_point_items.tanggal', [$start->toDateString(), $end->toDateString()])->orWhere(function ($undated) use ($start, $end): void {
+                    $undated->whereNull('check_point_items.tanggal')->whereBetween('check_points.created_at', [$start, $end]);
+                });
             })
             ->groupBy('check_points.user_id')
             ->selectRaw('check_points.user_id as user_id, count(*) as total')
             ->pluck('total', 'user_id')
-            ->map(fn ($total) => (int) $total);
+            ->map(fn($total) => (int) $total);
     }
 
     public function calendar(Request $request, $user)
@@ -127,14 +124,8 @@ class DireksiCheckpointController extends Controller
         // National holidays inside the browsed month, marked on the grid so a
         // reviewer can tell a short week from a missing report. Keyed by date,
         // so each cell can also show the holiday's name.
-        $holidays = collect($this->holidayService->namesForYear($start->year))
-            ->filter(fn ($name, $date) => str_starts_with($date, $start->format('Y-m')));
-        $finalScore = PerformanceFinalScore::query()
-            ->with('creator')
-            ->where('user_id', $employee->id)
-            ->where('month', $start->month)
-            ->where('year', $start->year)
-            ->first();
+        $holidays = collect($this->holidayService->namesForYear($start->year))->filter(fn($name, $date) => str_starts_with($date, $start->format('Y-m')));
+        $finalScore = PerformanceFinalScore::query()->with('creator')->where('user_id', $employee->id)->where('month', $start->month)->where('year', $start->year)->first();
 
         return view(
             'direksi.checkpoint.calendar',
@@ -187,7 +178,8 @@ class DireksiCheckpointController extends Controller
         }
         $recordsByDate = collect();
         $countsByDate = collect();
-        $query->with('items:id,check_point_id,tanggal,approve_status')
+        $query
+            ->with('items:id,check_point_id,tanggal,approve_status')
             ->get(['id', 'created_at'])
             ->each(function (CheckPoint $checkpoint) use ($recordsByDate, $countsByDate): void {
                 if ($checkpoint->items->isEmpty()) {
@@ -195,9 +187,7 @@ class DireksiCheckpointController extends Controller
                     return;
                 }
 
-                $byDate = $checkpoint->items->groupBy(
-                    fn ($item) => Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString(),
-                );
+                $byDate = $checkpoint->items->groupBy(fn($item) => Carbon::parse($item->tanggal ?? $checkpoint->created_at)->toDateString());
 
                 foreach ($byDate as $date => $dayItems) {
                     $recordsByDate->put($date, $checkpoint->id);
@@ -236,25 +226,20 @@ class DireksiCheckpointController extends Controller
 
     public function historyDetail(Request $request, $id)
     {
-        $isMcs = in_array(
-            auth()->user()?->jabatan?->code_jabatan
-                ?? auth()->user()?->divisi?->jabatan?->code_jabatan,
-            ['MCS'],
-            true
-        );
+        $isMcs = in_array(auth()->user()?->jabatan?->code_jabatan ?? auth()->user()?->divisi?->jabatan?->code_jabatan, ['MCS'], true);
 
         if ($request->worker) {
             $workOrder = WorkOrder::findOrFail($id);
             $selectedDate = $workOrder->tanggal->format('Y-m-d');
             $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])
                 ->where('user_id', $workOrder->user_id)
-                ->whereHas('items', fn ($q) => $q->whereDate('tanggal', $selectedDate))
+                ->whereHas('items', fn($q) => $q->whereDate('tanggal', $selectedDate))
                 ->first();
         } else {
             $checkpoint = CheckPoint::with(['user:id,nama_lengkap', 'items.images', 'items.pekerjaanCp', 'items.messages.images', 'items.messages.user', 'items.messages.acknowledgement'])->findOrFail($id);
         }
 
-        abort_if(! $checkpoint, 404, 'Bukti pekerjaan belum tersedia untuk perintah kerja ini.');
+        abort_if(!$checkpoint, 404, 'Bukti pekerjaan belum tersedia untuk perintah kerja ini.');
 
         return view('direksi.checkpoint.history-detail', compact('checkpoint', 'isMcs'));
     }
@@ -275,16 +260,14 @@ class DireksiCheckpointController extends Controller
         abort_unless($item, 422);
 
         $comment = trim((string) ($data['note'] ?? ''));
-        $reaction = $data['status'] === 'accept'
-            ? (CheckPointItem::APPROVAL_REACTIONS[$data['emoji'] ?? null] ?? null)
-            : null;
+        $reaction = $data['status'] === 'accept' ? CheckPointItem::APPROVAL_REACTIONS[$data['emoji'] ?? null] ?? null : null;
 
         // Reaction and comment share one note: the card's "Catatan Evaluasi"
         // banner shows the reaction, and the thread below carries the same text
         // as a normal management reply.
         $reactionText = $reaction ? $reaction['emoji'] . ' ' . $reaction['label'] : null;
         $note = collect([$reactionText, $comment])
-            ->filter(fn ($part) => filled($part))
+            ->filter(fn($part) => filled($part))
             ->implode(' — ');
 
         $item->approve_status = $data['status'];
@@ -306,23 +289,12 @@ class DireksiCheckpointController extends Controller
                 'body' => $item->note,
             ]);
 
-            $user?->notify(new CheckPointReplyNotification(
-                title: 'Catatan baru pada bukti pekerjaan',
-                message: 'Direksi menanggapi bukti pekerjaan Anda.',
-                checkPointId: (int) $checkpoint->id,
-                itemId: (int) $item->id,
-            ));
+            $user?->notify(new CheckPointReplyNotification(title: 'Catatan baru pada bukti pekerjaan', message: 'Direksi menanggapi bukti pekerjaan Anda.', checkPointId: (int) $checkpoint->id, itemId: (int) $item->id));
         }
 
         $workOrder = $checkpoint->work_order_id ?? null;
         if ($workOrder != null) {
-            $user->notify(
-                new WorkOrderNotification(
-                    workOrderId: $workOrder,
-                    title: 'Status Pekerjaan Di Update',
-                    message: 'Pekerjaan sudah di update oleh Direksi.'
-                )
-            );
+            $user->notify(new WorkOrderNotification(workOrderId: $workOrder, title: 'Status Pekerjaan Di Update', message: 'Pekerjaan sudah di update oleh Direksi.'));
         } //else masih pending notify
         return back()->with('success', 'Status approval berhasil diperbarui.');
     }
@@ -339,7 +311,7 @@ class DireksiCheckpointController extends Controller
     public function notes(Request $request)
     {
         $days = (int) $request->input('periode', 14);
-        if (! in_array($days, self::NOTE_PERIODS, true)) {
+        if (!in_array($days, self::NOTE_PERIODS, true)) {
             $days = 14;
         }
 
@@ -348,12 +320,12 @@ class DireksiCheckpointController extends Controller
 
         $search = trim((string) $request->input('search', ''));
         $category = (string) $request->input('jenis', 'semua');
-        if (! array_key_exists($category, CheckPointMessage::NOTE_CATEGORIES)) {
+        if (!array_key_exists($category, CheckPointMessage::NOTE_CATEGORIES)) {
             $category = 'semua';
         }
 
         $confirmation = (string) $request->input('konfirmasi', 'semua');
-        if (! in_array($confirmation, ['sudah', 'belum'], true)) {
+        if (!in_array($confirmation, ['sudah', 'belum'], true)) {
             $confirmation = 'semua';
         }
 
@@ -372,14 +344,9 @@ class DireksiCheckpointController extends Controller
         // waiting; a reaction-only note has nothing to answer. An acknowledgement
         // row can exist from the employee merely opening the thread, so the
         // `confirmed_at` stamp — not the row — is what counts.
-        $confirmedNotes = (clone $base)
-            ->whereHas('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'))
-            ->count();
+        $confirmedNotes = (clone $base)->whereHas('acknowledgement', fn($ack) => $ack->whereNotNull('confirmed_at'))->count();
 
-        $pendingNotes = (clone $base)
-            ->where('requires_confirmation', true)
-            ->whereDoesntHave('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'))
-            ->count();
+        $pendingNotes = (clone $base)->where('requires_confirmation', true)->whereDoesntHave('acknowledgement', fn($ack) => $ack->whereNotNull('confirmed_at'))->count();
 
         // Neither of the two above: reaction-only notes, i.e. the ones with no
         // checklist to answer. Surfaced so the numbers add up to the total.
@@ -388,11 +355,7 @@ class DireksiCheckpointController extends Controller
         $notes = $base
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($inner) use ($search): void {
-                    $inner->where('body', 'like', '%' . $search . '%')
-                        ->orWhereHas(
-                            'item.checkPoint.user',
-                            fn ($user) => $user->where('nama_lengkap', 'like', '%' . $search . '%'),
-                        );
+                    $inner->where('body', 'like', '%' . $search . '%')->orWhereHas('item.checkPoint.user', fn($user) => $user->where('nama_lengkap', 'like', '%' . $search . '%'));
                 });
             })
             ->when($category !== 'semua', function ($query) use ($category): void {
@@ -405,26 +368,19 @@ class DireksiCheckpointController extends Controller
                         // `proccess` is the stored default; legacy rows can also
                         // carry no status at all, and both are revision requests.
                         $item->where(function ($pending): void {
-                            $pending->whereNull('approve_status')
-                                ->orWhereNotIn('approve_status', ['accept', 'denied']);
+                            $pending->whereNull('approve_status')->orWhereNotIn('approve_status', ['accept', 'denied']);
                         });
                     }
                 });
             })
             ->when($confirmation !== 'semua', function ($query) use ($confirmation): void {
                 if ($confirmation === 'sudah') {
-                    $query->whereHas('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'));
+                    $query->whereHas('acknowledgement', fn($ack) => $ack->whereNotNull('confirmed_at'));
                 } else {
-                    $query->where('requires_confirmation', true)
-                        ->whereDoesntHave('acknowledgement', fn ($ack) => $ack->whereNotNull('confirmed_at'));
+                    $query->where('requires_confirmation', true)->whereDoesntHave('acknowledgement', fn($ack) => $ack->whereNotNull('confirmed_at'));
                 }
             })
-            ->with([
-                'item:id,check_point_id,approve_status',
-                'item.checkPoint:id,user_id',
-                'item.checkPoint.user:id,nama_lengkap,image',
-                'acknowledgement',
-            ])
+            ->with(['item:id,check_point_id,approve_status', 'item.checkPoint:id,user_id', 'item.checkPoint.user:id,nama_lengkap,image', 'acknowledgement'])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(10)

@@ -95,7 +95,17 @@
                                 class="flex justify-start gap-1 px-4 py-1 text-xs font-bold text-white rounded-full shadow-md sm:hidden">{{ Carbon\Carbon::now()->isoFormat('dddd, D/MMMM/Y') }},
                                 <span id="jam"></span>
                             </span>
-                        </div>
+                        </div>    
+                        @if ($jabatan == 'DIREKSI' && $direksiRecapAvailable)
+                        <a href="{{ route('direksi.cp.index') }}"
+                            class="mt-4 mx-2 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-emerald-900 shadow-sm hover:bg-emerald-100">
+                            <i class="ri-bar-chart-grouped-line text-xl text-emerald-600"></i>
+                            <span>
+                                <span class="block text-sm font-bold">Rekap persentase tersedia</span>
+                                <span class="block text-xs text-emerald-700">Buka rekap kinerja karyawan.</span>
+                            </span>
+                        </a>
+                        @endif      
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                             <div class="flex justify-end w-full mx-10">
                                 <div
@@ -103,7 +113,6 @@
                                     <span class="text-white">{{ Carbon\Carbon::now()->format('d-m-Y') }}</span>
                                 </div>
                             </div>
-
                             {{-- Handle Check Kode Jabatan --}}
                             @if ($jabatan != 'MITRA' &&
                                     $jabatan != 'LEADER' &&
@@ -193,7 +202,7 @@
                         @endif
 
                         {{-- End Handle --}}
-                        @if ($kerjasamaId == 1)
+                        @if ($kerjasamaId == 1 || auth()->user()->divisi->name == 'SPV-W')
                         <div class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnCP"
                                     class="w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
@@ -229,7 +238,7 @@
                             <a href="{{ route('mcs.work-order.index') }}" class="flex flex-col items-center justify-center gap-2 px-2 pt-2 overflow-hidden">
                                 <div id="btnPerintah"
                                     class=" w-full flex justify-center items-center gap-2 bg-amber-400 rounded-md h-11 hover:bg-amber-500 transition-all ease-linear .2s">
-                                    <i class="text-xl ri-megaphone-line"></i>
+                                    <i class="text-lg ri-megaphone-line"></i>
                                     <span  class="text-sm font-bold uppercase">Perintah Kerja</span>
                                 </div>
                             </a>        
@@ -444,6 +453,7 @@
                                         </div>
                                     </div>
                                 @endif
+
 
                                 <div
                                     class="grid w-full grid-cols-2 gap-2 mt-5 space-y-0 overflow-hidden sm:grid-cols-3">

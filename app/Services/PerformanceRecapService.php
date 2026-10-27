@@ -18,9 +18,8 @@ use Carbon\Carbon;
  * a period that has not finished. Months that are already over stay open at any
  * time: their numbers are final.
  *
- * Working days are Monday–Friday up to today for the current month, and the
- * whole month once it is over. National holidays keep out of that denominator
- * as well, so a short holiday week does not read as poor attendance.
+ * Working days are Monday–Friday across the whole month. National holidays
+ * are excluded from that denominator as well.
  */
 class PerformanceRecapService
 {
@@ -102,7 +101,7 @@ class PerformanceRecapService
     {
         $at ??= now();
 
-        [$workingDates, $excludedHolidays] = $this->workingDates($start, $end, $at);
+        [$workingDates, $excludedHolidays] = $this->workingDates($start, $end);
         $workingDays = $workingDates->count();
 
         $attended = $this->attendanceDates($employee->id, $start, $end)->intersect($workingDates)->count();
@@ -137,26 +136,17 @@ class PerformanceRecapService
     }
 
     /**
-     * Weekdays of the month that have already happened, plus the national
-     * holidays left out of them keyed by date. A future month has none, so
-     * nothing can be scored before it starts.
+     * Weekdays across the full month, excluding national holidays.
      *
      * @return array{0: \Illuminate\Support\Collection<int, string>, 1: array<string, string>}
      */
-    private function workingDates(Carbon $start, Carbon $end, Carbon $at): array
+    private function workingDates(Carbon $start, Carbon $end): array
     {
-        $last = $end->copy()->endOfDay();
-        $today = $at->copy()->endOfDay();
-
-        if ($today->lt($last)) {
-            $last = $today;
-        }
-
         $holidays = $this->holidayService->namesForYear($start->year);
         $dates = collect();
         $excluded = [];
 
-        for ($date = $start->copy()->startOfDay(); $date->lte($last); $date->addDay()) {
+        for ($date = $start->copy()->startOfDay(); $date->lte($end->copy()->endOfDay()); $date->addDay()) {
             if ($date->isWeekend()) {
                 continue;
             }

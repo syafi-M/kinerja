@@ -10,6 +10,7 @@ use App\Models\CheckPoint;
 use App\Models\Kontrak;
 use App\Models\News;
 use App\Models\User;
+use App\Services\PerformanceRecapService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, PerformanceRecapService $recapService)
     {
         // Simpan waktu sekarang dan user dalam variabel
         $now = Carbon::now();
@@ -147,8 +148,11 @@ class DashboardController extends Controller
             $missingCheckpointDates = $dates->reject(fn($date) => $filledDates->contains($date->toDateString()));
         }
 
+        $isDireksi = ($user->jabatan?->code_jabatan ?? $user->divisi?->jabatan?->code_jabatan) === 'DIREKSI';
+        $direksiRecapAvailable = $isDireksi && $recapService->isVisible($now);
+
         $pendingDireksiCheckpoints = collect();
-        if (($user->jabatan?->code_jabatan ?? $user->divisi?->jabatan?->code_jabatan) === 'DIREKSI') {
+        if ($isDireksi) {
             $pendingDireksiCheckpoints = CheckPoint::with(['user:id,nama_lengkap', 'items:id,check_point_id,tanggal,approve_status,pekerjaan_cp_id,input_manual'])
                 ->where('type_check', 'dikerjakan')
                 ->whereBetween('created_at', [$now->copy()->startOfYear(), $now->copy()->endOfYear()])
@@ -245,7 +249,8 @@ class DashboardController extends Controller
                 'kontrak',
                 'missingCheckpointDates',
                 'rejectedCheckpoints',
-                'pendingDireksiCheckpoints'
+                'pendingDireksiCheckpoints',
+                'direksiRecapAvailable'
             ));
         }
     }
