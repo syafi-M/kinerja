@@ -2,6 +2,11 @@
     @php
         $firstDate = $checkpoint->items->first()?->tanggal ?? $checkpoint->created_at;
     @endphp
+
+    <x-page-loading target="checkpoint-detail-page" title="Memuat detail checkpoint..."
+        description="Menyiapkan bukti pekerjaan." />
+
+    <div id="checkpoint-detail-page" class="opacity-0 transition-opacity duration-300 motion-reduce:transition-none" aria-busy="true">
     <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8">
         <div class="mb-6 flex items-center justify-between">
             <div>
@@ -88,6 +93,7 @@
                 </article>
             @endforeach
         </div>
+    </div>
     </div>
 
     @unless ($isMcs)
@@ -343,6 +349,7 @@
         });
     </script>
     @endunless
+
 
     <script>
         // Arriving from the note history (#item-<id>): the browser resolves the
