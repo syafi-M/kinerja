@@ -192,7 +192,8 @@ Route::middleware(['auth', 'apdt'])->group(function () {
     Route::resource('/laporan', LaporanController::class)->only('index', 'create', 'store');
     Route::get('/mypoint/{id}', [PointController::class, 'myPoint'])->name('mypoint');
 
-    Route::resource('checkpoint-user', CheckPointController::class);
+    Route::get('checkpoint-user/work-order-file/{image}', [CheckPointController::class, 'workOrderFile'])->name('checkpoint-user.work-order-file');
+Route::resource('checkpoint-user', CheckPointController::class);
     Route::get('checkpoint-user-history', [CheckPointController::class, 'history'])->name('checkpoint-user.history');
     Route::get('checkpoint-user-history/{id}', [CheckPointController::class, 'historyShow'])->name('checkpoint-user.history.show');
     Route::post('checkpoint-item/{item}/messages', [CheckPointMessageController::class, 'store'])->name('checkpoint-item.messages.store');

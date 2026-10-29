@@ -87,6 +87,12 @@ class CheckPointController extends Controller
 
 
 
+    public function workOrderFile(\App\Models\WorkOrderImage $image)
+    {
+        abort_unless($image->workOrder->user_id === Auth::id(), 403);
+        return response()->download(storage_path('app/public/' . $image->path), basename($image->path));
+    }
+
     public function create(Request $request)
     {
         if ($denied = $this->reportWindow->reject()) {
@@ -94,7 +100,7 @@ class CheckPointController extends Controller
         }
 
         $workOrder = $request->filled('work_order')
-            ? WorkOrder::with('creator')->findOrFail($request->integer('work_order'))
+            ? WorkOrder::with(['creator', 'images'])->findOrFail($request->integer('work_order'))
             : null;
 
         $selectedDate = $workOrder?->tanggal
