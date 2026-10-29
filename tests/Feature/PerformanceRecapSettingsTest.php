@@ -36,5 +36,6 @@ class PerformanceRecapSettingsTest extends TestCase
 
         $this->assertTrue($service->isVisible(Carbon::parse('2026-10-21')));
         $this->assertFalse($service->isVisible(Carbon::parse('2026-10-24')));
+        $this->assertFalse($service->isVisible(Carbon::parse('2026-10-29')));
     }
 }
