@@ -23,9 +23,6 @@ use Carbon\Carbon;
  */
 class PerformanceRecapService
 {
-    /** How many closing days of a month count as "akhir bulan". */
-    private const MONTH_END_DAYS = 3;
-
     /** @var array<int, int>|null */
     private ?array $configuredVisibleDays = null;
 
@@ -56,8 +53,7 @@ class PerformanceRecapService
     {
         $at = ($at ?? now())->copy();
 
-        return in_array($at->dayOfWeekIso, $this->visibleDays(), true)
-            || $at->day > $at->daysInMonth - self::MONTH_END_DAYS;
+        return in_array($at->dayOfWeekIso, $this->visibleDays(), true);
     }
 
     /**
