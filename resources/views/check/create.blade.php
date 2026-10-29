@@ -29,6 +29,39 @@
 
                         <div class="mb-6 rounded-xl bg-slate-50 p-4">
                             @if($workOrder)
+                                @if($workOrder->images->isNotEmpty())
+                                    @php($imageFiles = $workOrder->images->filter(fn ($file) => str_starts_with((string) mime_content_type(storage_path('app/public/' . $file->path)), 'image/')))
+                                    @php($otherFiles = $workOrder->images->reject(fn ($file) => str_starts_with((string) mime_content_type(storage_path('app/public/' . $file->path)), 'image/')))
+                                    <div class="mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4">
+                                        <p class="mb-3 text-xs font-bold uppercase tracking-[.16em] text-sky-700">Lampiran perintah kerja</p>
+                                        <div class="grid grid-cols-3 gap-3 sm:grid-cols-7">
+                                            @foreach($imageFiles as $image)
+                                                <a href="{{ asset('storage/' . ltrim($image->path, '/')) }}" data-work-order-image="{{ asset('storage/' . ltrim($image->path, '/')) }}" class="group aspect-square overflow-hidden rounded-lg border border-sky-100 bg-white">
+                                                    <img src="{{ asset('storage/' . ltrim($image->path, '/')) }}" alt="Lampiran perintah kerja" class="h-full w-full object-cover transition group-hover:scale-105">
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                        @if($otherFiles->isNotEmpty())
+                                            <div class="mt-4 space-y-2">
+                                                @foreach($otherFiles as $file)
+                                                    @php($extension = strtoupper(pathinfo($file->path, PATHINFO_EXTENSION)))
+                                                    <div class="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-sky-300 hover:shadow-md">
+                                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
+                                                            <i class="{{ in_array(strtolower($extension), ['xls', 'xlsx']) ? 'ri-file-excel-2-line' : (in_array(strtolower($extension), ['doc', 'docx']) ? 'ri-file-word-2-line' : ($extension === 'PDF' ? 'ri-file-pdf-2-line' : 'ri-file-line')) }} text-xl"></i>
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="truncate text-sm font-bold text-slate-800" title="{{ basename($file->path) }}">{{ basename($file->path) }}</p>
+                                                            <p class="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ $extension }} · Lampiran perintah kerja</p>
+                                                        </div>
+                                                        <a href="{{ route('checkpoint-user.work-order-file', $file) }}" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-sky-600 hover:shadow-md" download>
+                                                            <i class="ri-download-2-line"></i> Download
+                                                        </a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
                                 <div class="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                                     <i class="ri-user-star-line mt-0.5 text-lg text-amber-600"></i>
                                     <div>
@@ -57,4 +90,29 @@
         </template>
 
         @include('check.partials.job-script', ['isEdit' => false])
+
+        @if($workOrder?->images->isNotEmpty())
+            <div id="work-order-image-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4" role="dialog" aria-modal="true" aria-label="Preview gambar perintah kerja">
+                <button type="button" id="close-work-order-image-modal" class="absolute right-4 top-4 rounded-full bg-white/15 px-4 py-2 text-2xl text-white hover:bg-white/25" aria-label="Tutup">&times;</button>
+                <button type="button" id="previous-work-order-image" class="absolute left-4 rounded-full bg-white/15 px-4 py-2 text-3xl text-white hover:bg-white/25" aria-label="Gambar sebelumnya">‹</button>
+                <img id="work-order-image-modal-preview" src="" alt="Preview lampiran perintah kerja" class="max-h-[90vh] max-w-[85vw] rounded-xl object-contain shadow-2xl">
+                <button type="button" id="next-work-order-image" class="absolute right-4 rounded-full bg-white/15 px-4 py-2 text-3xl text-white hover:bg-white/25" aria-label="Gambar berikutnya">›</button>
+            </div>
+            <script>
+                const imageModal = document.getElementById('work-order-image-modal');
+                const imageModalPreview = document.getElementById('work-order-image-modal-preview');
+                const imageUrls = [...document.querySelectorAll('[data-work-order-image]')].map(image => image.dataset.workOrderImage);
+                let imageIndex = 0;
+                const showImage = () => { imageModalPreview.src = imageUrls[imageIndex]; };
+                const closeImageModal = () => { imageModal.classList.add('hidden'); imageModal.classList.remove('flex'); imageModalPreview.src = ''; };
+                document.querySelectorAll('[data-work-order-image]').forEach((image, index) => image.addEventListener('click', event => {
+                    event.preventDefault(); imageIndex = index; showImage(); imageModal.classList.remove('hidden'); imageModal.classList.add('flex');
+                }));
+                document.getElementById('previous-work-order-image').addEventListener('click', () => { imageIndex = (imageIndex - 1 + imageUrls.length) % imageUrls.length; showImage(); });
+                document.getElementById('next-work-order-image').addEventListener('click', () => { imageIndex = (imageIndex + 1) % imageUrls.length; showImage(); });
+                document.getElementById('close-work-order-image-modal').addEventListener('click', closeImageModal);
+                imageModal.addEventListener('click', event => { if (event.target === imageModal) closeImageModal(); });
+                document.addEventListener('keydown', event => { if (event.key === 'Escape') closeImageModal(); if (event.key === 'ArrowLeft') document.getElementById('previous-work-order-image').click(); if (event.key === 'ArrowRight') document.getElementById('next-work-order-image').click(); });
+            </script>
+        @endif
 </x-app-layout>
