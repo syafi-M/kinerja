@@ -51,6 +51,10 @@ class DashboardController extends Controller
         // Ambil data absensi pada rentang waktu dari kemarin hingga hari ini
         // Fix: ambil absen terakhir yang belum pulang dalam 24 jam terakhir
         // Untuk shift overnight, tetap bisa kebaca di esok hari
+        $hasRecentAbsensi = (clone $absenQueryBase)
+            ->where('created_at', '>=', $now->copy()->subHours(12))
+            ->exists();
+
         $absenP = (clone $absenQueryBase)
             ->with([
                 'shift:id,jam_start,jam_end,is_overnight',
@@ -199,6 +203,7 @@ class DashboardController extends Controller
         } else {
             return view('dashboard', compact(
                 'absenP',
+                'hasRecentAbsensi',
                 'user',
                 'izin',
                 'hitungNews',
@@ -267,7 +272,7 @@ class DashboardController extends Controller
             ['key' => 'izin', 'label' => 'Izin', 'route' => 'izin.create', 'icon' => 'ri-file-line', 'color' => 'blue'],
             ['key' => 'kinerja', 'label' => 'Kinerja', 'route' => 'checkpoint-user.index', 'icon' => 'ri-bar-chart-line', 'color' => 'amber', 'show' => true, 'disabled' => $user->kerjasama_id != 1],
             ['key' => 'rating', 'label' => 'Rating', 'route' => 'ratingSaya', 'params' => [$user->id], 'icon' => 'ri-star-line', 'color' => 'indigo', 'show' => !$isDireksi],
-            ['key' => 'laporan', 'label' => 'Laporan', 'route' => 'laporan.index', 'icon' => 'ri-file-text-line', 'color' => 'sky', 'show' => !$isDireksi],
+            ['key' => 'laporan', 'label' => 'Laporan', 'url' => 'https://laporan-sac.sac-po.com', 'icon' => 'ri-file-text-line', 'color' => 'sky', 'show' => !$isDireksi],
             ['key' => 'kontrak', 'label' => 'Pengajuan Kontrak', 'route' => 'form-kontrak-request', 'icon' => 'ri-file-add-line', 'color' => 'green', 'show' => $bisaAjukanKontrak && !$isDireksi],
             ['key' => 'alquran', 'label' => "Al Qur'an", 'url' => 'https://baca-alquran.sac-po.com', 'icon' => 'ri-book-line', 'color' => 'amber'],
             ['key' => 'sppd', 'label' => 'SPPD', 'url' => 'https://sppd-online.sac-po.com/login', 'icon' => 'ri-road-map-line', 'color' => 'sky', 'show' => $isManajemen],

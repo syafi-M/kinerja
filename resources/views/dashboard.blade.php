@@ -72,7 +72,7 @@
 
         {{-- Status Card --}}
         <div class="flex w-full justify-center px-4 py-2">
-            @if (!$absenP)
+            @if (!$hasRecentAbsensi)
                 <span
                     class="inline-flex items-center gap-2 rounded-lg bg-rose-500 px-4 py-2 text-center text-sm font-semibold text-white shadow-xs">
                     <i class="ri-information-line text-lg"></i>
