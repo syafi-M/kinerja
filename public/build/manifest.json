@@ -20,7 +20,7 @@
     "src": "node_modules/remixicon/fonts/remixicon.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Du362767.css",
+    "file": "assets/app-BUB_Lx64.css",
     "name": "app",
     "names": [
       "app.css"
@@ -29,7 +29,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DtLvWvhz.js",
+    "file": "assets/app-BRE_qRd8.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
