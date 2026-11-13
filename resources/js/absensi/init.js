@@ -11,6 +11,7 @@ export function initAbsensiPage(config) {
         client,
         canBypassRadius,
         isSpvW,
+        isRegionalAttendanceUser,
         isDivisi12,
         authUserId,
         routes
@@ -401,7 +402,7 @@ export function initAbsensiPage(config) {
                             .openOn(map);
                     }
                 })
-            } else if (authUserId == 7 || isSpvW) {
+            } else if (isRegionalAttendanceUser) {
                 if (closestLocations.length > 0) {
                     // Get the absolute closest one (the first item in the sorted array)
                     var location = closestLocations[0];

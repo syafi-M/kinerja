@@ -35,7 +35,8 @@ class AbsensiController extends Controller
 
     public function index(Request $request)
     {
-        $user = Auth::user()->loadMissing(['divisi.jabatan', 'divisi.perlengkapan:id,name', 'kerjasama.client:id,name']);
+        $user = Auth::user()->loadMissing(['divisi.jabatan', 'divisi.perlengkapan:id,name', 'kerjasama.client:id,name,kabupaten']);
+        $isRegionalAttendanceUser = $this->isRegionalAttendanceUser($user);
         $now = Carbon::now();
         $today = $now->format('Y-m-d');
         $todayName = $now->translatedFormat('l'); // Nama hari dalam bahasa lokal
@@ -125,7 +126,7 @@ class AbsensiController extends Controller
         }
 
         // Lokasi terkait
-        $harLok = Lokasi::with('client')
+        $harLok = Lokasi::with('client:id,name,kabupaten')
             ->where('client_id', $user->kerjasama->client_id)
             ->first();
 
@@ -135,13 +136,19 @@ class AbsensiController extends Controller
 
         $lokLok = Lokasi::query()
             ->select(['id', 'client_id', 'latitude', 'longtitude', 'radius'])
-            ->with('client:id,name')
+            ->with('client:id,name,kabupaten')
             ->whereHas('client')
             ->get(['id', 'client_id', 'latitude', 'longtitude', 'radius']);
 
         $penempatan = Cache::remember('absensi.penempatan', 300, fn() => Kerjasama::query()
-            ->with('client:id,name')
+            ->with('client:id,name,kabupaten')
             ->get(['id', 'client_id']));
+
+        if ($isRegionalAttendanceUser) {
+            $lokLok = $lokLok->filter(fn ($lokasi) => $this->sameClientArea($user->kerjasama?->client, $lokasi->client))->values();
+            $penempatan = $penempatan->filter(fn ($mitra) => $this->sameClientArea($user->kerjasama?->client, $mitra->client))->values();
+            $harLok = $lokLok->first() ?? $harLok;
+        }
 
         $matchedShifts = collect(); // default kosong
 
@@ -271,6 +278,7 @@ class AbsensiController extends Controller
 
         $authUser = Auth::user();
         $selectedUser = User::query()->with('kerjasama')->find($request->user_id ?: $authUser->id);
+        $isRegionalAttendanceUser = $this->isRegionalAttendanceUser($authUser);
         $isLeaderAttendanceRoute = in_array($request->route()->getName(), [
             'absensi-karyawan-co-cs.store',
             'absensi-karyawan-co-scr.store',
@@ -279,7 +287,7 @@ class AbsensiController extends Controller
         if (
             !$selectedUser
             || ($selectedUser->id !== $authUser->id && !$isLeaderAttendanceRoute)
-            || (int) $selectedUser->kerjasama_id !== (int) $authUser->kerjasama_id
+            || (!$isRegionalAttendanceUser && (int) $selectedUser->kerjasama_id !== (int) $authUser->kerjasama_id)
         ) {
             toastr()->error('Data absensi tidak sesuai kewenangan.');
 
@@ -287,22 +295,24 @@ class AbsensiController extends Controller
         }
 
         $selectedKerjasama = Kerjasama::query()
+            ->with('client:id,name,kabupaten')
             ->select('id', 'client_id')
-            ->find($selectedUser->kerjasama_id);
+            ->find($isRegionalAttendanceUser ? ($request->kerjasama_id ?: $selectedUser->kerjasama_id) : $selectedUser->kerjasama_id);
         $selectedShift = Shift::query()
             ->whereKey($request->shift_id)
-            ->where('client_id', $selectedKerjasama?->client_id)
             ->where('is_active', true)
+            ->when(!$isRegionalAttendanceUser, fn ($query) => $query->where('client_id', $selectedKerjasama?->client_id))
             ->exists();
 
-        if (!$selectedKerjasama || !$selectedShift) {
-            toastr()->error('Shift atau penempatan tidak sesuai.');
+        if (!$selectedKerjasama || !$selectedShift || ($isRegionalAttendanceUser && !$this->sameClientArea($authUser->kerjasama?->client, $selectedKerjasama->client))) {
+            toastr()->error('Shift atau wilayah penempatan tidak sesuai.');
 
             return redirect()->back()->withInput();
         }
 
+
         $user_id = $selectedUser->id;
-        $kerjasama_id = $selectedUser->kerjasama_id;
+        $kerjasama_id = $isRegionalAttendanceUser ? $selectedKerjasama->id : $selectedUser->kerjasama_id;
         $shift_id = $request->shift_id;
         $perlengkapan = json_encode($request->perlengkapan);
         $keterangan = $request->keterangan;
@@ -329,7 +339,7 @@ class AbsensiController extends Controller
         $radiusMitra = (float) $harLok->radius;
         $jarak = $this->distance($latMitra, $longMitra, $latUser, $longUser);
         $radius = round($jarak['meters']);
-        $canBypassRadius = auth()->user()->jabatan->code_jabatan == 'SPV-W' || (int) auth()->user()->devisi_id == 12;
+        $canBypassRadius = (int) auth()->user()->devisi_id == 12;
         $isUmg = $request->kerjasama_id == "29" || $request->kerjasama_id == "32";
 
         if ($canBypassRadius || $isUmg || $radius <= $radiusMitra) {
@@ -692,11 +702,25 @@ class AbsensiController extends Controller
         $latUser = $request->lat_user;
         $longUser = $request->long_user;
 
-        $harLok = Lokasi::where('client_id', Auth::user()->kerjasama->client_id)->first();
+        $isRegionalAttendanceUser = $this->isRegionalAttendanceUser(Auth::user());
+        $attendanceClientId = Kerjasama::whereKey($absensi->kerjasama_id)->value('client_id');
+        $harLok = Lokasi::where('client_id', $attendanceClientId)->first();
         if (!$harLok) {
             toastr()->error('Gagal Absen Pulang !! Lokasi mitra belum tersedia.');
 
             return redirect()->back();
+        }
+
+        if ($isRegionalAttendanceUser) {
+            $withinRegionalLocation = $this->regionalLocations(Auth::user())->contains(function ($lokasi) use ($latUser, $longUser) {
+                return $this->distance($lokasi->latitude, $lokasi->longtitude, $latUser, $longUser)['meters'] <= (float) $lokasi->radius;
+            });
+
+            if (!$withinRegionalLocation) {
+                toastr()->error('Kamu berada di luar wilayah mitra SPV-W.');
+
+                return redirect()->back();
+            }
         }
 
         $latMitra = $harLok->latitude;
@@ -1141,6 +1165,41 @@ class AbsensiController extends Controller
         toastr()->success('Point Diclaim');
 
         return redirect()->back();
+    }
+
+    private function isRegionalAttendanceUser(User $user): bool
+    {
+        return (int) $user->id === 7
+            || (int) $user->devisi_id === 26
+            || $user->jabatan?->code_jabatan === 'SPV-W';
+    }
+
+    private function sameClientArea(?Client $origin, ?Client $target): bool
+    {
+        if (!$origin?->kabupaten || !$target?->kabupaten) {
+            return false;
+        }
+
+        $originName = Str::lower($origin->kabupaten);
+        $targetName = Str::lower($target->kabupaten);
+
+        foreach (config('client_area', []) as $kabupatenList) {
+            $matchesOrigin = collect($kabupatenList)->contains(fn ($term) => Str::contains($originName, Str::lower($term)));
+
+            if ($matchesOrigin && collect($kabupatenList)->contains(fn ($term) => Str::contains($targetName, Str::lower($term)))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function regionalLocations(User $user)
+    {
+        return Lokasi::with('client:id,name,kabupaten')
+            ->whereHas('client')
+            ->get()
+            ->filter(fn ($lokasi) => $this->sameClientArea($user->kerjasama?->client, $lokasi->client));
     }
 
     public function distance($lat1, $lon1, $lat2, $lon2)
